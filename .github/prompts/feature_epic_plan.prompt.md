@@ -1,7 +1,7 @@
 ---
 name: feature_epic_plan
 description: Break a complex feature or epic into a sequence of testable PR-sized changes for a full-stack web app (solo founder)
-agent: ask
+agent: agent
 argument-hint: "Provide: feature/epic description + (optional) #file:PSD.md + (optional) #file:.github/copilot-project.md + constraints."
 ---
 

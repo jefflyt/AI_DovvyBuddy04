@@ -1,7 +1,7 @@
 ---
 name: initiate
 description: Greenfield bootstrap from PSD (PR0 scaffold + commands + copilot-project.md + minimal CI)
-agent: ask
+agent: agent
 argument-hint: "Paste PSD. Optional: preferred stack/hosting. If none, use the default preset."
 ---
 

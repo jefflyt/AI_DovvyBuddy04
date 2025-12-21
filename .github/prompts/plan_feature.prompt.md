@@ -1,7 +1,7 @@
 ---
 name: plan_feature
 description: Turn a PSD + current repo conventions into a single-PR, implementation-ready plan for one feature
-agent: ask
+agent: agent
 argument-hint: "Provide: (1) PSD excerpt or #file:PSD.md, (2) the specific feature/PR goal, (3) optional constraints. If repo exists, include #file:.github/copilot-project.md."
 ---
 

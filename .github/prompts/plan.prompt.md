@@ -1,7 +1,7 @@
 ---
 name: plan
 description: Create high-level architecture, phases, and initial PR breakdown from a Product Specification Document (PSD)
-agent: ask
+agent: agent
 argument-hint: "Paste PSD text (or #file:PSD.md). Optional: stack preference, hosting target, timeline, must/avoid constraints."
 ---
 

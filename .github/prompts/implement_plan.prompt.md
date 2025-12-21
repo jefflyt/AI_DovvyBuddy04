@@ -1,7 +1,7 @@
 ---
 name: implement_plan
 description: Implement ONE planned PR/feature for a full-stack web application according to a given plan (solo founder)
-agent: ask
+agent: agent
 argument-hint: "Paste the plan text. If multi-PR, specify which PR (e.g., PR2). Include #file:.github/copilot-project.md if present."
 ---
 

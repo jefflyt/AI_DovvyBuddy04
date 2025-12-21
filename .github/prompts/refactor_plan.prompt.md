@@ -1,6 +1,8 @@
 ---
 name: refactor_plan
 description: Produce a behavior-preserving refactor plan for a full-stack web application (solo founder)
+agent: agent
+argument-hint: "Provide: description of refactor goals + affected codebase parts + (optional) #file:PSD.md + (optional) #file:.github/copilot-project.md + constraints."
 ---
 
 You are a Refactor Planning Agent helping a solo founder improve an existing full-stack web application.
