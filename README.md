@@ -40,9 +40,9 @@ init_ai_workflow.sh        # Script to scaffold the required structure
 
 The separation of **docs**, **plans**, and **src** is intentional:
 
-- `docs/` → planning and specifications  
-- `plans/` → implementation instructions  
-- `src/` → actual code  
+- `docs/` → planning and specifications
+- `plans/` → implementation instructions
+- `src/` → actual code
 
 ---
 
@@ -69,12 +69,12 @@ Make sure GitHub Copilot Chat (Plan mode) is enabled.
 
 ## 🧠 Workflow Overview (High-Level)
 
-1. **Create PSD**  
-2. **Generate Master Plan**  
-3. **Plan Each Feature**  
-4. **Turn Feature Plan → PR Plan**  
-5. **Generate Implementation Substeps**  
-6. **Implement Real Code**  
+1. **Create PSD**
+2. **Generate Master Plan**
+3. **Plan Each Feature**
+4. **Turn Feature Plan → PR Plan**
+5. **Generate Implementation Substeps**
+6. **Implement Real Code**
 7. **Refactor When Needed**
 
 Each step is performed via a slash command in VS Code Copilot Chat.
@@ -150,8 +150,8 @@ Creates or modifies code directly in your source tree.
 
 You should:
 
-- Review diffs  
-- Run tests  
+- Review diffs
+- Run tests
 - Commit after each major step
 
 ---
@@ -212,9 +212,9 @@ Follow the order. Do not skip steps.
 
 This repository is optimized for:
 
-- high‑quality AI‑assisted engineering  
-- predictable and repeatable output  
-- minimal developer guesswork  
+- high‑quality AI‑assisted engineering
+- predictable and repeatable output
+- minimal developer guesswork
 - maximum PM‑to‑AI translation clarity
 
 If you follow the workflow inside `AI_WORKFLOW.md`, you can reliably generate entire feature implementations with minimal manual coding work.

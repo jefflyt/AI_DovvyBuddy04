@@ -1,6 +1,6 @@
 # Copilot Instructions (Global)
 
-- Use .github/prompts/*.prompt.md as primary workflows.
+- Use .github/prompts/\*.prompt.md as primary workflows.
 - Prefer Plan mode over Agent/autonomous modes.
 - Default coding style:
   - Keep functions small and focused.

@@ -6,11 +6,11 @@ This document explains **exactly how to use the custom `.prompt.md` files** in t
 
 This workflow gives you:
 
-- deterministic output  
-- clean separation of PSD → planning → code  
-- repeatable development  
-- zero ambiguity for Copilot  
-- full control over each feature's implementation  
+- deterministic output
+- clean separation of PSD → planning → code
+- repeatable development
+- zero ambiguity for Copilot
+- full control over each feature's implementation
 
 ---
 
@@ -19,12 +19,12 @@ This workflow gives you:
 Your project uses a strict, AI-friendly structure:
 
 ```text
-.github/prompts/     → All custom Copilot prompt commands  
-docs/psd/            → Product specification documents (PSD)  
-docs/plans/          → Master plan + feature plans  
-docs/references/     → API docs, glossary, schemas  
-docs/decisions/      → Architecture decision records  
-plans/               → PR-level execution plans + substeps created by /generate  
+.github/prompts/     → All custom Copilot prompt commands
+docs/psd/            → Product specification documents (PSD)
+docs/plans/          → Master plan + feature plans
+docs/references/     → API docs, glossary, schemas
+docs/decisions/      → Architecture decision records
+plans/               → PR-level execution plans + substeps created by /generate
 src/                 → Actual application code
 ```
 
@@ -49,12 +49,12 @@ src/                 → Actual application code
 This repo follows a deterministic 7-step workflow:
 
 ```bash
-1. /psd             → Create Product Specification Document  
-2. /plan            → Create Master Implementation Plan  
-3. /plan_feature    → Create Feature-Level Plans  
-4. /plan-refactored → Create Single-PR Plans  
-5. /generate        → Generate Substep Implementation Docs  
-6. /implement       → Write Real Code into src/  
+1. /psd             → Create Product Specification Document
+2. /plan            → Create Master Implementation Plan
+3. /plan_feature    → Create Feature-Level Plans
+4. /plan-refactored → Create Single-PR Plans
+5. /generate        → Generate Substep Implementation Docs
+6. /implement       → Write Real Code into src/
 7. /refactor        → Improve or Clean Up Code
 ```
 
@@ -80,13 +80,13 @@ This PSD becomes the **single source of truth** for all further planning.
 
 A good PSD includes:
 
-- product overview  
-- personas  
-- full feature list  
-- UX rules  
-- data models  
-- edge cases  
-- constraints  
+- product overview
+- personas
+- full feature list
+- UX rules
+- data models
+- edge cases
+- constraints
 - acceptance criteria
 
 ---
@@ -107,10 +107,10 @@ docs/plans/master_plan.md
 
 This defines:
 
-- architecture  
-- phases  
-- feature list  
-- multi-PR breakdown  
+- architecture
+- phases
+- feature list
+- multi-PR breakdown
 - dependencies
 
 ---
@@ -131,12 +131,12 @@ docs/plans/google-calendar/plan.md
 
 Each feature plan includes:
 
-- scope  
-- objectives  
-- success criteria  
-- functional requirements  
-- edge cases  
-- acceptance rules  
+- scope
+- objectives
+- success criteria
+- functional requirements
+- edge cases
+- acceptance rules
 
 ---
 
@@ -151,15 +151,15 @@ Each feature plan includes:
 ### PR Plan Output Location
 
 ```text
-plans/google-calendar/plan.md  
+plans/google-calendar/plan.md
 plans/google-calendar/README.md
 ```
 
 This PR plan defines the **exact implementation steps**, for example:
 
 ```text
-Step 1 — Create OAuth handler  
-Step 2 — Calendar sync service  
+Step 1 — Create OAuth handler
+Step 2 — Calendar sync service
 Step 3 — Webhook listener
 ```
 
@@ -200,17 +200,17 @@ Each file contains copy-paste-ready code instructions.
 
 Copilot will:
 
-- read PR plan  
-- read substeps  
-- modify files in `src/` only  
-- apply patches step-by-step  
+- read PR plan
+- read substeps
+- modify files in `src/` only
+- apply patches step-by-step
 - update checkboxes in plan/substep files
 
 You will:
 
-- review diffs  
-- run tests  
-- commit after each major step  
+- review diffs
+- run tests
+- commit after each major step
 
 This ensures deterministic, structured engineering.
 
@@ -228,11 +228,11 @@ This creates a **refactor plan**, not code.
 
 It describes:
 
-- file-by-file problems  
-- naming issues  
-- modularization opportunities  
-- dead code removal  
-- simplification opportunities  
+- file-by-file problems
+- naming issues
+- modularization opportunities
+- dead code removal
+- simplification opportunities
 
 ---
 
@@ -285,13 +285,13 @@ Copilot accuracy is **directly proportional** to your documentation quality.
 ## 12. Quick Command Cheat Sheet
 
 ```text
-/psd                → write product spec  
-/plan               → master plan  
-/plan_feature       → feature plan  
-/plan-refactored    → convert feature → PR  
-/generate           → create substep docs  
-/implement          → write code  
-/refactor           → refactor plan  
+/psd                → write product spec
+/plan               → master plan
+/plan_feature       → feature plan
+/plan-refactored    → convert feature → PR
+/generate           → create substep docs
+/implement          → write code
+/refactor           → refactor plan
 /search_docs        → search docs
 ```
 
@@ -315,11 +315,11 @@ Copilot accuracy is **directly proportional** to your documentation quality.
 
 This workflow gives you:
 
-- full AI-driven development lifecycle  
-- predictable output  
-- controllable engineering steps  
-- scalable multi-feature development  
-- PM-friendly planning  
-- clean and maintainable code  
+- full AI-driven development lifecycle
+- predictable output
+- controllable engineering steps
+- scalable multi-feature development
+- PM-friendly planning
+- clean and maintainable code
 
 You now have a **complete AI-powered software development system** inside your project.
