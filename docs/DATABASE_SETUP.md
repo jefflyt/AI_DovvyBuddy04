@@ -48,7 +48,7 @@
      - **US West (Oregon)** — `us-west-2`.
      - **Europe (Frankfurt)** — `eu-central-1`.
      - **Asia Pacific (Singapore)** — `ap-southeast-1`.
-   - **Compute Size:** 
+   - **Compute Size:**
      - **Free Tier (0.25 CU)** — Sufficient for V1 development and testing.
      - Scale up later if needed.
 
@@ -142,14 +142,17 @@ Before implementing PR1, verify your local environment can connect to Neon.
    - **Windows:** Download from https://www.postgresql.org/download/windows/
 
 2. **Connect to Neon:**
+
    ```bash
    psql "postgresql://username:password@ep-xxx-xxx-xxx.region.aws.neon.tech/neondb?sslmode=require"
    ```
 
 3. **Run Test Query:**
+
    ```sql
    SELECT version();
    ```
+
    - Expected: Postgres version info.
 
 4. **Exit:**
@@ -178,6 +181,7 @@ For V1 development, the free tier is sufficient. Be aware of limits:
 - **No Credit Card Required:** For free tier.
 
 **Upgrade if needed:**
+
 - V1 production may require "Launch" or "Scale" tier.
 - Monitor usage in Neon console → "Usage" tab.
 
@@ -217,12 +221,14 @@ Once your database is set up and connection string is in `.env`:
 ✅ **You are ready to implement PR1: Database Schema & Migrations.**
 
 PR1 will:
+
 - Install Drizzle ORM and dependencies.
 - Define schema for 5 tables (destinations, dive_sites, leads, sessions, content_embeddings).
 - Generate and run migrations.
 - Seed initial data (1 destination, 5-10 dive sites).
 
 **Start PR1:**
+
 ```bash
 git checkout -b feature/pr1-database-schema
 ```
@@ -236,11 +242,13 @@ Refer to `docs/plans/PR1-Database-Schema.md` for implementation details.
 ### Issue: Connection Timeout or Refused
 
 **Possible Causes:**
+
 - Incorrect connection string (check for typos).
 - Network/firewall blocking port 5432.
 - Neon project suspended (free tier auto-suspends after inactivity).
 
 **Solutions:**
+
 - Verify connection string in `.env` matches Neon console.
 - Check Neon console → "Operations" tab for project status.
 - Wake suspended project by visiting Neon dashboard.
@@ -250,6 +258,7 @@ Refer to `docs/plans/PR1-Database-Schema.md` for implementation details.
 **Cause:** pgvector extension not enabled.
 
 **Solution:**
+
 - Run `CREATE EXTENSION IF NOT EXISTS vector;` in SQL Editor (Step 4).
 
 ### Issue: `permission denied for database`
@@ -257,6 +266,7 @@ Refer to `docs/plans/PR1-Database-Schema.md` for implementation details.
 **Cause:** Using wrong database or role.
 
 **Solution:**
+
 - Verify database name in connection string matches created database.
 - Use the default role provided by Neon (usually your username).
 
@@ -265,6 +275,7 @@ Refer to `docs/plans/PR1-Database-Schema.md` for implementation details.
 **Cause:** `sslmode=require` parameter missing.
 
 **Solution:**
+
 - Ensure connection string includes `?sslmode=require` at the end.
 
 ---

@@ -10,19 +10,23 @@
 ## 1. Feature/Epic Summary
 
 ### Objective
+
 Build the content ingestion pipeline that enables DovvyBuddy to "read" and semantically search curated markdown documentation about diving certifications, destinations, and dive sites.
 
 ### User Impact
+
 - **Internal/Foundation:** No direct user-facing impact in this PR.
 - **Enables:** PR3 (Chat endpoint) will use this pipeline to retrieve relevant context for LLM responses.
 - **Content Quality:** Establishes the knowledge base that grounds all bot responses, preventing hallucination.
 
 ### Dependencies
+
 - **Upstream:** PR1 (Database Schema & Migrations) — Must be complete with `content_embeddings` table available.
-- **External:** 
+- **External:**
   - Gemini API key (`GEMINI_API_KEY`) with `text-embedding-004` access — ✅ Ready.
 
 ### Assumptions
+
 - **Assumption:** Initial content corpus will be small (~10-20 markdown files, <1000 total chunks).
 - **Assumption:** Content will be written in English only (V1 constraint).
 - **Assumption:** Content creation (certification guides, destination, dive sites) is part of PR2 implementation.
@@ -37,9 +41,11 @@ Build the content ingestion pipeline that enables DovvyBuddy to "read" and seman
 ## 2. Complexity & Fit
 
 ### Classification
+
 **Single-PR**
 
 ### Rationale
+
 - **Limited Scope:** Content ingestion script + retrieval utility + initial markdown content.
 - **No User-Facing Changes:** Backend-only processing; no API endpoints exposed in this PR.
 - **Single Layer Focus:** Data pipeline (read → chunk → embed → store) and utility functions.
@@ -52,16 +58,21 @@ Build the content ingestion pipeline that enables DovvyBuddy to "read" and seman
 ## 3. Full-Stack Impact
 
 ### Frontend
+
 **No changes planned.**
 
 ### Backend
+
 **Foundation for future API usage:**
+
 - RAG retrieval utility will be created (`src/lib/rag/retrieval.ts`) but not exposed via API in this PR.
 - Content ingestion runs as a standalone script, not part of the web server.
 - No API endpoints added in this PR (deferred to PR3).
 
 ### Data
+
 **Core changes:**
+
 - **Content Files:**
   - Create `content/` directory structure with markdown files.
   - Write initial curated content (certifications, 1 destination, 5-10 dive sites).
@@ -79,6 +90,7 @@ Build the content ingestion pipeline that enables DovvyBuddy to "read" and seman
   - Return top-k most relevant chunks with metadata.
 
 ### Infra / Config
+
 - **Environment Variables:**
   - Add to `.env.example`:
     - `EMBEDDING_PROVIDER` (gemini|groq)
@@ -108,6 +120,7 @@ Enable the bot to semantically search curated documentation by building a conten
 ### Scope
 
 **In scope:**
+
 1. **Content Directory Structure:**
    - Create `content/` directory with subdirectories:
      - `content/certifications/` — PADI/SSI certification guides.
@@ -175,6 +188,7 @@ Enable the bot to semantically search curated documentation by building a conten
      - Report missing or malformed metadata.
 
 **Out of scope:**
+
 - Chat API endpoint (deferred to PR3).
 - LLM response generation (deferred to PR3).
 - Session management (deferred to PR3).
@@ -186,12 +200,14 @@ Enable the bot to semantically search curated documentation by building a conten
 ### Backend Changes
 
 **Ingestion Script (`scripts/ingest-content.ts`):**
+
 - Command-line script that runs outside web server context.
 - Reads files from `content/` directory.
 - Processes markdown → chunks → embeddings → database.
 - Idempotent and resumable (skip already-ingested files or allow force re-ingest).
 
 **Embedding Provider (`src/lib/embeddings/`):**
+
 - Module structure:
   - `src/lib/embeddings/types.ts` — Interface definitions.
   - `src/lib/embeddings/gemini-provider.ts` — Gemini implementation.
@@ -199,6 +215,7 @@ Enable the bot to semantically search curated documentation by building a conten
 - Handles API authentication, rate limiting, retries.
 
 **RAG Retrieval (`src/lib/rag/`):**
+
 - Module structure:
   - `src/lib/rag/chunking.ts` — Hybrid text chunking (semantic + paragraph split).
   - `src/lib/rag/retrieval.ts` — Vector similarity search.
@@ -216,6 +233,7 @@ Enable the bot to semantically search curated documentation by building a conten
 ### Data Changes
 
 **Content Files (New):**
+
 - `content/certifications/padi-open-water.md`
 - `content/certifications/ssi-open-water.md`
 - `content/destinations/cozumel-mexico.md`
@@ -227,6 +245,7 @@ Enable the bot to semantically search curated documentation by building a conten
 - ... (5-10 total dive site files)
 
 **Database (`content_embeddings` table):**
+
 - Populated via ingestion script.
 - Expected row count: ~100-300 chunks (depending on content length and chunking strategy).
 - Each row contains:
@@ -237,10 +256,12 @@ Enable the bot to semantically search curated documentation by building a conten
   - Metadata (frontmatter + chunk index).
 
 **Indexes:**
+
 - HNSW index on `embedding` column (already created in PR1 migration).
 - Optional: GIN index on `metadata` JSONB for filtering (can be added later if needed).
 
 **Backward Compatibility:**
+
 - Not applicable (greenfield content ingestion).
 
 ---
@@ -248,6 +269,7 @@ Enable the bot to semantically search curated documentation by building a conten
 ### Infra / Config
 
 **Environment Variables (`.env.example`):**
+
 ```
 # Database
 DATABASE_URL=postgresql://...
@@ -262,6 +284,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
 **Package Scripts (`package.json`):**
+
 ```
 "content:validate": "tsx scripts/validate-content.ts",
 "content:ingest": "tsx scripts/ingest-content.ts",
@@ -269,9 +292,10 @@ GEMINI_API_KEY=your_gemini_api_key_here
 ```
 
 **Dependencies to Add:**
+
 - `@google/generative-ai` — Gemini SDK for embeddings.
 - `gray-matter` — Frontmatter parsing.
-- `tiktoken` — Token counting for chunking (OpenAI tokenizer, works for most models).
+- `tiktoken` — Token counting for chunking. **Note:** `tiktoken` uses OpenAI's tokenizer which differs from Gemini's, but 500-800 token target is flexible enough that approximate counts are acceptable.
 - `zod` — Runtime validation for content frontmatter (optional but recommended).
 
 ---
@@ -279,6 +303,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 ### Testing
 
 **Unit Tests:**
+
 - **Chunking Logic (`src/lib/rag/chunking.test.ts`):**
   - Test hybrid chunking (semantic split on headers).
   - Test fallback to paragraph split for large sections.
@@ -294,6 +319,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
   - Test word count validation.
 
 **Integration Tests:**
+
 - **Ingestion (`tests/integration/ingest-content.test.ts`):**
   - Create test markdown files.
   - Run ingestion script against test database.
@@ -306,6 +332,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
   - Verify similarity scores are reasonable (>0.7 for good matches).
 
 **Manual Checks:**
+
 - Read generated markdown content for accuracy and tone.
 - Verify embeddings are generated (check dimensions).
 - Test retrieval with various queries (certification questions, destination questions).
@@ -317,6 +344,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 **Commands:**
 
 1. **Install Dependencies:**
+
    ```
    pnpm install
    ```
@@ -332,67 +360,85 @@ GEMINI_API_KEY=your_gemini_api_key_here
    - Use dive site template as a descriptive guide (flexibility allowed).
 
 3a. **Validate Content:**
-   ```
-   pnpm content:validate
-   ```
-   - Expected: All files pass frontmatter schema validation.
-   - Expected: Safety disclaimers present where required.
-   - Expected: Word counts within expected ranges.
+
+```
+pnpm content:validate
+```
+
+- Expected: All files pass frontmatter schema validation.
+- Expected: Safety disclaimers present where required.
+- Expected: Word counts within expected ranges.
 
 4. **Run Ingestion Script:**
+
    ```
    pnpm content:ingest
    ```
+
    - Expected: Progress logs, no errors.
    - Expected: Success message with count of chunks ingested.
 
 5. **Verify Database Population:**
+
    ```sql
    SELECT COUNT(*) FROM content_embeddings;
    ```
+
    - Expected: >0 rows (should be ~100-300 depending on content).
 
    ```sql
-   SELECT content_path, LENGTH(chunk_text), array_length(embedding, 1) 
-   FROM content_embeddings 
+   SELECT content_path, LENGTH(chunk_text), array_length(embedding, 1)
+   FROM content_embeddings
    LIMIT 5;
    ```
+
    - Expected: Sample rows with file paths, chunk text lengths, embedding dimensions (1536).
 
 6. **Test Retrieval Function:**
    - Create a test script or use Node REPL:
      ```typescript
-     import { retrieveRelevantChunks } from './src/lib/rag/retrieval';
-     const results = await retrieveRelevantChunks('What are the prerequisites for Open Water certification?', 5);
-     console.log(results);
+     import { retrieveRelevantChunks } from './src/lib/rag/retrieval'
+     const results = await retrieveRelevantChunks(
+       'What are the prerequisites for Open Water certification?',
+       5
+     )
+     console.log(results)
      ```
    - Expected: Array of 5 relevant chunks with similarity scores.
 
 7. **Run Unit Tests:**
+
    ```
    pnpm test
    ```
+
    - Expected: All tests pass.
 
 8. **Type Check:**
+
    ```
    pnpm typecheck
    ```
+
    - Expected: No type errors.
 
 9. **Lint:**
+
    ```
    pnpm lint
    ```
+
    - Expected: No lint errors.
 
 10. **Build:**
     ```
     pnpm build
     ```
+
     - Expected: Next.js build succeeds (even though new code isn't used in app yet).
 
 **Manual Verification Checklist:**
+
 - [ ] Content validation script passes (`pnpm content:validate`).
 - [ ] Content files follow markdown conventions and include frontmatter.
 - [ ] Frontmatter includes all required fields per doc type.
@@ -414,9 +460,11 @@ GEMINI_API_KEY=your_gemini_api_key_here
 ### Rollback Plan
 
 **Feature Flag / Kill Switch:**
+
 - Not applicable (no user-facing features or API routes).
 
 **Revert Strategy:**
+
 - If PR is reverted:
   - `content_embeddings` table will still contain data (harmless).
   - To clear: Run `DELETE FROM content_embeddings;` or use `pnpm content:clear` script.
@@ -428,9 +476,11 @@ GEMINI_API_KEY=your_gemini_api_key_here
 ### Dependencies
 
 **Upstream PRs:**
+
 - PR1 (Database Schema & Migrations) — **Must be complete** ✅
 
 **External Dependencies:**
+
 - Gemini API key (`GEMINI_API_KEY`) with text-embedding-004 access.
 - Database connection working (from PR1).
 - Sufficient API quota for embeddings (Gemini free tier: 1500 requests/day should be enough for V1 content).
@@ -440,13 +490,15 @@ GEMINI_API_KEY=your_gemini_api_key_here
 ### Risks & Mitigations
 
 **Risk 1: Embedding API Rate Limits**
+
 - **Impact:** Ingestion script may fail or slow down with large content corpus.
-- **Mitigation:** 
+- **Mitigation:**
   - Implement exponential backoff and retry logic in embedding provider.
   - Process files sequentially (not in parallel) to avoid rate limits.
   - Add `--resume` flag to ingestion script to skip already-processed files.
 
 **Risk 2: Chunking Quality (Context Loss)**
+
 - **Impact:** Chunks may be too small (lose context) or too large (dilute relevance).
 - **Mitigation:**
   - Start with 500-800 token chunks and test retrieval quality.
@@ -454,6 +506,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
   - Iterate on chunking strategy based on retrieval results (adjust in future PR if needed).
 
 **Risk 3: Content Quality / Accuracy**
+
 - **Impact:** Inaccurate or misleading content will cause bot to give wrong answers.
 - **Mitigation:**
   - Review all markdown content before ingestion.
@@ -462,6 +515,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
   - Version content in git for auditability.
 
 **Risk 4: Embedding Dimensions Mismatch**
+
 - **Impact:** If embedding provider changes or returns wrong dimensions, retrieval will fail.
 - **Mitigation:**
   - Validate embedding dimensions (1536) before storing in database.
@@ -469,6 +523,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
   - Document expected dimensions in code comments.
 
 **Risk 5: Idempotency Failure (Duplicate Chunks)**
+
 - **Impact:** Re-running ingestion may create duplicate embeddings, wasting storage and API quota.
 - **Mitigation:**
   - Check if file already ingested (by `content_path` or content hash).
@@ -480,11 +535,13 @@ GEMINI_API_KEY=your_gemini_api_key_here
 ## 5. Milestones & Sequence
 
 ### Milestone 1: Content Pipeline Operational
+
 **What it unlocks:** Database contains searchable knowledge base; retrieval utility ready for PR3 (Chat API).
 
 **PRs included:** PR2 only.
 
 **Definition of Done:**
+
 - [ ] `content/` directory structure created with markdown files.
 - [ ] Ingestion script runs successfully and populates `content_embeddings` table.
 - [ ] Retrieval utility returns relevant chunks for test queries.
@@ -559,6 +616,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 All markdown files in `content/` should include YAML frontmatter with the following structure:
 
 **General Fields (All Content Types):**
+
 ```
 ---
 doc_type: "certification" | "destination" | "dive_site" | "safety"
@@ -572,12 +630,14 @@ sources: ["URL1", "URL2"]
 ```
 
 **Certification-Specific:**
+
 ```
 agency: "PADI" | "SSI" | "NAUI" | etc.
 level: "OW" | "AOW" | "Rescue" | "DM"
 ```
 
 **Dive Site-Specific:**
+
 ```
 site_id: "cozumel-palancar-reef"
 destination: "Cozumel, Mexico"
@@ -604,6 +664,8 @@ content/
 │   ├── cozumel-columbia-reef.md
 │   ├── cozumel-punta-sur.md
 │   └── cozumel-devils-throat.md
+├── faq/                                         # Exists in repo; content deferred to future PR
+│   └── (future FAQ content)
 └── safety/
     └── (future: no-fly times, medical references)
 

@@ -5,10 +5,12 @@ This directory contains workflow guides, verification results, and project manag
 ## Contents
 
 ### Workflow Guides
+
 - **`AI_WORKFLOW.md`** — Complete AI-driven development workflow using custom Copilot prompts
 - **`init_ai_workflow.sh`** — Shell script to initialize AI workflow setup
 
 ### Verification & Testing
+
 - **`VERIFICATION.md`** — PR0 verification checklist and procedures
 - **`PR0-VERIFICATION-RESULTS.md`** — Actual verification results from PR0 (Bootstrap)
 

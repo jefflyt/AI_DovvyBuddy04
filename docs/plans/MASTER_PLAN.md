@@ -11,6 +11,7 @@
 **Problem:** Prospective and recreational divers face confusion regarding certification pathways (PADI vs SSI), prerequisites, and trip planning. Existing information is often fragmented or sales-heavy.
 
 **Target Users:**
+
 1. Prospective New Divers (Non-certified, curious, fearful).
 2. OW Divers seeking Advanced Certification.
 3. Certified Divers planning trips (Secondary).
@@ -18,6 +19,7 @@
 **Value Proposition:** A diver-first, agency-aware AI assistant that provides grounded, non-judgmental guidance, normalizes fears, and hands off qualified leads to partner shops without pretending to be an instructor.
 
 **Core Features:**
+
 - **Certification Navigator:** Explains pathways, compares agencies, clarifies prerequisites.
 - **Confidence Building:** Normalizes common fears (mask clearing, depth) with factual info.
 - **Trip Research:** RAG-based search for "covered" destinations/sites.
@@ -25,6 +27,7 @@
 - **Guest Sessions:** 24h ephemeral sessions, no user accounts.
 
 **Key Constraints:**
+
 - Information-only (no medical/safety advice).
 - No direct booking.
 - Guest-only (V1).
@@ -35,12 +38,14 @@
 ## 2. Goals, Success Criteria, and Constraints
 
 ### Product Goals
+
 - **G-01:** Reduce diver confusion regarding certification steps.
 - **G-02:** Build confidence for new students.
 - **G-03:** Generate qualified, context-rich leads for partners.
 - **G-04:** Establish trust via grounded, safe answers.
 
 ### Success Criteria
+
 - **MVP Usable:** Users can complete a chat session about "How to get certified" or "Where to dive in [Covered Destination]".
 - **Technical Health:** CI pipeline passing (Lint/Typecheck/Test/Build) on every commit.
 - **Lead Delivery:** System successfully captures and logs/emails a lead payload with required context.
@@ -51,6 +56,7 @@
 - **Performance:** Chat responses return within 5 seconds under normal load.
 
 ### Constraints & Assumptions
+
 - **Constraint:** Solo founder resources.
 - **Constraint:** V1 is Web-only (Telegram deferred).
 - **Constraint:** No user authentication (Guest sessions).
@@ -62,6 +68,7 @@
 ## 3. Architecture & Technology Stack
 
 ### Frontend
+
 - **Framework:** Next.js 14 (App Router).
 - **Language:** TypeScript.
 - **Styling:** Tailwind CSS (via global.css setup).
@@ -73,8 +80,9 @@
   - (Future) About/FAQ pages.
 
 ### Backend
+
 - **Runtime:** Next.js API Routes (Serverless Functions) for V1 simplicity.
-- **Agent Logic:** Google ADK (Agent Development Kit) patterns, potentially hosted within Next.js or as a sidecar service (Cloud Run) if complexity demands. *Decision: Start with Next.js API routes implementing the orchestration to keep deployment simple (Vercel), move to Cloud Run if ADK requires specific runtime environment not supported on Vercel.*
+- **Agent Logic:** Google ADK (Agent Development Kit) patterns, potentially hosted within Next.js or as a sidecar service (Cloud Run) if complexity demands. _Decision: Start with Next.js API routes implementing the orchestration to keep deployment simple (Vercel), move to Cloud Run if ADK requires specific runtime environment not supported on Vercel._
 - **API Style:** REST endpoints for chat and session management.
 - **Key Endpoints:**
   - `POST /api/chat` — Accept user message, return assistant response.
@@ -91,10 +99,11 @@
   7. Return response.
 
 ### Data
+
 - **Database:** PostgreSQL (Neon or Supabase).
 - **Vector Search:** pgvector extension on the same Postgres instance.
 - **ORM:** Drizzle ORM (preferred for cold start performance and type safety).
-- **Schema:** 
+- **Schema:**
   - **destinations:** `id`, `name`, `country`, `is_active`, `created_at`.
   - **dive_sites:** `id`, `destination_id`, `name`, `min_certification_level`, `min_logged_dives`, `difficulty_band`, `access_type`, `is_active`, `created_at`.
   - **leads:** `id`, `type` (training|trip), `diver_profile` (JSONB), `request_details` (JSONB), `created_at`.
@@ -104,17 +113,20 @@
 - **Seeding:** Initial seed script for 1 destination with 5-10 sites and 2-3 partner shops.
 
 ### Auth & Security
+
 - **Authentication:** None (Guest access).
 - **Session Handling:** Custom session ID (UUID) stored in HTTP-only cookie or LocalStorage, validated against DB. 24h expiry.
 - **Security:** Input sanitization, rate limiting on API routes.
 
 ### Infrastructure & Deployment
+
 - **Hosting:** Vercel (Frontend + API).
 - **Database:** Managed Postgres (Neon/Supabase).
 - **CI/CD:** GitHub Actions (Lint, Test, Build).
 - **Observability:** Vercel Analytics / Logs.
 
 ### Cross-Cutting Concerns
+
 - **Configuration:** Environment variables (.env) for:
   - `DATABASE_URL` (Postgres connection string)
   - `LLM_PROVIDER` (groq|gemini)
@@ -123,15 +135,15 @@
   - `SESSION_SECRET` (Cookie signing)
   - `LEAD_WEBHOOK_URL` (Optional)
   - `RESEND_API_KEY` (Email delivery)
-- **Error Handling:** 
+- **Error Handling:**
   - API routes return structured JSON errors with appropriate HTTP codes.
   - User-facing messages are friendly (no stack traces).
   - Server logs capture full context (session ID, user message, stack trace).
-- **Logging:** 
+- **Logging:**
   - Structured logging with context (Winston or Pino).
   - Log levels: ERROR, WARN, INFO, DEBUG.
   - Key events: Session start, Lead capture, RAG retrieval, LLM calls, Errors.
-- **Performance/Caching:** 
+- **Performance/Caching:**
   - Content embeddings pre-computed at build/deploy time.
   - Session state cached in-memory with DB fallback (optional Redis later).
   - Static assets served via Vercel CDN.
@@ -141,8 +153,9 @@
 ## 4. Project Phases
 
 ### Phase 1: Foundations & Data Layer
+
 - **Objective:** Establish database, schema, and RAG content pipeline.
-- **Scope:** 
+- **Scope:**
   - Postgres instance setup (Neon/Supabase).
   - Schema definition and migrations.
   - pgvector extension enabled.
@@ -155,8 +168,9 @@
   - Seed data visible in database tables.
 
 ### Phase 2: Core Logic & RAG
+
 - **Objective:** Implement the "Brain" of the bot.
-- **Scope:** 
+- **Scope:**
   - LLM Provider abstraction (Groq/Gemini with env switch).
   - RAG retrieval service (vector similarity search).
   - Session management service (Create, Get, Update).
@@ -169,8 +183,9 @@
   - Session persists across API calls.
 
 ### Phase 3: User Experience & Features
+
 - **Objective:** Build the visible interface and interaction flows.
-- **Scope:** 
+- **Scope:**
   - Chat UI components (Message bubbles, Input field, Typing indicator).
   - Lead capture inline flow (Training vs Trip forms).
   - Safety refusal UI (Clear messaging when out-of-scope).
@@ -185,8 +200,9 @@
   - UI is usable on mobile devices.
 
 ### Phase 4: Polish & Launch
+
 - **Objective:** Production readiness.
-- **Scope:** 
+- **Scope:**
   - Content review and refinement (Certification guides, Destination content).
   - E2E testing for critical paths (Certification inquiry, Lead capture, Trip research).
   - Analytics integration (Vercel Analytics or Posthog).
@@ -205,9 +221,10 @@
 
 ## 5. Initial PR Breakdown (Near-Term Work)
 
-*Note: PR0 (Bootstrap) is already complete.*
+_Note: PR0 (Bootstrap) is already complete._
 
 ### PR1: Database Schema & Migrations
+
 - **Branch Name:** `feature/pr1-database-schema`
 - **Goal:** Set up the persistent storage layer.
 - **Scope:**
@@ -238,6 +255,7 @@
   - Run `pnpm typecheck` to verify schema types.
 
 ### PR2: RAG Pipeline (Content Ingestion)
+
 - **Branch Name:** `feature/pr2-rag-pipeline`
 - **Goal:** Enable the bot to "read" the documentation.
 - **Scope:**
@@ -274,6 +292,7 @@
   - Run `pnpm test`.
 
 ### PR3: Model Provider & Session Logic
+
 - **Branch Name:** `feature/pr3-model-provider-session`
 - **Goal:** Connect to LLM and manage conversation state.
 - **Scope:**
@@ -316,6 +335,7 @@
   - Query database to verify session stored.
 
 ### PR4: Lead Capture & Delivery
+
 - **Branch Name:** `feature/pr4-lead-capture`
 - **Goal:** Implement the business value conversion point.
 - **Scope:**
@@ -351,6 +371,7 @@
   - Run `pnpm test`.
 
 ### PR5: Chat Interface & Integration
+
 - **Branch Name:** `feature/pr5-chat-interface`
 - **Goal:** Connect UI to Backend.
 - **Scope:**
@@ -400,21 +421,24 @@
 ## 6. Risks, Trade-offs, and Open Questions
 
 ### Risks
-- **LLM Hallucination:** Risk of bot inventing safety/medical advice. *Mitigation: Strict system prompts, RAG grounding, refusal patterns for out-of-scope queries, regular prompt testing.*
-- **RAG Quality:** Retrieval might miss relevant context or return irrelevant chunks. *Mitigation: Tuning chunk sizes and overlap, testing retrieval quality on sample queries, iterative content refinement.*
-- **Session Timeout:** 24h sessions may expire mid-conversation for some users. *Mitigation: Clear messaging about session expiry, graceful handling of expired sessions.*
-- **Email Deliverability:** Lead emails might be flagged as spam. *Mitigation: Use Resend with proper domain authentication (SPF/DKIM), test delivery to multiple providers.*
-- **Serverless Cold Starts:** Next.js API routes may have latency spikes. *Mitigation: Keep dependencies minimal, optimize bundle size, consider Edge Functions for critical paths.*
-- **Content Maintenance:** Outdated content may mislead users. *Mitigation: Content review process, version tracking in git, regular audits.*
+
+- **LLM Hallucination:** Risk of bot inventing safety/medical advice. _Mitigation: Strict system prompts, RAG grounding, refusal patterns for out-of-scope queries, regular prompt testing._
+- **RAG Quality:** Retrieval might miss relevant context or return irrelevant chunks. _Mitigation: Tuning chunk sizes and overlap, testing retrieval quality on sample queries, iterative content refinement._
+- **Session Timeout:** 24h sessions may expire mid-conversation for some users. _Mitigation: Clear messaging about session expiry, graceful handling of expired sessions._
+- **Email Deliverability:** Lead emails might be flagged as spam. _Mitigation: Use Resend with proper domain authentication (SPF/DKIM), test delivery to multiple providers._
+- **Serverless Cold Starts:** Next.js API routes may have latency spikes. _Mitigation: Keep dependencies minimal, optimize bundle size, consider Edge Functions for critical paths._
+- **Content Maintenance:** Outdated content may mislead users. _Mitigation: Content review process, version tracking in git, regular audits._
 
 ### Trade-offs
-- **Guest-only vs Auth:** Simpler V1 but no cross-device history or personalization. *Decision: Acceptable for V1; auth deferred to V2 after proving diver wedge.*
-- **Embedded Vector vs Managed DB:** Simpler ops but potentially less scalable for large corpus. *Decision: Acceptable for V1 corpus size (<1000 chunks); migrate to dedicated vector DB if scaling requires.*
-- **Next.js API Routes vs Cloud Run:** Vercel deployment is simpler but may have timeout constraints for long RAG+LLM chains. *Decision: Start with Next.js; migrate agent logic to Cloud Run if timeouts become an issue.*
-- **Manual Content vs CMS:** Git-based content is simple but requires technical knowledge to update. *Decision: Acceptable for V1 with solo founder; consider CMS in V2 if non-technical content contributors join.*
+
+- **Guest-only vs Auth:** Simpler V1 but no cross-device history or personalization. _Decision: Acceptable for V1; auth deferred to V2 after proving diver wedge._
+- **Embedded Vector vs Managed DB:** Simpler ops but potentially less scalable for large corpus. _Decision: Acceptable for V1 corpus size (<1000 chunks); migrate to dedicated vector DB if scaling requires._
+- **Next.js API Routes vs Cloud Run:** Vercel deployment is simpler but may have timeout constraints for long RAG+LLM chains. _Decision: Start with Next.js; migrate agent logic to Cloud Run if timeouts become an issue._
+- **Manual Content vs CMS:** Git-based content is simple but requires technical knowledge to update. _Decision: Acceptable for V1 with solo founder; consider CMS in V2 if non-technical content contributors join._
 
 ### Open Questions
-- **Agent Runtime:** Will Next.js Serverless functions timeout for long RAG+LLM chains? *Contingency: Move to Edge functions or separate Cloud Run service if latency is high (>10s).*
-- **Postgres Provider:** Neon vs Supabase for managed Postgres? *Decision criteria: Neon preferred for cold start performance and pgvector support; Supabase if realtime features needed later.*
-- **Content Scope:** Which destination to launch with first? *Decision: Choose destination with existing partner shop, high diver interest, and diverse site difficulty range.*
-- **Lead Delivery:** Email-only or webhook-first? *Decision: Start with email (simpler); add webhook if partner prefers CRM integration.*
+
+- **Agent Runtime:** Will Next.js Serverless functions timeout for long RAG+LLM chains? _Contingency: Move to Edge functions or separate Cloud Run service if latency is high (>10s)._
+- **Postgres Provider:** Neon vs Supabase for managed Postgres? _Decision criteria: Neon preferred for cold start performance and pgvector support; Supabase if realtime features needed later._
+- **Content Scope:** Which destination to launch with first? _Decision: Choose destination with existing partner shop, high diver interest, and diverse site difficulty range._
+- **Lead Delivery:** Email-only or webhook-first? _Decision: Start with email (simpler); add webhook if partner prefers CRM integration._
