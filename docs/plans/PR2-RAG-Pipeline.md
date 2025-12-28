@@ -431,6 +431,7 @@ pnpm content:validate
    - Expected: No lint errors.
 
 10. **Build:**
+
     ```
     pnpm build
     ```

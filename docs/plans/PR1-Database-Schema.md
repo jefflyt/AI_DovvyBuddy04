@@ -382,6 +382,7 @@ SESSION_SECRET=your_random_32_char_string_here
    - Expected: No lint errors.
 
 10. **Run Tests:**
+
     ```
     pnpm test
     ```
