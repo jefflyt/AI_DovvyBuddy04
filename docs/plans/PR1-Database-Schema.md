@@ -500,21 +500,24 @@ SESSION_SECRET=your_random_32_char_string_here
    - **Trade-off:** Slightly larger storage footprint; better for distributed systems and merge-safe.
    - **Decision:** Acceptable; future-proofs for multi-region or sharding.
 
-### Open Questions
+### Design Decisions
 
-**All questions resolved:**
+| Topic | Decision | Rationale |
+|-------|----------|--------|
+| **Postgres Provider** | Neon | Better cold start performance, excellent pgvector support |
+| **ORM** | Drizzle | Lighter bundle size than Prisma, better serverless performance |
+| **Vector Dimensions** | 1536 dimensions | Gemini `text-embedding-004` standard; column: `VECTOR(1536)` |
+| **Vector Index** | HNSW | Better recall and query performance than IVFFlat |
+| **Primary Keys** | UUID v4 | Distributed-friendly, merge-safe, better for future sharding |
+| **Schema Design** | Normalized | Separate tables for destinations/sites; easier to maintain and extend |
+| **Session Storage** | JSONB columns | Flexible for conversation history and diver profile data |
 
-1. **Which Postgres Provider (Neon vs Supabase)?**
-   - **Decision:** ✅ **Neon** — Chosen for cold start performance and excellent pgvector support.
-   - **Impact on Plan:** None (plan already compatible).
+### Future Enhancements
 
-2. **Vector Dimension Size?**
-   - **Decision:** ✅ **1536 dimensions** — Using Gemini text-embedding-004 standard.
-   - **Impact on Plan:** Column definition in `content_embeddings.ts` uses `VECTOR(1536)`.
-
-3. **Index Strategy for Vector Search?**
-   - **Decision:** ✅ **HNSW** — Chosen for better recall and query performance.
-   - **Impact on Plan:** Migration SQL will create HNSW index on `content_embeddings.embedding`.
+- **Session cleanup job** via cron or Vercel scheduled functions
+- **GIN index on metadata** JSONB for faster filtering
+- **Read replicas** for production scale
+- **Multi-region setup** with connection pooling optimization
 
 ---
 

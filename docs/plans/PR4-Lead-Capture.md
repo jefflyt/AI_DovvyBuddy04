@@ -803,18 +803,28 @@ The system can convert chat conversations into actionable business leads that pa
 | **Optional session enrichment** | Lead works without session, but less context                     | Allows lead capture from external sources (future); session enrichment is bonus      |
 | **2000 char message limit**     | May truncate long messages, but prevents abuse                   | Sufficient for V1 use cases; higher limit can be added if needed                     |
 
-### Open Questions
+### Design Decisions
 
-| Question                                                           | Current Decision                                                                      | Impact if Changed                                                                                                                                             |
-| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Should email delivery failure return error to user or silent fail? | **Decision:** Silent fail with logging. Lead persisted regardless. User sees success. | If changed to return error: Would add complexity to error handling; user might retry and create duplicate leads; confusing UX when lead is actually captured. |
-| Is session context (diver_profile) required for lead capture?      | **Decision:** Optional enrichment. Lead works without session.                        | If changed to required: Would need validation for sessionId; external lead sources (future) wouldn't work; reduces flexibility.                               |
-| What email address format is expected for LEAD_EMAIL_TO?           | **Decision:** Single email address. Comma-separated not supported.                    | If changed to support multiple: Would add email list parsing; need to handle delivery failures per-recipient; Resend API supports this natively.              |
-| Should we track delivery status in the database?                   | **Decision:** No status field in V1. Rely on Resend logs.                             | If changed to track: Would add `delivery_status` enum column; need webhook from Resend for status updates; more complex but better visibility.                |
-| Should we deduplicate leads (same email within X hours)?           | **Decision:** No deduplication in V1.                                                 | If changed to dedupe: Would add query to check recent leads; prevent spam/accidental resubmits; but may reject legitimate multiple inquiries.                 |
-| What timezone should timestamps use in emails?                     | **Decision:** UTC in database; consider user timezone in email formatting (future).   | If changed to localize: Would need timezone detection or user preference; better UX but more complex.                                                         |
-| Should we validate phone number format strictly?                   | **Decision:** No strict validation. Optional field, flexible format.                  | If changed to strict: Would need international phone number library; might reject valid numbers; reduces friction to keep flexible.                           |
-| Should email include DovvyBuddy branding/logo?                     | **Decision:** Yes, simple text branding in footer. No images in V1.                   | If changed to add logo: Would need image hosting; email size increases; may trigger spam filters; keep simple for V1.                                         |
+| Topic | Decision | Rationale |
+|-------|----------|-----------|
+| **Email delivery failure** | Silent fail with logging | Lead persistence > delivery confirmation; user sees success regardless; avoids duplicate submissions from retries |
+| **Session context** | Optional enrichment | Reduces coupling with PR3; allows external lead sources (future); diver profile is bonus context |
+| **LEAD_EMAIL_TO format** | Single email address | Sufficient for V1 single destination; partner routing deferred to multi-destination expansion |
+| **Delivery status tracking** | No DB tracking; use Resend logs | Adds schema/webhook complexity; dashboard visibility sufficient for V1 |
+| **Lead deduplication** | Same email + type within 5 minutes | Prevents accidental double-clicks and simple bot spam; return existing lead ID (200 OK) |
+| **Timestamp timezone** | UTC in DB; display with "UTC" label in email | Clear and unambiguous; localization deferred |
+| **Phone validation** | Flexible; max 20 chars | International formats vary wildly; strict validation creates friction |
+| **Email branding** | Text only; no images | Simpler, smaller, avoids spam filters; logo adds hosting complexity |
+
+### Future Enhancements
+
+- **Honeypot field** for simple bot protection (hidden form field)
+- **Rate limiting** per IP address (Cloudflare or in-app)
+- **CAPTCHA** integration in PR5 frontend
+- **Webhook delivery** as backup channel for email
+- **`source` field** for lead attribution (`web_chat`, `telegram`, `landing_page`)
+- **Queue-based async delivery** for high traffic scenarios
+- **Partner routing** when expanding to multiple destinations
 
 ---
 

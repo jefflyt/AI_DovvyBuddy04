@@ -1,222 +1,268 @@
-# AI-Driven Development Workflow
+# DovvyBuddy
 
-This repository is configured for **AI‑assisted software development** using GitHub Copilot in **Plan Mode** together with a set of powerful custom prompts.
+**AI-powered scuba diving certification and trip planning assistant**
 
-The design of this repo enables a structured, reliable, and repeatable development pipeline:
+DovvyBuddy helps prospective and recreational divers make informed decisions about certifications (PADI, SSI) and dive trips through conversational AI powered by RAG-enhanced LLMs.
 
-```text
+---
+
+## 🌊 What is DovvyBuddy?
+
+DovvyBuddy is a diver-first AI assistant that provides:
+
+- **Certification Guidance** — Navigate PADI/SSI certifications with confidence
+- **Fear Normalization** — Friendly, educational support for new divers
+- **Trip Research** — Discover dive sites matched to your certification level
+- **Lead Capture** — Connect with partner dive shops when you're ready
+
+**Key Principle:** Information-only mode. Always redirects to professionals for training, medical, or safety decisions.
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Node.js 18+ (recommend 20+)
+- pnpm (install via `npm install -g pnpm`)
+- PostgreSQL with pgvector extension (or Neon account)
+- LLM API keys (Groq for dev, Gemini for prod)
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/jefflyt/AI_DovvyBuddy04.git
+cd AI_DovvyBuddy04
+
+# Install dependencies
+pnpm install
+
+# Set up environment variables
+cp .env.example .env.local
+# Edit .env.local with your API keys and database URL
+
+# Run database migrations (once database is set up)
+pnpm db:migrate
+
+# Start development server
+pnpm dev
+```
+
+Visit `http://localhost:3000` to see the app.
+
+---
+
+## 📁 Project Structure
+
+```
+AI_DovvyBuddy04/
+├── .github/
+│   ├── copilot-instructions.md   # AI coding guidelines
+│   ├── copilot-project.md        # Project context for AI
+│   └── prompts/                  # Custom AI workflow prompts
+│
+├── docs/
+│   ├── psd/                      # Product Specification Document
+│   ├── plans/                    # PR implementation plans (PR1-PR10)
+│   ├── technical/                # Technical specs and architecture
+│   ├── decisions/                # Architecture Decision Records (ADRs)
+│   ├── references/               # External API docs and standards
+│   └── project-management/       # AI workflow guides
+│
+├── src/
+│   ├── app/                      # Next.js App Router pages
+│   ├── components/               # React components (future)
+│   ├── lib/                      # Core services (future)
+│   │   ├── model-provider/       # LLM abstraction (PR3)
+│   │   ├── rag/                  # RAG pipeline (PR2)
+│   │   └── session/              # Session management (PR3)
+│   ├── db/                       # Database schema & migrations (PR1)
+│   └── types/                    # TypeScript type definitions
+│
+├── content/                      # Curated diving content for RAG (PR2)
+├── tests/                        # Test files (Vitest)
+├── public/                       # Static assets
+│
+├── package.json
+├── next.config.js
+├── tsconfig.json
+├── vitest.config.ts
+└── README.md                     # This file
+```
+
+---
+
+## 🛠 Tech Stack
+
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| **Framework** | Next.js 14 (App Router) | Full-stack React framework |
+| **Language** | TypeScript | Type safety |
+| **Database** | PostgreSQL + pgvector | Relational data + vector search |
+| **Hosting** | Vercel | Serverless deployment |
+| **LLM (Dev)** | Groq (`llama-3.1-70b-versatile`) | Fast iteration |
+| **LLM (Prod)** | Gemini (`gemini-2.0-flash`) | Production quality |
+| **Email** | Resend API | Lead delivery |
+| **ORM** | Drizzle | Type-safe database queries |
+| **Testing** | Vitest + Playwright | Unit, integration, e2e |
+| **Styling** | Tailwind CSS | Utility-first CSS |
+
+---
+
+## 📜 Available Commands
+
+```bash
+# Development
+pnpm dev              # Start dev server (http://localhost:3000)
+pnpm build            # Build for production
+pnpm start            # Start production server
+
+# Code Quality
+pnpm lint             # Run ESLint
+pnpm typecheck        # Run TypeScript type checking
+pnpm format           # Format with Prettier
+
+# Testing
+pnpm test             # Run unit tests (Vitest)
+pnpm test:watch       # Run tests in watch mode
+pnpm test:e2e         # Run e2e tests (Playwright)
+
+# Database
+pnpm db:generate      # Generate Drizzle migrations
+pnpm db:migrate       # Run migrations
+pnpm db:seed          # Seed database with sample data
+pnpm db:studio        # Open Drizzle Studio
+
+# Complete Check (run before committing)
+pnpm typecheck && pnpm lint && pnpm test && pnpm build
+```
+
+---
+
+## 🗺 Development Roadmap
+
+### V1 Web Application (PR1-PR6)
+
+- ✅ **PR0:** Bootstrap (Next.js + TypeScript setup)
+- 🚧 **PR1:** Database Schema (Postgres + pgvector + migrations)
+- 🚧 **PR2:** RAG Pipeline (content ingestion + retrieval)
+- 🚧 **PR3:** Model Provider + Session Logic (Groq/Gemini + chat API)
+- 🚧 **PR4:** Lead Capture + Delivery (Resend email integration)
+- 🚧 **PR5:** Chat Interface + Integration (React UI + session persistence)
+- 🚧 **PR6:** Landing Page + Polish (E2E tests + launch prep)
+
+### V1.1 Telegram Bot (PR7a-7c)
+
+- **PR7a:** Agent Service Extraction (Cloud Run deployment)
+- **PR7b:** Telegram Bot Adapter (basic chat flow)
+- **PR7c:** Telegram Lead Capture (production hardening)
+
+### V2 Authentication & Profiles (PR8a-8c)
+
+- **PR8a:** Auth Infrastructure (NextAuth.js + user tables)
+- **PR8b:** Web UI Auth Integration (signin/signup pages)
+- **PR8c:** Telegram Account Linking (cross-channel sync)
+
+See detailed plans in [`docs/plans/`](./docs/plans/)
+
+---
+
+## 📚 Documentation
+
+| Document | Purpose | Location |
+|----------|---------|----------|
+| **Product Spec (PSD)** | What to build | [`docs/psd/DovvyBuddy-PSD-V6.2.md`](./docs/psd/DovvyBuddy-PSD-V6.2.md) |
+| **Technical Spec (TSD)** | How it works | [`docs/technical/specification.md`](./docs/technical/specification.md) |
+| **PR Plans** | Implementation steps | [`docs/plans/`](./docs/plans/) |
+| **ADRs** | Why we chose this | [`docs/decisions/`](./docs/decisions/) |
+| **AI Workflow** | Development process | [`docs/project-management/AI_WORKFLOW.md`](./docs/project-management/AI_WORKFLOW.md) |
+| **Project Context** | AI assistant context | [`.github/copilot-project.md`](./.github/copilot-project.md) |
+
+---
+
+## 🤖 AI-Assisted Development
+
+This project uses **GitHub Copilot in Plan Mode** with custom prompts for structured development.
+
+**Key workflow:**
+```
 PSD → Master Plan → Feature Plan → PR Plan → Implementation → Refactor
 ```
 
-This README explains how to use the repo and the provided prompt files.
+See the complete guide: [`docs/project-management/AI_WORKFLOW.md`](./docs/project-management/AI_WORKFLOW.md)
 
 ---
 
-## 📁 Repository Structure
+## 🔐 Environment Variables
 
-```text
-.github/
-  prompts/                 # All custom prompts (run using / commands in Copilot)
-  copilot-instructions.md  # Optional global rules for Copilot behavior
-
-docs/
-  psd/                     # Product Specification Documents (created via /psd)
-  plans/                   # Master plan + feature‑level plans
-  references/              # API docs, glossary, schemas, integrations
-  decisions/               # Architecture decision records (ADRs)
-
-plans/                     # PR-level execution plans generated by /plan-refactored + /generate
-
-src/
-  backend/                 # Backend application code
-  frontend/                # Frontend application code
-  shared/                  # Shared utilities, models, helpers
-  tests/                   # Unit + integration tests
-
-AI_WORKFLOW.md             # Full workflow guide (required reading)
-README.md                 # This file
-init_ai_workflow.sh        # Script to scaffold the required structure
-```
-
-The separation of **docs**, **plans**, and **src** is intentional:
-
-- `docs/` → planning and specifications
-- `plans/` → implementation instructions
-- `src/` → actual code
-
----
-
-## 🚀 Getting Started
-
-### 1. Install & Open in VS Code
-
-Clone the repo:
+Required environment variables (see `.env.example`):
 
 ```bash
-git clone <your-repo-url>
-cd AI-Driven_Development_Workflow
+# Database
+DATABASE_URL=postgresql://...
+
+# LLM Providers
+LLM_PROVIDER=groq                      # groq | gemini
+GROQ_API_KEY=your_groq_key
+GEMINI_API_KEY=your_gemini_key
+
+# Session
+SESSION_SECRET=random_32char_string
+
+# Lead Capture (PR4+)
+RESEND_API_KEY=your_resend_key
+LEAD_EMAIL_TO=partner@diveshop.com
+
+# Optional
+MAX_SESSION_DURATION_HOURS=24
+MAX_MESSAGE_LENGTH=2000
+LLM_TIMEOUT_MS=10000
 ```
 
-Open in VS Code:
+---
 
+## 🧪 Testing Strategy
+
+- **Unit Tests:** Core business logic (model providers, session service, RAG retrieval)
+- **Integration Tests:** API endpoints (`/api/chat`, `/api/lead`)
+- **E2E Tests (V1):** Single smoke test (landing → chat → message → response → lead form)
+
+Run all checks before committing:
 ```bash
-code .
-```
-
-Make sure GitHub Copilot Chat (Plan mode) is enabled.
-
----
-
-## 🧠 Workflow Overview (High-Level)
-
-1. **Create PSD**
-2. **Generate Master Plan**
-3. **Plan Each Feature**
-4. **Turn Feature Plan → PR Plan**
-5. **Generate Implementation Substeps**
-6. **Implement Real Code**
-7. **Refactor When Needed**
-
-Each step is performed via a slash command in VS Code Copilot Chat.
-
----
-
-## 🛠 Available Commands
-
-These commands come from the files in `.github/prompts/`.
-
-### 1. `/psd` — Create Product Specification Document
-
-Creates a complete PSD from a high‑level idea.  
-Save the output into:
-
-```text
-docs/psd/<product>.psd.md
+pnpm typecheck && pnpm lint && pnpm test && pnpm build
 ```
 
 ---
 
-### 2. `/plan` — Generate Master Implementation Plan
+## 🤝 Contributing
 
-Uses your PSD to create the overall architecture + roadmap.  
-Save to:
-
-```text
-docs/plans/master_plan.md
-```
+This is currently a solo founder project. Contributions are not being accepted at this time, but feedback and suggestions are welcome via issues.
 
 ---
 
-### 3. `/plan_feature` — Create Feature‑Level Plans
+## 📄 License
 
-Run this for each major feature.  
-Save each feature plan under:
-
-```text
-docs/plans/<feature-name>/plan.md
-```
+Proprietary — All rights reserved.
 
 ---
 
-### 4. `/plan-refactored` — Convert Feature Plan → PR Plan
+## 🙏 Acknowledgments
 
-Creates a single‑PR development plan for implementing one feature.  
-Save under:
-
-```text
-plans/<feature-name>/plan.md
-plans/<feature-name>/README.md
-```
+- **PADI & SSI** — Diving certification standards
+- **Groq & Google** — LLM API providers
+- **Vercel** — Hosting platform
+- **Neon** — Managed PostgreSQL
 
 ---
 
-### 5. `/generate` — Generate Implementation Substep Documentation
+## 📧 Contact
 
-Given a PR plan, generates:
-
-```text
-plans/<feature-name>/<step>/
-  <step>.<substep>.md
-```
-
-Each file contains copy‑paste‑ready code instructions.
+**Project Owner:** Jeff Lee  
+**Repository:** [github.com/jefflyt/AI_DovvyBuddy04](https://github.com/jefflyt/AI_DovvyBuddy04)
 
 ---
 
-### 6. `/implement` — Write Real Code into `src/`
+**Ready to dive in?** 🤿
 
-Executes the PR plan step-by-step.  
-Creates or modifies code directly in your source tree.
-
-You should:
-
-- Review diffs
-- Run tests
-- Commit after each major step
-
----
-
-### 7. `/refactor` — Create a Refactor Plan
-
-Produces a refactor‑only plan for selected modules.  
-(Does NOT generate code; planning only.)
-
----
-
-### 8. `/search_docs` — Search Documentation
-
-Searches `docs/` and code for matching information.  
-Useful for consistency and reducing hallucination.
-
----
-
-## 🔁 Typical Workflow Example
-
-```text
-/psd "Build JeffOS MCP — AI‑driven productivity OS"
-
-/plan "Use PSD to create master plan"
-
-/plan_feature "Google Calendar Integration"
-
-/plan-refactored "Convert feature plan into PR plan"
-
-/generate "Generate implementation docs for Google Calendar feature"
-
-/implement "Implement the PR plan into src/"
-
-/refactor "Create a refactor plan for backend sync modules"
-```
-
-Follow the order. Do not skip steps.
-
----
-
-## ⚠️ Important Rules
-
-- **Always use Plan Mode**  
-  Agent mode breaks the workflow.
-
-- **Never mix planning and code**  
-  Plans live in `docs/` and `plans/`  
-  Code lives in `src/`
-
-- **One feature = one PR plan**
-
-- **Keep PSD + docs updated**  
-  Copilot accuracy depends heavily on documentation clarity.
-
----
-
-## 🏁 Final Notes
-
-This repository is optimized for:
-
-- high‑quality AI‑assisted engineering
-- predictable and repeatable output
-- minimal developer guesswork
-- maximum PM‑to‑AI translation clarity
-
-If you follow the workflow inside `AI_WORKFLOW.md`, you can reliably generate entire feature implementations with minimal manual coding work.
-
-Happy building 🚀
+Start with the [Product Specification](./docs/psd/DovvyBuddy-PSD-V6.2.md) to understand the vision, then check the [Technical Specification](./docs/technical/specification.md) for architecture details.

@@ -809,75 +809,38 @@ See section 4 "Risks & Mitigations" for detailed risks and mitigation strategies
 - **Benefit:** More reliable, less code to maintain, better DX
 - **Mitigation:** Pin SDK versions, monitor bundle size
 
-### Open Questions
+### LLM Provider Strategy
 
-**Q1: Should we implement conversation history trimming in PR3 or defer?**
+| Phase | Provider | Model | Use Case |
+|-------|----------|-------|----------|
+| **MVP (Dev)** | Groq | `llama-3.1-70b-versatile` | Development, testing, fast iteration |
+| **Production V1** | Gemini | `gemini-2.0-flash` | English-language production traffic |
+| **Production V2** | Gemini + SEA-LION | Gemini default, SEA-LION for non-English | Multilingual support for SEA audience |
 
-- **Context:** Long conversations could bloat JSONB column
-- **Options:**
-  - A) Implement trimming now (keep last 20 messages)
-  - B) Defer until data shows it's needed
-- **Recommendation:** Defer (Option B) — V1 unlikely to have conversations >50 messages; add if monitoring shows issue
-- **Decision criteria:** If average `conversation_history` size >10KB in first week, implement trimming
+**V2 Language Routing (Future):**
+- Detect input language (simple heuristic or library like `franc`)
+- If non-English detected → route to SEA-LION provider
+- Gemini remains default for English queries
 
-**Q2: Should we support streaming responses or batch-only?**
+### Design Decisions
 
-- **Context:** Streaming provides better UX (progressive display), but adds complexity
-- **Options:**
-  - A) Batch-only (wait for full response) — simpler
-  - B) Server-Sent Events (SSE) for streaming — better UX
-- **Recommendation:** Batch-only for PR3 — simpler to test, defer streaming to future PR after chat UI stable
-- **Impact on plan:** None for PR3; streaming can be added to orchestrator later without breaking changes
+| Topic | Decision | Rationale |
+|-------|----------|-----------|
+| **History Trimming** | Defer; hard cap at 100 messages | V1 unlikely to hit limits; add if needed based on monitoring |
+| **Response Streaming** | Batch-only (no streaming) | Simpler to test; streaming can be added later without breaking changes |
+| **Gemini Safety Blocks** | Detect and explain | Check `finishReason`, return: "I'm not able to discuss that topic as it may relate to medical or safety advice. Please consult a dive medical professional." |
+| **Session Expiry** | Passive (check on retrieval) | Simpler than cron job; add cleanup if DB grows >10K rows |
+| **Error Logging** | Session ID + last message only | Balances debuggability with privacy/storage concerns |
+| **Groq Default Model** | `llama-3.1-70b-versatile` | Good speed/quality balance; configurable via `GROQ_MODEL` env var |
+| **Session Debug Endpoint** | Exclude from V1 | Use direct DB queries for debugging; reconsider if partner shops need access |
 
-**Q3: How should we handle Gemini safety blocks?**
+### Future Enhancements (Post-V1)
 
-- **Context:** Gemini may refuse to generate response if content triggers safety filters
-- **Options:**
-  - A) Treat as error, return generic message
-  - B) Detect safety block, return specific message explaining why
-  - C) Retry with modified prompt
-- **Recommendation:** Option B — better UX, helps user understand limitation
-- **Implementation:** Check `finishReason` in Gemini response, if `SAFETY`, return: "I can't provide information on that topic. Please rephrase or contact a dive professional."
-
-**Q4: Should session expiry be passive (check on retrieval) or active (cron job)?**
-
-- **Context:** Expired sessions clutter database
-- **Options:**
-  - A) Passive: Check `expires_at` on `getSession()`, treat as non-existent
-  - B) Active: Scheduled job to delete expired sessions
-- **Recommendation:** Passive for PR3 — simpler, no infra needed; add cleanup job in future if DB size becomes issue
-- **Decision criteria:** If sessions table >10K rows with majority expired, add cleanup job
-
-**Q5: Should we log full conversation history in server logs?**
-
-- **Context:** Useful for debugging, but privacy/storage concerns
-- **Options:**
-  - A) Log full conversation on errors
-  - B) Log only last message on errors
-  - C) No conversation logging (session ID only)
-- **Recommendation:** Option B for PR3 — balance debuggability with storage/privacy
-- **Implementation:** On error, log session ID + last user message + error details
-
-**Q6: What model should Groq provider default to?**
-
-- **Context:** Groq offers multiple models with different speed/quality tradeoffs
-- **Options:**
-  - A) `llama-3.1-70b-versatile` (balanced)
-  - B) `mixtral-8x7b-32768` (fast, lower quality)
-  - C) `llama-3.1-405b-reasoning` (highest quality, slower)
-- **Recommendation:** Option A (`llama-3.1-70b-versatile`) — good balance for dev
-- **Configurable:** Add `GROQ_MODEL` env var (optional override)
-- **Decision criteria:** Test response quality; switch if output quality insufficient
-
-**Q7: Should we expose session retrieval endpoint (`GET /api/session/:id`) in V1?**
-
-- **Context:** Useful for debugging, but exposes session data
-- **Options:**
-  - A) Include for debugging, no auth (guest data only)
-  - B) Include with basic auth/admin token
-  - C) Exclude from V1, use direct DB queries for debugging
-- **Recommendation:** Option C — simplest, least surface area; V1 sessions are guest-only, low sensitivity
-- **Reconsider if:** Partner shops need to view session context for leads (future feature)
+- **Request ID tracking** for debugging production issues
+- **Circuit breaker pattern** to prevent API quota exhaustion during outages
+- **Token budget management** with history summarization for long conversations
+- **Provider fallback** (Groq → Gemini) for reliability
+- **SEA-LION provider (V2)** for non-English queries (language detection → route to SEA-LION)
 
 ---
 

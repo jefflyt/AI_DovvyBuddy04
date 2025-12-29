@@ -1,32 +1,42 @@
 # Project Management & Workflow Documentation
 
-This directory contains workflow guides, verification results, and project management documentation for DovvyBuddy.
+This directory contains workflow guides and development process documentation for DovvyBuddy.
+
+---
 
 ## Contents
 
 ### Workflow Guides
 
-- **`AI_WORKFLOW.md`** — Complete AI-driven development workflow using custom Copilot prompts
+- **[AI_WORKFLOW.md](./AI_WORKFLOW.md)** — Complete AI-driven development workflow using custom Copilot prompts
 - **`init_ai_workflow.sh`** — Shell script to initialize AI workflow setup
 
-### Verification & Testing
+### Process Documentation
 
-- **`VERIFICATION.md`** — PR0 verification checklist and procedures
-- **`PR0-VERIFICATION-RESULTS.md`** — Actual verification results from PR0 (Bootstrap)
+Documentation for development processes, release workflows, and team collaboration.
+
+---
 
 ## Quick Links
 
 - [AI Workflow Guide](./AI_WORKFLOW.md) — Learn how to use `/psd`, `/plan`, `/plan_feature`, `/generate`, etc.
-- [PR0 Verification](./PR0-VERIFICATION-RESULTS.md) — See how the bootstrap was verified
-- [Verification Checklist](./VERIFICATION.md) — Use this for verifying any PR
-
-## Related Documentation
-
-- **Plans:** `../plans/` — Master plan and PR-specific plans
-- **PSD:** `../psd/` — Product specification documents
-- **Decisions:** `../decisions/` — Architecture decision records (future)
-- **References:** `../references/` — External references and API docs (future)
+- [Verification Checklist](../plans/verification-checklist.md) — PR verification procedures
+- [PR0 Verification Results](../plans/PR0-VERIFICATION-RESULTS.md) — Bootstrap verification results
 
 ---
 
-**Last Updated:** December 23, 2025
+## Related Documentation
+
+- **Plans:** [../plans/](../plans/) — Master plan and PR-specific implementation plans
+- **Technical:** [../technical/](../technical/) — Technical specifications and architecture
+- **PSD:** [../psd/](../psd/) — Product specification documents
+- **Decisions:** [../decisions/](../decisions/) — Architecture decision records
+- **References:** [../references/](../references/) — External references and API docs
+
+---
+
+**Note:** Technical documentation (database setup, schema docs) has moved to `../technical/`. Verification checklists and PR results have moved to `../plans/` for better organization.
+
+---
+
+**Last Updated:** December 30, 2025

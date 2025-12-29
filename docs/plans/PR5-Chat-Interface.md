@@ -799,37 +799,23 @@ Not applicable (no schema changes).
 
 ---
 
-### Open Questions
+### Design Decisions
 
-**Q1: Should the bot proactively suggest lead capture, or wait for user to request?**
+| Topic | Decision | Rationale |
+|-------|----------|-----------|
+| Bot lead suggestion | Metadata hint + soft CTA | Bot returns `suggestLeadCapture: true` when appropriate; frontend shows gentle CTA ("Ready to get started? [Request Info]"). Non-intrusive, user-controlled. |
+| Two tabs same session | Accept for V1, last-write-wins | Edge case with low impact. Both tabs share session; race conditions possible but acceptable. WebSocket sync deferred to V2. |
+| Expired session handling | SESSION_EXPIRED code → clear localStorage → auto-start new | Backend returns 404/SESSION_EXPIRED; frontend clears sessionId, shows message ("Session expired. Starting new chat..."), auto-creates new session. |
+| Pre-fill lead form | Defer to V2 | No auto-fill in V1 (form is blank). Pre-filling from conversation context requires backend extraction logic—add in V2 if conversion needs improvement. |
+| Continue after lead | Allow, show confirmation in chat | User can submit lead and continue chatting (session remains active). Show inline confirmation: "Thanks! We'll be in touch soon. Feel free to keep asking questions." |
 
-- **Current Plan:** Bot includes metadata hint (`suggestLeadCapture: true`) when appropriate, frontend shows gentle CTA ("Ready to get started? [Request Info]").
-- **Impact on Plan:** If bot doesn't provide hints, frontend needs manual trigger buttons prominently displayed.
-- **Resolution:** Test both approaches in dev, choose based on UX feel. Document decision in PR description.
+### Future Enhancements (V2+)
 
-**Q2: What happens if a user opens two tabs with the same sessionId?**
-
-- **Current Plan:** Both tabs share the same session (conversation history syncs on each message send).
-- **Impact on Plan:** May cause race conditions (both tabs append to same history simultaneously).
-- **Mitigation:** Accept for V1 (edge case, low impact). Consider WebSocket sync in V2.
-
-**Q3: How should expired sessions be handled?**
-
-- **Current Plan:** Backend returns 404 or "Session expired" error, frontend clears sessionId and prompts user to start new chat.
-- **Impact on Plan:** Need clear error message in UI ("Your session has expired. Please start a new chat.").
-- **Resolution:** Implement in error handling logic (catch 404 from `/api/chat`, show specific message).
-
-**Q4: Should the lead form pre-fill data from conversation context?**
-
-- **Current Plan:** No auto-fill in V1 (form is blank, user enters manually).
-- **Impact on Plan:** If backend stores diver_profile in session (from conversation), frontend could pre-fill name/email if bot extracted them.
-- **Resolution:** Defer to V2 (requires additional backend logic to extract structured data from conversation).
-
-**Q5: What if the user submits a lead but then continues chatting?**
-
-- **Current Plan:** Lead is submitted, conversation continues (session remains active).
-- **Impact on Plan:** User may submit multiple leads in same session (acceptable, DB allows it).
-- **Resolution:** No changes needed. Optionally, show confirmation message in chat ("Thanks! We'll be in touch soon. Feel free to keep asking questions.").
+- **Progressive typing indicator:** Animated dots during response generation
+- **Session restore UX:** Prompt user to continue previous session on return visit
+- **Tab conflict detection:** Warn user if session is active in another tab
+- **Form pre-fill:** Extract name/email from conversation context for lead form
+- **Real-time streaming:** SSE/WebSocket for partial response display (reduces perceived latency)
 
 ---
 

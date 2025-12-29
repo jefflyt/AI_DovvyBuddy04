@@ -587,28 +587,24 @@ pnpm content:validate
    - **Trade-off:** Manual re-ingestion requires running script. Automated re-ingestion (on file change) adds complexity.
    - **Decision:** Manual for V1. Add file watching or CI-based ingestion if content update frequency increases.
 
-### Open Questions
+### Design Decisions
 
-**All questions resolved for V1:**
+| Topic | Decision | Rationale |
+|-------|----------|--------|
+| **Embedding Provider** | Gemini `text-embedding-004` | Proven, 1536 dimensions, good performance; use `@google/generative-ai` SDK |
+| **Chunk Size** | 500-800 tokens per chunk | Balance between context and relevance; preserve paragraph boundaries |
+| **Chunking Strategy** | Hybrid (semantic + paragraph split) | Try semantic split first (markdown headers), fall back to paragraph split if section >800 tokens |
+| **Metadata Storage** | Frontmatter + chunk index in JSONB | Flexible for filtering and debugging; parse with `gray-matter` |
+| **Content Scope (V1)** | Minimal viable content | 2 certification guides (PADI/SSI OW), 1 destination (Cozumel), 5-10 dive sites |
+| **Idempotency** | Check by `content_path` or hash | Skip already-ingested files; add `--force` flag for updates |
+| **Rate Limiting** | Sequential processing with retry | Exponential backoff, process files one at a time to avoid API limits |
 
-1. **Which Embedding Provider?**
-   - **Decision:** ✅ **Gemini `text-embedding-004`** — Proven, 1536 dimensions, good performance.
-   - **Impact on Plan:** Use `@google/generative-ai` SDK.
+### Future Enhancements
 
-2. **Chunk Size?**
-   - **Decision:** ✅ **500-800 tokens per chunk** — Balance between context and relevance.
-   - **Impact on Plan:** Implement token-based chunking with paragraph boundaries preserved.
-
-3. **Metadata Strategy?**
-   - **Decision:** ✅ **Store frontmatter + chunk index in JSONB** — Flexible for filtering and debugging.
-   - **Impact on Plan:** Parse frontmatter with `gray-matter`, include in metadata field.
-
-4. **Content Scope for V1?**
-   - **Decision:** ✅ **Minimal viable content:**
-     - 2 certification guides (PADI + SSI Open Water).
-     - 1 destination overview (Cozumel).
-     - 5-10 dive sites (Cozumel area).
-   - **Impact on Plan:** Reduces content creation time; allows testing with real use cases.
+- **Hybrid search** (keyword + vector) for improved relevance
+- **Automated re-ingestion** via file watching or CI pipeline
+- **Content management system** for non-technical contributors
+- **Multi-language support** for SEA region (Thai, Bahasa, Vietnamese)
 
 ---
 

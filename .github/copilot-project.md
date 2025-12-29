@@ -1,7 +1,7 @@
 # DovvyBuddy - Project Context for AI Assistants
 
-**Last Updated:** December 22, 2025  
-**Project Status:** PR0 Bootstrap Complete
+**Last Updated:** December 30, 2025  
+**Project Status:** PR0 Bootstrap Complete, PR1-8c Planned
 
 ---
 
@@ -26,7 +26,7 @@
 - **Package Manager:** pnpm
 - **Hosting:** Vercel
 - **Database:** Postgres with pgvector (Neon or Supabase planned)
-- **Testing:** Vitest (unit/integration), Playwright (e2e, deferred)
+- **Testing:** Vitest (unit/integration), Playwright (e2e smoke test in PR6)
 - **Linting/Formatting:** ESLint + Prettier
 
 ### Agent Service (Future PR)
@@ -37,9 +37,14 @@
 
 ### LLM Provider Strategy
 
-- **Dev Environment:** Groq API (fast inference)
-- **Production Target:** Google Gemini API
+| Phase | Provider | Model | Use Case |
+|-------|----------|-------|----------|
+| **MVP (Dev)** | Groq | `llama-3.1-70b-versatile` | Development, testing, fast iteration |
+| **Production V1** | Gemini | `gemini-2.0-flash` | English-language production traffic |
+| **Production V2** | Gemini + SEA-LION | Gemini default, SEA-LION for non-English | Multilingual support for SEA audience |
+
 - **Abstraction:** `ModelProvider` interface with env switch (`LLM_PROVIDER=groq|gemini`)
+- **V2 Language Routing:** Detect input language → route non-English to SEA-LION provider
 
 ---
 
@@ -59,6 +64,9 @@ AI_DovvyBuddy04/
 ├── docs/
 │   ├── psd/
 │   │   └── DovvyBuddy-PSD-V6.2.md  # Product Specification Document
+│   ├── technical/                # Technical specifications
+│   │   ├── README.md             # Technical docs index
+│   │   └── specification.md      # Technical Specification Document (TSD)
 │   ├── decisions/                # Architecture Decision Records (future)
 │   ├── plans/                    # PR/Epic plans (future)
 │   └── references/               # External references (future)
@@ -124,6 +132,26 @@ Defer dedicated vector DB (Pinecone, Weaviate) until scaling requires it.
 
 **Rationale:** Catch regressions early. No e2e in PR0; Playwright deferred to later PRs when UI is stable.
 
+### D-07: Pragmatic E2E Testing (PR6)
+
+**Rationale:** Solo founder resources require efficient testing strategy. Full E2E suite is expensive to maintain and flaky with LLM responses.
+
+- **V1 Approach:** Single smoke test (landing → chat → message → response → lead form)
+- **Assertions:** Test behavior (response appears), not content (response says X)
+- **Manual Checklist:** Covers content quality, edge cases, mobile testing
+- **CI Integration:** Non-blocking for V1; made blocking post-launch
+- **Deferred:** Comprehensive E2E suite, LLM response mocking
+
+### D-08: NextAuth.js for Authentication (V2)
+
+**Rationale:** Self-hosted authentication for full control, no external service dependencies, and data portability.
+
+- **Provider:** NextAuth.js with Credentials provider (email/password)
+- **Session Strategy:** JWT stored in HTTP-only cookie
+- **Email Verification:** Custom implementation using Resend API (already integrated)
+- **Migration Path:** Can migrate to Clerk later if OAuth complexity or scaling requires managed service
+- **Feature Flag:** `FEATURE_USER_AUTH_ENABLED` controls auth feature rollout
+
 ---
 
 ## Data Model (Planned - PR1)
@@ -165,13 +193,37 @@ id, content_path, chunk_text, embedding (vector), metadata (JSONB), created_at
 
 See `.env.example` for full list. Key vars:
 
+**Database & Session:**
+- `DATABASE_URL` — Postgres connection string
+- `SESSION_SECRET` — Random 32+ char string
+
+**LLM Provider (PR3):**
 - `LLM_PROVIDER` — `groq` or `gemini`
 - `GROQ_API_KEY` — Groq API key (dev)
 - `GEMINI_API_KEY` — Google Gemini API key (prod)
-- `DATABASE_URL` — Postgres connection string
-- `SESSION_SECRET` — Random 32+ char string
+
+**Embedding Provider (PR2):**
+- `EMBEDDING_PROVIDER` — `gemini` (default)
+
+**Lead Capture (PR4):**
+- `RESEND_API_KEY` — Resend API key for email delivery
+- `LEAD_EMAIL_TO` — Destination email for lead notifications
 - `LEAD_WEBHOOK_URL` — Optional webhook for lead delivery
+
+**Analytics & Monitoring (PR6):**
+- `NEXT_PUBLIC_ANALYTICS_PROVIDER` — `vercel` | `posthog` | `ga4` (default: `vercel`)
+- `NEXT_PUBLIC_POSTHOG_KEY` — Posthog API key (if using Posthog)
+- `NEXT_PUBLIC_GA_ID` — Google Analytics ID (if using GA4)
+- `SENTRY_DSN` — Sentry DSN for error monitoring
+- `SENTRY_AUTH_TOKEN` — Sentry auth token (CI only)
+
+**Feature Flags:**
 - `ENABLE_TELEGRAM` — Feature flag (V1.1)
+- `FEATURE_USER_AUTH_ENABLED` — Feature flag for V2 authentication (default: false)
+
+**Authentication (V2 - PR8):**
+- `NEXTAUTH_SECRET` — Random 32+ char string for JWT signing
+- `NEXTAUTH_URL` — Full URL of the app (e.g., `http://localhost:3000`)
 
 ---
 
@@ -232,25 +284,38 @@ See `.env.example` for full list. Key vars:
 
 🚧 **Next PRs:**
 
+**V1 Web (PR1-6):**
 - PR1: Database schema + migrations (Postgres + pgvector)
 - PR2: RAG pipeline (content → embedding → retrieval)
-- PR3: Model provider interface (Groq + Gemini)
-- PR4: Session management
-- PR5: Lead capture
-- PR6+: Chat logic, conversation orchestration
+- PR3: Model provider + session logic (Groq/Gemini abstraction, `/api/chat`)
+- PR4: Lead capture + delivery (Resend email integration)
+- PR5: Chat interface + integration (React components, session persistence)
+- PR6: Landing page, E2E smoke test, content review, launch preparation
+
+**V1.1 Telegram (PR7a-7c):**
+- PR7a: Agent Service Extraction to Cloud Run
+- PR7b: Telegram Bot Adapter (basic chat flow)
+- PR7c: Telegram Lead Capture & Production Hardening
+
+**V2 Auth & Profiles (PR8a-8c):**
+- PR8a: Auth Infrastructure (NextAuth.js, user/profile tables, backend APIs)
+- PR8b: Web UI Auth Integration (signin, signup, profile pages)
+- PR8c: Telegram Account Linking (cross-channel session sync)
+
+**PR Plans:** See `docs/plans/PR1-*.md` through `PR8c-*.md` for detailed specifications.
 
 ---
 
 ## Future Considerations
 
-### V1.1 (After Web Stabilizes)
+### V1.1 (After Web Stabilizes) - PR7a-7c
 
-- Telegram thin client (same agent service backend)
+- Telegram thin client (same agent service backend) — **Planned in PR7a-7c**
 - "Email me my plan" feature
 
-### V2
+### V2 (Auth & Profiles) - PR8a-8c
 
-- User profiles + authentication
+- User profiles + authentication — **Planned in PR8a-8c (NextAuth.js)**
 - Dive log storage
 - Enhanced personalization
 
@@ -268,6 +333,7 @@ See `.env.example` for full list. Key vars:
 ## Links
 
 - **PSD:** [docs/psd/DovvyBuddy-PSD-V6.2.md](../docs/psd/DovvyBuddy-PSD-V6.2.md)
+- **Technical Spec:** [docs/technical/specification.md](../docs/technical/specification.md)
 - **README:** [README.md](../../README.md)
 - **Workflow Prompts:** [.github/prompts/](.github/prompts/)
 
