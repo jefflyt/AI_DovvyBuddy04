@@ -320,6 +320,8 @@ Before starting PR1, confirm:
 
 **You are ready to proceed with PR1! 🚀**
 
+**Note:** Seed data uses Tioman Island, Malaysia (not Cozumel) as the initial destination.
+
 ---
 
 **End of Database Setup Guide**
