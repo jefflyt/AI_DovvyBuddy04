@@ -145,8 +145,8 @@ pnpm typecheck && pnpm lint && pnpm test && pnpm build
 ### V1 Web Application (PR1-PR6)
 
 - ✅ **PR0:** Bootstrap (Next.js + TypeScript setup)
-- 🚧 **PR1:** Database Schema (Postgres + pgvector + migrations)
-- 🚧 **PR2:** RAG Pipeline (content ingestion + retrieval)
+- ✅ **PR1:** Database Schema (Postgres + pgvector + migrations)
+- ✅ **PR2:** RAG Pipeline (content ingestion + retrieval)
 - 🚧 **PR3:** Model Provider + Session Logic (Groq/Gemini + chat API)
 - 🚧 **PR4:** Lead Capture + Delivery (Resend email integration)
 - 🚧 **PR5:** Chat Interface + Integration (React UI + session persistence)
