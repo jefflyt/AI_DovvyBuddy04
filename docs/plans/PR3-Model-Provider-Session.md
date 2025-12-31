@@ -833,6 +833,9 @@ See section 4 "Risks & Mitigations" for detailed risks and mitigation strategies
 | **Error Logging** | Session ID + last message only | Balances debuggability with privacy/storage concerns |
 | **Groq Default Model** | `llama-3.1-70b-versatile` | Good speed/quality balance; configurable via `GROQ_MODEL` env var |
 | **Session Debug Endpoint** | Exclude from V1 | Use direct DB queries for debugging; reconsider if partner shops need access |
+| **RAG Mock (Pre-PR2)** | Return static "No knowledge base available yet" message | Allows PR3 to proceed independently; realistic fallback behavior |
+| **System Prompt (V1)** | Minimal placeholder | Basic DovvyBuddy persona with safety guardrails; refine after PR5 based on testing |
+| **Conversation History** | Minimal format (role, content, timestamp only) | Keep simple for V1; add token counts, provider info, chunk IDs if needed later |
 
 ### Future Enhancements (Post-V1)
 

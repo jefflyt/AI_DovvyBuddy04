@@ -133,7 +133,7 @@ Enable the bot to semantically search curated documentation by building a conten
    - Write markdown files for:
      - PADI Open Water certification guide (~1500-2000 words).
      - SSI Open Water Diver certification guide (~1500-2000 words).
-     - 1 destination overview (e.g., "Cozumel, Mexico" ~800-1200 words).
+     - 1 destination overview (e.g., "Tioman Island, Malaysia" ~800-1200 words).
      - 5-10 dive site profiles (using the template provided, ~500-800 words each).
    - Include frontmatter with metadata (type, tags, keywords, last_updated).
 
@@ -236,12 +236,12 @@ Enable the bot to semantically search curated documentation by building a conten
 
 - `content/certifications/padi-open-water.md`
 - `content/certifications/ssi-open-water.md`
-- `content/destinations/cozumel-mexico.md`
-- `content/dive-sites/cozumel-palancar-reef.md`
-- `content/dive-sites/cozumel-santa-rosa-wall.md`
-- `content/dive-sites/cozumel-columbia-reef.md`
-- `content/dive-sites/cozumel-punta-sur.md`
-- `content/dive-sites/cozumel-devils-throat.md`
+- `content/destinations/Malaysia-Tioman/tioman-overview.md`
+- `content/destinations/Malaysia-Tioman/tioman-tiger-reef.md`
+- `content/destinations/Malaysia-Tioman/tioman-batu-malang.md`
+- `content/destinations/Malaysia-Tioman/tioman-pulau-chebeh.md`
+- `content/destinations/Malaysia-Tioman/tioman-pulau-labas.md`
+- `content/destinations/Malaysia-Tioman/tioman-renggis-island.md`
 - ... (5-10 total dive site files)
 
 **Database (`content_embeddings` table):**
@@ -595,9 +595,11 @@ pnpm content:validate
 | **Chunk Size** | 500-800 tokens per chunk | Balance between context and relevance; preserve paragraph boundaries |
 | **Chunking Strategy** | Hybrid (semantic + paragraph split) | Try semantic split first (markdown headers), fall back to paragraph split if section >800 tokens |
 | **Metadata Storage** | Frontmatter + chunk index in JSONB | Flexible for filtering and debugging; parse with `gray-matter` |
-| **Content Scope (V1)** | Minimal viable content | 2 certification guides (PADI/SSI OW), 1 destination (Cozumel), 5-10 dive sites |
+| **Content Scope (V1)** | Minimal viable content | Certification guides (PADI/SSI OW + comparison + placeholders for other agencies), 1 destination (Tioman Island, Malaysia), 5 dive sites |
 | **Idempotency** | Check by `content_path` or hash | Skip already-ingested files; add `--force` flag for updates |
 | **Rate Limiting** | Sequential processing with retry | Exponential backoff, process files one at a time to avoid API limits |
+| **Content Sources** | All reputable sources | Official agency sites (PADI, SSI), dive magazines, DAN, reputable dive operators |
+| **Scripts Location** | Project root `scripts/` folder | Keeps utility scripts separate from `src/` application code |
 
 ### Future Enhancements
 
@@ -636,8 +638,8 @@ level: "OW" | "AOW" | "Rescue" | "DM"
 **Dive Site-Specific:**
 
 ```
-site_id: "cozumel-palancar-reef"
-destination: "Cozumel, Mexico"
+site_id: "tioman-tiger-reef"
+destination: "Tioman Island, Malaysia"
 min_certification: "OW" | "AOW" | etc.
 difficulty: "beginner" | "intermediate" | "advanced"
 depth_range_m: [10, 30]
@@ -651,16 +653,23 @@ depth_range_m: [10, 30]
 content/
 ├── README.md                                    # Content authoring guide
 ├── certifications/
-│   ├── padi-open-water.md
-│   └── ssi-open-water.md
+│   ├── comparison.md                            # Existing comparison guide
+│   ├── padi/
+│   │   └── open-water.md
+│   ├── ssi/
+│   │   └── open-water.md
+│   ├── naui/
+│   │   └── _placeholder.md                      # Placeholder for future content
+│   └── sdi/
+│       └── _placeholder.md                      # Placeholder for future content
 ├── destinations/
-│   └── cozumel-mexico.md
-├── dive-sites/
-│   ├── cozumel-palancar-reef.md
-│   ├── cozumel-santa-rosa-wall.md
-│   ├── cozumel-columbia-reef.md
-│   ├── cozumel-punta-sur.md
-│   └── cozumel-devils-throat.md
+│   └── Malaysia-Tioman/
+│       ├── tioman-overview.md
+│       ├── tioman-tiger-reef.md
+│       ├── tioman-batu-malang.md
+│       ├── tioman-pulau-chebeh.md
+│       ├── tioman-pulau-labas.md
+│       └── tioman-renggis-island.md
 ├── faq/                                         # Exists in repo; content deferred to future PR
 │   └── (future FAQ content)
 └── safety/
