@@ -1,0 +1,1 @@
+ALTER TABLE "content_embeddings" ALTER COLUMN "embedding" SET DATA TYPE vector(768);

@@ -1,0 +1,16 @@
+{
+  "dive_site_id": "tioman_batu_malang",
+  "destination_id": "tioman_island",
+  "site_name": "Batu Malang",
+  "min_cert_level_code": "OW",
+  "difficulty_rating_1_5": 2,
+  "tags": [
+    "rock_formation", 
+    "coral", 
+    "swim_through", 
+    "table_coral", 
+    "beginner_friendly", 
+    "current_variable", 
+    "macro", 
+    "hard_coral"]
+}
