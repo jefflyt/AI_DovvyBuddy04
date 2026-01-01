@@ -32,6 +32,14 @@ Use **Next.js 14 with App Router** as the web framework, deployed on **Vercel**.
 
 ---
 
+### Explicit Constraints (V1 Scope)
+
+- **No WebSocket or bi-directional streaming** in V1.
+- Chat interactions use **standard HTTP request/response** via Next.js API routes.
+- Optional enhancement: **Server-Sent Events (SSE)** may be evaluated post-V1 for one-way token streaming if UX demands it.
+
+---
+
 ## Consequences
 
 ### Positive

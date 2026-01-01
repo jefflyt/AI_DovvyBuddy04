@@ -13,15 +13,39 @@ This directory contains workflow guides and development process documentation fo
 
 ### Process Documentation
 
-Documentation for development processes, release workflows, and team collaboration.
+- **[verification-checklist.md](./verification-checklist.md)** — PR0 verification procedures and setup guide
+- **[PR2-PR3-INTEGRATION.md](./PR2-PR3-INTEGRATION.md)** — Integration summary for RAG pipeline and chat orchestrator
+
+### Completed PRs
+
+- ✅ **PR0:** Bootstrap & Verification
+- ✅ **PR1:** Database Schema (Postgres + pgvector)
+- ✅ **PR2:** RAG Pipeline (Chunking, embeddings, vector search)
+- ✅ **PR3:** Model Provider & Session Logic
+- ✅ **PR3.1:** Google ADK Multi-Agent RAG Integration
+
+### In Progress
+
+- 🚧 **PR3.2:** Python-First Backend Migration (Planning phase)
+
+### Upcoming PRs
+
+- **PR4:** Lead Capture
+- **PR5:** Chat Interface
+- **PR6:** Landing Polish
+- **PR7a-c:** Telegram Bot Integration
+- **PR8:** User Auth & Profiles
+- **PR9:** Production Launch Readiness
+- **PR10:** Post-Launch Iteration
 
 ---
 
 ## Quick Links
 
 - [AI Workflow Guide](./AI_WORKFLOW.md) — Learn how to use `/psd`, `/plan`, `/plan_feature`, `/generate`, etc.
-- [Verification Checklist](../plans/verification-checklist.md) — PR verification procedures
-- [PR0 Verification Results](../plans/PR0-VERIFICATION-RESULTS.md) — Bootstrap verification results
+- [Verification Checklist](./verification-checklist.md) — PR verification procedures
+- [PR2-PR3 Integration](./PR2-PR3-INTEGRATION.md) — RAG and orchestrator integration summary
+- [PR2-PR3 Performance Analysis](./PR2-PR3-PERFORMANCE-ANALYSIS.md) — Benchmarking results and recommendations
 
 ---
 
@@ -35,8 +59,8 @@ Documentation for development processes, release workflows, and team collaborati
 
 ---
 
-**Note:** Technical documentation (database setup, schema docs) has moved to `../technical/`. Verification checklists and PR results have moved to `../plans/` for better organization.
+**Note:** This directory now contains all verification checklists, integration summaries, and performance analyses. Implementation plans (PR0-PR10) remain in `../plans/`.
 
 ---
 
-**Last Updated:** December 30, 2025
+**Last Updated:** January 1, 2026

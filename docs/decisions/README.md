@@ -73,6 +73,9 @@ Create an ADR when making decisions about:
 | [0001](./0001-nextjs-vercel.md) | Use Next.js + Vercel for Web App | Accepted | 2025-12-20 |
 | [0002](./0002-postgres-pgvector.md) | Use PostgreSQL + pgvector for Database | Accepted | 2025-12-20 |
 | [0003](./0003-groq-gemini-strategy.md) | LLM Provider Strategy (Groq/Gemini/SEA-LION) | Accepted | 2025-12-30 |
+| [0004](./0004-google-adk-multi-agent.md) | Google ADK Multi-Agent Architecture | Accepted | 2026-01-01 |
+| [0005](./0005-gemini-flash-standardization.md) | Gemini 2.0 Flash Model Standardization | Accepted | 2026-01-01 |
+| [0006](./0006-python-backend-migration.md) | Python-First Backend Migration Strategy | Accepted | 2026-01-01 |
 
 ---
 
@@ -92,4 +95,4 @@ Create an ADR when making decisions about:
 
 ---
 
-**Last Updated:** December 30, 2025
+**Last Updated:** January 1, 2026

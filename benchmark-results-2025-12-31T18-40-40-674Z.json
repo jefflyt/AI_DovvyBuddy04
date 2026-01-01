@@ -1,0 +1,297 @@
+{
+  "withRAG": [
+    {
+      "query": "What is PADI Open Water certification?",
+      "category": "certification",
+      "ragEnabled": true,
+      "retrieval": {
+        "durationMs": 415,
+        "chunksFound": 5,
+        "avgSimilarity": 0.8185534027928167,
+        "minSimilarity": 0.7592210982020431,
+        "maxSimilarity": 0.8684768163019355
+      },
+      "orchestration": {
+        "durationMs": 1320,
+        "tokensUsed": 1832,
+        "contextChunks": 5,
+        "responseLength": 1391
+      }
+    },
+    {
+      "query": "What are the prerequisites for SSI Open Water?",
+      "category": "certification",
+      "ragEnabled": true,
+      "retrieval": {
+        "durationMs": 204,
+        "chunksFound": 5,
+        "avgSimilarity": 0.7733702217458156,
+        "minSimilarity": 0.7500678751545913,
+        "maxSimilarity": 0.8122613603148637
+      },
+      "orchestration": {
+        "durationMs": 1423,
+        "tokensUsed": 1784,
+        "contextChunks": 5,
+        "responseLength": 1023
+      }
+    },
+    {
+      "query": "How long does it take to get certified?",
+      "category": "certification",
+      "ragEnabled": true,
+      "retrieval": {
+        "durationMs": 183,
+        "chunksFound": 0,
+        "avgSimilarity": 0,
+        "minSimilarity": 0,
+        "maxSimilarity": 0
+      },
+      "orchestration": {
+        "durationMs": 1317,
+        "tokensUsed": 1562,
+        "contextChunks": 1,
+        "responseLength": 1561
+      }
+    },
+    {
+      "query": "Where should I dive in Tioman?",
+      "category": "dive-site",
+      "ragEnabled": true,
+      "retrieval": {
+        "durationMs": 209,
+        "chunksFound": 5,
+        "avgSimilarity": 0.8003310597793611,
+        "minSimilarity": 0.7720777607321369,
+        "maxSimilarity": 0.8503696007189059
+      },
+      "orchestration": {
+        "durationMs": 1301,
+        "tokensUsed": 1875,
+        "contextChunks": 5,
+        "responseLength": 1262
+      }
+    },
+    {
+      "query": "What marine life can I see at Tiger Reef?",
+      "category": "dive-site",
+      "ragEnabled": true,
+      "retrieval": {
+        "durationMs": 236,
+        "chunksFound": 0,
+        "avgSimilarity": 0,
+        "minSimilarity": 0,
+        "maxSimilarity": 0
+      },
+      "orchestration": {
+        "durationMs": 1609,
+        "tokensUsed": 2279,
+        "contextChunks": 5,
+        "responseLength": 1454
+      }
+    },
+    {
+      "query": "What is the depth at Batu Malang?",
+      "category": "dive-site",
+      "ragEnabled": true,
+      "retrieval": {
+        "durationMs": 225,
+        "chunksFound": 1,
+        "avgSimilarity": 0.7260732304827688,
+        "minSimilarity": 0.7260732304827688,
+        "maxSimilarity": 0.7260732304827688
+      },
+      "orchestration": {
+        "durationMs": 11146,
+        "tokensUsed": 2297,
+        "contextChunks": 5,
+        "responseLength": 695
+      }
+    },
+    {
+      "query": "Best dive sites for beginners in Malaysia?",
+      "category": "trip-planning",
+      "ragEnabled": true,
+      "retrieval": {
+        "durationMs": 298,
+        "chunksFound": 4,
+        "avgSimilarity": 0.726125986420729,
+        "minSimilarity": 0.7104489072638179,
+        "maxSimilarity": 0.7618332219087605
+      },
+      "orchestration": {
+        "durationMs": 9015,
+        "tokensUsed": 2208,
+        "contextChunks": 5,
+        "responseLength": 2122
+      }
+    },
+    {
+      "query": "When is the best time to dive in Tioman?",
+      "category": "trip-planning",
+      "ragEnabled": true,
+      "retrieval": {
+        "durationMs": 211,
+        "chunksFound": 5,
+        "avgSimilarity": 0.7972118914591106,
+        "minSimilarity": 0.7458329375404994,
+        "maxSimilarity": 0.8819209727702261
+      },
+      "orchestration": {
+        "durationMs": 10527,
+        "tokensUsed": 2279,
+        "contextChunks": 5,
+        "responseLength": 1553
+      }
+    },
+    {
+      "query": "What should I do if I run out of air?",
+      "category": "safety",
+      "ragEnabled": true,
+      "retrieval": {
+        "durationMs": 217,
+        "chunksFound": 2,
+        "avgSimilarity": 0.7310168384911183,
+        "minSimilarity": 0.7225926226378292,
+        "maxSimilarity": 0.7394410543444074
+      },
+      "orchestration": {
+        "durationMs": 6341,
+        "tokensUsed": 1467,
+        "contextChunks": 5,
+        "responseLength": 984
+      }
+    },
+    {
+      "query": "How do I equalize my ears underwater?",
+      "category": "safety",
+      "ragEnabled": true,
+      "retrieval": {
+        "durationMs": 204,
+        "chunksFound": 5,
+        "avgSimilarity": 0.7483899259839246,
+        "minSimilarity": 0.7242263457230119,
+        "maxSimilarity": 0.8056174541932548
+      },
+      "orchestration": {
+        "durationMs": 6659,
+        "tokensUsed": 1556,
+        "contextChunks": 5,
+        "responseLength": 1369
+      }
+    }
+  ],
+  "withoutRAG": [
+    {
+      "query": "What is PADI Open Water certification?",
+      "category": "certification",
+      "ragEnabled": false,
+      "orchestration": {
+        "durationMs": 1518,
+        "tokensUsed": 1365,
+        "contextChunks": 0,
+        "responseLength": 1679
+      }
+    },
+    {
+      "query": "What are the prerequisites for SSI Open Water?",
+      "category": "certification",
+      "ragEnabled": false,
+      "orchestration": {
+        "durationMs": 1238,
+        "tokensUsed": 1359,
+        "contextChunks": 0,
+        "responseLength": 1556
+      }
+    },
+    {
+      "query": "How long does it take to get certified?",
+      "category": "certification",
+      "ragEnabled": false,
+      "orchestration": {
+        "durationMs": 1344,
+        "tokensUsed": 1437,
+        "contextChunks": 0,
+        "responseLength": 1893
+      }
+    },
+    {
+      "query": "Where should I dive in Tioman?",
+      "category": "dive-site",
+      "ragEnabled": false,
+      "orchestration": {
+        "durationMs": 3956,
+        "tokensUsed": 1414,
+        "contextChunks": 0,
+        "responseLength": 1290
+      }
+    },
+    {
+      "query": "What marine life can I see at Tiger Reef?",
+      "category": "dive-site",
+      "ragEnabled": false,
+      "orchestration": {
+        "durationMs": 2466,
+        "tokensUsed": 1533,
+        "contextChunks": 0,
+        "responseLength": 1719
+      }
+    },
+    {
+      "query": "What is the depth at Batu Malang?",
+      "category": "dive-site",
+      "ragEnabled": false,
+      "orchestration": {
+        "durationMs": 4054,
+        "tokensUsed": 908,
+        "contextChunks": 0,
+        "responseLength": 878
+      }
+    },
+    {
+      "query": "Best dive sites for beginners in Malaysia?",
+      "category": "trip-planning",
+      "ragEnabled": false,
+      "orchestration": {
+        "durationMs": 8358,
+        "tokensUsed": 1690,
+        "contextChunks": 0,
+        "responseLength": 2466
+      }
+    },
+    {
+      "query": "When is the best time to dive in Tioman?",
+      "category": "trip-planning",
+      "ragEnabled": false,
+      "orchestration": {
+        "durationMs": 7594,
+        "tokensUsed": 1509,
+        "contextChunks": 0,
+        "responseLength": 1768
+      }
+    },
+    {
+      "query": "What should I do if I run out of air?",
+      "category": "safety",
+      "ragEnabled": false,
+      "orchestration": {
+        "durationMs": 4516,
+        "tokensUsed": 1004,
+        "contextChunks": 0,
+        "responseLength": 1349
+      }
+    },
+    {
+      "query": "How do I equalize my ears underwater?",
+      "category": "safety",
+      "ragEnabled": false,
+      "orchestration": {
+        "durationMs": 5718,
+        "tokensUsed": 1155,
+        "contextChunks": 0,
+        "responseLength": 1926
+      }
+    }
+  ],
+  "timestamp": "2025-12-31T18:40:40.676Z"
+}

@@ -36,6 +36,10 @@ vi.mock('@/lib/prompts', () => ({
   BASE_SYSTEM_PROMPT: 'Base system prompt',
 }));
 
+vi.mock('@/lib/rag', () => ({
+  retrieveRelevantChunks: vi.fn().mockResolvedValue([]),
+}));
+
 import { createModelProvider } from '@/lib/model-provider';
 import { createSession, getSession, updateSessionHistory } from '@/lib/session';
 import { detectPromptMode } from '@/lib/prompts';

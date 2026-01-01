@@ -73,11 +73,15 @@ AI_DovvyBuddy04/
 ├── src/
 │   ├── app/                      # Next.js App Router pages
 │   ├── components/               # React components (future)
-│   ├── lib/                      # Core services (future)
-│   │   ├── model-provider/       # LLM abstraction (PR3)
-│   │   ├── rag/                  # RAG pipeline (PR2)
-│   │   └── session/              # Session management (PR3)
-│   ├── db/                       # Database schema & migrations (PR1)
+│   ├── lib/                      # Core services
+│   │   ├── agent/                # ADK multi-agent system (PR3.1) ✅
+│   │   ├── orchestration/        # Chat orchestration (PR3, PR3.1) ✅
+│   │   ├── model-provider/       # LLM abstraction (PR3) ✅
+│   │   ├── embeddings/           # Embedding providers (PR2) ✅
+│   │   ├── rag/                  # RAG pipeline (PR2) ✅
+│   │   ├── session/              # Session management (PR3) ✅
+│   │   └── prompts/              # System prompts (PR3) ✅
+│   ├── db/                       # Database schema & migrations (PR1) ✅
 │   └── types/                    # TypeScript type definitions
 │
 ├── content/                      # Curated diving content for RAG (PR2)
@@ -147,10 +151,12 @@ pnpm typecheck && pnpm lint && pnpm test && pnpm build
 - ✅ **PR0:** Bootstrap (Next.js + TypeScript setup)
 - ✅ **PR1:** Database Schema (Postgres + pgvector + migrations)
 - ✅ **PR2:** RAG Pipeline (content ingestion + retrieval)
-- 🚧 **PR3:** Model Provider + Session Logic (Groq/Gemini + chat API)
-- 🚧 **PR4:** Lead Capture + Delivery (Resend email integration)
-- 🚧 **PR5:** Chat Interface + Integration (React UI + session persistence)
-- 🚧 **PR6:** Landing Page + Polish (E2E tests + launch prep)
+- ✅ **PR3:** Model Provider + Session Logic (Groq/Gemini + chat API)
+- ✅ **PR3.1:** Google ADK Multi-Agent RAG (specialized agents with tool use)
+- 🚧 **PR3.2:** Python-First Backend Migration (FastAPI + SQLAlchemy + async)
+- 🔮 **PR4:** Lead Capture + Delivery (Resend email integration)
+- 🔮 **PR5:** Chat Interface + Integration (React UI + session persistence)
+- 🔮 **PR6:** Landing Page + Polish (E2E tests + launch prep)
 
 ### V1.1 Telegram Bot (PR7a-7c)
 

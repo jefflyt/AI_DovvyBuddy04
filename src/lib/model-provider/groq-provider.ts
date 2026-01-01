@@ -17,7 +17,7 @@ export class GroqProvider extends BaseModelProvider {
   constructor(options: ModelProviderOptions) {
     // Default config for Groq
     const defaultConfig: ModelConfig = {
-      model: options.defaultConfig?.model || 'llama-3.1-70b-versatile',
+      model: options.defaultConfig?.model || 'llama-3.3-70b-versatile',
       temperature: options.defaultConfig?.temperature ?? 0.7,
       maxTokens: options.defaultConfig?.maxTokens || 2048,
       topP: options.defaultConfig?.topP ?? 1,
@@ -28,6 +28,7 @@ export class GroqProvider extends BaseModelProvider {
     this.apiKey = options.apiKey;
     this.client = new Groq({
       apiKey: this.apiKey,
+      dangerouslyAllowBrowser: true, // Allow running in test environments (Vitest)
     });
   }
 

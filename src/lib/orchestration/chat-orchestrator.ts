@@ -1,9 +1,11 @@
 /**
  * Chat Orchestrator
  * Main conversation flow: session management → RAG retrieval → prompt building → LLM call
+ * Routes to ADK multi-agent orchestrator when enabled, otherwise uses legacy provider
  */
 
 import pino from 'pino';
+import { orchestrateChat as orchestrateChatAdk } from './chat-orchestrator-adk';
 import { createModelProvider } from '@/lib/model-provider';
 import type { ModelMessage } from '@/lib/model-provider';
 import {
@@ -19,25 +21,65 @@ import {
   detectPromptMode,
   BASE_SYSTEM_PROMPT,
 } from '@/lib/prompts';
+import { retrieveRelevantChunks, type RetrievalOptions } from '@/lib/rag';
+import type { RetrievalResult as RagRetrievalResult } from '@/lib/rag/types';
 import type { ChatRequest, ChatResponse, RetrievalResult } from './types';
 
 const logger = pino({ name: 'chat-orchestrator' });
 
 /**
- * Mock RAG retrieval function
- * TODO: Replace with real RAG integration when PR2 is complete
+ * RAG retrieval function with feature flag support
+ * Integrates PR2 vector search with orchestration layer
  * @param query - User's message to retrieve context for
- * @returns Mock retrieval result
+ * @returns Retrieval result with matched chunks
  */
-async function mockRetrieveContext(query: string): Promise<RetrievalResult> {
-  // Simulate async retrieval
-  await new Promise((resolve) => setTimeout(resolve, 10));
+async function retrieveContext(query: string): Promise<RetrievalResult> {
+  // Check if RAG is enabled via environment variable
+  const ragEnabled = process.env.ENABLE_RAG === 'true';
 
-  logger.debug({ query, msg: 'Using mock RAG retrieval (PR2 not yet integrated)' });
+  if (!ragEnabled) {
+    logger.debug({ query, msg: 'RAG disabled via ENABLE_RAG flag, using empty context' });
+    return { chunks: [] };
+  }
 
-  return {
-    chunks: [],
-  };
+  try {
+    // Call PR2 retrieval with default options
+    const options: RetrievalOptions = {
+      topK: 5,
+      minSimilarity: 0.5, // Lowered from 0.7 to improve content coverage
+    };
+
+    const ragResults: RagRetrievalResult[] = await retrieveRelevantChunks(query, options);
+
+    logger.debug({
+      query,
+      resultsCount: ragResults.length,
+      msg: 'RAG retrieval completed',
+    });
+
+    // Map RAG results to orchestration RetrievalResult format
+    return {
+      chunks: ragResults.map((result) => ({
+        text: result.text,
+        metadata: {
+          source: result.metadata.contentPath,
+          title: result.metadata.contentPath.split('/').pop()?.replace('.md', ''),
+          similarity: result.similarity,
+          chunkId: result.chunkId,
+          ...result.metadata,
+        },
+      })),
+    };
+  } catch (error) {
+    logger.error({
+      query,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      msg: 'RAG retrieval failed, falling back to empty context',
+    });
+
+    // Graceful degradation: return empty context on error
+    return { chunks: [] };
+  }
 }
 
 /**
@@ -97,11 +139,29 @@ function convertToModelMessages(sessionHistory: SessionMessage[]): ModelMessage[
 /**
  * Main chat orchestration function
  * Handles the complete flow: session → retrieval → prompt → LLM → history update
+ * Routes to ADK multi-agent system when enabled
  *
  * @param request - Chat request with optional session ID and user message
  * @returns Chat response with session ID and assistant message
  */
 export async function orchestrateChat(request: ChatRequest): Promise<ChatResponse> {
+  // Check if ADK is enabled
+  const adkEnabled = process.env.ENABLE_ADK === 'true';
+
+  if (adkEnabled) {
+    logger.info({ msg: 'Routing to ADK multi-agent orchestrator' });
+    try {
+      return await orchestrateChatAdk(request);
+    } catch (error) {
+      logger.error({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        msg: 'ADK orchestration failed, falling back to legacy provider',
+      });
+      // Fall through to legacy implementation
+    }
+  }
+
+  // Legacy single-provider implementation
   const startTime = Date.now();
 
   try {
@@ -145,7 +205,7 @@ export async function orchestrateChat(request: ChatRequest): Promise<ChatRespons
     }
 
     // Step 3: Retrieve relevant context (RAG)
-    const retrievalResult = await mockRetrieveContext(request.message);
+    const retrievalResult = await retrieveContext(request.message);
     const contextString = buildContextString(retrievalResult);
 
     logger.debug({

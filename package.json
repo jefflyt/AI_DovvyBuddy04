@@ -23,9 +23,12 @@
     "db:verify": "tsx --env-file=.env.local src/db/verify.ts",
     "content:validate": "tsx --env-file=.env.local scripts/validate-content.ts",
     "content:ingest": "tsx --env-file=.env.local scripts/ingest-content.ts",
-    "content:clear": "tsx --env-file=.env.local scripts/clear-embeddings.ts"
+    "content:clear": "tsx --env-file=.env.local scripts/clear-embeddings.ts",
+    "benchmark:rag": "tsx --env-file=.env.local scripts/benchmark-rag.ts"
   },
   "dependencies": {
+    "@genkit-ai/ai": "^0.5.0",
+    "@genkit-ai/googleai": "^0.5.0",
     "@google/generative-ai": "^0.21.0",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.1",
@@ -60,7 +63,7 @@
     "vitest": "^1.6.0"
   },
   "engines": {
-    "node": ">=18.17.0",
+    "node": ">=20.12.7",
     "pnpm": ">=8.0.0"
   },
   "packageManager": "pnpm@8.15.0"

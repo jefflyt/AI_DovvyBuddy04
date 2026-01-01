@@ -16,6 +16,10 @@ export interface ChatResponse {
     contextChunks?: number;
     model?: string;
     promptMode?: string;
+    agentsUsed?: string[];
+    toolCalls?: Array<{ agent: string; tool: string; duration: number }>;
+    queryType?: string;
+    totalDuration?: number;
   };
 }
 
@@ -28,4 +32,15 @@ export interface RetrievalResult {
       [key: string]: unknown;
     };
   }>;
+}
+
+export interface AgentGraphResult {
+  response: string;
+  agentsUsed: string[];
+  toolCalls: Array<{ agent: string; tool: string; duration: number }>;
+  metadata: {
+    totalDuration: number;
+    tokensUsed: number;
+    queryType: string;
+  };
 }

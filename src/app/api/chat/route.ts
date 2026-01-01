@@ -3,6 +3,9 @@
  * Main chat endpoint for user-bot conversations
  */
 
+// Force Node.js runtime (required for ADK TypeScript compatibility)
+export const runtime = 'nodejs';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import pino from 'pino';
@@ -94,6 +97,8 @@ export async function POST(request: NextRequest) {
       sessionId: response.sessionId,
       durationMs: duration,
       tokensUsed: response.metadata?.tokensUsed,
+      agentsUsed: response.metadata?.agentsUsed,
+      queryType: response.metadata?.queryType,
       msg: 'Chat request successful',
     });
 
@@ -109,6 +114,30 @@ export async function POST(request: NextRequest) {
     // Determine error type and return appropriate response
     if (error instanceof Error) {
       const errorMessage = error.message.toLowerCase();
+
+      // ADK-specific errors
+      if (errorMessage.includes('adk not initialized')) {
+        return NextResponse.json(
+          {
+            error: 'AI service temporarily unavailable. Please try again in a moment.',
+            code: 'ADK_UNAVAILABLE',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+          },
+          { status: 503 }
+        );
+      }
+
+      // Agent timeout errors
+      if (errorMessage.includes('timeout')) {
+        return NextResponse.json(
+          {
+            error: 'Request took too long. Please try a simpler question.',
+            code: 'TIMEOUT',
+            details: process.env.NODE_ENV === 'development' ? error.message : undefined,
+          },
+          { status: 503 }
+        );
+      }
 
       // Validation errors (from orchestrator)
       if (

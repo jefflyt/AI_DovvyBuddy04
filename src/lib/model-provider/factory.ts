@@ -50,7 +50,7 @@ export function createModelProvider(providerType?: ModelProviderType): BaseModel
       groqInstance = new GroqProvider({
         apiKey: process.env.GROQ_API_KEY,
         defaultConfig: {
-          model: process.env.GROQ_MODEL || 'llama-3.1-70b-versatile',
+          model: process.env.GROQ_MODEL || 'llama-3.3-70b-versatile',
           temperature: process.env.LLM_TEMPERATURE
             ? parseFloat(process.env.LLM_TEMPERATURE)
             : 0.7,

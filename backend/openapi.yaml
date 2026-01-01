@@ -1,0 +1,40 @@
+openapi: 3.0.3
+info:
+  title: DovvyBuddy Backend API
+  version: 0.1.0
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+  /api/chat:
+    post:
+      summary: Placeholder chat endpoint
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Chat reply
+  /api/sessions:
+    get:
+      summary: List sessions (placeholder)
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Create session (placeholder)
+      responses:
+        '200':
+          description: Created
+  /api/leads:
+    post:
+      summary: Create lead (placeholder)
+      responses:
+        '200':
+          description: Created

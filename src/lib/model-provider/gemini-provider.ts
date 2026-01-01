@@ -17,8 +17,9 @@ export class GeminiProvider extends BaseModelProvider {
 
   constructor(options: ModelProviderOptions) {
     // Default config for Gemini
+    // NOTE: Always use gemini-2.0-flash for all Gemini LLM calls (not pro versions)
     const defaultConfig: ModelConfig = {
-      model: options.defaultConfig?.model || 'gemini-2.0-flash-exp',
+      model: options.defaultConfig?.model || 'gemini-2.0-flash',
       temperature: options.defaultConfig?.temperature ?? 0.7,
       maxTokens: options.defaultConfig?.maxTokens || 2048,
       topP: options.defaultConfig?.topP ?? 0.95,
