@@ -3,11 +3,11 @@ doc_type: "dive_site"
 site_id: "tioman-batu-malang"
 title: "Batu Malang (Malang Rock)"
 destination: "Tioman Island, Malaysia"
-min_certification: "AOW"
-difficulty: "advanced"
-depth_range_m: [18, 35]
-tags: ["pinnacle", "deep", "pelagic", "sharks", "schooling fish", "advanced"]
-keywords: ["Batu Malang", "Malang Rock", "Tioman", "deep dive", "sharks", "barracuda", "eagle rays"]
+min_certification: "OW"
+difficulty: "beginner"
+depth_range_m: [5, 14]
+tags: ["shallow", "boulder", "swim-throughs", "hard-coral", "macro", "beginner-friendly", "photography"]
+keywords: ["Batu Malang", "Malang Rock", "Tioman", "Pulau Tulai", "boulder formation", "swim-throughs", "table coral", "macro", "shallow dive"]
 last_updated: "2026-01-01"
 data_quality: "compiled"
 sources:
@@ -42,7 +42,7 @@ Batu Malang (meaning "Unlucky Rock" in Malay) is a submerged boulder formation l
 ## 3. Underwater Topography
 
 - **Reef type:** Granite boulder pile with extensive hard coral coverage and sandy patches.
-- **Depth contour:** Shallow profile ranging from surface (0 m) to the seabed at approximately 14m.
+- **Depth contour:** Shallow profile ranging from ~5 m to ~14 m.
 - **Specific features:**
   - **Boulder Stack:** Massive granite boulders resting on one another create the site's core structure.
   - **Swim-throughs:** Multiple passages beneath and between boulders; mostly short, wide, and well-lit.

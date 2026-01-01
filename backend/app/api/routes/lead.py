@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 router = APIRouter()
 
+
 @router.post("/leads")
 async def create_lead(payload: dict):
     # Placeholder: would use LeadRepository to persist

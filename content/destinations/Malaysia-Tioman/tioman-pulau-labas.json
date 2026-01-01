@@ -1,9 +1,13 @@
 {
-  "dive_site_id": "tionman_labas_island",
+  "dive_site_id": "tioman_pulau_labas",
   "destination_id": "tioman_island",
   "site_name": "Pulau Labas",
   "min_cert_level_code": "AOW",
   "difficulty_rating_1_5": 3,
+  "depth_min_m": 10,
+  "depth_max_m": 24,
+  "depth_range_m": [10, 24],
+  "last_updated": "2026-01-01",
   "tags": [
     "rock_formations",
     "swim_throughs",

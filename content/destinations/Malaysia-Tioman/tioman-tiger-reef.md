@@ -57,7 +57,7 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
 - **Entry method:** Boat entry with negative descent along anchor line or reference point to the top of the pinnacle.
 - **Route:** Divers typically descend to the pinnacle top (9–12 m) and systematically work through and around the boulder complex. Drift nature means natural downstream movement; experienced divers use canyons and shelter to navigate current. Many dives loop around the main structures before shallowing to 15–18 m for upper sections and safety stop.
 - **Typical depth range:** 12–20 m working depth, with excursions to 22–25 m if conditions and certification allow.
-- **Max recommended depth:** 25 m (experienced divers may extend to 28 m if overqualified).
+- **Max recommended depth:** 25 m.
 - **Style:** Controlled drift with optional stationary periods. Current dictates navigation; divers move with it or use boulder shelter to hold position.
 - **Duration:** 40–50 minutes bottom time typical; safety stop at 5 m for 3–5 minutes.
 - **Turnaround:** Divers typically turn around based on air consumption or when current or depth becomes challenging; ascent is staggered through the upper 18 m zone before shallowing for safety stop.
@@ -129,6 +129,7 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
 - **Beginner notes:**
   - Beginners with fewer than 20 dives may struggle with current handling and site orientation. Site is generally not recommended for freshly certified Open Water divers.
   - However, on calm or weak-current days, intermediate beginners (15–25 dives) with good buoyancy and a guide may complete the dive successfully.
+  - **Not suitable for:** Newly certified Open Water divers or divers without prior current-diving experience, especially during spring tides or peak current days.
 
 - **Advanced notes:**
   - Experienced drift divers will enjoy the natural current flow and site geography.
@@ -172,6 +173,8 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
   - Lionfish present; maintain distance during observation.
 
 - **Incidents:** No major incident history documented. Site has solid track record with professional operators. Rare issues involve diver separation in current or air planning errors; mitigated by proper briefing, buddy discipline, and gas management.
+
+- **Abort criteria:** Dives are commonly aborted if current prevents controlled descent to the pinnacle, visibility drops below ~8–10 m, or divers show elevated air consumption early in the dive.
 
 ***
 
@@ -269,7 +272,7 @@ You step back from the boat rail, regulator in, and descend the anchor line into
   - Advanced
 - **Categories:**
   - **Depth:** Intermediate (9–25 m)
-  - **Difficulty:** Advanced (current management required)
+  - **Difficulty:** Intermediate (current management required)
   - **Type:** Pinnacle, drift dive
   - **Marine life focus:** Pelagics (barracuda, jacks), soft coral, macro
   - **Activity:** Recreational diving, photography (wide-angle & macro)

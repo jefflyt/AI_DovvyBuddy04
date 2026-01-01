@@ -4,6 +4,10 @@
   "site_name": "Tiger Reef",
   "min_cert_level_code": "AOW",
   "difficulty_rating_1_5": 3,
+  "depth_min_m": 9,
+  "depth_max_m": 25,
+  "depth_range_m": [9, 25],
+  "last_updated": "2026-01-01",
   "tags": [
     "pinnacle",
     "drift",

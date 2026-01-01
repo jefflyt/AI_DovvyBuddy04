@@ -1,4 +1,3 @@
-
 def test_placeholder_repos_importable():
     from app.db.repositories import EmbeddingRepository, LeadRepository, SessionRepository
 

@@ -3,10 +3,10 @@ doc_type: "dive_site"
 site_id: "tioman-pulau-chebeh"
 title: "Pulau Chebeh (Chebeh Island)"
 destination: "Tioman Island, Malaysia"
-min_certification: "OW"
+min_certification: "AOW"
 difficulty: "intermediate"
-depth_range_m: [8, 22]
-tags: ["coral garden", "reef", "macro", "gentle current", "colorful"]
+depth_range_m: [10, 28]
+tags: ["boulder", "reef", "current", "schooling-fish", "macro", "wide-angle", "intermediate-advanced"]
 keywords: ["Pulau Chebeh", "Chebeh Island", "Tioman", "coral garden", "nudibranchs", "reef fish"]
 last_updated: "2026-01-01"
 data_quality: "compiled"
@@ -129,6 +129,7 @@ Pulau Chebeh is a steep, sloping offshore island northeast of Tioman's main hub,
   - **Visibility variability:** Low-season visibility (June–August) reduces visual reward and can stress less-confident divers.
   - **Entry/exit dynamics:** Open-water entry/exit with possible current requires confident surface swimming.
 - **Beginner notes:** Not recommended for OWD/newly certified divers. Intermediate divers (20–50 dives) with current experience can safely enjoy north/south shallow zones (10–18 m) under guide leadership. Deeper zones (20–28 m) require AOWD or equivalent confidence.
+- **Not suitable for:** Open Water–only divers or divers without experience in moderate current and depths beyond 18 m.
 - **Advanced notes:** Advanced divers (AOWD+) can exploit full depth range and current dynamics for efficient exploration; macro photographers find excellent lighting and diverse critters; current dive is rewarding for those comfortable in blue-water drift.
 
 ***
@@ -158,6 +159,7 @@ Pulau Chebeh is a steep, sloping offshore island northeast of Tioman's main hub,
 - **Surface risks:**
   - **Boat traffic:** Tioman marine park mooring system reduces risk, but operators must maintain boat awareness and ensure mooring lines are clear.
   - **Open-water entry/exit:** Brief exposed swim on entry/exit; no hazard in calm conditions, but chop or unexpected current can stress unprepared divers.
+  - **Surface conditions:** Open-water ascents and boat pickup may involve surface current; delayed SMB deployment and controlled ascent procedures are required.
 - **Environmental risks:**
   - **Surge/swell:** Low impact at depth; surface surge during monsoon (October–February) can make entry/exit uncomfortable.
   - **Visibility drops:** Low-season visibility (June–August) and monsoon season (November–February) can reduce visual reward and increase disorientation risk; stay closer to guide; use torches even in daytime.

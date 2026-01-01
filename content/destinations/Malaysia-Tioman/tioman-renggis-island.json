@@ -4,6 +4,10 @@
   "site_name": "Renggis Island",
   "min_cert_level_code": "OW",
   "difficulty_rating_1_5": 1,
+  "depth_min_m": 4,
+  "depth_max_m": 16,
+  "depth_range_m": [4, 16],
+  "last_updated": "2026-01-01",
   "tags": [
     "coral_reef",
     "shallow",

@@ -3,11 +3,11 @@ doc_type: "dive_site"
 site_id: "tioman-pulau-labas"
 title: "Pulau Labas (Labas Island)"
 destination: "Tioman Island, Malaysia"
-min_certification: "OW"
-difficulty: "beginner"
-depth_range_m: [5, 20]
-tags: ["island", "reef", "beginner-friendly", "macro", "coral", "gentle"]
-keywords: ["Pulau Labas", "Labas Island", "Tioman", "beginner dive", "coral reef", "marine life"]
+min_certification: "AOW"
+difficulty: "intermediate"
+depth_range_m: [10, 24]
+tags: ["island", "reef", "boulder", "swim-throughs", "macro", "coral", "current-variable"]
+keywords: ["Pulau Labas", "Labas Island", "Tioman", "swim-throughs", "caverns", "volcanic rocks", "soft coral", "macro", "intermediate dive"]
 last_updated: "2026-01-01"
 data_quality: "compiled"
 sources:
@@ -139,6 +139,7 @@ Pulau Labas (commonly referred to as "Labas Island" in English) is a small, unin
   - Entanglement: Tightly-spaced boulders and crevices increase contact risk; careless finning or buoyancy control can snag equipment on corals or rock.
 
 - **Beginner notes:** Labas is NOT typically recommended for Open Water or newly-certified divers. The depth, structural complexity, and navigational demands exceed beginner comfort zones. Beginners should gain experience at shallow, simpler sites (e.g., Renggis Island) first.
+- **OWD note:** Open Water divers may only dive this site in calm conditions, on shallow sections, and under direct guide supervision. Advanced Open Water is strongly recommended.
 
 - **Advanced notes:** The site rewards advanced divers with excellent exploration opportunities, depth variance for skill practice (e.g., hovering at precise depths), and macro subjects. Advanced Diver certification holders or experienced recreational divers (50+ dives) will find appropriate challenge and interest.
 
@@ -146,7 +147,7 @@ Pulau Labas (commonly referred to as "Labas Island" in English) is a small, unin
 
 ## 8. Recommended Diver Profile
 
-- **Certification:** Advanced Open Water (AOWD) or equivalent; minimum Advanced Adventurer. Open Water divers are not recommended without significant additional experience.
+- **Certification:** Advanced Open Water (AOW) or equivalent
 
 - **Min dive count:** 20–50+ dives preferred; recreational divers with solid buoyancy and navigation experience at similar-difficulty sites (e.g., Tiger Reef, Chebeh) are suitable. Fewer than 20 total dives generally not advisable.
 

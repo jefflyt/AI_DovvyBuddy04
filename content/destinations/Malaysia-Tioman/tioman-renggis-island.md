@@ -5,7 +5,7 @@ title: "Renggis Island"
 destination: "Tioman Island, Malaysia"
 min_certification: "OW"
 difficulty: "beginner"
-depth_range_m: [5, 15]
+depth_range_m: [4, 116]
 tags: ["shallow", "coral garden", "beginner-friendly", "training", "snorkeling"]
 keywords: ["Renggis Island", "Tioman", "beginner dive", "shallow reef", "coral garden", "training site"]
 last_updated: "2026-01-01"

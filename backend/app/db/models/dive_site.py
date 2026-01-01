@@ -10,7 +10,9 @@ class DiveSite(Base):
     __tablename__ = "dive_sites"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    destination_id = Column(UUID(as_uuid=True), ForeignKey("destinations.id", ondelete="CASCADE"), nullable=False)
+    destination_id = Column(
+        UUID(as_uuid=True), ForeignKey("destinations.id", ondelete="CASCADE"), nullable=False
+    )
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
     min_certification_level = Column(String, nullable=True)  # e.g., "OW", "AOW", "Rescue"

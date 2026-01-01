@@ -15,6 +15,13 @@
       "when": 1767198177483,
       "tag": "0001_past_human_fly",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1767262278531,
+      "tag": "0002_smart_the_call",
+      "breakpoints": true
     }
   ]
 }

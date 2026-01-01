@@ -4,6 +4,10 @@
   "site_name": "Pulau Chebeh",
   "min_cert_level_code": "AOW",
   "difficulty_rating_1_5": 3,
+  "depth_min_m": 10,
+  "depth_max_m": 28,
+  "depth_range_m": [10, 28],
+  "last_updated": "2026-01-01",
   "tags": [
     "boulders",
     "swim_throughs",

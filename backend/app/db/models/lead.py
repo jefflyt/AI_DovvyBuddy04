@@ -15,5 +15,7 @@ class Lead(Base):
     phone = Column(String, nullable=True)
     source = Column(String, nullable=True)
     session_id = Column(UUID(as_uuid=True), nullable=True)
-    metadata_ = Column("metadata", JSONB, nullable=True)  # Use metadata_ to avoid SQLAlchemy conflict
+    metadata_ = Column(
+        "metadata", JSONB, nullable=True
+    )  # Use metadata_ to avoid SQLAlchemy conflict
     created_at = Column(DateTime(timezone=True), server_default=func.now())

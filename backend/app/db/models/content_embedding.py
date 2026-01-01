@@ -14,5 +14,7 @@ class ContentEmbedding(Base):
     chunk_text = Column(Text, nullable=False)
     # Storing embeddings as an ARRAY of FLOAT for now (pgvector integration can be added later)
     embedding = Column(ARRAY(Float), nullable=True)
-    metadata_ = Column("metadata", JSONB, nullable=True)  # Use metadata_ to avoid SQLAlchemy conflict
+    metadata_ = Column(
+        "metadata", JSONB, nullable=True
+    )  # Use metadata_ to avoid SQLAlchemy conflict
     created_at = Column(DateTime(timezone=True), server_default=func.now())

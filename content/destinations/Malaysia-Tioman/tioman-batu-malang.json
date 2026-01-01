@@ -4,6 +4,10 @@
   "site_name": "Batu Malang",
   "min_cert_level_code": "OW",
   "difficulty_rating_1_5": 2,
+  "depth_min_m": 5,
+  "depth_max_m": 14,
+  "depth_range_m": [5, 14],
+  "last_updated": "2026-01-01",
   "tags": [
     "rock_formation", 
     "coral", 
