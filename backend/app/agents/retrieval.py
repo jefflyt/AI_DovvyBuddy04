@@ -52,11 +52,25 @@ class RetrievalAgent(Agent):
         """
         try:
             # Use RAG context if provided, otherwise retrieve
+            rag_context = None
+            has_citations = False
+            
             if context.rag_context:
                 rag_context_str = context.rag_context
+                # Check if NO_DATA signal present (RAF requirement)
+                if rag_context_str == "NO_DATA":
+                    return self._handle_no_data(context)
+                has_citations = True
             else:
                 rag_result = await self.rag_pipeline.retrieve_context(context.query)
                 rag_context_str = rag_result.formatted_context
+                
+                # Check NO_DATA signal (RAF requirement)
+                if rag_context_str == "NO_DATA" or not rag_result.has_data:
+                    return self._handle_no_data(context)
+                    
+                has_citations = len(rag_result.citations) > 0
+                rag_context = rag_result
 
             # Build messages with context
             messages = self._build_messages(context, rag_context_str)
@@ -67,11 +81,13 @@ class RetrievalAgent(Agent):
             result = AgentResult(
                 response=response.content,
                 agent_type=self.agent_type,
-                confidence=0.8,
+                confidence=0.8 if has_citations else 0.5,
                 metadata={
                     "model": response.model,
                     "tokens_used": response.tokens_used,
                     "has_rag_context": bool(rag_context_str),
+                    "has_citations": has_citations,
+                    "citations": rag_context.citations if rag_context else [],
                 },
             )
 
@@ -130,16 +146,53 @@ IMPORTANT GUIDELINES:
 - Always prioritize diver safety in your responses
 - For medical questions, advise consulting medical professionals
 - For certification questions, recommend contacting official agencies (PADI, SSI, etc.)
-- Use the provided context to give accurate, specific information
+- Use ONLY the provided context to give accurate, specific information
+- If the context doesn't contain the answer, acknowledge that limitation
+- Never make up facts or details not present in the context
+- When referencing information, cite it using [Source: filename] notation
 - If you don't know something, say so honestly
 
 """
-        if rag_context:
+        if rag_context and rag_context != "NO_DATA":
             base_prompt += f"""
-RELEVANT INFORMATION:
+RELEVANT INFORMATION (cite these sources in your response):
 {rag_context}
 
-Use the above information to answer the user's question accurately. If the information doesn't cover the question, provide general guidance based on your diving knowledge.
+CRITICAL: Base your answer ONLY on the information above. If it doesn't fully answer the question, acknowledge what's missing.
 """
 
         return base_prompt
+
+    def _handle_no_data(self, context: AgentContext) -> AgentResult:
+        """
+        Handle NO_DATA signal from RAG (RAF requirement).
+        
+        When no relevant grounding data is found, refuse to answer factual
+        questions rather than hallucinating.
+
+        Args:
+            context: Agent context
+
+        Returns:
+            AgentResult with appropriate no-data response
+        """
+        response = """I don't have specific information about that in my knowledge base. 
+
+To ensure I provide you with accurate information, I can only answer based on verified content. 
+
+Could you try:
+- Rephrasing your question
+- Asking about a different topic
+- Or let me know if you'd like general guidance instead of specific facts
+
+What would be most helpful for you?"""
+        
+        return AgentResult(
+            response=response,
+            agent_type=self.agent_type,
+            confidence=0.0,
+            metadata={
+                "no_data": True,
+                "raf_enforced": True,
+            },
+        )

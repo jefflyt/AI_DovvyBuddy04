@@ -3,7 +3,7 @@ Type definitions for RAG services.
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
@@ -32,6 +32,12 @@ class RetrievalResult:
     text: str
     similarity: float
     metadata: Dict[str, Any] = field(default_factory=dict)
+    source_citation: Optional[str] = None  # Source path for RAF citation tracking
+
+    def __post_init__(self):
+        """Extract citation from metadata if not explicitly provided."""
+        if self.source_citation is None and "content_path" in self.metadata:
+            self.source_citation = self.metadata["content_path"]
 
 
 @dataclass
@@ -50,3 +56,5 @@ class RAGContext:
     query: str
     results: List[RetrievalResult]
     formatted_context: str
+    citations: List[str] = field(default_factory=list)  # Source citations for RAF
+    has_data: bool = True  # False when NO_DATA signal returned

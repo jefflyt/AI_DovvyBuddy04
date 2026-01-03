@@ -46,8 +46,8 @@ Use tools to retrieve context from the knowledge base and conversation history.`
     const fullPrompt = `${systemPrompt}\n\n${conversationText}`;
 
     try {
-        const result = await genkit.generate({
-          model: process.env.ADK_SPECIALIST_MODEL || 'gemini-2.0-flash',',
+      const result = await genkit.generate({
+        model: process.env.ADK_SPECIALIST_MODEL || 'gemini-2.0-flash',
         prompt: fullPrompt,
         tools: this.tools,
       });

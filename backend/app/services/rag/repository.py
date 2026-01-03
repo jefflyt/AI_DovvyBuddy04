@@ -27,7 +27,8 @@ class RAGRepository:
         """
         for chunk in chunks:
             embedding_obj = ContentEmbedding(
-                content=chunk["text"],
+                content_path=chunk.get("metadata", {}).get("content_path", ""),
+                chunk_text=chunk["text"],
                 embedding=chunk["embedding"],
                 metadata_=chunk.get("metadata", {}),
             )

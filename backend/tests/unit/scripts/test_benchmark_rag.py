@@ -3,7 +3,7 @@
 import json
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -115,17 +115,22 @@ def test_load_queries_file_not_found():
         load_queries(Path("/nonexistent/file.json"))
 
 
+@pytest.mark.asyncio
 @patch("scripts.benchmark_rag.RAGPipeline")
-def test_run_benchmark_query_success(mock_pipeline_class):
+async def test_run_benchmark_query_success(mock_pipeline_class):
     """Test running a successful benchmark query."""
     mock_pipeline = MagicMock()
-    mock_pipeline.search.return_value = [
-        {"metadata": {"content_path": "path1"}},
-        {"metadata": {"content_path": "path2"}},
-        {"metadata": {"content_path": "path3"}},
-    ]
     
-    result = run_benchmark_query(mock_pipeline, "test query", top_k=5)
+    # Mock the async retrieve_context method
+    mock_context = MagicMock()
+    mock_context.results = [
+        MagicMock(metadata={"content_path": "path1"}),
+        MagicMock(metadata={"content_path": "path2"}),
+        MagicMock(metadata={"content_path": "path3"}),
+    ]
+    mock_pipeline.retrieve_context = AsyncMock(return_value=mock_context)
+    
+    result = await run_benchmark_query(mock_pipeline, "test query", top_k=5)
     
     assert result.query == "test query"
     assert result.latency_ms is not None
@@ -135,13 +140,14 @@ def test_run_benchmark_query_success(mock_pipeline_class):
     assert result.error is None
 
 
+@pytest.mark.asyncio
 @patch("scripts.benchmark_rag.RAGPipeline")
-def test_run_benchmark_query_error(mock_pipeline_class):
+async def test_run_benchmark_query_error(mock_pipeline_class):
     """Test running a benchmark query that raises an error."""
     mock_pipeline = MagicMock()
-    mock_pipeline.search.side_effect = Exception("Search failed")
+    mock_pipeline.retrieve_context = AsyncMock(side_effect=Exception("Search failed"))
     
-    result = run_benchmark_query(mock_pipeline, "test query", top_k=5)
+    result = await run_benchmark_query(mock_pipeline, "test query", top_k=5)
     
     assert result.error == "Search failed"
 

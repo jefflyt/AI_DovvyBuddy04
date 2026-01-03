@@ -5,7 +5,7 @@ Mode detection for conversation routing.
 import logging
 import re
 from enum import Enum
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 

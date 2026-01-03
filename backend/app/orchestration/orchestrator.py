@@ -90,12 +90,14 @@ class ChatOrchestrator:
         logger.info(f"Selected agent: {agent.name} for mode: {mode.value}")
 
         # Build context
+        logger.info(f"🔧 Building context with use_rag={settings.enable_rag}")
         context = await self.context_builder.build_context(
             query=request.message,
             conversation_history=session.conversation_history,
             diver_profile=request.diver_profile or session.diver_profile,
             use_rag=settings.enable_rag,
         )
+        logger.info(f"📦 Context built: has_rag={context.metadata.get('has_rag')}, rag_context_length={len(context.rag_context) if context.rag_context else 0}")
 
         # Execute agent
         result = await agent.execute(context)

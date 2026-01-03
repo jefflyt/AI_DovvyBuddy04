@@ -46,12 +46,19 @@ class ContextBuilder:
         rag_context = None
         if use_rag and self.rag_pipeline.enabled:
             try:
+                logger.info(f"🔍 RAG ENABLED - Retrieving context for: {query[:100]}")
                 rag_result = await self.rag_pipeline.retrieve_context(query)
                 rag_context = rag_result.formatted_context
-                logger.info(f"Retrieved {len(rag_result.results)} RAG chunks")
+                logger.info(f"✓ Retrieved {len(rag_result.results)} RAG chunks, context length: {len(rag_context) if rag_context else 0}")
+                if rag_result.results:
+                    logger.info(f"  First result: {rag_result.results[0].text[:100]}...")
+                else:
+                    logger.warning("⚠️ RAG returned NO results!")
             except Exception as e:
-                logger.warning(f"RAG retrieval failed: {e}", exc_info=True)
+                logger.error(f"❌ RAG retrieval FAILED: {e}", exc_info=True)
                 rag_context = None
+        else:
+            logger.warning(f"⚠️ RAG NOT ENABLED: use_rag={use_rag}, pipeline.enabled={self.rag_pipeline.enabled}")
 
         # Build context
         context = AgentContext(

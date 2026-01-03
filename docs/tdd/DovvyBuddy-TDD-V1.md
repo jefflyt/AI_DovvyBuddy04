@@ -1,72 +1,96 @@
-```markdown
-# Technology Stack
+# DovvyBuddy — Technology & TDD — V1.0
 
-This document summarizes the primary technologies and libraries used across the DovvyBuddy project. Use this as a quick reference when onboarding or when making changes that touch infra, APIs, or ML components.
-
-## Frontend
-- Framework: `Next.js` (React)
-- Language: `TypeScript`
-- Key files: `package.json`, `src/`, `next.config.js`
-- UI libs: React 18
-
-## Primary Backend (TypeScript)
-- Runtime: Node.js (>=20)
-- Framework: Next.js serverless API routes
-- LLM integration: client code and model-provider in `src/lib/model-provider`
-- RAG integration: `src/lib/rag`, retrieval helpers
-- Key files: `package.json`, `pnpm-lock.yaml`, `drizzle.config.ts`, `src/lib/`
-
-## Python Backend (Python-first services)
-- Framework: FastAPI (async)
-- ORM: SQLAlchemy 2.0 (async) with Alembic for migrations
-- LLM & Embeddings services: custom `app/services/` implementations
-- Packaging: `pyproject.toml` (setuptools), virtualenv recommended
-- Key files: `backend/app/`, `backend/pyproject.toml`, `backend/openapi.yaml`
-
-## Datastore / Search
-- Primary DB: PostgreSQL (Neon / managed Postgres) with `pgvector` extension for vector search
-- TypeScript ORM: Drizzle (Drizzle schema used as source-of-truth)
-- Python ORM: SQLAlchemy models mirror Drizzle schema (see `backend/app/db/models`)
-- Vector retrieval: `pgvector` + cosine/similarity queries
-
-## LLM & Embeddings Providers
-- Gemini (Google) for embeddings and LLMs — recommended model: `gemini-2.0-flash`
-  - Embeddings model: `text-embedding-004` (768 dimensions)
-- Groq used for development/testing (`llama-3.3-70b` family shown in Python config)
-- ADK / Genkit integration lives under `src/lib/agent/` for multi-agent orchestration
-- Key env vars: see `.env.example` and `backend/.env.example` (`GEMINI_API_KEY`, `GROQ_API_KEY`, `ENABLE_ADK`, `ADK_MODEL`, etc.)
-
-## RAG Pipeline
-- Chunking: markdown-aware chunker (`backend/app/services/rag/chunker.py`)
-- Retriever: vector search with `pgvector` (`backend/app/services/rag/retriever.py`)
-- Orchestration: TypeScript orchestrator (`src/lib/orchestration/*`) and Python RAG pipeline (`backend/app/services/rag/pipeline.py`)
-
-## Tooling & Dev
-- Package managers: `pnpm` (frontend/TS), Python virtualenv / pip + `pyproject.toml`
-- Linters & formatters: `ruff` (Python), `prettier`/`eslint` (JS/TS)
-- Testing: `vitest` (TS), `pytest` (Python)
-- Type checking: `tsc` for TS, `mypy` (deferred) for Python
-
-## CI / CD & Infra
-- CI: standard `pnpm typecheck && pnpm lint && pnpm test && pnpm build` pipeline for JS; Python CI templates present in `backend/` docs
-- Hosting: Vercel (Next.js) for frontend; Python services can be deployed separately (FastAPI on Uvicorn / container)
-- Secrets: GCP service account JSON and API keys stored as env vars in deployment platform
-
-## Observability & Logging
-- Logging: `pino` (TS), Python uses standard `logging` (config in `backend/app/core`)
-- Telemetry: optional Cloud Trace / ADK tracing (configured via env vars)
-
-## Where to find more details
-- Project-wide instructions and LLM model standards: `/.github/instructions/Global Instructions.instructions.md`
-- Architecture and PR plans: `docs/plans/` (PR3, PR3.1, PR3.2*, etc.)
-- Service-level docs: `backend/README_SERVICES.md` and `backend/VERIFICATION_SUMMARY_PR3.2b.md`
-
-## Notes and Guidelines
-- Follow the repository's instruction docs when adding or changing provider code (Gemini usage locked to `gemini-2.0-flash`).
-- Keep Drizzle as the schema source-of-truth; mirror schema changes into Python SQLAlchemy models and Alembic as needed.
-- Use the `.env.example` templates to add new environment variables and document them in `docs/` when they are required for new features.
+**Document Version:** V1.0  
+**Last Updated:** January 3, 2026  
+**Status:** Reference
 
 ---
-_Generated: 2026-01-03 — summary of project technology stack._
 
-```
+## 1. Overview
+
+This document is the Technology & Technical Design Decisions (TDD) reference for DovvyBuddy. It summarizes the primary technologies, integration points, and operational guidance used across the project. Use this when onboarding, planning infra changes, or updating model/provider code.
+
+## 2. Frontend
+
+- **Framework:** `Next.js` (React)
+- **Language:** `TypeScript`
+- **Key files:** `package.json`, `src/`, `next.config.js`
+- **UI:** React 18
+
+## 3. Primary Backend (TypeScript)
+
+- **Runtime:** Node.js (>=20)
+- **Pattern:** Next.js serverless API routes (server and edge handlers where applicable)
+- **LLM integration:** `src/lib/model-provider` implements a `ModelProvider` switch (`LLM_PROVIDER=groq|gemini`)
+- **RAG helpers:** `src/lib/rag` contains retrieval client helpers and orchestration bindings
+- **Key files:** `package.json`, `pnpm-lock.yaml`, `drizzle.config.ts`, `src/lib/`
+
+## 4. Python Backend (FastAPI services)
+
+- **Framework:** FastAPI (async)
+- **ORM / Migrations:** SQLAlchemy 2.0 (async) + Alembic
+- **Services:** embeddings, LLM wrappers, RAG pipeline components under `backend/app/services/`
+- **Packaging:** `pyproject.toml` (setuptools); prefer virtualenv or poetry for local dev
+- **Key files:** `backend/app/`, `backend/pyproject.toml`, `backend/openapi.yaml`
+
+## 5. Datastore & Vector Search
+
+- **Primary DB:** PostgreSQL (Neon / managed Postgres) with `pgvector` extension for vector search
+- **TypeScript schema:** Drizzle is the source-of-truth for TS-side schema
+- **Python models:** SQLAlchemy models mirror Drizzle schema; migrations via Alembic
+- **Vector retrieval:** `pgvector` + similarity queries (cosine/dot) for nearest-neighbor lookup
+
+## 6. LLM & Embeddings Providers
+
+- **Production target:** Google Gemini — model: `gemini-2.0-flash` (generation + preferred embeddings provider)
+- **Embeddings model:** `text-embedding-004` (768 dims)
+- **Development/testing:** Groq used for fast dev iterations; agent switch keeps interfaces consistent
+- **Orchestration:** ADK / Genkit integration code lives under `src/lib/agent/` for multi-agent flows
+- **Env vars (examples):** `GEMINI_API_KEY`, `GROQ_API_KEY`, `ENABLE_ADK`, `ADK_MODEL`
+
+## 7. RAG Pipeline
+
+- **Chunking:** markdown-aware chunker in Python RAG services (`backend/app/services/rag/chunker.py`)
+- **Retriever:** vector search using `pgvector` (`backend/app/services/rag/retriever.py`)
+- **Indexing:** ingest → chunk → embed → store vectors in Postgres (or object-storage-backed index if chosen)
+- **Orchestration:** TypeScript orchestrator (`src/lib/orchestration/*`) coordinates retrieval + safety + model calls
+
+## 8. Tooling & Developer Experience
+
+- **Package managers:** `pnpm` (JS/TS), Python virtualenv / pip (or poetry)
+- **Linters/formatters:** `prettier` + `eslint` (TS/JS), `ruff` (Python)
+- **Testing:** `vitest` (TS), `pytest` (Python)
+- **Type checking:** `tsc` (TS), `mypy` (Python — optional)
+
+## 9. CI / CD & Hosting
+
+- **CI checks (recommended):** `pnpm typecheck && pnpm lint && pnpm test && pnpm build` for JS; Python CI runs include lint & tests
+- **Hosting:** Vercel for Next.js frontend; FastAPI services deployed to Cloud Run or container platform
+- **Secrets:** Store service account JSON and API keys securely in deployment platform env vars
+
+## 10. Observability & Logging
+
+- **TS logging:** `pino`
+- **Python logging:** stdlib `logging` configured in `backend/app/core`
+- **Telemetry:** optional Cloud Trace / ADK tracing (enabled via env)
+
+## 11. Where to Find More Details
+
+- **Project instructions & LLM standards:** `/.github/instructions/Global Instructions.instructions.md`
+- **Architecture & PR plans:** `docs/plans/` (see PR3, PR3.1, PR3.2*)
+- **Service docs & verification:** `backend/README_SERVICES.md`, `backend/VERIFICATION_SUMMARY_PR3.2b.md`
+
+## 12. Notes & Guidelines
+
+- Keep Drizzle as the canonical DB schema source-of-truth; mirror schema updates into Python SQLAlchemy models and Alembic migrations.
+- All model calls should use the `ModelProvider` abstraction so providers can be swapped via env vars.
+- Prefer `gemini-2.0-flash` for production LLM usage and `text-embedding-004` for embeddings to ensure retrieval/generation alignment.
+- When adding provider env vars, update `.env.example` and document new variables in `docs/`.
+
+## 13. Changelog
+
+- **V1.0 (2026-01-03):** Created TDD/Technology reference document; consolidated previous tech-stack notes into PSD-style format.
+
+---
+
+_Generated: 2026-01-03 — DovvyBuddy Technology & TDD V1.0_

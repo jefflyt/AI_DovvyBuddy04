@@ -8,6 +8,7 @@ Benchmarks RAG pipeline performance by:
 """
 
 import argparse
+import asyncio
 import json
 import statistics
 import sys
@@ -17,7 +18,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from app.core.config import settings
-from app.db.session import SessionLocal
+from app.db.session import init_db
 from app.services.rag.pipeline import RAGPipeline
 from scripts.common import error, info, progress_bar, success, warning
 
@@ -99,7 +100,7 @@ def load_queries(queries_file: Path) -> List[Dict[str, Any]]:
         raise ValueError("Invalid queries file format (expected array or object with 'queries' key)")
 
 
-def run_benchmark_query(
+async def run_benchmark_query(
     pipeline: RAGPipeline,
     query: str,
     top_k: int = 5,
@@ -118,12 +119,12 @@ def run_benchmark_query(
     
     try:
         start_time = time.perf_counter()
-        results = pipeline.search(query, top_k=top_k)
+        rag_context = await pipeline.retrieve_context(query, top_k=top_k)
         end_time = time.perf_counter()
         
         result.latency_ms = (end_time - start_time) * 1000
-        result.num_results = len(results)
-        result.result_paths = [r.get("metadata", {}).get("content_path", "") for r in results]
+        result.num_results = len(rag_context.results)
+        result.result_paths = [r.metadata.get("content_path", "") for r in rag_context.results]
         
     except Exception as e:
         result.error = str(e)
@@ -155,7 +156,7 @@ def calculate_percentile(values: List[float], percentile: int) -> float:
         return lower + (upper - lower) * (index - int(index))
 
 
-def main():
+async def main():
     """Main entry point for benchmark script."""
     parser = argparse.ArgumentParser(
         description="Benchmark RAG pipeline performance",
@@ -220,126 +221,124 @@ Examples:
     if args.iterations > 1:
         info(f"Running {args.iterations} iteration(s) per query")
     
-    # Initialize pipeline
-    db = SessionLocal()
-    try:
-        pipeline = RAGPipeline(db)
-        
-        # Run benchmarks
-        all_results: List[BenchmarkResult] = []
-        all_latencies: List[float] = []
-        
-        total_runs = len(queries_data) * args.iterations
-        
-        with progress_bar(total=total_runs, description="Running benchmarks") as bar:
-            for query_data in queries_data:
-                # Extract query and ground truth
-                if isinstance(query_data, str):
-                    query = query_data
-                    ground_truth = None
-                else:
-                    query = query_data.get("query", "")
-                    ground_truth = query_data.get("expected_paths")
+    # Initialize database
+    await init_db()
+    
+    # Initialize pipeline (creates default VectorRetriever)
+    pipeline = RAGPipeline()
+    
+    # Run benchmarks
+    all_results: List[BenchmarkResult] = []
+    all_latencies: List[float] = []
+    
+    total_runs = len(queries_data) * args.iterations
+    
+    with progress_bar(total=total_runs, description="Running benchmarks") as bar:
+        for query_data in queries_data:
+            # Extract query and ground truth
+            if isinstance(query_data, str):
+                query = query_data
+                ground_truth = None
+            else:
+                query = query_data.get("query", "")
+                ground_truth = query_data.get("expected_paths")
+            
+            if not query:
+                warning("Skipping empty query")
+                continue
+            
+            # Run multiple iterations
+            iteration_results = []
+            for _ in range(args.iterations):
+                result = await run_benchmark_query(pipeline, query, top_k=args.top_k)
+                iteration_results.append(result)
                 
-                if not query:
-                    warning("Skipping empty query")
-                    continue
+                if result.latency_ms:
+                    all_latencies.append(result.latency_ms)
                 
-                # Run multiple iterations
-                iteration_results = []
-                for _ in range(args.iterations):
-                    result = run_benchmark_query(pipeline, query, top_k=args.top_k)
-                    iteration_results.append(result)
-                    
-                    if result.latency_ms:
-                        all_latencies.append(result.latency_ms)
-                    
-                    bar.update()
-                
-                # Use median result if multiple iterations
-                if args.iterations > 1:
-                    iteration_results.sort(key=lambda r: r.latency_ms or float('inf'))
-                    median_result = iteration_results[len(iteration_results) // 2]
-                else:
-                    median_result = iteration_results[0]
-                
-                median_result.ground_truth = ground_truth
-                all_results.append(median_result)
+                bar.update()
+            
+            # Use median result if multiple iterations
+            if args.iterations > 1:
+                iteration_results.sort(key=lambda r: r.latency_ms or float('inf'))
+                median_result = iteration_results[len(iteration_results) // 2]
+            else:
+                median_result = iteration_results[0]
+            
+            median_result.ground_truth = ground_truth
+            all_results.append(median_result)
         
-        # Calculate statistics
+    # Calculate statistics
+    print()
+    success(f"Completed {total_runs} benchmark run(s)")
+    print()
+    
+    if all_latencies:
+        info("Latency Statistics:")
+        info(f"  Mean: {statistics.mean(all_latencies):.2f}ms")
+        info(f"  Median (P50): {calculate_percentile(all_latencies, 50):.2f}ms")
+        info(f"  P95: {calculate_percentile(all_latencies, 95):.2f}ms")
+        info(f"  P99: {calculate_percentile(all_latencies, 99):.2f}ms")
+        info(f"  Min: {min(all_latencies):.2f}ms")
+        info(f"  Max: {max(all_latencies):.2f}ms")
+    
+    # Calculate accuracy if ground truth available
+    accuracy_results = [r.calculate_accuracy() for r in all_results if r.calculate_accuracy() is not None]
+    if accuracy_results:
         print()
-        success(f"Completed {total_runs} benchmark run(s)")
+        info("Accuracy Statistics:")
+        info(f"  Mean: {statistics.mean(accuracy_results):.2%}")
+        info(f"  Median: {statistics.median(accuracy_results):.2%}")
+        info(f"  Min: {min(accuracy_results):.2%}")
+        info(f"  Max: {max(accuracy_results):.2%}")
+    
+    # Count errors
+    error_count = sum(1 for r in all_results if r.error)
+    if error_count > 0:
         print()
-        
-        if all_latencies:
-            info("Latency Statistics:")
-            info(f"  Mean: {statistics.mean(all_latencies):.2f}ms")
-            info(f"  Median (P50): {calculate_percentile(all_latencies, 50):.2f}ms")
-            info(f"  P95: {calculate_percentile(all_latencies, 95):.2f}ms")
-            info(f"  P99: {calculate_percentile(all_latencies, 99):.2f}ms")
-            info(f"  Min: {min(all_latencies):.2f}ms")
-            info(f"  Max: {max(all_latencies):.2f}ms")
-        
-        # Calculate accuracy if ground truth available
-        accuracy_results = [r.calculate_accuracy() for r in all_results if r.calculate_accuracy() is not None]
-        if accuracy_results:
-            print()
-            info("Accuracy Statistics:")
-            info(f"  Mean: {statistics.mean(accuracy_results):.2%}")
-            info(f"  Median: {statistics.median(accuracy_results):.2%}")
-            info(f"  Min: {min(accuracy_results):.2%}")
-            info(f"  Max: {max(accuracy_results):.2%}")
-        
-        # Count errors
-        error_count = sum(1 for r in all_results if r.error)
-        if error_count > 0:
-            print()
-            warning(f"Errors: {error_count}/{len(all_results)} queries failed")
-        
-        # Prepare output
-        output_data = {
-            "timestamp": datetime.now().isoformat(),
-            "queries_file": str(args.queries_file),
-            "iterations": args.iterations,
-            "top_k": args.top_k,
-            "total_queries": len(queries_data),
-            "total_runs": total_runs,
-            "statistics": {
-                "latency": {
-                    "mean_ms": statistics.mean(all_latencies) if all_latencies else None,
-                    "median_ms": calculate_percentile(all_latencies, 50) if all_latencies else None,
-                    "p95_ms": calculate_percentile(all_latencies, 95) if all_latencies else None,
-                    "p99_ms": calculate_percentile(all_latencies, 99) if all_latencies else None,
-                    "min_ms": min(all_latencies) if all_latencies else None,
-                    "max_ms": max(all_latencies) if all_latencies else None,
-                },
+        warning(f"Errors: {error_count}/{len(all_results)} queries failed")
+    
+    # Prepare output
+    output_data = {
+        "timestamp": datetime.now().isoformat(),
+        "queries_file": str(args.queries_file),
+        "iterations": args.iterations,
+        "top_k": args.top_k,
+        "total_queries": len(queries_data),
+        "total_runs": total_runs,
+        "statistics": {
+            "latency": {
+                "mean_ms": statistics.mean(all_latencies) if all_latencies else None,
+                "median_ms": calculate_percentile(all_latencies, 50) if all_latencies else None,
+                "p95_ms": calculate_percentile(all_latencies, 95) if all_latencies else None,
+                "p99_ms": calculate_percentile(all_latencies, 99) if all_latencies else None,
+                "min_ms": min(all_latencies) if all_latencies else None,
+                "max_ms": max(all_latencies) if all_latencies else None,
             },
-            "results": [r.to_dict() for r in all_results],
+        },
+        "results": [r.to_dict() for r in all_results],
+    }
+    
+    if accuracy_results:
+        output_data["statistics"]["accuracy"] = {
+            "mean": statistics.mean(accuracy_results),
+            "median": statistics.median(accuracy_results),
+            "min": min(accuracy_results),
+            "max": max(accuracy_results),
         }
-        
-        if accuracy_results:
-            output_data["statistics"]["accuracy"] = {
-                "mean": statistics.mean(accuracy_results),
-                "median": statistics.median(accuracy_results),
-                "min": min(accuracy_results),
-                "max": max(accuracy_results),
-            }
-        
-        # Write output file
-        if args.output:
-            output_file = args.output
-        else:
-            timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-            output_file = Path(f"benchmark-results-{timestamp}.json")
-        
-        with open(output_file, "w", encoding="utf-8") as f:
-            json.dump(output_data, f, indent=2)
-        
-        success(f"Results written to: {output_file}")
-        
-    finally:
-        db.close()
+    
+    # Write output file
+    if args.output:
+        output_file = args.output
+    else:
+        timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+        output_file = Path(f"benchmark-results-{timestamp}.json")
+    
+    with open(output_file, "w", encoding="utf-8") as f:
+        json.dump(output_data, f, indent=2)
+    
+    success(f"Results written to: {output_file}")
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

@@ -52,7 +52,13 @@ class RAGPipeline:
         """
         if not self.enabled:
             logger.warning("RAG is disabled, returning empty context")
-            return RAGContext(query=query, results=[], formatted_context="")
+            return RAGContext(
+                query=query,
+                results=[],
+                formatted_context="NO_DATA",
+                citations=[],
+                has_data=False,
+            )
 
         if not query or not query.strip():
             raise ValueError("Query cannot be empty")
@@ -69,35 +75,45 @@ class RAGPipeline:
 
         # Format context
         formatted_context = self._format_context(results)
+        
+        # Extract citations for RAF enforcement
+        citations = [r.source_citation for r in results if r.source_citation]
+        has_data = len(results) > 0
 
         logger.info(
-            f"RAG pipeline: retrieved {len(results)} chunks for query: {query[:100]}..."
+            f"RAG pipeline: retrieved {len(results)} chunks, {len(citations)} citations for query: {query[:100]}..."
         )
 
         return RAGContext(
-            query=query, results=results, formatted_context=formatted_context
+            query=query,
+            results=results,
+            formatted_context=formatted_context,
+            citations=citations,
+            has_data=has_data,
         )
 
     def _format_context(self, results: List[RetrievalResult]) -> str:
         """
         Format retrieval results into context string.
+        Returns NO_DATA signal when no results (RAF requirement).
 
         Args:
             results: List of retrieval results
 
         Returns:
-            Formatted context string
+            Formatted context string or NO_DATA signal
         """
         if not results:
-            return ""
+            return "NO_DATA"  # Explicit signal for RAF enforcement
 
-        # Format each chunk with metadata
+        # Format each chunk with citation metadata for RAF
         formatted_chunks = []
         for i, result in enumerate(results, 1):
             # Extract useful metadata
             metadata = result.metadata
             doc_type = metadata.get("doc_type", "")
             section = metadata.get("section_header", "")
+            citation = result.source_citation or "unknown"
             destination = metadata.get("destination", "")
 
             # Build context header

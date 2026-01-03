@@ -108,7 +108,7 @@ async function updateDiveSites() {
       console.error('❌ Tioman destination not found in database');
       console.log('\nCreating Tioman destination...');
       
-      const newDest = await sql`
+      await sql`
         INSERT INTO destinations (name, country, is_active)
         VALUES ('Tioman Island', 'Malaysia', true)
         RETURNING id

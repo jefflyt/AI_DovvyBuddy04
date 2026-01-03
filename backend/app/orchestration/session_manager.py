@@ -46,14 +46,12 @@ class SessionManager:
         """
         session_id = uuid.uuid4()
         now = datetime.utcnow()
-        expires_at = now + timedelta(hours=settings.session_expiry_hours)
 
         session_obj = {
             "id": session_id,
             "conversation_history": [],
             "diver_profile": diver_profile,
             "created_at": now,
-            "expires_at": expires_at,
         }
 
         db_session = await self.repository.create(session_obj)

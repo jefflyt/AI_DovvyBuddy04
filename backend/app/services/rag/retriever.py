@@ -124,12 +124,17 @@ class VectorRetriever:
                 if similarity < options.min_similarity:
                     continue
 
+                # Extract metadata and citation
+                metadata = row.metadata_ or {}
+                source_citation = metadata.get("content_path")
+
                 results.append(
                     RetrievalResult(
                         chunk_id=str(row.id),
                         text=row.chunk_text,
                         similarity=similarity,
-                        metadata=row.metadata_ or {},
+                        metadata=metadata,
+                        source_citation=source_citation,
                     )
                 )
 

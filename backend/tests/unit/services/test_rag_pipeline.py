@@ -22,12 +22,14 @@ def mock_retriever():
                 text="Test chunk 1",
                 similarity=0.95,
                 metadata={"doc_type": "faq", "section_header": "## FAQ"},
+                source_citation="content/faq/test.md",
             ),
             RetrievalResult(
                 chunk_id="2",
                 text="Test chunk 2",
                 similarity=0.85,
                 metadata={"doc_type": "guide", "destination": "Tioman"},
+                source_citation="content/destinations/tioman.md",
             ),
         ]
     )
@@ -88,9 +90,9 @@ class TestRAGPipeline:
         mock_retriever.retrieve.assert_not_called()
 
     def test_format_context_empty(self, pipeline):
-        """Test formatting empty results."""
+        """Test formatting empty results returns NO_DATA."""
         formatted = pipeline._format_context([])
-        assert formatted == ""
+        assert formatted == "NO_DATA"
 
     def test_format_context_with_results(self, pipeline):
         """Test formatting results with metadata."""
@@ -104,12 +106,14 @@ class TestRAGPipeline:
                     "section_header": "## FAQ",
                     "destination": "Tioman",
                 },
+                source_citation="content/faq/test.md",
             ),
             RetrievalResult(
                 chunk_id="2",
                 text="Test chunk 2",
                 similarity=0.85,
                 metadata={"doc_type": "guide"},
+                source_citation="content/guide/test.md",
             ),
         ]
 

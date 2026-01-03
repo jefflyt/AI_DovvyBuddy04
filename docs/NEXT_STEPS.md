@@ -1,13 +1,28 @@
-# Next Steps: PR2+PR3 Integration Complete ✅
+# Next Steps: Python Backend + RAF Enforcement Complete ✅
 
-**Status:** Integration Complete - Ready for PR3.1 or Performance Tuning  
-**Date:** January 1, 2026
+**Status:** RAF Enforcement Implemented - Ready for Cloud Run Deployment  
+**Date:** January 3, 2026
 
 ---
 
 ## Current Status ✅
 
-### Completed
+### Recently Completed (January 3, 2026)
+- ✅ **RAF (Retrieval-Augmented Facts) enforcement implemented**
+  - Citation tracking in `RetrievalResult` and `RAGContext`
+  - `NO_DATA` signal handling in RAG pipeline
+  - Agent-level grounding enforcement (refuses to answer without sources)
+  - Confidence scoring based on citation availability
+- ✅ **Cloud Run deployment preparation**
+  - `backend/Dockerfile` created (Python 3.11, FastAPI, uvicorn)
+  - `.dockerignore` configured for optimized image size
+  - Health check endpoint ready
+- ✅ **System prompt improvements**
+  - Explicit citation requirements in agent prompts
+  - "Source: filename" notation for transparency
+  - Refuse-to-hallucinate safeguards
+
+### Previously Completed
 - ✅ Database connectivity verified (Neon PostgreSQL)
 - ✅ Pgvector extension installed and configured (vector(768))
 - ✅ All tables created and migrated
@@ -29,12 +44,79 @@
 - **Embeddings:** 768 dimensions (Gemini text-embedding-004)
 - **Content Sources:** Certifications, dive sites, destinations, FAQ, safety
 - **API Response:** Includes `contextChunks` array with relevant content
+- **RAF Enforcement:** Citations tracked, NO_DATA handled, confidence scoring active
+
+---
+
+## Deferred to Future Releases
+
+### SSE Streaming (Deferred)
+**Status:** Not implemented in current release  
+**Priority:** Medium (improves UX but not MVP-blocking)
+
+**Requirements (from ADK Multi-Agent RAG Plan):**
+- Server-Sent Events (SSE) endpoint for real-time streaming
+- Event types: `text`, `tool_call`, `citation`, `error`
+- Frontend: `useDovvyChat()` hook for SSE consumption
+- Backend: `POST /api/chat/stream` or `/api/apps/dovvy/sessions/{id}/run_sse`
+
+**Implementation Notes:**
+```python
+# Example implementation structure (backend)
+from fastapi.responses import StreamingResponse
+
+@router.post("/chat/stream")
+async def chat_stream(payload: ChatRequestPayload, db: AsyncSession = Depends(get_db)):
+    async def event_generator():
+        orchestrator = ChatOrchestrator(db)
+        async for chunk in orchestrator.stream_chat(request):
+            yield f"data: {json.dumps(chunk)}\n\n"
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+```
+
+**Decision:** Synchronous `/api/chat` endpoint is sufficient for MVP. Add streaming when:
+- User feedback indicates need for real-time UX
+- Longer responses (>5s generation time) become common
+- Multi-turn conversations with complex reasoning increase
 
 ---
 
 ## Recommended Next Steps
 
-### Option 1: Performance Tuning & Quality Assessment
+### Option 1: Cloud Run Deployment (Recommended)
+Deploy the Python backend to Google Cloud Run and connect frontend.
+
+**Tasks:**
+1. **Build and test Docker image locally**
+   ```bash
+   cd backend
+   docker build -t dovvybuddy-backend .
+   docker run -p 8080:8080 --env-file .env dovvybuddy-backend
+   curl http://localhost:8080/health
+   ```
+
+2. **Deploy to Cloud Run**
+   ```bash
+   gcloud run deploy dovvybuddy-backend \
+     --source backend \
+     --region us-central1 \
+     --allow-unauthenticated \
+     --set-env-vars DATABASE_URL=$DATABASE_URL,GEMINI_API_KEY=$GEMINI_API_KEY,GROQ_API_KEY=$GROQ_API_KEY
+   ```
+
+3. **Update frontend environment**
+   - Set `NEXT_PUBLIC_BACKEND_URL` to Cloud Run URL
+   - Configure CORS in backend to allow Vercel domain
+   - Test end-to-end frontend → Cloud Run → Postgres flow
+
+4. **Verify RAF enforcement in production**
+   - Test queries with no matching content (expect NO_DATA response)
+   - Verify citations appear in responses
+   - Check confidence scores in metadata
+
+---
+
+### Option 2: Performance Tuning & Quality Assessment
 Optimize the current RAG implementation before adding complexity.
 
 **Tasks:**
@@ -118,16 +200,26 @@ Retrieval Config: topK=5, minSimilarity=0.7
 
 ## Quick Reference Commands
 
-### Content Management
+### Content Management (Python Scripts - Default)
 ```bash
-# Ingest all content (already done - 152 chunks)
-pnpm content:ingest
-
 # Validate content format
-pnpm content:validate
+pnpm content:validate-py
+
+# Ingest all content
+pnpm content:ingest-py
+
+# Incremental ingestion (skip unchanged files)
+pnpm content:ingest-incremental-py
+
+# Benchmark RAG performance
+pnpm content:benchmark-py
 
 # Clear all embeddings (use with caution)
-pnpm db:clear
+pnpm content:clear-py
+
+# Legacy TypeScript scripts (deprecated)
+# pnpm content:validate
+# pnpm content:ingest
 ```
 
 ### Testing

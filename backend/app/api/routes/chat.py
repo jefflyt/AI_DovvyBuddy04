@@ -66,6 +66,8 @@ async def chat_endpoint(
         HTTPException: If request is invalid or processing fails
     """
     try:
+        logger.info(f"🚀 CHAT ENDPOINT CALLED: message='{payload.message[:100]}...', session_id={payload.session_id}")
+        
         # Create orchestrator
         orchestrator = ChatOrchestrator(db)
 
@@ -77,7 +79,9 @@ async def chat_endpoint(
         )
 
         # Handle chat
+        logger.info("📞 Calling orchestrator.handle_chat()")
         response = await orchestrator.handle_chat(request)
+        logger.info(f"✅ Orchestrator returned response: {len(response.message)} chars")
 
         # Return response
         return ChatResponsePayload(

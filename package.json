@@ -9,6 +9,7 @@
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:integration": "vitest run tests/integration",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "format": "prettier --check .",

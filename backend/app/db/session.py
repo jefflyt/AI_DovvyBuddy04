@@ -1,6 +1,8 @@
 import os
+from pathlib import Path
 from typing import Optional
 
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -9,6 +11,11 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import Session, sessionmaker
+
+# Load .env file
+env_path = Path(__file__).parent.parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(env_path)
 
 _engine: Optional[AsyncEngine] = None
 _async_session: Optional[async_sessionmaker[AsyncSession]] = None
@@ -26,7 +33,11 @@ def get_sync_database_url() -> str:
     """Get synchronous database URL (replaces asyncpg with psycopg2)."""
     url = get_database_url()
     # Replace asyncpg with psycopg2 for synchronous connections
-    return url.replace("postgresql+asyncpg://", "postgresql://")
+    url = url.replace("postgresql+asyncpg://", "postgresql://")
+    # Replace ssl=require with sslmode=require for psycopg2
+    url = url.replace("?ssl=require", "?sslmode=require")
+    url = url.replace("&ssl=require", "&sslmode=require")
+    return url
 
 
 async def init_db() -> None:

@@ -17,8 +17,7 @@ from typing import Dict, List, Optional
 
 from app.core.config import settings
 from app.db.session import SessionLocal
-from app.services.chunking import ChunkingService
-from app.services.embedding import EmbeddingService
+from app.services.chunking import ChunkingService, EmbeddingService
 from app.services.rag.repository import RAGRepository
 from scripts.common import (
     calculate_file_hash,
@@ -177,6 +176,7 @@ def ingest_file(
     chunks = chunking_service.chunk_text(
         text=content,
         metadata=metadata,
+        content_path=str(file_path),
     )
     
     if not chunks:
