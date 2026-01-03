@@ -27,7 +27,7 @@ export interface LeadRequest {
 
 export interface ChatResponse {
   sessionId: string;
-  response: string;
+  message: string;
   metadata?: ChatMetadata;
 }
 

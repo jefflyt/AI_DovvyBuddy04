@@ -43,10 +43,12 @@ export default function ChatPage() {
 
     try {
       // Call API
+      console.log('Calling API with message:', userMessage.content);
       const response: ChatResponse = await apiClient.chat({
         sessionId: sessionId || undefined,
         message: userMessage.content,
       });
+      console.log('API Response:', response);
 
       // Store session ID if this is first message
       if (!sessionId && response.sessionId) {
@@ -57,9 +59,10 @@ export default function ChatPage() {
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: response.response,
+        content: response.message,
         timestamp: new Date(),
       };
+      console.log('Adding assistant message:', assistantMessage);
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (err) {

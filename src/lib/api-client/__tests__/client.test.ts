@@ -33,7 +33,7 @@ describe('ApiClient', () => {
     it('should send chat message successfully', async () => {
       const mockResponse: ChatResponse = {
         sessionId: '123e4567-e89b-12d3-a456-426614174000',
-        response: 'Hello! How can I help you with diving today?',
+        message: 'Hello! How can I help you with diving today?',
         metadata: {
           tokensUsed: 150,
           model: 'gemini-2.0-flash',
@@ -69,7 +69,7 @@ describe('ApiClient', () => {
     it('should include session ID in request', async () => {
       const mockResponse: ChatResponse = {
         sessionId: '123e4567-e89b-12d3-a456-426614174000',
-        response: 'Sure, let me explain more...',
+        message: 'Sure, let me explain more...',
       };
 
       mockFetch.mockResolvedValueOnce({
@@ -156,7 +156,7 @@ describe('ApiClient', () => {
 
       const result = await promise;
 
-      expect(result.response).toBe('Success after retry');
+      expect(result.message).toBe('Success after retry');
       expect(mockFetch).toHaveBeenCalledTimes(3);
 
       vi.useRealTimers();

@@ -106,31 +106,13 @@ class RAGPipeline:
         if not results:
             return "NO_DATA"  # Explicit signal for RAF enforcement
 
-        # Format each chunk with citation metadata for RAF
+        # Format each chunk naturally without confusing labels
         formatted_chunks = []
-        for i, result in enumerate(results, 1):
-            # Extract useful metadata
-            metadata = result.metadata
-            doc_type = metadata.get("doc_type", "")
-            section = metadata.get("section_header", "")
-            citation = result.source_citation or "unknown"
-            destination = metadata.get("destination", "")
+        for result in results:
+            # Just use the text content directly
+            formatted_chunks.append(result.text)
 
-            # Build context header
-            header_parts = []
-            if doc_type:
-                header_parts.append(f"Type: {doc_type}")
-            if destination:
-                header_parts.append(f"Destination: {destination}")
-            if section:
-                header_parts.append(f"Section: {section}")
-
-            header = f"[Context {i}" + (f" - {', '.join(header_parts)}" if header_parts else "") + "]"
-
-            # Format chunk
-            formatted_chunks.append(f"{header}\n{result.text}")
-
-        return "\n\n---\n\n".join(formatted_chunks)
+        return "\n\n".join(formatted_chunks)
 
     async def retrieve_context_raw(
         self,

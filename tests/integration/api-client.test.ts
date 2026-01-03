@@ -38,9 +38,9 @@ describe('API Client Integration Tests', () => {
       expect(response).toBeDefined();
       expect(response.sessionId).toBeDefined();
       expect(typeof response.sessionId).toBe('string');
-      expect(response.response).toBeDefined();
-      expect(typeof response.response).toBe('string');
-      expect(response.response.length).toBeGreaterThan(0);
+      expect(response.message).toBeDefined();
+      expect(typeof response.message).toBe('string');
+      expect(response.message.length).toBeGreaterThan(0);
     }, 30000); // 30s timeout for LLM response
 
     it('should maintain session across multiple messages', async () => {
@@ -59,7 +59,7 @@ describe('API Client Integration Tests', () => {
       });
 
       expect(response2.sessionId).toBe(sessionId);
-      expect(response2.response).toBeDefined();
+      expect(response2.message).toBeDefined();
 
       // Third message with same session
       const response3 = await client.chat({
@@ -68,7 +68,7 @@ describe('API Client Integration Tests', () => {
       });
 
       expect(response3.sessionId).toBe(sessionId);
-      expect(response3.response).toBeDefined();
+      expect(response3.message).toBeDefined();
     }, 60000); // 60s timeout for multiple LLM responses
 
     it('should handle validation error (empty message)', async () => {
