@@ -44,6 +44,17 @@ class Settings(BaseSettings):
     rag_min_similarity: float = 0.5
     rag_chunk_size: int = 512
     rag_chunk_overlap: int = 50
+    
+    # Orchestration Configuration
+    max_message_length: int = 2000
+    session_expiry_hours: int = 24
+    max_conversation_history: int = 20
+    enable_agent_routing: bool = True
+    default_agent: str = "retrieval"
+    
+    # Prompt Configuration
+    system_prompt_version: str = "v1"
+    include_safety_disclaimer: bool = True
 
 
 settings = Settings()

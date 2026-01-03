@@ -154,7 +154,12 @@ None (backend-only PR)
 
 ## Data Changes
 
-None (uses existing embeddings in `content_embeddings` table)
+Notes: While this PR does not introduce schema changes to production tables, the verification work included targeted content and metadata updates:
+
+- Content embeddings for the `Malaysia-Tioman` destination were re-ingested during verification (118 embeddings updated) to refresh RAG quality for the new dive-site content.
+- A schema migration was applied (via Drizzle/SQL) to add new `dive_sites` fields used by the application: `dive_site_id`, `difficulty_rating`, `depth_min_m`, `depth_max_m`, `tags`, `last_updated`, and `updated_at`. The migration was applied to Neon with a manual fixed SQL script to populate existing rows and add constraints.
+
+These changes were applied carefully and verified; Python `SQLAlchemy` models should be synchronized to mirror the Drizzle schema where necessary.
 
 ---
 
@@ -678,6 +683,9 @@ After PR3.2b is merged:
 - ✅ Dependencies added to pyproject.toml
 - ✅ Configuration updated in config.py and .env.example
 - ✅ Documentation created (README_SERVICES.md)
+- ✅ `scripts/update-dive-sites.ts` enhanced to extract descriptions from corresponding markdown files; descriptions were populated for 5 Tioman dive sites.
+- ✅ Content re-ingestion performed for `Malaysia-Tioman` (118 embeddings refreshed) to ensure RAG context matches updated markdown content.
+- ✅ Added repository TDD snapshot: `docs/tdd/TDD_Project_Status.md` (project status and verification checklist).
 
 **What requires manual verification:**
 - ⚠️ Install dependencies: `cd backend && pip install -e .`

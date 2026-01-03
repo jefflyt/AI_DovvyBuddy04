@@ -108,7 +108,7 @@ class GroqLLMProvider(LLMProvider):
             # Call Groq API
             response = await self.client.chat.completions.create(
                 model=self.model,
-                messages=groq_messages,
+                messages=groq_messages,  # type: ignore[arg-type]
                 temperature=temp,
                 max_tokens=max_tok,
                 **kwargs,

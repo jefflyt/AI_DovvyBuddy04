@@ -23,7 +23,7 @@ class EmbeddingCache:
     """
 
     def __init__(
-        self, max_size: int = None, ttl_seconds: int = None
+            self, max_size: Optional[int] = None, ttl_seconds: Optional[int] = None
     ):
         """
         Initialize embedding cache.

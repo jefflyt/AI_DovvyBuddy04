@@ -69,7 +69,9 @@ class VectorRetriever:
         async with session_maker() as session:
             # Base query with cosine similarity
             # Using pgvector <=> operator: cosine distance = 1 - cosine similarity
-            similarity_expr = literal_column(f"1 - (embedding <=> '{embedding_str}'::vector)")
+            from sqlalchemy.sql.elements import ColumnElement
+            
+            similarity_expr: ColumnElement[float] = literal_column(f"1 - (embedding <=> '{embedding_str}'::vector)")
             
             stmt = select(
                 ContentEmbedding.id,

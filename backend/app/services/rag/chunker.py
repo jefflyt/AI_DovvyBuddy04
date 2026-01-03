@@ -10,7 +10,7 @@ Implements hybrid chunking strategy:
 
 import logging
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import tiktoken
 
@@ -58,7 +58,7 @@ def split_into_sections(text: str) -> List[Dict[str, str]]:
     sections = []
     lines = text.split("\n")
     current_header = ""
-    current_content = []
+    current_content: list[str] = []
 
     for line in lines:
         # Check if line is a header (## or ###)
@@ -117,7 +117,7 @@ def combine_paragraphs_into_chunks(
         List of chunk texts
     """
     chunks = []
-    current_chunk = []
+    current_chunk: list[str] = []
     current_tokens = 0
 
     # Add header token count if present
@@ -179,8 +179,8 @@ def combine_paragraphs_into_chunks(
 def chunk_text(
     text: str,
     content_path: str,
-    frontmatter: Dict[str, Any] = None,
-    options: ChunkingOptions = None,
+    frontmatter: Optional[Dict[str, Any]] = None,
+    options: Optional[ChunkingOptions] = None,
 ) -> List[ContentChunk]:
     """
     Chunk text using hybrid strategy.

@@ -152,7 +152,7 @@ class GeminiLLMProvider(LLMProvider):
 
             # If conversation history exists, use chat
             if len(conversation) > 1:
-                chat = model.start_chat(history=conversation[:-1])
+                chat = model.start_chat(history=conversation[:-1])  # type: ignore[arg-type]
                 response = await loop.run_in_executor(
                     None,
                     lambda: chat.send_message(conversation[-1]["parts"][0]),

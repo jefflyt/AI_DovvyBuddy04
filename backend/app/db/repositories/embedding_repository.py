@@ -20,4 +20,4 @@ class EmbeddingRepository:
     async def list_all(self, limit: int = 100) -> List[ContentEmbedding]:
         q = select(ContentEmbedding).limit(limit)
         res = await self.session.execute(q)
-        return res.scalars().all()
+        return list(res.scalars().all())
