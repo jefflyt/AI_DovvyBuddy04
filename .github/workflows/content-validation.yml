@@ -1,0 +1,39 @@
+name: Content Validation
+
+on:
+  pull_request:
+    paths:
+      - 'content/**'
+  push:
+    branches: [main]
+    paths:
+      - 'content/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          pip install -e .
+
+      - name: Validate content files
+        run: |
+          cd backend
+          python -m scripts.validate_content --content-dir ../content
+
+      - name: Post validation results
+        if: always()
+        run: |
+          echo "Content validation completed"

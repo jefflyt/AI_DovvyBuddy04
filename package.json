@@ -24,7 +24,12 @@
     "content:validate": "tsx --env-file=.env.local scripts/validate-content.ts",
     "content:ingest": "tsx --env-file=.env.local scripts/ingest-content.ts",
     "content:clear": "tsx --env-file=.env.local scripts/clear-embeddings.ts",
-    "benchmark:rag": "tsx --env-file=.env.local scripts/benchmark-rag.ts"
+    "benchmark:rag": "tsx --env-file=.env.local scripts/benchmark-rag.ts",
+    "content:validate-py": "cd backend && python3 -m scripts.validate_content",
+    "content:ingest-py": "cd backend && python3 -m scripts.ingest_content",
+    "content:ingest-incremental-py": "cd backend && python3 -m scripts.ingest_content --incremental",
+    "content:benchmark-py": "cd backend && python3 -m scripts.benchmark_rag",
+    "content:clear-py": "cd backend && python3 -m scripts.clear_embeddings"
   },
   "dependencies": {
     "@genkit-ai/ai": "^0.5.0",

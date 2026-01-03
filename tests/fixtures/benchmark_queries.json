@@ -1,0 +1,22 @@
+{
+  "queries": [
+    "What equipment do I need for scuba diving?",
+    "How deep can I dive with an Open Water certification?",
+    "What are the requirements for Advanced Open Water?",
+    "How do I become a dive instructor?",
+    "What are the best diving destinations in Southeast Asia?",
+    "What should I do if I experience nitrogen narcosis?",
+    "How do I equalize my ears while diving?",
+    "What is the difference between PADI and SSI certifications?",
+    "Can I dive after flying?",
+    "What is decompression sickness and how do I avoid it?",
+    {
+      "query": "What are the depths limits for recreational diving?",
+      "expected_paths": ["certifications/padi/open-water.md", "safety/decompression-safety.md"]
+    },
+    {
+      "query": "How do I plan a dive trip to Tioman Island?",
+      "expected_paths": ["destinations/Malaysia-Tioman/"]
+    }
+  ]
+}
