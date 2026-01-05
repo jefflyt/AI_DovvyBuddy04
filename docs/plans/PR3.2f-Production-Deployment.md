@@ -49,7 +49,7 @@ Deploy Python backend to Cloud Run, configure production monitoring and logging,
 
 **Deployment & Infrastructure:**
 ```
-backend/
+src/backend/
 ├── Dockerfile                     # Multi-stage Docker build
 ├── .dockerignore                  # Docker build exclusions
 ├── cloudbuild.yaml                # Cloud Build configuration (optional)
@@ -100,21 +100,21 @@ docs/
 
 ### Modified Modules
 
-1. **backend/app/main.py** — Production configuration
+1. **src/backend/app/main.py** — Production configuration
    - Add request ID middleware
    - Add request/response logging middleware
    - Initialize Sentry (if DSN provided)
    - Configure structured logging
    - Health check returns more details (version, uptime)
 
-2. **backend/app/core/config.py** — Production settings
+2. **src/backend/app/core/config.py** — Production settings
    - `SENTRY_DSN`: Sentry project DSN
    - `SENTRY_ENVIRONMENT`: production | staging | development
    - `SENTRY_TRACES_SAMPLE_RATE`: 0.1 (10% of transactions)
    - `LOG_LEVEL`: INFO (default for production)
    - `LOG_JSON`: true (for Cloud Run)
 
-3. **backend/pyproject.toml** — Add dependencies
+3. **src/backend/pyproject.toml** — Add dependencies
    - `sentry-sdk[fastapi]>=1.40.0`
 
 ---
@@ -307,7 +307,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'backend/**'
+      - 'src/backend/**'
       - '.github/workflows/deploy-backend-staging.yml'
 
 jobs:
@@ -328,7 +328,7 @@ jobs:
       
       - name: Build Docker image
         run: |
-          cd backend
+          cd src/backend
           docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/dovvybuddy-backend:${{ github.sha }} .
           docker tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/dovvybuddy-backend:${{ github.sha }} \
                      gcr.io/${{ secrets.GCP_PROJECT_ID }}/dovvybuddy-backend:staging
@@ -390,7 +390,7 @@ jobs:
       
       - name: Build Docker image
         run: |
-          cd backend
+          cd src/backend
           docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/dovvybuddy-backend:${{ github.event.inputs.tag }} .
           docker tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/dovvybuddy-backend:${{ github.event.inputs.tag }} \
                      gcr.io/${{ secrets.GCP_PROJECT_ID }}/dovvybuddy-backend:production
@@ -630,7 +630,7 @@ k6 run --env BASE_URL=https://staging-api.dovvybuddy.com tests/load/chat-endpoin
 
 ```bash
 # Build Docker image locally
-cd backend
+cd src/backend
 docker build -t dovvybuddy-backend:local .
 docker run -p 8000:8000 --env-file .env dovvybuddy-backend:local
 

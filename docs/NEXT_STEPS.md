@@ -14,7 +14,7 @@
   - Agent-level grounding enforcement (refuses to answer without sources)
   - Confidence scoring based on citation availability
 - ✅ **Cloud Run deployment preparation**
-  - `backend/Dockerfile` created (Python 3.11, FastAPI, uvicorn)
+  - `src/backend/Dockerfile` created (Python 3.11, FastAPI, uvicorn)
   - `.dockerignore` configured for optimized image size
   - Health check endpoint ready
 - ✅ **System prompt improvements**
@@ -89,7 +89,7 @@ Deploy the Python backend to Google Cloud Run and connect frontend.
 **Tasks:**
 1. **Build and test Docker image locally**
    ```bash
-   cd backend
+   cd src/backend
    docker build -t dovvybuddy-backend .
    docker run -p 8080:8080 --env-file .env dovvybuddy-backend
    curl http://localhost:8080/health

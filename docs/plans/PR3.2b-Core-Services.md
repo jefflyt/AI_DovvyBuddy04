@@ -21,7 +21,7 @@
 ✅ **Manual Scripts:** All 3 working (embeddings, Groq LLM, Gemini LLM)  
 ⏳ **Type Checking:** Deferred (mypy configuration)
 
-See detailed verification report: `backend/VERIFICATION_SUMMARY_PR3.2b.md`
+See detailed verification report: `src/backend/VERIFICATION_SUMMARY_PR3.2b.md`
 
 ---
 
@@ -61,7 +61,7 @@ Migrate embedding generation, LLM provider abstraction, and RAG pipeline (chunki
 
 **Services Structure:**
 ```
-backend/app/services/
+src/backend/app/services/
 ├── __init__.py
 ├── embeddings/
 │   ├── __init__.py
@@ -82,7 +82,7 @@ backend/app/services/
     ├── pipeline.py                # RAG orchestration
     └── types.py                   # RAG-specific types
 
-backend/tests/
+src/backend/tests/
 ├── unit/services/
 │   ├── test_embeddings.py
 │   ├── test_llm.py
@@ -98,7 +98,7 @@ backend/tests/
     ├── test_chunking_comparison.py
     └── test_rag_comparison.py
 
-backend/scripts/
+src/backend/scripts/
 ├── test_embeddings.py             # Manual embedding test
 ├── test_llm.py                    # Manual LLM test
 ├── test_rag.py                    # Manual RAG test
@@ -130,7 +130,7 @@ backend/scripts/
 
 ### Modified Modules
 
-- `backend/app/core/config.py` — Add LLM/embedding configuration
+- `src/backend/app/core/config.py` — Add LLM/embedding configuration
   - `DEFAULT_LLM_PROVIDER`: groq | gemini
   - `DEFAULT_LLM_MODEL`: Model name
   - `EMBEDDING_MODEL`: text-embedding-004
@@ -138,7 +138,7 @@ backend/scripts/
   - `RAG_TOP_K`: Default 5
   - `RAG_MIN_SIMILARITY`: Default 0.5
 
-- `backend/pyproject.toml` — Add dependencies:
+- `src/backend/pyproject.toml` — Add dependencies:
   - `google-generativeai>=0.3.2`
   - `groq>=0.4.2`
   - `tiktoken>=0.5.2`
@@ -312,7 +312,7 @@ EMBEDDING_RETRY_DELAY=1.0              # Initial retry delay (seconds)
 
 ```bash
 # 1. Test embedding generation
-cd backend
+cd src/backend
 python -m scripts.test_embeddings "What is PADI Open Water?"
 
 # 2. Test LLM call (Groq)
@@ -330,7 +330,7 @@ cd ..
 pnpm tsx scripts/test-rag.ts "What certifications do I need for Tioman?"
 
 # 6. Benchmark RAG performance
-cd backend
+cd src/backend
 python -m scripts.benchmark_rag --queries 50 --output benchmark-results.json
 ```
 
@@ -688,7 +688,7 @@ After PR3.2b is merged:
 - ✅ Added repository TDD snapshot: `docs/tdd/TDD_Project_Status.md` (project status and verification checklist).
 
 **What requires manual verification:**
-- ⚠️ Install dependencies: `cd backend && pip install -e .`
+- ⚠️ Install dependencies: `cd src/backend && pip install -e .`
 - ⚠️ Run unit tests: `pytest tests/unit/services -v`
 - ⚠️ Run integration tests with API keys: `pytest tests/integration/services -v`
 - ⚠️ Run comparison tests: `pytest tests/comparison/ -v`

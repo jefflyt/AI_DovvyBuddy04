@@ -115,7 +115,7 @@ Establish Python backend project structure, OpenAPI specification, and SQLAlchem
 
 **Project Structure:**
 ```
-backend/
+src/backend/
 ├── app/
 │   ├── __init__.py
 │   ├── main.py                    # FastAPI app initialization
@@ -172,14 +172,14 @@ backend/
 
 **Key Files:**
 
-1. **backend/openapi.yaml** — Complete API specification with all endpoints
-2. **backend/pyproject.toml** — Python dependencies (fastapi, sqlalchemy, asyncpg, pgvector, alembic, etc.)
-3. **backend/app/main.py** — FastAPI application with CORS, health check, placeholder routes
-4. **backend/app/core/config.py** — Pydantic settings for configuration management
-5. **backend/app/db/session.py** — Async database session factory
-6. **backend/app/db/models/*.py** — 5 SQLAlchemy models mirroring Drizzle schema
-7. **backend/app/db/repositories/*.py** — 3 repository classes for data access
-8. **backend/alembic/versions/001_initial_schema.py** — No-op migration reflecting current schema
+1. **src/backend/openapi.yaml** — Complete API specification with all endpoints
+2. **src/backend/pyproject.toml** — Python dependencies (fastapi, sqlalchemy, asyncpg, pgvector, alembic, etc.)
+3. **src/backend/app/main.py** — FastAPI application with CORS, health check, placeholder routes
+4. **src/backend/app/core/config.py** — Pydantic settings for configuration management
+5. **src/backend/app/db/session.py** — Async database session factory
+6. **src/backend/app/db/models/*.py** — 5 SQLAlchemy models mirroring Drizzle schema
+7. **src/backend/app/db/repositories/*.py** — 3 repository classes for data access
+8. **src/backend/alembic/versions/001_initial_schema.py** — No-op migration reflecting current schema
 
 ### Modified Modules
 
@@ -204,7 +204,7 @@ None (frontend not connected yet)
 
 ### Migrations
 
-**Migration:** `backend/alembic/versions/001_initial_schema.py`
+**Migration:** `src/backend/alembic/versions/001_initial_schema.py`
 - **Type:** No-op (schema already exists via Drizzle)
 - **Purpose:** Establish baseline for Alembic
 - **Changes:** None (Alembic detects existing schema, creates empty migration)
@@ -229,7 +229,7 @@ None (frontend not connected yet)
 
 ### Environment Variables
 
-**Python Backend (backend/.env):**
+**Python Backend (src/backend/.env):**
 
 ```bash
 # Environment
@@ -288,11 +288,11 @@ on:
   push:
     branches: [main, feature/**]
     paths:
-      - 'backend/**'
+      - 'src/backend/**'
   pull_request:
     branches: [main]
     paths:
-      - 'backend/**'
+      - 'src/backend/**'
 
 jobs:
   test:
@@ -322,35 +322,35 @@ jobs:
       
       - name: Install dependencies
         run: |
-          cd backend
+          cd src/backend
           pip install -e ".[dev]"
       
       - name: Lint
         run: |
-          cd backend
+          cd src/backend
           ruff check .
       
       - name: Format check
         run: |
-          cd backend
+          cd src/backend
           ruff format --check .
       
       - name: Type check
         run: |
-          cd backend
+          cd src/backend
           mypy app
       
       - name: Run tests
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/dovvybuddy_test
         run: |
-          cd backend
+          cd src/backend
           pytest --cov=app --cov-report=xml
       
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
-          files: ./backend/coverage.xml
+          files: ./src/backend/coverage.xml
 ```
 
 ---
@@ -413,7 +413,7 @@ jobs:
 
 ### Manual Checks
 
-1. Start Python backend: `cd backend && uvicorn app.main:app --reload --port 8000`
+1. Start Python backend: `cd src/backend && uvicorn app.main:app --reload --port 8000`
 2. Call health endpoint: `curl http://localhost:8000/health`
 3. Call placeholder chat endpoint:
    ```bash
@@ -422,7 +422,7 @@ jobs:
      -d '{"message": "What certifications do I need?"}'
    ```
 4. Verify OpenAPI docs: Open browser to `http://localhost:8000/docs`
-5. Run database migrations: `cd backend && alembic upgrade head`
+5. Run database migrations: `cd src/backend && alembic upgrade head`
 6. Verify tables exist:
    ```bash
    psql $DATABASE_URL -c "\d sessions"
@@ -443,7 +443,7 @@ jobs:
 
 ```bash
 # Setup
-cd backend
+cd src/backend
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -e ".[dev]"
@@ -503,7 +503,7 @@ None needed (Python backend not connected to frontend yet)
 
 ### Revert Strategy
 
-1. **Complete revert:** Delete `backend/` directory
+1. **Complete revert:** Delete `src/backend/` directory
 2. **No impact:** TypeScript backend continues running unchanged
 3. **No database changes:** Schema identical, no data migration needed
 4. **Execution time:** <1 minute (just delete directory)
@@ -746,7 +746,7 @@ None (first PR in migration epic)
 
 5. **Install dependencies** — Required to run/test backend
    ```bash
-   cd backend
+   cd src/backend
    python -m venv .venv
    source .venv/bin/activate
    pip install -e .

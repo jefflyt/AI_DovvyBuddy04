@@ -42,7 +42,7 @@ Migrate offline content processing scripts (validation, ingestion, benchmarking)
 
 **Scripts Structure:**
 ```
-backend/scripts/
+src/backend/scripts/
 ├── __init__.py
 ├── validate_content.py            # Content validation
 ├── ingest_content.py              # Content ingestion with embeddings
@@ -54,13 +54,13 @@ backend/scripts/
 │   ├── markdown_parser.py         # Markdown parsing and frontmatter
 │   └── cli.py                     # CLI utilities (progress bars, colors)
 
-backend/tests/unit/scripts/
+src/backend/tests/unit/scripts/
 ├── test_validate_content.py
 ├── test_ingest_content.py
 ├── test_markdown_parser.py
 └── test_file_utils.py
 
-backend/tests/integration/scripts/
+src/backend/tests/integration/scripts/
 └── test_full_ingestion.py
 ```
 
@@ -99,7 +99,7 @@ backend/tests/integration/scripts/
 
 ### Modified Modules
 
-- `backend/README.md` — Add script documentation section
+- `src/backend/README.md` — Add script documentation section
   - Usage examples
   - Command-line options
   - Common workflows
@@ -112,11 +112,11 @@ backend/tests/integration/scripts/
   ```json
   {
     "scripts": {
-      "content:validate-py": "cd backend && python -m scripts.validate_content",
-      "content:ingest-py": "cd backend && python -m scripts.ingest_content",
-      "content:ingest-incremental-py": "cd backend && python -m scripts.ingest_content --incremental",
-      "content:benchmark-py": "cd backend && python -m scripts.benchmark_rag",
-      "content:clear-py": "cd backend && python -m scripts.clear_embeddings"
+      "content:validate-py": "cd src/backend && python -m scripts.validate_content",
+      "content:ingest-py": "cd src/backend && python -m scripts.ingest_content",
+      "content:ingest-incremental-py": "cd src/backend && python -m scripts.ingest_content --incremental",
+      "content:benchmark-py": "cd src/backend && python -m scripts.benchmark_rag",
+      "content:clear-py": "cd src/backend && python -m scripts.clear_embeddings"
     }
   }
   ```
@@ -153,7 +153,7 @@ None (scripts are offline tools)
 
 ```bash
 # Content Configuration
-CONTENT_DIR=../content              # Path to content directory (relative to backend/)
+CONTENT_DIR=../content              # Path to content directory (relative to src/backend/)
 INGEST_BATCH_SIZE=10                # Embedding batch size
 INGEST_INCREMENTAL=false            # Enable incremental ingestion
 INGEST_DRY_RUN=false                # Dry run mode (no database writes)
@@ -172,7 +172,7 @@ BENCHMARK_ITERATIONS=1              # Number of iterations per query
 - name: Validate Content
   if: contains(github.event.head_commit.modified, 'content/')
   run: |
-    cd backend
+    cd src/backend
     python -m scripts.validate_content
 ```
 
@@ -200,12 +200,12 @@ jobs:
       
       - name: Install dependencies
         run: |
-          cd backend
+          cd src/backend
           pip install -e .
       
       - name: Validate content
         run: |
-          cd backend
+          cd src/backend
           python -m scripts.validate_content
 ```
 
@@ -281,7 +281,7 @@ jobs:
 
 ```bash
 # 1. Validate content
-cd backend
+cd src/backend
 python -m scripts.validate_content
 # Expected: Report of all files, any validation errors
 
@@ -325,7 +325,7 @@ pytest tests/unit/scripts
 pytest tests/integration/scripts
 
 # Run scripts
-cd backend
+cd src/backend
 python -m scripts.validate_content
 python -m scripts.ingest_content [--incremental] [--dry-run]
 python -m scripts.benchmark_rag
@@ -393,7 +393,7 @@ None (scripts are offline tools, no feature flag needed)
 ### Revert Strategy
 
 1. **Continue using TypeScript scripts:** `pnpm content:ingest` (existing)
-2. **Delete Python scripts:** Remove `backend/scripts/` directory
+2. **Delete Python scripts:** Remove `src/backend/scripts/` directory
 3. **No impact:** Scripts run offline, no production system impact
 4. **Execution time:** <1 minute
 
@@ -601,7 +601,7 @@ None (scripts are offline tools, no feature flag needed)
 - [x] Progress bars for long-running operations (using Rich library)
 - [x] Error messages helpful and actionable
 - [x] Logging structured and useful for debugging
-- [x] README documentation complete (`backend/README.md` updated)
+- [x] README documentation complete (`src/backend/README.md` updated)
 
 ### Performance Success
 
@@ -682,7 +682,7 @@ After PR3.2d completion (✅ **COMPLETE**):
 - Coverage: >80% across all script modules
 
 **Documentation & CI:**
-- Updated `backend/README.md` with comprehensive script docs
+- Updated `src/backend/README.md` with comprehensive script docs
 - Created `.github/workflows/content-validation.yml`
 - Added 5 package.json script wrappers
 - Updated `docs/NEXT_STEPS.md` for Python-first workflow

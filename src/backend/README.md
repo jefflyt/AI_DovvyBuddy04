@@ -7,7 +7,7 @@ This folder contains the FastAPI + SQLAlchemy Python backend for DovvyBuddy, inc
 Assumes Python 3.11+ and poetry:
 
 ```bash
-cd backend
+cd src/backend
 python -m venv .venv
 source .venv/bin/activate
 pip install "poetry>=1.5"

@@ -42,17 +42,17 @@ pnpm install
 # Set up Python backend
 python3 -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -e backend/
+pip install -e src/backend/
 
 # Set up environment variables
 cp .env.example .env.local
 # Edit .env.local with your API keys and database URL
 
 # Run database migrations (Python backend)
-cd backend && alembic upgrade head
+cd src/backend && alembic upgrade head
 
 # Start Python backend (in one terminal)
-cd backend && uvicorn app.main:app --reload
+cd src/backend && uvicorn app.main:app --reload
 
 # Start Next.js frontend (in another terminal)
 pnpm dev
@@ -79,22 +79,21 @@ AI_DovvyBuddy04/
 │   ├── references/               # External API docs and standards
 │   └── project-management/       # AI workflow guides
 │
-├── backend/                      # Python FastAPI backend ✅
-│   ├── app/
-│   │   ├── main.py               # FastAPI application
-│   │   ├── api/                  # API endpoints
-│   │   ├── agents/               # Multi-agent system
-│   │   ├── orchestration/        # Chat orchestration
-│   │   ├── services/             # Core services (LLM, RAG, embeddings)
-│   │   ├── db/                   # Database models & sessions
-│   │   ├── core/                 # Config & utilities
-│   │   └── prompts/              # System prompts
-│   ├── scripts/                  # Content management scripts
-│   ├── alembic/                  # Database migrations
-│   └── tests/                    # Backend tests
-│
 ├── src/
 │   ├── app/                      # Next.js App Router pages
+│   ├── backend/                  # Python FastAPI backend ✅
+│   │   ├── app/
+│   │   │   ├── main.py               # FastAPI application
+│   │   │   ├── api/                  # API endpoints
+│   │   │   ├── agents/               # Multi-agent system
+│   │   │   ├── orchestration/        # Chat orchestration
+│   │   │   ├── services/             # Core services (LLM, RAG, embeddings)
+│   │   │   ├── db/                   # Database models & sessions
+│   │   │   ├── core/                 # Config & utilities
+│   │   │   └── prompts/              # System prompts
+│   │   ├── scripts/                  # Content management scripts
+│   │   ├── alembic/                  # Database migrations
+│   │   └── tests/                    # Backend tests
 │   ├── components/               # React components
 │   ├── lib/
 │   │   └── api-client/           # Frontend API client
@@ -138,7 +137,7 @@ pnpm build            # Build frontend for production
 pnpm start            # Start production server
 
 # Backend Development
-cd backend && uvicorn app.main:app --reload  # Start Python backend
+cd src/backend && uvicorn app.main:app --reload  # Start Python backend
 
 # Code Quality
 pnpm lint             # Run ESLint (frontend)
@@ -149,11 +148,11 @@ pnpm format           # Format with Prettier
 pnpm test             # Run frontend tests (Vitest)
 pnpm test:watch       # Run tests in watch mode
 pnpm test:integration # Run integration tests
-cd backend && pytest  # Run backend tests
+cd src/backend && pytest  # Run backend tests
 
 # Database (Python backend)
-cd backend && alembic upgrade head      # Run migrations
-cd backend && alembic revision --autogenerate -m "message"  # Create migration
+cd src/backend && alembic upgrade head      # Run migrations
+cd src/backend && alembic revision --autogenerate -m "message"  # Create migration
 
 # Content Management (Python scripts)
 pnpm content:ingest   # Ingest content into database

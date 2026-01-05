@@ -29,9 +29,9 @@ This document is the Technology & Technical Design Decisions (TDD) reference for
 
 - **Framework:** FastAPI (async)
 - **ORM / Migrations:** SQLAlchemy 2.0 (async) + Alembic
-- **Services:** embeddings, LLM wrappers, RAG pipeline components under `backend/app/services/`
+- **Services:** embeddings, LLM wrappers, RAG pipeline components under `src/backend/app/services/`
 - **Packaging:** `pyproject.toml` (setuptools); prefer virtualenv or poetry for local dev
-- **Key files:** `backend/app/`, `backend/pyproject.toml`, `backend/openapi.yaml`
+- **Key files:** `src/backend/app/`, `src/backend/pyproject.toml`, `src/backend/openapi.yaml`
 
 ## 5. Datastore & Vector Search
 
@@ -50,8 +50,8 @@ This document is the Technology & Technical Design Decisions (TDD) reference for
 
 ## 7. RAG Pipeline
 
-- **Chunking:** markdown-aware chunker in Python RAG services (`backend/app/services/rag/chunker.py`)
-- **Retriever:** vector search using `pgvector` (`backend/app/services/rag/retriever.py`)
+- **Chunking:** markdown-aware chunker in Python RAG services (`src/backend/app/services/rag/chunker.py`)
+- **Retriever:** vector search using `pgvector` (`src/backend/app/services/rag/retriever.py`)
 - **Indexing:** ingest → chunk → embed → store vectors in Postgres (or object-storage-backed index if chosen)
 - **Orchestration:** TypeScript orchestrator (`src/lib/orchestration/*`) coordinates retrieval + safety + model calls
 
@@ -71,14 +71,14 @@ This document is the Technology & Technical Design Decisions (TDD) reference for
 ## 10. Observability & Logging
 
 - **TS logging:** `pino`
-- **Python logging:** stdlib `logging` configured in `backend/app/core`
+- **Python logging:** stdlib `logging` configured in `src/backend/app/core`
 - **Telemetry:** optional Cloud Trace / ADK tracing (enabled via env)
 
 ## 11. Where to Find More Details
 
 - **Project instructions & LLM standards:** `/.github/instructions/Global Instructions.instructions.md`
 - **Architecture & PR plans:** `docs/plans/` (see PR3, PR3.1, PR3.2*)
-- **Service docs & verification:** `backend/README_SERVICES.md`, `backend/VERIFICATION_SUMMARY_PR3.2b.md`
+- **Service docs & verification:** `src/backend/README_SERVICES.md`, `src/backend/VERIFICATION_SUMMARY_PR3.2b.md`
 
 ## 12. Notes & Guidelines
 

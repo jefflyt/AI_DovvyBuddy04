@@ -42,18 +42,18 @@ Connect TypeScript Next.js frontend to Python FastAPI backend. Frontend makes AP
 
 ### Modified Modules
 
-1. **backend/app/main.py** — Update CORS configuration
+1. **src/backend/app/main.py** — Update CORS configuration
    - Add Next.js dev server origin: `http://localhost:3000`
    - Add Next.js preview origins (Vercel): `https://*.vercel.app`
    - Add production origin: `https://dovvybuddy.com` (for future)
    - Enable credentials: `allow_credentials=True`
    - Allow all headers and methods (for development convenience)
 
-2. **backend/app/core/config.py** — Add CORS origins configuration
+2. **src/backend/app/core/config.py** — Add CORS origins configuration
    - `CORS_ORIGINS`: List[str] from environment variable (comma-separated)
    - Default: `["http://localhost:3000", "http://localhost:3001"]`
 
-3. **backend/app/api/routes/chat.py** — Add CORS headers in response (if needed)
+3. **src/backend/app/api/routes/chat.py** — Add CORS headers in response (if needed)
    - FastAPI CORS middleware should handle, but verify
 
 ---
@@ -257,7 +257,7 @@ NEXT_PUBLIC_API_URL=/api
 1. **Start servers:**
    ```bash
    # Terminal 1: Python backend
-   cd backend && uvicorn app.main:app --reload
+   cd src/backend && uvicorn app.main:app --reload
    
    # Terminal 2: Next.js frontend
    pnpm dev
@@ -316,7 +316,7 @@ pnpm test:integration
 
 # Manual E2E (development)
 # Terminal 1:
-cd backend && uvicorn app.main:app --reload
+cd src/backend && uvicorn app.main:app --reload
 
 # Terminal 2:
 pnpm dev
@@ -327,7 +327,7 @@ pnpm dev
 ### Manual Verification Checklist
 
 **Setup:**
-- [ ] Python backend starts: `cd backend && uvicorn app.main:app --reload`
+- [ ] Python backend starts: `cd src/backend && uvicorn app.main:app --reload`
 - [ ] Next.js frontend starts: `pnpm dev`
 - [ ] `.env.local` has correct `BACKEND_URL`
 
@@ -696,10 +696,10 @@ After PR3.2e is merged:
 ### Files Modified
 
 **Backend:**
-- ✅ `backend/app/main.py` - Added CORS middleware with credentials support, regex for Vercel deployments
-- ✅ `backend/app/core/config.py` - Added cors_origins: List[str] with @field_validator for parsing
-- ✅ `backend/.env.example` - Added CORS_ORIGINS and CORS_ORIGIN_REGEX documentation
-- ✅ `backend/pyproject.toml` - Added pydantic-settings>=2.0.0 dependency
+- ✅ `src/backend/app/main.py` - Added CORS middleware with credentials support, regex for Vercel deployments
+- ✅ `src/backend/app/core/config.py` - Added cors_origins: List[str] with @field_validator for parsing
+- ✅ `src/backend/.env.example` - Added CORS_ORIGINS and CORS_ORIGIN_REGEX documentation
+- ✅ `src/backend/pyproject.toml` - Added pydantic-settings>=2.0.0 dependency
 
 **Frontend:**
 - ✅ `next.config.js` - Added async rewrites() for Python backend proxy (/api/* → backend)
@@ -738,12 +738,12 @@ After PR3.2e is merged:
 ### Issues Resolved During Implementation
 
 1. **Duplicate Python Environments:**
-   - Problem: Both root/.venv and backend/.venv existed
-   - Solution: Removed backend/.venv, kept single .venv at project root per Global Instructions
+   - Problem: Both root/.venv and src/backend/.venv existed
+   - Solution: Removed src/backend/.venv, kept single .venv at project root per Global Instructions
 
 2. **Missing pydantic-settings Dependency:**
    - Problem: ModuleNotFoundError for pydantic_settings
-   - Solution: Added to backend/pyproject.toml and installed via pip
+   - Solution: Added to src/backend/pyproject.toml and installed via pip
 
 3. **CORS Type Mismatch:**
    - Problem: cors_origins was str but needed List[str]
