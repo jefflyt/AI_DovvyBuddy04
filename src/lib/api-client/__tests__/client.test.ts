@@ -9,6 +9,7 @@ import type { ChatResponse, SessionResponse, LeadResponse } from '../types';
 
 // Mock fetch globally
 const mockFetch = vi.fn();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 global.fetch = mockFetch as any;
 
 describe('ApiClient', () => {

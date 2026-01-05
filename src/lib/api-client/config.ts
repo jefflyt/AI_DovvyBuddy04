@@ -13,25 +13,16 @@ export interface ApiClientConfig {
 
 /**
  * Get API base URL from environment
- * In development: use BACKEND_URL env var or default to Next.js API routes
- * In production: use relative path (proxied through Next.js)
+ * Server-side: direct connection to Python backend
+ * Client-side: proxied through Next.js (/api routes)
  */
 function getBaseURL(): string {
-  // Check if we should use Python backend
-  const usePythonBackend = process.env.NEXT_PUBLIC_USE_PYTHON_BACKEND !== 'false';
-  
-  if (!usePythonBackend) {
-    // Use TypeScript backend (Next.js API routes)
-    return '/api';
-  }
-
-  // Use Python backend
   if (typeof window === 'undefined') {
-    // Server-side: use BACKEND_URL env var
+    // Server-side: use BACKEND_URL env var (direct connection to Python backend)
     return process.env.BACKEND_URL || 'http://localhost:8000';
   }
   
-  // Client-side: use public API URL (proxied through Next.js)
+  // Client-side: use proxied API URL (handled by Next.js rewrites)
   return process.env.NEXT_PUBLIC_API_URL || '/api';
 }
 

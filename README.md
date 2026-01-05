@@ -23,10 +23,11 @@ DovvyBuddy is a diver-first AI assistant that provides:
 
 ### Prerequisites
 
-- Node.js 18+ (recommend 20+)
+- Node.js 18+ (recommend 20+) for frontend
+- Python 3.9+ for backend
 - pnpm (install via `npm install -g pnpm`)
 - PostgreSQL with pgvector extension (or Neon account)
-- LLM API keys (Groq for dev, Gemini for prod)
+- LLM API keys (Gemini for backend)
 
 ### Installation
 
@@ -35,17 +36,25 @@ DovvyBuddy is a diver-first AI assistant that provides:
 git clone https://github.com/jefflyt/AI_DovvyBuddy04.git
 cd AI_DovvyBuddy04
 
-# Install dependencies
+# Install frontend dependencies
 pnpm install
+
+# Set up Python backend
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -e backend/
 
 # Set up environment variables
 cp .env.example .env.local
 # Edit .env.local with your API keys and database URL
 
-# Run database migrations (once database is set up)
-pnpm db:migrate
+# Run database migrations (Python backend)
+cd backend && alembic upgrade head
 
-# Start development server
+# Start Python backend (in one terminal)
+cd backend && uvicorn app.main:app --reload
+
+# Start Next.js frontend (in another terminal)
 pnpm dev
 ```
 
@@ -70,28 +79,34 @@ AI_DovvyBuddy04/
 │   ├── references/               # External API docs and standards
 │   └── project-management/       # AI workflow guides
 │
+├── backend/                      # Python FastAPI backend ✅
+│   ├── app/
+│   │   ├── main.py               # FastAPI application
+│   │   ├── api/                  # API endpoints
+│   │   ├── agents/               # Multi-agent system
+│   │   ├── orchestration/        # Chat orchestration
+│   │   ├── services/             # Core services (LLM, RAG, embeddings)
+│   │   ├── db/                   # Database models & sessions
+│   │   ├── core/                 # Config & utilities
+│   │   └── prompts/              # System prompts
+│   ├── scripts/                  # Content management scripts
+│   ├── alembic/                  # Database migrations
+│   └── tests/                    # Backend tests
+│
 ├── src/
 │   ├── app/                      # Next.js App Router pages
-│   ├── components/               # React components (future)
-│   ├── lib/                      # Core services
-│   │   ├── agent/                # ADK multi-agent system (PR3.1) ✅
-│   │   ├── orchestration/        # Chat orchestration (PR3, PR3.1) ✅
-│   │   ├── model-provider/       # LLM abstraction (PR3) ✅
-│   │   ├── embeddings/           # Embedding providers (PR2) ✅
-│   │   ├── rag/                  # RAG pipeline (PR2) ✅
-│   │   ├── session/              # Session management (PR3) ✅
-│   │   └── prompts/              # System prompts (PR3) ✅
-│   ├── db/                       # Database schema & migrations (PR1) ✅
+│   ├── components/               # React components
+│   ├── lib/
+│   │   └── api-client/           # Frontend API client
 │   └── types/                    # TypeScript type definitions
 │
-├── content/                      # Curated diving content for RAG (PR2)
-├── tests/                        # Test files (Vitest)
+├── content/                      # Curated diving content for RAG
+├── tests/                        # Frontend integration tests
 ├── public/                       # Static assets
 │
-├── package.json
-├── next.config.js
+├── package.json                  # Frontend dependencies
+├── next.config.js                # Next.js config (proxies to Python backend)
 ├── tsconfig.json
-├── vitest.config.ts
 └── README.md                     # This file
 ```
 
@@ -101,15 +116,15 @@ AI_DovvyBuddy04/
 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
-| **Framework** | Next.js 14 (App Router) | Full-stack React framework |
-| **Language** | TypeScript | Type safety |
+| **Frontend** | Next.js 14 (App Router) | React framework with SSR |
+| **Backend** | Python FastAPI | Async API server |
+| **Language** | TypeScript (frontend) + Python (backend) | Type safety |
 | **Database** | PostgreSQL + pgvector | Relational data + vector search |
-| **Hosting** | Vercel | Serverless deployment |
-| **LLM (Dev)** | Groq (`llama-3.1-70b-versatile`) | Fast iteration |
-| **LLM (Prod)** | Gemini (`gemini-2.0-flash`) | Production quality |
+| **ORM** | SQLAlchemy + Alembic | Python database toolkit |
+| **Hosting** | Vercel (frontend) + Cloud Run (backend) | Serverless deployment |
+| **LLM** | Gemini (`gemini-2.0-flash`) | Production LLM |
 | **Email** | Resend API | Lead delivery |
-| **ORM** | Drizzle | Type-safe database queries |
-| **Testing** | Vitest + Playwright | Unit, integration, e2e |
+| **Testing** | Vitest (frontend) + pytest (backend) | Unit & integration tests |
 | **Styling** | Tailwind CSS | Utility-first CSS |
 
 ---
@@ -117,26 +132,34 @@ AI_DovvyBuddy04/
 ## 📜 Available Commands
 
 ```bash
-# Development
-pnpm dev              # Start dev server (http://localhost:3000)
-pnpm build            # Build for production
+# Frontend Development
+pnpm dev              # Start Next.js dev server (http://localhost:3000)
+pnpm build            # Build frontend for production
 pnpm start            # Start production server
 
+# Backend Development
+cd backend && uvicorn app.main:app --reload  # Start Python backend
+
 # Code Quality
-pnpm lint             # Run ESLint
+pnpm lint             # Run ESLint (frontend)
 pnpm typecheck        # Run TypeScript type checking
 pnpm format           # Format with Prettier
 
 # Testing
-pnpm test             # Run unit tests (Vitest)
+pnpm test             # Run frontend tests (Vitest)
 pnpm test:watch       # Run tests in watch mode
-pnpm test:e2e         # Run e2e tests (Playwright)
+pnpm test:integration # Run integration tests
+cd backend && pytest  # Run backend tests
 
-# Database
-pnpm db:generate      # Generate Drizzle migrations
-pnpm db:migrate       # Run migrations
-pnpm db:seed          # Seed database with sample data
-pnpm db:studio        # Open Drizzle Studio
+# Database (Python backend)
+cd backend && alembic upgrade head      # Run migrations
+cd backend && alembic revision --autogenerate -m "message"  # Create migration
+
+# Content Management (Python scripts)
+pnpm content:ingest   # Ingest content into database
+pnpm content:validate # Validate markdown content
+pnpm content:clear    # Clear embeddings
+pnpm benchmark:rag    # Benchmark RAG performance
 
 # Complete Check (run before committing)
 pnpm typecheck && pnpm lint && pnpm test && pnpm build
@@ -153,7 +176,7 @@ pnpm typecheck && pnpm lint && pnpm test && pnpm build
 - ✅ **PR2:** RAG Pipeline (content ingestion + retrieval)
 - ✅ **PR3:** Model Provider + Session Logic (Groq/Gemini + chat API)
 - ✅ **PR3.1:** Google ADK Multi-Agent RAG (specialized agents with tool use)
-- 🚧 **PR3.2:** Python-First Backend Migration (FastAPI + SQLAlchemy + async)
+- ✅ **PR3.2:** Python-First Backend Migration (FastAPI + SQLAlchemy + async)
 - 🔮 **PR4:** Lead Capture + Delivery (Resend email integration)
 - 🔮 **PR5:** Chat Interface + Integration (React UI + session persistence)
 - 🔮 **PR6:** Landing Page + Polish (E2E tests + launch prep)
@@ -208,9 +231,11 @@ Required environment variables (see `.env.example`):
 # Database
 DATABASE_URL=postgresql://...
 
-# LLM Providers
-LLM_PROVIDER=groq                      # groq | gemini
-GROQ_API_KEY=your_groq_key
+# Python Backend
+BACKEND_URL=http://localhost:8000  # Backend API URL (server-side)
+NEXT_PUBLIC_API_URL=/api           # Client-side API URL (proxied)
+
+# LLM Provider (Python backend)
 GEMINI_API_KEY=your_gemini_key
 
 # Session
