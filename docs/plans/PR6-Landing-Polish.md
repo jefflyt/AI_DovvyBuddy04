@@ -118,7 +118,7 @@ Complete Phase 4 (Polish & Launch) of the MASTER_PLAN by:
 
 **API Changes:**
 
-- **None required.** Analytics and error monitoring are client-side integrations (or middleware in Next.js).
+- **None required.** Python/FastAPI backend from PR3.2c-PR4 provides all necessary endpoints. Analytics and error monitoring are client-side or Next.js middleware integrations.
 
 **New Utilities (in `src/lib/analytics/`):**
 

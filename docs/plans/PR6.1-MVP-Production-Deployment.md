@@ -5,6 +5,8 @@
 **Date:** January 5, 2026  
 **Duration:** 3-5 days
 
+> **✅ ARCHITECTURE NOTE:** This plan is already Python/FastAPI-first. Backend migration (PR3.2a-e) is complete. Python is the sole backend implementation.
+
 ---
 
 ## Goal

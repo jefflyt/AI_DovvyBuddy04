@@ -3,7 +3,10 @@
 **Branch Name:** `feature/pr8a-auth-infrastructure`  
 **Status:** Planned  
 **Date:** December 29, 2025  
+**Updated:** January 8, 2026 (Backend clarification)  
 **Based on:** PR8-User-Auth-Profiles.md, MASTER_PLAN.md (V2 Roadmap)
+
+> **✅ BACKEND NOTE:** Auth implementation will use Python/FastAPI backend with appropriate auth library (e.g., FastAPI-Users, Python-JOSE for JWT, or Authlib). Frontend uses NextAuth.js for session management and token handling. Database migrations will use Alembic (Python). Original plan references may mention Next.js/Drizzle but implementation will be Python/SQLAlchemy.
 
 ---
 

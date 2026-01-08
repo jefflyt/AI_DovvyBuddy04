@@ -3,7 +3,10 @@
 **Branch Name:** `feature/pr8-user-auth-profiles`  
 **Status:** Planned  
 **Date:** December 29, 2025  
+**Updated:** January 8, 2026 (Backend clarification)  
 **Based on:** MASTER_PLAN.md (V2 Roadmap), DovvyBuddy-PSD-V6.2.md (V2 profiles + log)
+
+> **✅ BACKEND NOTE:** Auth implementation will use Python/FastAPI backend with appropriate auth library (e.g., FastAPI-Users, Python-JOSE for JWT). Frontend uses NextAuth.js for session management. Plans below reference TypeScript paths for frontend components only.
 
 ---
 

@@ -3,7 +3,10 @@
 **Branch Name:** `feature/pr7b-telegram-bot-adapter`  
 **Status:** Planned  
 **Date:** December 29, 2025  
+**Updated:** January 8, 2026 (Updated for Python backend)  
 **Based on:** MASTER_PLAN.md (V1.1 Telegram Integration)
+
+> **✅ ARCHITECTURE UPDATE:** Python/FastAPI backend (PR3.2c) already provides the agent service. No extraction needed (PR7a obsolete). This PR implements a Python Telegram bot that integrates directly with the existing FastAPI backend.
 
 ---
 
@@ -28,24 +31,26 @@ Implement a Telegram bot that connects to the ADK agent service and provides bas
 ### Dependencies
 
 **Upstream:**
-- **PR7a:** Agent service extracted and deployed to Cloud Run (REQUIRED).
-- **PR1-6:** Full web V1 functionality (database, RAG, sessions, lead capture, landing page).
+- **PR3.2c:** Python agent orchestration (✅ Complete - no PR7a extraction needed)
+- **PR1-6:** Full web V1 functionality (database, RAG, sessions, lead capture, landing page)
 
 **External:**
-- **Telegram Bot Token:** Obtained from @BotFather.
-- **Cloud Run:** Hosting for Telegram bot service.
-- **Database:** Access to existing Postgres instance (for sessions).
+- **Telegram Bot Token:** Obtained from @BotFather
+- **Cloud Run:** Hosting for Telegram bot service (or can run alongside FastAPI backend)
+- **Database:** Access to existing Postgres instance (for sessions)
 
 ### Assumptions
 
-- **Assumption:** Agent service from PR7a is deployed and accessible via `AGENT_SERVICE_URL`.
-- **Assumption:** Telegram bot uses **webhook mode** (not polling) for production efficiency.
-- **Assumption:** Session management reuses existing `sessions` table with `channel_type='telegram'` and `channel_user_id=<telegram_user_id>`.
-- **Assumption:** Telegram bot is **text-only** in V1.1 (no voice, photos, location sharing).
-- **Assumption:** Telegram bot username is `@DovvyBuddyBot` or similar (must be unique and available).
-- **Assumption:** Rate limiting per Telegram user ID prevents abuse (max 10 messages per minute per user).
-- **Assumption:** Bot privacy mode is **disabled** (bot can read all messages in 1-on-1 chats).
-- **Assumption:** Group chats are **disabled** in V1.1 (1-on-1 chats only).
+- **Assumption:** Python FastAPI backend from PR3.2c provides chat orchestration at `POST /api/chat`
+- **Assumption:** Telegram bot is implemented in **Python** (using `python-telegram-bot` library) for consistency with backend
+- **Assumption:** Telegram bot can be deployed as separate Cloud Run service OR integrated into existing FastAPI app
+- **Assumption:** Telegram bot uses **webhook mode** (not polling) for production efficiency
+- **Assumption:** Session management reuses existing `sessions` table with `channel_type='telegram'` and `channel_user_id=<telegram_user_id>`
+- **Assumption:** Telegram bot is **text-only** in V1.1 (no voice, photos, location sharing)
+- **Assumption:** Telegram bot username is `@DovvyBuddyBot` or similar (must be unique and available)
+- **Assumption:** Rate limiting per Telegram user ID prevents abuse (max 10 messages per minute per user)
+- **Assumption:** Bot privacy mode is **disabled** (bot can read all messages in 1-on-1 chats)
+- **Assumption:** Group chats are **disabled** in V1.1 (1-on-1 chats only)
 
 ---
 
@@ -86,18 +91,47 @@ Implement a Telegram bot that connects to the ADK agent service and provides bas
 
 ### Backend
 
-**New Telegram Bot Service:**
+**Implementation Approach:**
 
-Create standalone service in `src/telegram/`:
+Two options for Telegram bot implementation:
+
+**Option A: Separate Python Service** (Recommended for V1.1)
+- New standalone Python service using `python-telegram-bot` library
+- Communicates with FastAPI backend via HTTP (`POST /api/chat`)
+- Deployed as separate Cloud Run service
+- Simpler to develop and deploy independently
+
+**Option B: Integrated with FastAPI Backend** (Consider for V2)
+- Add Telegram bot handlers directly to FastAPI app
+- Share same codebase, database connections, and services
+- Single deployment unit
+- More complex but better resource utilization
+
+**Recommended:** Option A for V1.1 (clean separation, faster development)
+
+**New Telegram Bot Service Structure (Option A):**
+
+Create standalone Python service in `src/telegram-bot/`:
 
 ```
-src/telegram/
-├── server.ts                  # Express/Fastify webhook server
-├── bot.ts                     # Telegram bot client (telegraf)
+src/telegram-bot/
+├── main.py                     # Bot entry point, webhook setup
 ├── handlers/
-│   ├── webhook-handler.ts    # Processes incoming Telegram updates
-│   ├── message-handler.ts    # Handles text messages
-│   ├── command-handler.ts    # Handles /start, /help, /newchat commands
+│   ├── message.py             # Text message handler
+│   ├── command.py             # /start, /help, /newchat commands
+│   └── error.py               # Error handler
+├── services/
+│   ├── backend_client.py      # HTTP client for FastAPI backend
+│   ├── session_manager.py     # Telegram session management
+│   └── rate_limiter.py        # Per-user rate limiting
+├── utils/
+│   ├── logger.py              # Structured logging
+│   └── formatter.py           # Message formatting (Markdown/HTML)
+├── config.py                  # Configuration (env vars)
+├── Dockerfile                 # Container for Cloud Run
+├── requirements.txt           # Python dependencies
+└── README.md                  # Bot documentation
+```
 │   └── error-handler.ts      # Formats errors for Telegram
 ├── services/
 │   ├── session-manager.ts    # Maps Telegram user ID to session ID

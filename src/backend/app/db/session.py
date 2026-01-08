@@ -70,3 +70,10 @@ def SessionLocal() -> Session:
         engine = get_sync_engine()
         _sync_session_factory = sessionmaker(bind=engine, autocommit=False, autoflush=False)
     return _sync_session_factory()
+
+
+async def get_db() -> AsyncSession:
+    """Dependency for FastAPI routes to get database session."""
+    async_session = get_session()
+    async with async_session() as session:
+        yield session

@@ -63,6 +63,12 @@ class Settings(BaseSettings):
     # Prompt Configuration
     system_prompt_version: str = "v1"
     include_safety_disclaimer: bool = True
+    
+    # Lead Capture & Delivery Configuration
+    resend_api_key: str = ""
+    lead_email_to: str = ""
+    lead_email_from: str = "leads@dovvybuddy.com"
+    lead_webhook_url: Optional[str] = None
 
 
 settings = Settings()

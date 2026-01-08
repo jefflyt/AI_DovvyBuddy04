@@ -1,11 +1,28 @@
 # PR7a: Extract Agent Service to Cloud Run (Prerequisite for Telegram)
 
 **Branch Name:** `feature/pr7a-agent-service-extraction`  
-**Status:** Planned  
+**Status:** ~~Planned~~ **OBSOLETE**  
 **Date:** December 29, 2025  
 **Based on:** MASTER_PLAN.md (Post-Phase 4, V1.1 Telegram Preparation)
 
+> **⚠️ OBSOLETE:** This PR is no longer needed. The agent orchestration logic was implemented directly in Python/FastAPI backend (PR3.2c) and is already a standalone service. The backend can serve multiple channels (web, Telegram) without requiring extraction.
+>
+> **Migration Complete:** Python backend at `src/backend/` already contains:
+> - Agent orchestration (`app/agents/`)
+> - RAG pipeline (`app/services/rag/`)
+> - Session management (`app/db/repositories/session_repository.py`)
+> - Multi-agent routing (certification, trip, safety agents)
+> - FastAPI service ready for Cloud Run deployment
+>
+> **Next Steps:** 
+> - Skip to **PR7b** (Telegram Bot Adapter) which will integrate directly with existing Python backend
+> - No extraction or refactoring needed
+
 ---
+
+## Original Plan Summary (Historical Context)
+
+This PR was originally planned to extract agent logic from Next.js API routes into a standalone Cloud Run service. However, during PR3.2a-PR3.2e, the decision was made to implement the entire backend in Python/FastAPI, which naturally created the standalone service architecture this PR intended to achieve.
 
 ## 1. Feature/Epic Summary
 

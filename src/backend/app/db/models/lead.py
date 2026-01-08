@@ -10,12 +10,7 @@ class Lead(Base):
     __tablename__ = "leads"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    email = Column(String, nullable=False)
-    name = Column(String, nullable=True)
-    phone = Column(String, nullable=True)
-    source = Column(String, nullable=True)
-    session_id = Column(UUID(as_uuid=True), nullable=True)
-    metadata_ = Column(
-        "metadata", JSONB, nullable=True
-    )  # Use metadata_ to avoid SQLAlchemy conflict
+    type = Column(String, nullable=False)  # 'training' or 'trip'
+    diver_profile = Column(JSONB, nullable=True)  # Session context diver profile
+    request_details = Column(JSONB, nullable=False)  # Lead-specific request data
     created_at = Column(DateTime(timezone=True), server_default=func.now())
