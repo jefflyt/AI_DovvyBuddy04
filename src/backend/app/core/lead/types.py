@@ -95,7 +95,11 @@ class LeadPayload(BaseModel):
                 return TrainingLeadData(**v)
             elif lead_type == LeadType.TRIP:
                 return TripLeadData(**v)
-        return v
+        # If v is already a TrainingLeadData or TripLeadData instance, return it
+        if isinstance(v, (TrainingLeadData, TripLeadData)):
+            return v
+        # This should never happen due to Pydantic validation
+        raise ValueError("Invalid data type")
 
 
 class DiverProfile(BaseModel):

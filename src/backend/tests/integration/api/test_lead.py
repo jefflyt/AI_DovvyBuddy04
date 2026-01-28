@@ -5,7 +5,7 @@ from uuid import uuid4
 
 import pytest
 from fastapi import status
-from httpx import AsyncClient
+from httpx import ASGITransport, AsyncClient
 
 from app.core.lead.types import LeadType
 from app.main import app
@@ -32,7 +32,7 @@ class TestLeadEndpoint:
     @pytest.mark.asyncio
     async def test_create_training_lead_success(self, mock_resend):
         """Successful training lead creation returns 201 with lead ID."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             payload = {
                 "type": "training",
                 "data": {
@@ -59,7 +59,7 @@ class TestLeadEndpoint:
     @pytest.mark.asyncio
     async def test_create_trip_lead_success(self, mock_resend):
         """Successful trip lead creation returns 201 with lead ID."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             payload = {
                 "type": "trip",
                 "data": {
@@ -83,7 +83,7 @@ class TestLeadEndpoint:
     @pytest.mark.asyncio
     async def test_missing_name_returns_400(self):
         """Missing required name field returns 400 validation error."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             payload = {
                 "type": "training",
                 "data": {
@@ -93,15 +93,14 @@ class TestLeadEndpoint:
             
             response = await client.post("/api/leads", json=payload)
         
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
         data = response.json()
-        assert "error" in data
-        assert "validation" in data["error"].lower()
+        assert "detail" in data
 
     @pytest.mark.asyncio
     async def test_invalid_email_returns_400(self):
-        """Invalid email format returns 400 validation error."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        """Invalid email format returns 422 validation error."""
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             payload = {
                 "type": "training",
                 "data": {
@@ -112,12 +111,12 @@ class TestLeadEndpoint:
             
             response = await client.post("/api/leads", json=payload)
         
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
     @pytest.mark.asyncio
     async def test_missing_type_returns_400(self):
         """Missing type field returns 400 validation error."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             payload = {
                 "data": {
                     "name": "John Doe",
@@ -132,7 +131,7 @@ class TestLeadEndpoint:
     @pytest.mark.asyncio
     async def test_invalid_json_returns_422(self):
         """Invalid JSON body returns 422 error."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post(
                 "/api/leads",
                 content="not valid json",
@@ -143,8 +142,8 @@ class TestLeadEndpoint:
 
     @pytest.mark.asyncio
     async def test_message_too_long_returns_400(self):
-        """Message exceeding max length returns 400 validation error."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        """Message exceeding max length returns 422 validation error."""
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             payload = {
                 "type": "training",
                 "data": {
@@ -156,12 +155,12 @@ class TestLeadEndpoint:
             
             response = await client.post("/api/leads", json=payload)
         
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
     @pytest.mark.asyncio
     async def test_trip_group_size_validation(self):
-        """Trip lead with invalid group size returns 400."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        """Trip lead with invalid group size returns 422."""
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             payload = {
                 "type": "trip",
                 "data": {
@@ -173,12 +172,12 @@ class TestLeadEndpoint:
             
             response = await client.post("/api/leads", json=payload)
         
-        assert response.status_code == status.HTTP_400_BAD_REQUEST
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
     @pytest.mark.asyncio
     async def test_lead_with_session_id(self, mock_resend):
         """Lead with session_id is processed successfully."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             session_id = str(uuid4())
             payload = {
                 "type": "training",

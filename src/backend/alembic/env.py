@@ -3,6 +3,10 @@ import os
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Import all models so alembic can detect them for autogenerate
 from app.db.base import Base
@@ -11,6 +15,15 @@ from app.db.models import SessionModel, ContentEmbedding, Lead, Destination, Div
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+# Override sqlalchemy.url with environment variable (convert asyncpg to psycopg2)
+database_url = os.getenv("DATABASE_URL", "")
+if database_url:
+    # Alembic needs synchronous driver (psycopg2), not asyncpg
+    sync_url = database_url.replace("postgresql+asyncpg://", "postgresql://")
+    # Fix SSL parameter format for psycopg2 (ssl=require -> sslmode=require)
+    sync_url = sync_url.replace("ssl=require", "sslmode=require")
+    config.set_main_option("sqlalchemy.url", sync_url)
 
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:

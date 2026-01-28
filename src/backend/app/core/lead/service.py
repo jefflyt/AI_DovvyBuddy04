@@ -93,14 +93,15 @@ async def deliver_lead(lead: LeadRecord, resend_client, config) -> None:
         reply_to = lead.request_details.get("email")
         
         # Send email via Resend
-        response = resend_client.emails.send({
+        params = {
             "from": from_email,
-            "to": to_email,
-            "reply_to": reply_to,
+            "to": [to_email],
+            "reply_to": [reply_to],
             "subject": subject,
             "html": html_body,
             "text": text_body,
-        })
+        }
+        response = resend_client.Emails.send(params)
         
         logger.info(f"Lead notification delivered successfully: {lead.id}, email_id: {response.get('id')}")
         
