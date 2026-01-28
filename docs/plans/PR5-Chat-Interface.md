@@ -99,30 +99,30 @@ Connect the frontend chat interface to the backend API (`/api/chat`, `/api/lead`
 
 ### Backend
 
-**APIs to Modify:**
+> **✅ IMPLEMENTATION STATUS:** Python/FastAPI backend from PR3.2c already provides all required endpoints. This section documents the existing API contract that the frontend will integrate with.
 
-- **`POST /api/chat`** (existing from PR3):
-  - Add session cookie handling (set `Set-Cookie: sessionId=<uuid>; HttpOnly; Secure; SameSite=Strict; Max-Age=86400` on session creation).
-  - Accept sessionId from cookie OR request body (cookie takes precedence).
-  - Return sessionId in response body for localStorage fallback.
-- **`POST /api/lead`** (existing from PR4):
-  - No changes needed (already accepts lead payloads).
+**Existing APIs (No Changes Needed):**
 
-**New Endpoints:**
+- **`POST /api/chat`** (implemented in `app/api/routes/chat.py` from PR3.2c):
+  - ✅ Accepts `{ sessionId?: string, message: string }`
+  - ✅ Returns `{ sessionId: string, response: string, metadata?: object }`
+  - ✅ Creates new session if sessionId not provided
+  - ✅ Retrieves session history and context
+  - ✅ Orchestrates RAG retrieval and agent response
+  - ✅ Updates session with new message pair
+  - ✅ Input validation already implemented (Pydantic)
+  - ✅ Error handling returns structured JSON errors
 
-- **`POST /api/session/new`** (optional, for explicit "New Chat" button):
-  - Create a new session, return `{ sessionId: string }`.
-  - Alternative: Frontend can simply discard old sessionId and let `/api/chat` create a new one on next message.
+- **`POST /api/leads`** (implemented in `app/api/routes/lead.py` from PR4):
+  - ✅ Accepts `{ type: 'training' | 'trip', data: { name, email, ... } }`
+  - ✅ Returns `{ success: boolean, leadId?: string, error?: string }`
+  - ✅ Validation, capture, and email delivery fully implemented
 
-**Services/Modules:**
+**Optional Enhancements (Deferred to Future PRs):**
 
-- Minor: Session service may need to support cookie-based session retrieval (if not already).
-
-**Validation/Auth/Error Handling:**
-
-- **Rate Limiting:** Add simple rate limiting to `/api/chat` (max 10 requests/minute per IP or session).
-- **Input Validation:** Ensure message length is capped (e.g., max 1000 chars).
-- **Error Responses:** Return structured JSON errors: `{ error: string, code: string }` for client-side handling.
+- Session cookie handling (HTTP-only cookies) - currently using localStorage only
+- Rate limiting per IP/session (can be added as middleware)
+- `POST /api/session/new` endpoint for explicit new chat (frontend can discard sessionId instead)
 
 ### Data
 
@@ -150,8 +150,10 @@ Connect the frontend chat interface to the backend API (`/api/chat`, `/api/lead`
 
 **Deployment Considerations:**
 
-- Vercel deployment: No special config needed.
-- Ensure API routes have appropriate timeout settings (Vercel default is 10s for Hobby tier, sufficient for LLM + RAG).
+- Vercel deployment for Next.js frontend: No special config needed.
+- Python backend already deployed (PR3.2c) or runs locally on port 8000.
+- Next.js dev environment proxies `/api/*` requests to Python backend (configured in `next.config.js`).
+- Ensure Python backend timeout is sufficient for LLM + RAG calls (already configured in FastAPI).
 
 ---
 
@@ -199,34 +201,25 @@ Deliver a fully functional chat interface where users can:
 
 ### Backend Changes
 
-**API Modifications:**
+> **✅ NO BACKEND CHANGES REQUIRED.** Python/FastAPI backend from PR3.2c and PR4 already provides all necessary endpoints.
 
-- **`POST /api/chat`:**
-  - Accept `sessionId` from HTTP-only cookie (`req.cookies.sessionId`) OR request body.
-  - If no sessionId provided, create new session.
-  - Set `Set-Cookie` header on response with sessionId (HttpOnly, Secure, SameSite=Strict, Max-Age=86400).
-  - Return sessionId in response body as well (for localStorage fallback).
-  - Add input validation: `message` must be string, 1-1000 chars.
-  - Add basic rate limiting (in-memory map: sessionId → timestamp[], max 10 requests/min).
-  - Return structured errors: `{ error: string, code: 'RATE_LIMIT' | 'INVALID_INPUT' | 'SERVER_ERROR' }`.
+**Existing Endpoints (Ready to Use):**
 
-**New Utility/Service:**
+- **`POST /api/chat`** (from PR3.2c):
+  - Request: `{ sessionId?: string, message: string }`
+  - Response: `{ sessionId: string, response: string, metadata?: object }`
+  - Handles session creation, retrieval, RAG orchestration, agent routing
+  
+- **`POST /api/leads`** (from PR4):
+  - Request: `{ type: 'training' | 'trip', data: { ... } }`
+  - Response: `{ success: boolean, leadId?: string }`
+  - Handles lead validation, capture, and email delivery
 
-- **`src/lib/utils/rate-limiter.ts`:**
-  - Simple in-memory rate limiter (map of sessionId → request timestamps).
-  - `checkRateLimit(sessionId: string): boolean` — returns true if under limit.
-  - Cleanup old entries periodically (or use LRU cache).
+**Optional Future Enhancements (Out of Scope for PR5):**
 
-**Auth/Validation:**
-
-- No authentication (guest sessions).
-- Validate all user inputs (message length, lead form fields).
-
-**Error Handling:**
-
-- Wrap API route handlers in try/catch.
-- Log errors with context (sessionId, message preview, stack trace).
-- Return user-friendly error messages (no stack traces).
+- Rate limiting middleware (FastAPI `slowapi` or similar)
+- Session cookie support (currently localStorage only)
+- Streaming responses via SSE (Server-Sent Events)
 
 ---
 

@@ -36,7 +36,7 @@ This guide covers:
 
 ### Required Access
 
-- Neon database connection string (in `.env.local` or `backend/.env`)
+- Neon database connection string (in `.env.local` or `src/backend/.env`)
 - PostgreSQL client (`psql`) installed
 - Backend Python environment set up
 - API keys for embedding generation (Gemini API)
@@ -80,7 +80,7 @@ If the JSON structure includes new fields that require database schema updates:
 
 ```bash
 # From backend directory
-cd backend
+cd src/backend
 
 # Create new Alembic migration
 alembic revision --autogenerate -m "Add new fields for [feature name]"
@@ -99,7 +99,7 @@ psql "$DATABASE_URL" -c "\d [table_name]"
 
 If new JSON fields need to be processed:
 
-1. Update Pydantic models in `backend/app/db/models/`
+1. Update Pydantic models in `src/backend/app/db/models/`
 2. Update repository methods if needed
 3. Test locally
 
@@ -131,7 +131,7 @@ psql "$DATABASE_URL" -c "SELECT COUNT(*) FROM content_embeddings;"
 psql "$DATABASE_URL" -c "SELECT DISTINCT content_path FROM content_embeddings WHERE created_at > NOW() - INTERVAL '1 hour';"
 
 # Test retrieval
-cd backend
+cd src/backend
 python -m scripts.test_rag "Tell me about [new destination/certification]"
 ```
 
@@ -199,7 +199,7 @@ psql "$DATABASE_URL" -c "SELECT COUNT(*) FROM content_embeddings WHERE content_p
 **5. Test:**
 
 ```bash
-cd backend
+cd src/backend
 python -m scripts.test_rag "What are the best dive sites in Bali?"
 python -m scripts.test_rag "When is the best time to dive in Bali?"
 ```
@@ -287,7 +287,7 @@ psql "$DATABASE_URL" -c "SELECT content_path, LEFT(chunk_text, 100) FROM content
 **5. Test:**
 
 ```bash
-cd backend
+cd src/backend
 python -m scripts.test_rag "What is SSI Advanced Adventurer certification?"
 python -m scripts.test_rag "What are the prerequisites for SSI Advanced Adventurer?"
 ```
@@ -354,7 +354,7 @@ psql "$DATABASE_URL" -c "SELECT DISTINCT substring(content_path from '^[^/]+') a
 **5. Run Integration Tests:**
 
 ```bash
-cd backend
+cd src/backend
 pytest tests/integration/services/test_rag_integration.py -v
 
 # Expected: All tests pass
@@ -540,7 +540,7 @@ pnpm tsx scripts/ingest-content.ts --dir content/destinations/[NewDestination]
 psql "$DATABASE_URL" -c "SELECT COUNT(*) FROM content_embeddings WHERE content_path LIKE '%[NewDestination]%';"
 
 # 7. Test retrieval
-cd backend
+cd src/backend
 python -m scripts.test_rag "Tell me about diving in [NewDestination]"
 ```
 
@@ -562,7 +562,7 @@ pnpm tsx scripts/ingest-content.ts --file content/certifications/[provider]/[cou
 
 # 5. Verify and test
 psql "$DATABASE_URL" -c "SELECT * FROM content_embeddings WHERE content_path LIKE '%[course-name]%';"
-cd backend
+cd src/backend
 python -m scripts.test_rag "What is [course-name] certification?"
 ```
 
@@ -693,13 +693,13 @@ pnpm tsx scripts/clear-embeddings.ts
 
 ```bash
 # RAG test
-cd backend && python -m scripts.test_rag "your query"
+cd src/backend && python -m scripts.test_rag "your query"
 
 # Integration tests
-cd backend && pytest tests/integration/services/test_rag_integration.py -v
+cd src/backend && pytest tests/integration/services/test_rag_integration.py -v
 
 # Manual embedding test
-cd backend && python -m scripts.test_embeddings "test text"
+cd src/backend && python -m scripts.test_embeddings "test text"
 ```
 
 ### Database Maintenance
@@ -764,7 +764,7 @@ psql "$DATABASE_URL" -c "REINDEX TABLE content_embeddings;"
 - **Content Ingestion Guide:** `docs/technical/content-ingestion-guide.md`
 - **Database Schema:** `docs/plans/PR1-Database-Schema.md`
 - **RAG Pipeline:** `docs/plans/PR3.2b-Core-Services.md`
-- **Backend Setup:** `backend/README.md`
+- **Backend Setup:** `src/backend/README.md`
 
 ---
 

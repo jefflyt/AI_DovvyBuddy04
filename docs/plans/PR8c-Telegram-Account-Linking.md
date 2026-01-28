@@ -3,7 +3,10 @@
 **Branch Name:** `feature/pr8c-telegram-account-linking`  
 **Status:** Planned  
 **Date:** December 29, 2025  
+**Updated:** January 8, 2026 (Backend clarification)  
 **Based on:** PR8-User-Auth-Profiles.md, PR8a-Auth-Infrastructure.md, PR8b-Web-UI-Auth-Integration.md
+
+> **✅ BACKEND NOTE:** Account linking will be implemented in Python/FastAPI backend with Python Telegram bot integration. Original plan paths reference TypeScript but implementation will be Python-based.
 
 ---
 

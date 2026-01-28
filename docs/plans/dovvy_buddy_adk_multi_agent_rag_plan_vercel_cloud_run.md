@@ -6,7 +6,7 @@
 ---
 
 ## 0) Assumptions
-- Monorepo (`backend/`, `frontend/`) but deployed as **two independent surfaces**.
+- Monorepo (`src/backend/`, `frontend/`) but deployed as **two independent surfaces**.
 - Backend exposes **REST + SSE** (streaming) endpoints.
 - RAG retrieval uses either **Vertex AI RAG Engine** or your own vector store (choose one and keep a single tool wrapper).
 
@@ -30,7 +30,7 @@
 
 ```
 dovvybuddy/
-  backend/
+  src/backend/
     agents/
       orchestrator.py
       retriever.py

@@ -158,7 +158,7 @@ export default function ChatPage() {
             >
               <div style={{ fontSize: '0.875rem', color: '#0066cc' }}>
                 <p>
-                  👋 <strong>Welcome!</strong> I'm your AI diving assistant.
+                  👋 <strong>Welcome!</strong> I&apos;m your AI diving assistant.
                 </p>
                 <p>Ask me about:</p>
                 <ul style={{ marginTop: '0.5rem', paddingLeft: '1.5rem' }}>

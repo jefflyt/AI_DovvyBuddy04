@@ -3,7 +3,10 @@
 **Branch Name:** `feature/pr8b-web-ui-auth-integration`  
 **Status:** Planned  
 **Date:** December 29, 2025  
+**Updated:** January 8, 2026 (Backend clarification)  
 **Based on:** PR8-User-Auth-Profiles.md, PR8a-Auth-Infrastructure.md
+
+> **✅ BACKEND NOTE:** Frontend will integrate with Python/FastAPI auth endpoints (from PR8a) using NextAuth.js for session management. API calls go to FastAPI backend. Original plan focuses on React/Next.js frontend components.
 
 ---
 

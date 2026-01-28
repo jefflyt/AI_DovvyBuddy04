@@ -35,13 +35,13 @@ This guide explains how to ingest **markdown content** for RAG (Retrieval-Augmen
 ### System Requirements
 
 - Python 3.9+ installed
-- Backend dependencies installed (`pip install -e .` from `backend/` directory)
+- Backend dependencies installed (`pip install -e .` from `src/backend/` directory)
 - PostgreSQL with pgvector extension enabled
 - Access to Gemini API (for embeddings)
 
 ### Environment Setup
 
-Ensure your `backend/.env` file contains:
+Ensure your `src/backend/.env` file contains:
 
 ```bash
 # API Keys
@@ -205,7 +205,7 @@ Once PR3.2d is complete, use the Python script:
 
 ```bash
 # From backend directory
-cd backend
+cd src/backend
 
 # Ingest all content
 python -m scripts.ingest_content
@@ -246,7 +246,7 @@ psql "$DATABASE_URL" -c "SELECT id, content_path, LEFT(chunk_text, 100) as previ
 
 ```bash
 # From backend directory
-cd backend
+cd src/backend
 
 # Test query related to new content
 python -m scripts.test_rag "What can you tell me about [New Destination]?"
@@ -269,7 +269,7 @@ pytest tests/integration/services/test_rag_integration.py -v
 
 ### Chunking Parameters
 
-Default configuration in `backend/app/core/config.py`:
+Default configuration in `src/backend/app/core/config.py`:
 
 ```python
 RAG_CHUNK_SIZE = 512         # Target chunk size in tokens
@@ -278,7 +278,7 @@ RAG_CHUNK_OVERLAP = 50       # Overlap between chunks (tokens)
 
 **To customize chunking:**
 
-1. Edit `backend/app/services/rag/chunker.py`
+1. Edit `src/backend/app/services/rag/chunker.py`
 2. Adjust `chunk_size` and `overlap` parameters
 3. Or set environment variables:
    ```bash
@@ -297,7 +297,7 @@ EMBEDDING_BATCH_SIZE = 100              # Max texts per API call
 
 **To customize:**
 
-Set in `backend/.env`:
+Set in `src/backend/.env`:
 ```bash
 EMBEDDING_MODEL=text-embedding-004
 EMBEDDING_BATCH_SIZE=50  # Reduce if hitting rate limits
@@ -340,7 +340,7 @@ pnpm tsx scripts/ingest-content.ts --dir content/destinations/Bali-Indonesia
 psql "$DATABASE_URL" -c "SELECT COUNT(*) FROM content_embeddings WHERE content_path LIKE '%Bali-Indonesia%';"
 
 # 8. Test RAG retrieval
-cd backend
+cd src/backend
 python -m scripts.test_rag "Tell me about diving in Bali"
 ```
 
@@ -376,7 +376,7 @@ pnpm tsx scripts/ingest-content.ts
 psql "$DATABASE_URL" -c "SELECT COUNT(*) FROM content_embeddings;"
 
 # 5. Run full integration tests
-cd backend
+cd src/backend
 pytest tests/integration/services/test_rag_integration.py -v
 ```
 
@@ -392,7 +392,7 @@ psql "$DATABASE_URL" -c "CREATE TABLE content_embeddings_backup AS SELECT * FROM
 pnpm tsx scripts/clear-embeddings.ts
 
 # 3. Update embedding model in config
-# Edit backend/.env:
+# Edit src/backend/.env:
 # EMBEDDING_MODEL=new-model-name
 
 # 4. Re-ingest all content
@@ -402,7 +402,7 @@ pnpm tsx scripts/ingest-content.ts
 psql "$DATABASE_URL" -c "SELECT COUNT(*), AVG(array_length(embedding::text::float[], 1)) as avg_dims FROM content_embeddings;"
 
 # 6. Test retrieval quality
-cd backend
+cd src/backend
 pytest tests/integration/services/test_rag_integration.py -v
 ```
 
@@ -529,7 +529,7 @@ psql "$DATABASE_URL" -c "SELECT indexname, indexdef FROM pg_indexes WHERE tablen
 **Query performance:**
 ```bash
 # Test retrieval speed
-cd backend
+cd src/backend
 python -m scripts.benchmark_rag --queries 10
 ```
 
@@ -592,7 +592,7 @@ Target: <500ms P95 latency for RAG retrieval
 ### Related Documentation
 
 - **Neon Database Update Guide:** `docs/technical/neon-database-update-guide.md` ⭐ (for structured data)
-- **Backend Services:** `backend/VERIFICATION_SUMMARY_PR3.2b.md`
+- **Backend Services:** `src/backend/VERIFICATION_SUMMARY_PR3.2b.md`
 - **RAG Pipeline:** `docs/plans/PR3.2b-Core-Services.md`
 - **Database Schema:** `docs/plans/PR1-Database-Schema.md`
 - **Master Plan:** `docs/plans/MASTER_PLAN.md`
@@ -620,7 +620,7 @@ pnpm tsx scripts/ingest-content.ts --file content/path/to/file.md
 pnpm tsx scripts/clear-embeddings.ts
 
 # Test RAG (Python)
-cd backend && python -m scripts.test_rag "your query here"
+cd src/backend && python -m scripts.test_rag "your query here"
 
 # Check embedding count
 psql "$DATABASE_URL" -c "SELECT COUNT(*) FROM content_embeddings;"
