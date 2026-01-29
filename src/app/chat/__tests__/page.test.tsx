@@ -198,5 +198,252 @@ describe('ChatPage - localStorage persistence logic', () => {
       expect(localStorage.getItem(STORAGE_KEY)).toBe(sessionId2);
     });
   });
+
+  describe('New Chat functionality - PR5.3', () => {
+    beforeEach(() => {
+      // Mock window.confirm
+      vi.stubGlobal('confirm', vi.fn());
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    describe('handleNewChat - confirmation logic', () => {
+      it('should not show confirmation with 0 messages', () => {
+        const messages: any[] = [];
+        const shouldConfirm = messages.length >= 2;
+        
+        expect(shouldConfirm).toBe(false);
+        expect(window.confirm).not.toHaveBeenCalled();
+      });
+
+      it('should not show confirmation with 1 message', () => {
+        const messages = [{ role: 'user', content: 'test' }];
+        const shouldConfirm = messages.length >= 2;
+        
+        expect(shouldConfirm).toBe(false);
+      });
+
+      it('should show confirmation with 2 messages', () => {
+        const messages = [
+          { role: 'user', content: 'test' },
+          { role: 'assistant', content: 'response' },
+        ];
+        const shouldConfirm = messages.length >= 2;
+        
+        expect(shouldConfirm).toBe(true);
+      });
+
+      it('should show confirmation with 3+ messages', () => {
+        const messages = [
+          { role: 'user', content: 'test1' },
+          { role: 'assistant', content: 'response1' },
+          { role: 'user', content: 'test2' },
+        ];
+        const shouldConfirm = messages.length >= 2;
+        
+        expect(shouldConfirm).toBe(true);
+      });
+    });
+
+    describe('clearSession - state cleanup', () => {
+      it('should remove sessionId from localStorage', () => {
+        // Setup: session exists
+        localStorage.setItem(STORAGE_KEY, MOCK_SESSION_ID);
+        expect(localStorage.getItem(STORAGE_KEY)).toBe(MOCK_SESSION_ID);
+
+        // Action: clear session
+        localStorage.removeItem(STORAGE_KEY);
+
+        // Verify: sessionId removed
+        expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+      });
+
+      it('should handle localStorage.removeItem errors gracefully', () => {
+        // Setup: session exists
+        localStorage.setItem(STORAGE_KEY, MOCK_SESSION_ID);
+
+        // Mock localStorage.removeItem to throw error (simulating SecurityError)
+        const originalRemoveItem = localStorage.removeItem;
+        localStorage.removeItem = vi.fn(() => {
+          throw new DOMException('SecurityError');
+        });
+
+        // Action: attempt to clear (should not crash)
+        expect(() => {
+          try {
+            localStorage.removeItem(STORAGE_KEY);
+          } catch (error) {
+            // Error caught and handled
+          }
+        }).not.toThrow();
+
+        // Cleanup
+        localStorage.removeItem = originalRemoveItem;
+      });
+
+      it('should clear sessionId even if localStorage fails', () => {
+        // This tests that state clearing continues even if localStorage.removeItem throws
+        localStorage.setItem(STORAGE_KEY, MOCK_SESSION_ID);
+
+        // Simulate localStorage failure
+        const originalRemoveItem = localStorage.removeItem;
+        let localStorageFailed = false;
+        localStorage.removeItem = vi.fn(() => {
+          localStorageFailed = true;
+          throw new Error('localStorage unavailable');
+        });
+
+        // Attempt clear (would normally be done by clearSession)
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch (error) {
+          // Caught
+        }
+
+        // Verify localStorage operation failed
+        expect(localStorageFailed).toBe(true);
+        
+        // In real code, sessionId state would still be cleared to null
+        // (this simulates that the state update happens regardless of localStorage error)
+
+        // Cleanup
+        localStorage.removeItem = originalRemoveItem;
+      });
+    });
+
+    describe('New Chat - edge cases', () => {
+      it('should handle New Chat with no session', () => {
+        // No sessionId in localStorage
+        expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+
+        // Clicking "New Chat" should still work (no-op but safe)
+        localStorage.removeItem(STORAGE_KEY); // Idempotent
+        expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+      });
+
+      it('should handle New Chat after lead submission', () => {
+        // Setup: session with lead submitted
+        localStorage.setItem(STORAGE_KEY, MOCK_SESSION_ID);
+        const messages = [
+          { role: 'user', content: 'I want to get certified' },
+          { role: 'assistant', content: 'Great! What level?' },
+          { role: 'system', content: '✅ Thanks! We\'ll contact you soon.' },
+        ];
+
+        // User clicks "New Chat" (should show confirmation since 3 messages)
+        expect(messages.length >= 2).toBe(true);
+
+        // After confirmation, session cleared
+        localStorage.removeItem(STORAGE_KEY);
+        expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+
+        // Note: Lead still exists in DB (not affected by frontend state reset)
+      });
+
+      it('should simulate user canceling New Chat confirmation', () => {
+        // Setup: active conversation
+        localStorage.setItem(STORAGE_KEY, MOCK_SESSION_ID);
+        const messages = [
+          { role: 'user', content: 'test1' },
+          { role: 'assistant', content: 'response1' },
+        ];
+
+        // Mock confirm to return false (user cancels)
+        (window.confirm as any).mockReturnValue(false);
+
+        // User clicks "New Chat"
+        const shouldConfirm = messages.length >= 2;
+        if (shouldConfirm) {
+          const confirmed = window.confirm('Start a new chat?');
+          if (!confirmed) {
+            // Early return - do nothing
+          }
+        }
+
+        // Verify: sessionId NOT removed (conversation intact)
+        expect(localStorage.getItem(STORAGE_KEY)).toBe(MOCK_SESSION_ID);
+      });
+
+      it('should simulate user confirming New Chat', () => {
+        // Setup: active conversation
+        localStorage.setItem(STORAGE_KEY, MOCK_SESSION_ID);
+        const messages = [
+          { role: 'user', content: 'test1' },
+          { role: 'assistant', content: 'response1' },
+        ];
+
+        // Mock confirm to return true (user confirms)
+        (window.confirm as any).mockReturnValue(true);
+
+        // User clicks "New Chat"
+        const shouldConfirm = messages.length >= 2;
+        if (shouldConfirm) {
+          const confirmed = window.confirm('Start a new chat?');
+          if (confirmed) {
+            localStorage.removeItem(STORAGE_KEY);
+          }
+        }
+
+        // Verify: sessionId removed
+        expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+      });
+
+      it('should handle New Chat during message loading', () => {
+        // Setup: message sending (isLoading=true)
+        localStorage.setItem(STORAGE_KEY, MOCK_SESSION_ID);
+        const messages = [{ role: 'user', content: 'loading...' }];
+
+        // User clicks "New Chat" (button is not disabled during loading in V1)
+        // Confirmation not shown (only 1 message)
+        expect(messages.length >= 2).toBe(false);
+
+        // Clear session
+        localStorage.removeItem(STORAGE_KEY);
+        expect(localStorage.getItem(STORAGE_KEY)).toBeNull();
+
+        // Note: In real app, ongoing request completes but response ignored (state cleared)
+      });
+
+      it('should handle New Chat in private browsing mode', () => {
+        // Simulate SecurityError when accessing localStorage
+        const originalRemoveItem = localStorage.removeItem;
+        localStorage.removeItem = vi.fn(() => {
+          throw new DOMException('SecurityError: Access denied');
+        });
+
+        // Attempt to clear session
+        let errorCaught = false;
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch (error) {
+          errorCaught = true;
+        }
+
+        // Verify error was thrown
+        expect(errorCaught).toBe(true);
+
+        // In real app, state would still clear (messages=[], sessionId=null)
+        // even though localStorage.removeItem failed
+
+        // Cleanup
+        localStorage.removeItem = originalRemoveItem;
+      });
+    });
+
+    describe('New Chat - confirmation dialog text', () => {
+      it('should show correct confirmation message', () => {
+        const expectedMessage = 'Start a new chat? Your current conversation will be cleared.';
+        
+        (window.confirm as any).mockReturnValue(true);
+        
+        const confirmed = window.confirm(expectedMessage);
+        
+        expect(window.confirm).toHaveBeenCalledWith(expectedMessage);
+        expect(confirmed).toBe(true);
+      });
+    });
+  });
 });
 

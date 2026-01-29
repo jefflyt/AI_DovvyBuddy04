@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { apiClient, type ChatResponse } from '@/lib/api-client';
+import { apiClient, type ChatResponse, ApiClientError } from '@/lib/api-client';
 import { LeadCaptureModal, type LeadFormData } from '@/components/chat/LeadCaptureModal';
 
 interface Message {
@@ -90,6 +90,29 @@ export default function ChatPage() {
     setSessionId(null);
     setMessages([]);
     setError(null);
+  };
+
+  /**
+   * Handle "New Chat" button click
+   * Shows confirmation if conversation has 2+ messages
+   */
+  const handleNewChat = () => {
+    // Show confirmation if conversation has started (2+ messages)
+    if (messages.length >= 2) {
+      const confirmed = window.confirm(
+        'Start a new chat? Your current conversation will be cleared.'
+      );
+      if (!confirmed) {
+        return; // User cancelled
+      }
+    }
+
+    // Clear session and state
+    clearSession();
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log('New chat started, session cleared');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -297,6 +320,13 @@ export default function ChatPage() {
 
   return (
     <main style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .new-chat-text {
+            display: none;
+          }
+        }
+      `}</style>
       <div
         style={{
           display: 'flex',
@@ -340,8 +370,33 @@ export default function ChatPage() {
             </p>
           </div>
           
-          {/* Lead capture buttons */}
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          {/* Action buttons */}
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {/* New Chat button */}
+            <button
+              onClick={handleNewChat}
+              aria-label="Start a new chat"
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: '#6b7280',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+              }}
+              title="Start a new chat"
+            >
+              <span style={{ fontSize: '1rem' }}>➕</span>
+              <span className="new-chat-text">New Chat</span>
+            </button>
+            
+            {/* Lead capture buttons */}
             <button
               onClick={() => handleOpenLeadForm('training')}
               disabled={!sessionId}
