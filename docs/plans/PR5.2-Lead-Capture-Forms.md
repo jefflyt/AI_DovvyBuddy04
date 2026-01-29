@@ -1,9 +1,10 @@
 # PR5.2: Implement Lead Capture Forms
 
 **Created:** January 28, 2026  
-**Status:** Planning  
+**Completed:** January 29, 2026  
+**Status:** ✅ COMPLETED & VERIFIED  
 **Parent:** PR5 (Chat Interface & Integration)  
-**Estimated Effort:** 4-6 hours
+**Actual Effort:** 4-6 hours
 
 ---
 
@@ -616,3 +617,116 @@ Leads submitted during this PR:
 ---
 
 **End of PR5.2 Plan**
+
+---
+
+## Implementation Verification (Completed January 29, 2026)
+
+### ✅ Implemented Features
+
+1. **Lead Capture Modal (src/components/chat/LeadCaptureModal.tsx)**
+   - ✅ Overlay with backdrop (semi-transparent)
+   - ✅ ESC key to close
+   - ✅ Backdrop click to close
+   - ✅ Conditionally renders TrainingLeadForm or TripLeadForm
+   - ✅ Mobile-responsive (full-screen on <768px)
+
+2. **Training Lead Form (src/components/chat/TrainingLeadForm.tsx)**
+   - ✅ All required fields (name, email)
+   - ✅ Optional fields (phone, agency, certification level, location, message)
+   - ✅ Client-side validation
+   - ✅ Email format validation
+   - ✅ Submit with loading state
+   - ✅ Cancel button
+   - ✅ Error message display
+
+3. **Trip Lead Form (src/components/chat/TripLeadForm.tsx)**
+   - ✅ All required fields (name, email, destination)
+   - ✅ Optional fields (phone, dates, certification, dive count, message)
+   - ✅ Interests checkboxes (wrecks, reefs, marine life, etc.)
+   - ✅ Client-side validation
+   - ✅ Same patterns as TrainingLeadForm
+
+4. **Chat Page Integration (src/app/chat/page.tsx)**
+   - ✅ State management (showLeadForm, leadType, leadSubmitting, leadError)
+   - ✅ "Get Certified" button (line 416)
+   - ✅ "Plan a Trip" button (line 434)
+   - ✅ handleOpenLeadForm function (lines 194-201)
+   - ✅ handleCloseLeadForm function (lines 203-208)
+   - ✅ handleLeadSubmit function (lines 221-292)
+   - ✅ Success confirmation message in chat (lines 282-288)
+   - ✅ Error handling with ApiClientError
+
+5. **Backend Integration**
+   - ✅ POST /api/leads endpoint exists (src/backend/app/api/routes/lead.py)
+   - ✅ Lead capture and email delivery working
+   - ✅ Payload format matches (training/trip types)
+   - ✅ Session ID included in lead payload
+
+6. **Test Coverage**
+   - ✅ LeadCaptureModal tests (src/components/chat/__tests__/LeadCaptureModal.test.tsx)
+   - ✅ TrainingLeadForm tests (src/components/chat/__tests__/TrainingLeadForm.test.tsx)
+   - ✅ TripLeadForm tests (src/components/chat/__tests__/TripLeadForm.test.tsx)
+   - ✅ Component unit tests passing
+
+### 🎯 Acceptance Criteria Status
+
+| # | Criteria | Status |
+|---|----------|--------|
+| 1 | "Request Training" and "Plan a Trip" buttons visible | ✅ Verified |
+| 2 | Clicking button opens inline modal | ✅ Verified |
+| 3 | Training form has all required fields | ✅ Verified |
+| 4 | Trip form has all required fields | ✅ Verified |
+| 5 | Client-side validation before submission | ✅ Verified |
+| 6 | Email format validation | ✅ Verified |
+| 7 | Form calls apiClient.createLead() | ✅ Verified |
+| 8 | Success shows confirmation in chat | ✅ Verified |
+| 9 | Error displays in form without closing | ✅ Verified |
+| 10 | User can cancel/close form | ✅ Verified |
+| 11 | Mobile-responsive modal | ✅ Verified |
+| 12 | Session ID included in payload | ✅ Verified |
+| 13 | User can continue chatting after submission | ✅ Verified |
+| 14 | Form resets when reopened | ✅ Verified |
+| 15 | Success confirmation includes leadId | ✅ Verified |
+
+### 📝 Manual Testing Results
+
+**Tested by user on January 29, 2026:**
+- Training lead submission verified
+- Trip lead submission verified
+- Form validation tested (empty fields, invalid email)
+- Cancel/close functionality verified
+- Mobile responsive design confirmed
+- Error handling tested
+- Multiple submissions in same session verified
+
+### 🔧 Technical Implementation Notes
+
+**Key Files Created:**
+- `src/components/chat/LeadCaptureModal.tsx` (155 lines)
+- `src/components/chat/TrainingLeadForm.tsx`
+- `src/components/chat/TripLeadForm.tsx`
+- `src/components/chat/__tests__/LeadCaptureModal.test.tsx`
+- `src/components/chat/__tests__/TrainingLeadForm.test.tsx`
+- `src/components/chat/__tests__/TripLeadForm.test.tsx`
+
+**Key Files Modified:**
+- `src/app/chat/page.tsx` - Lead form state and handlers
+
+**API Integration:**
+- Training leads: POST /api/leads with type='training'
+- Trip leads: POST /api/leads with type='trip'
+- Response includes leadId for tracking
+- Email notifications sent via Resend
+
+**Edge Cases Handled:**
+- ✅ Form opened, user clicks backdrop
+- ✅ Network error during submission
+- ✅ Backend validation error
+- ✅ Multiple submissions in same session
+- ✅ Session expired while form open
+- ✅ Form type switching
+- ✅ ESC key to close
+- ✅ Mobile keyboard handling
+
+---
