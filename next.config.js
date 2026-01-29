@@ -29,8 +29,8 @@ const nextConfig = {
         destination: `${backendUrl}/api/session/:path*`,
       },
       {
-        source: '/api/lead',
-        destination: `${backendUrl}/api/lead`,
+        source: '/api/leads',
+        destination: `${backendUrl}/api/leads`,
       },
     ];
   },

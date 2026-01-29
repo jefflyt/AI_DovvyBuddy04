@@ -43,5 +43,5 @@ export const API_CONFIG: ApiClientConfig = {
 export const API_ENDPOINTS = {
   chat: '/chat',
   session: (sessionId: string) => `/session/${sessionId}`,
-  lead: '/lead',
+  lead: '/leads',
 } as const;

@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { apiClient, ApiClientError, type ChatResponse } from '@/lib/api-client';
+import { apiClient, type ChatResponse } from '@/lib/api-client';
+import { LeadCaptureModal, type LeadFormData } from '@/components/chat/LeadCaptureModal';
 
 interface Message {
   id: string;
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: Date;
 }
@@ -20,6 +21,12 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Lead form state
+  const [showLeadForm, setShowLeadForm] = useState(false);
+  const [leadType, setLeadType] = useState<'training' | 'trip' | null>(null);
+  const [leadSubmitting, setLeadSubmitting] = useState(false);
+  const [leadError, setLeadError] = useState<string | null>(null);
 
   // Restore sessionId from localStorage on mount
   useEffect(() => {
@@ -170,6 +177,124 @@ export default function ChatPage() {
     }
   };
 
+  // Lead form handlers
+  const handleOpenLeadForm = (type: 'training' | 'trip') => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Opening lead form:', type);
+    }
+    setLeadType(type);
+    setShowLeadForm(true);
+    setLeadError(null);
+  };
+
+  const handleCloseLeadForm = () => {
+    if (!leadSubmitting) {
+      setShowLeadForm(false);
+      setLeadType(null);
+      setLeadError(null);
+    }
+  };
+
+  const handleLeadSubmit = async (data: LeadFormData) => {
+    if (!sessionId) {
+      setLeadError('Please start a conversation before submitting a lead.');
+      return;
+    }
+
+    setLeadSubmitting(true);
+    setLeadError(null);
+
+    try {
+      // Format payload based on lead type
+      let payload: any;
+      
+      if (leadType === 'training') {
+        payload = {
+          type: 'training',
+          data: {
+            name: data.name,
+            email: data.email,
+            phone: data.phone || undefined,
+            certification_level: data.certificationLevel,
+            preferred_location: data.location || undefined,
+            message: data.message || undefined,
+          },
+        };
+        
+        // Only include session_id if it's a valid UUID
+        if (sessionId && UUID_REGEX.test(sessionId)) {
+          payload.session_id = sessionId;
+        }
+      } else if (leadType === 'trip') {
+        payload = {
+          type: 'trip',
+          data: {
+            name: data.name,
+            email: data.email,
+            phone: data.phone || undefined,
+            destination: data.destination || undefined,
+            travel_dates: data.dates || undefined,
+            message: data.message || undefined,
+          },
+        };
+        
+        // Only include session_id if it's a valid UUID
+        if (sessionId && UUID_REGEX.test(sessionId)) {
+          payload.session_id = sessionId;
+        }
+      }
+
+      // Submit lead to API
+      const response = await fetch('/api/leads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to submit lead');
+      }
+
+      const result = await response.json();
+
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Lead submitted successfully:', result.lead_id);
+      }
+
+      // Close modal
+      setShowLeadForm(false);
+      setLeadType(null);
+      setLeadError(null);
+
+      // Add success confirmation to chat
+      const confirmationMessage: Message = {
+        id: crypto.randomUUID(),
+        role: 'system',
+        content: `✅ Thanks, ${data.name}! We'll contact you at ${data.email} soon. Feel free to keep asking questions.`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, confirmationMessage]);
+    } catch (err) {
+      // Handle error
+      let errorMessage = 'Failed to submit. Please try again.';
+
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      }
+
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Lead submission error:', err);
+      }
+
+      setLeadError(errorMessage);
+    } finally {
+      setLeadSubmitting(false);
+    }
+  };
+
   return (
     <main style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
       <div
@@ -188,25 +313,72 @@ export default function ChatPage() {
             padding: '1rem 1.5rem',
             borderBottom: '1px solid #e5e5e5',
             backgroundColor: '#f9f9f9',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '1rem',
           }}
         >
-          <h1 style={{ fontSize: '1.5rem', fontWeight: '600' }}>
-            DovvyBuddy Chat
-          </h1>
-          <p
-            style={{
-              fontSize: '0.875rem',
-              color: '#666',
-              marginTop: '0.25rem',
-            }}
-          >
-            Ask me anything about diving certifications and destinations
-            {sessionId && (
-              <span style={{ marginLeft: '0.5rem', color: '#999' }}>
-                (Session: {sessionId.slice(0, 8)}...)
-              </span>
-            )}
-          </p>
+          <div>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: '600' }}>
+              DovvyBuddy Chat
+            </h1>
+            <p
+              style={{
+                fontSize: '0.875rem',
+                color: '#666',
+                marginTop: '0.25rem',
+              }}
+            >
+              Ask me anything about diving certifications and destinations
+              {sessionId && (
+                <span style={{ marginLeft: '0.5rem', color: '#999' }}>
+                  (Session: {sessionId.slice(0, 8)}...)
+                </span>
+              )}
+            </p>
+          </div>
+          
+          {/* Lead capture buttons */}
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              onClick={() => handleOpenLeadForm('training')}
+              disabled={!sessionId}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: !sessionId ? '#e5e5e5' : '#10b981',
+                color: !sessionId ? '#999' : 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                cursor: !sessionId ? 'not-allowed' : 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+              title={!sessionId ? 'Start a conversation first' : 'Request training information'}
+            >
+              🎓 Get Certified
+            </button>
+            <button
+              onClick={() => handleOpenLeadForm('trip')}
+              disabled={!sessionId}
+              style={{
+                padding: '0.5rem 1rem',
+                backgroundColor: !sessionId ? '#e5e5e5' : '#0070f3',
+                color: !sessionId ? '#999' : 'white',
+                border: 'none',
+                borderRadius: '6px',
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                cursor: !sessionId ? 'not-allowed' : 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+              title={!sessionId ? 'Start a conversation first' : 'Plan a diving trip'}
+            >
+              ✈️ Plan a Trip
+            </button>
+          </div>
         </div>
 
         {/* Messages area */}
@@ -248,33 +420,51 @@ export default function ChatPage() {
               style={{
                 marginBottom: '1rem',
                 display: 'flex',
-                justifyContent: message.role === 'user' ? 'flex-end' : 'flex-start',
+                justifyContent: 
+                  message.role === 'user' 
+                    ? 'flex-end' 
+                    : message.role === 'system'
+                    ? 'center'
+                    : 'flex-start',
               }}
             >
               <div
                 style={{
-                  maxWidth: '80%',
+                  maxWidth: message.role === 'system' ? '90%' : '80%',
                   padding: '0.75rem 1rem',
                   borderRadius: '8px',
-                  backgroundColor: message.role === 'user' ? '#0070f3' : '#f5f5f5',
-                  color: message.role === 'user' ? 'white' : '#333',
+                  backgroundColor: 
+                    message.role === 'user' 
+                      ? '#0070f3' 
+                      : message.role === 'system'
+                      ? '#f0f7ff'
+                      : '#f5f5f5',
+                  color: 
+                    message.role === 'user' 
+                      ? 'white' 
+                      : message.role === 'system'
+                      ? '#0066cc'
+                      : '#333',
+                  border: message.role === 'system' ? '1px solid #b3d9ff' : 'none',
                 }}
               >
                 <div style={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap' }}>
                   {message.content}
                 </div>
-                <div
-                  style={{
-                    fontSize: '0.75rem',
-                    marginTop: '0.25rem',
-                    opacity: 0.7,
-                  }}
-                >
-                  {message.timestamp.toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </div>
+                {message.role !== 'system' && (
+                  <div
+                    style={{
+                      fontSize: '0.75rem',
+                      marginTop: '0.25rem',
+                      opacity: 0.7,
+                    }}
+                  >
+                    {message.timestamp.toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -365,6 +555,16 @@ export default function ChatPage() {
           </div>
         </form>
       </div>
+
+      {/* Lead capture modal */}
+      <LeadCaptureModal
+        isOpen={showLeadForm}
+        onClose={handleCloseLeadForm}
+        leadType={leadType}
+        onSubmit={handleLeadSubmit}
+        isSubmitting={leadSubmitting}
+        error={leadError}
+      />
     </main>
   );
 }
