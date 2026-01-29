@@ -10,6 +10,9 @@ interface Message {
   timestamp: Date;
 }
 
+const STORAGE_KEY = 'dovvybuddy-session-id';
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -18,10 +21,69 @@ export default function ChatPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Restore sessionId from localStorage on mount
+  useEffect(() => {
+    try {
+      const storedSessionId = localStorage.getItem(STORAGE_KEY);
+      if (storedSessionId && UUID_REGEX.test(storedSessionId)) {
+        setSessionId(storedSessionId);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Session restored from localStorage:', storedSessionId);
+        }
+      } else if (storedSessionId) {
+        // Invalid sessionId format, clear it
+        localStorage.removeItem(STORAGE_KEY);
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Invalid sessionId in localStorage, cleared:', storedSessionId);
+        }
+      }
+    } catch (error) {
+      // localStorage unavailable (private browsing, SecurityError, etc.)
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('localStorage unavailable, session will not persist:', error);
+      }
+    }
+  }, []);
+
+  // Save sessionId to localStorage when it changes
+  useEffect(() => {
+    if (sessionId) {
+      try {
+        localStorage.setItem(STORAGE_KEY, sessionId);
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Session saved to localStorage:', sessionId);
+        }
+      } catch (error) {
+        // Handle quota exceeded or other storage errors
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Failed to save sessionId to localStorage:', error);
+        }
+      }
+    }
+  }, [sessionId]);
+
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  /**
+   * Clear session data (localStorage + state)
+   * Will be used by "New Chat" button in PR5.3
+   */
+  const clearSession = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch (error) {
+      // Ignore errors when clearing
+      if (process.env.NODE_ENV === 'development') {
+        console.warn('Failed to clear localStorage:', error);
+      }
+    }
+    setSessionId(null);
+    setMessages([]);
+    setError(null);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,6 +133,15 @@ export default function ChatPage() {
 
       if (err instanceof ApiClientError) {
         errorMessage = err.userMessage;
+
+        // Handle session expiration/not found
+        if (err.code === 'SESSION_EXPIRED' || err.code === 'SESSION_NOT_FOUND') {
+          clearSession();
+          errorMessage = 'Your session has expired. Starting a new chat...';
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Session expired, cleared from localStorage');
+          }
+        }
 
         // Log details in development
         if (process.env.NODE_ENV === 'development') {
