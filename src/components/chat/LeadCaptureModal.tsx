@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { TrainingLeadForm } from './TrainingLeadForm';
-import { TripLeadForm } from './TripLeadForm';
+import { TrainingLeadForm } from './TrainingLeadForm.js';
+import { TripLeadForm } from './TripLeadForm.js';
 
 export interface LeadFormData {
   name: string;
@@ -85,6 +85,9 @@ export function LeadCaptureModal({
       }}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
         style={{
           backgroundColor: 'white',
           borderRadius: '8px',

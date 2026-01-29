@@ -1,3 +1,12 @@
+---
+doc_type: "safety"
+title: "Emergency Procedures"
+tags: ["safety", "emergency", "first-aid", "DCS", "rescue"]
+keywords: ["emergency", "DCS", "oxygen", "evacuation", "emergency contacts"]
+last_updated: "2025-12-23"
+data_quality: "compiled"
+---
+
 # Emergency Procedures
 
 ## Out of Air Situations

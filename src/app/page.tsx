@@ -1,61 +1,68 @@
-import Link from 'next/link'
+'use client'
+
+import { Hero, ValueProposition, HowItWorks, SocialProof, Footer } from '@/components/landing'
+import { trackEvent } from '@/lib/analytics'
 
 export default function Home() {
+  const handleCtaClick = () => {
+    trackEvent('cta_click', { location: 'hero' })
+  }
+
+  const features = [
+    {
+      icon: '🎓',
+      title: 'Certification Navigator',
+      description:
+        'Understand PADI, SSI, and other certification pathways without judgment. Get clear answers about prerequisites, costs, and what to expect.',
+    },
+    {
+      icon: '💪',
+      title: 'Confidence Building',
+      description:
+        'Ask questions about fears, physical requirements, or gear without shame. We provide grounded, supportive guidance to help you make informed decisions.',
+    },
+    {
+      icon: '🗺️',
+      title: 'Trip Research',
+      description:
+        'Discover dive destinations and sites that match your skill level. Get insights on seasons, conditions, and what makes each location special.',
+    },
+  ]
+
+  const steps = [
+    {
+      number: 1,
+      title: 'Ask Your Question',
+      description:
+        'Type anything about certifications, dive sites, or trip planning. No question is too basic.',
+    },
+    {
+      number: 2,
+      title: 'Get Grounded Answers',
+      description:
+        'Receive accurate information based on official certification guides and real dive site data.',
+    },
+    {
+      number: 3,
+      title: 'Connect with Pros',
+      description:
+        'When you\'re ready, we can connect you with certified instructors and reputable dive shops.',
+    },
+  ]
+
   return (
-    <main style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>
-        Welcome to DovvyBuddy
-      </h1>
-      <p style={{ fontSize: '1.125rem', marginBottom: '2rem', color: '#666' }}>
-        Your AI diving assistant for certification guidance and trip planning
-      </p>
-
-      <div
-        style={{
-          padding: '1.5rem',
-          backgroundColor: '#f5f5f5',
-          borderRadius: '8px',
-          marginBottom: '2rem',
-        }}
-      >
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>
-          What we can help with:
-        </h2>
-        <ul style={{ paddingLeft: '1.5rem', lineHeight: '2' }}>
-          <li>Understanding Open Water certification pathways</li>
-          <li>Comparing PADI vs SSI certifications</li>
-          <li>Planning your next advanced certification</li>
-          <li>Researching dive destinations and sites</li>
-          <li>Connecting with reputable dive shops and instructors</li>
-        </ul>
-      </div>
-
-      <Link
-        href="/chat"
-        style={{
-          display: 'inline-block',
-          padding: '0.75rem 2rem',
-          backgroundColor: '#0070f3',
-          color: 'white',
-          borderRadius: '6px',
-          fontSize: '1.125rem',
-          fontWeight: '500',
-        }}
-      >
-        Start Chat
-      </Link>
-
-      <footer
-        style={{
-          marginTop: '4rem',
-          paddingTop: '2rem',
-          borderTop: '1px solid #e5e5e5',
-        }}
-      >
-        <p style={{ fontSize: '0.875rem', color: '#999' }}>
-          DovvyBuddy V1 - Web Chat Only | Guest Sessions (24h)
-        </p>
-      </footer>
+    <main>
+      <Hero
+        headline="Your AI Diving Companion"
+        subheadline="Get judgment-free guidance on certifications, dive sites, and trip planning — no pressure, just support."
+        ctaText="Start Chatting"
+        ctaLink="/chat"
+        onCtaClick={handleCtaClick}
+      />
+      <ValueProposition features={features} />
+      <HowItWorks steps={steps} />
+      <SocialProof />
+      <Footer />
     </main>
   )
 }

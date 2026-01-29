@@ -13,17 +13,19 @@ export interface ApiClientConfig {
 
 /**
  * Get API base URL from environment
- * Server-side: direct connection to Python backend
+ * Server-side: direct connection to Python backend  
  * Client-side: proxied through Next.js (/api routes)
  */
 function getBaseURL(): string {
   if (typeof window === 'undefined') {
     // Server-side: use BACKEND_URL env var (direct connection to Python backend)
+    // Python backend routes are under /api prefix
     return process.env.BACKEND_URL || 'http://localhost:8000';
   }
   
   // Client-side: use proxied API URL (handled by Next.js rewrites)
-  return process.env.NEXT_PUBLIC_API_URL || '/api';
+  // Next.js rewrites /api/* to backend
+  return process.env.NEXT_PUBLIC_API_URL || '';
 }
 
 /**
@@ -39,9 +41,12 @@ export const API_CONFIG: ApiClientConfig = {
 
 /**
  * API endpoints
+ * These paths are appended to baseURL
+ * - Server-side: baseURL=http://localhost:8000 + /api/chat = http://localhost:8000/api/chat
+ * - Client-side: baseURL='' + /api/chat = /api/chat (Next.js rewrites this)
  */
 export const API_ENDPOINTS = {
-  chat: '/chat',
-  session: (sessionId: string) => `/session/${sessionId}`,
-  lead: '/leads',
+  chat: '/api/chat',
+  session: (sessionId: string) => `/api/session/${sessionId}`,
+  lead: '/api/leads',
 } as const;

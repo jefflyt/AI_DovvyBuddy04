@@ -484,6 +484,7 @@ export default function ChatPage() {
               }}
             >
               <div
+                data-testid={message.role === 'assistant' ? 'ai-message' : message.role === 'user' ? 'user-message' : 'system-message'}
                 style={{
                   maxWidth: message.role === 'system' ? '90%' : '80%',
                   padding: '0.75rem 1rem',
@@ -576,6 +577,7 @@ export default function ChatPage() {
         >
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <input
+              data-testid="chat-input"
               type="text"
               placeholder="Type your message..."
               value={input}
@@ -592,6 +594,7 @@ export default function ChatPage() {
               }}
             />
             <button
+              data-testid="send-button"
               type="submit"
               disabled={!input.trim() || isLoading}
               style={{

@@ -1,3 +1,12 @@
+---
+doc_type: "safety"
+title: "Equalization Techniques"
+tags: ["safety", "equalization", "ears", "sinus", "technique"]
+keywords: ["equalization", "ear squeeze", "Valsalva", "Frenzel", "sinus"]
+last_updated: "2025-12-23"
+data_quality: "compiled"
+---
+
 # Equalization Techniques
 
 ## Why Equalization is Critical

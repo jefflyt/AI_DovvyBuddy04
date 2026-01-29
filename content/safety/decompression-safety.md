@@ -1,3 +1,12 @@
+---
+doc_type: "safety"
+title: "Decompression Safety"
+tags: ["safety", "decompression", "DCS", "nitrogen", "diving-physics"]
+keywords: ["decompression sickness", "the bends", "nitrogen", "NDL", "safety stops"]
+last_updated: "2025-12-23"
+data_quality: "verified"
+---
+
 # Decompression Safety
 
 ## Understanding Decompression

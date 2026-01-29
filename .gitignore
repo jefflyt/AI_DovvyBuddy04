@@ -48,3 +48,12 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
+
+# Sentry
+.sentryclirc
+sentry.properties
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
