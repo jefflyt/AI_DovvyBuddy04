@@ -442,3 +442,66 @@ _Note: PR0 (Bootstrap) is already complete._
 - **Postgres Provider:** Neon vs Supabase for managed Postgres? _Decision criteria: Neon preferred for cold start performance and pgvector support; Supabase if realtime features needed later._
 - **Content Scope:** Which destination to launch with first? _Decision: Choose destination with existing partner shop, high diver interest, and diverse site difficulty range._
 - **Lead Delivery:** Email-only or webhook-first? _Decision: Start with email (simpler); add webhook if partner prefers CRM integration._
+
+---
+
+## 7. Current Status & Next Steps
+
+**Last Updated:** January 31, 2026
+
+### Completed Work ✅
+
+**Infrastructure & Refactoring:**
+- ✅ Backend moved from `src/backend/` to root-level `/backend/` for clear separation
+- ✅ All documentation updated to reflect new structure
+- ✅ Tests passing after refactor (97% pass rate)
+- ✅ CI/CD pipelines updated
+
+**Backend (PR3.2 - Python Migration):**
+- ✅ Multi-agent system implemented (certification, trip, safety, retrieval agents)
+- ✅ Chat orchestration with mode detection and emergency handling
+- ✅ RAG pipeline with RAF (Retrieval-Augmented Facts) enforcement
+- ✅ Session management and conversation history
+- ✅ Lead capture API endpoints
+- ✅ Content ingestion (152 chunks from 9 files)
+
+**Frontend:**
+- ✅ Landing page with analytics and monitoring
+- ✅ Chat interface with lead capture modals
+- ✅ Session persistence (localStorage)
+- ✅ Error boundaries and monitoring (Sentry)
+
+**Testing:**
+- ✅ Backend: 66/68 tests passing (pytest)
+- ✅ Frontend: TypeScript checks clean
+- ✅ E2E: Playwright smoke tests configured
+
+### Recommended Next Steps
+
+**Option 1: Cloud Run Deployment** (Priority: High)
+Deploy Python backend to production:
+1. Test Docker image locally
+2. Deploy to Google Cloud Run
+3. Update frontend `BACKEND_URL` to Cloud Run endpoint
+4. Configure CORS for Vercel domain
+5. Test end-to-end production flow
+
+**Option 2: Performance Optimization** (Priority: Medium)
+Tune RAG pipeline before adding complexity:
+1. Benchmark retrieval latency (target <3s P95)
+2. Evaluate relevance of retrieved chunks
+3. Adjust `minSimilarity` threshold (currently 0.7)
+4. Monitor LLM response times
+5. Profile database query performance
+
+**Option 3: Content Expansion** (Priority: Medium)
+Add more diving content:
+1. Expand PADI/SSI certification guides
+2. Add more dive destinations
+3. Enhance safety procedures documentation
+4. Create FAQ content for common queries
+
+**See Also:**
+- Technical debt tracking: [docs/technical/TECHNICAL_DEBT.md](../technical/TECHNICAL_DEBT.md)
+- Lessons learned: [docs/project-management/lessons-learned.md](../project-management/lessons-learned.md)
+- Implementation details: [docs/plans/PR*.md](.)

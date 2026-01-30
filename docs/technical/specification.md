@@ -1,8 +1,8 @@
 # DovvyBuddy - Technical Specification Document
 
-**Version:** 1.0  
-**Last Updated:** December 30, 2025  
-**Status:** Draft
+**Version:** 1.1  
+**Last Updated:** January 31, 2026  
+**Status:** Active (Refactored)
 
 ---
 
@@ -21,81 +21,111 @@ DovvyBuddy is an AI-powered conversational assistant that helps prospective and 
 └──────┬──────┘
        │ HTTPS
        ▼
-┌─────────────────────────────────────┐
-│   Web Application (Vercel)          │
-│   ┌─────────────────────────────┐   │
-│   │  Next.js 14 (App Router)    │   │
-│   │  - Chat Interface (PR5)     │   │
-│   │  - Landing Page (PR6)       │   │
-│   │  - API Routes               │   │
-│   └──────────┬──────────────────┘   │
-│              │                      │
-│   ┌──────────▼──────────────────┐   │
-│   │  Backend Services           │   │
-│   │  - Chat Orchestrator (PR3)  │   │
-│   │  - RAG Pipeline (PR2)       │   │
-│   │  - Session Manager (PR3)    │   │
-│   │  - Lead Capture (PR4)       │   │
-│   └──────────┬──────────────────┘   │
-└──────────────┼──────────────────────┘
+┌────────────────────────────────────────────┐
+│   Frontend (Vercel)                        │
+│   ┌──────────────────────────────────┐     │
+│   │  Next.js 14 App Router           │     │
+│   │  Location: /src/                 │     │
+│   │  - Landing Page                  │     │
+│   │  - Chat Interface                │     │
+│   │  - Lead Capture Forms            │     │
+│   └──────────┬───────────────────────┘     │
+└──────────────┼─────────────────────────────┘
+               │ /api/* proxy
+               ▼
+┌────────────────────────────────────────────┐
+│   Python Backend (Cloud Run)               │
+│   ┌──────────────────────────────────┐     │
+│   │  FastAPI Application             │     │
+│   │  Location: /backend/             │     │
+│   │  - Multi-Agent System            │     │
+│   │  - Chat Orchestration            │     │
+│   │  - RAG Pipeline                  │     │
+│   │  - Session Management            │     │
+│   │  - Lead Capture                  │     │
+│   └──────────┬───────────────────────┘     │
+└──────────────┼─────────────────────────────┘
                │
-       ┌───────┴────────┐
-       │                │
-       ▼                ▼
-┌─────────────┐  ┌───────────────┐
-│  Postgres   │  │ LLM Providers │
-│  + pgvector │  │ - Groq (Dev)  │
-│   (Neon)    │  │ - Gemini(Prod)│
-└─────────────┘  └───────────────┘
-       │
-       ▼
-┌─────────────┐
-│   Resend    │
-│ (Email API) │
-└─────────────┘
+       ┌───────┴────────┬──────────────┐
+       │                │              │
+       ▼                ▼              ▼
+┌─────────────┐  ┌────────────┐  ┌─────────┐
+│  Postgres   │  │   Gemini   │  │ Resend  │
+│  +pgvector  │  │  2.0-flash │  │  Email  │
+│   (Neon)    │  │    API     │  │   API   │
+└─────────────┘  └────────────┘  └─────────┘
 ```
 
 ### Technology Stack
 
 | Layer | Technology | Justification |
 |-------|------------|---------------|
-| **Frontend** | Next.js 14 (App Router), React, TypeScript | Server Components for performance, type safety |
-| **Backend** | Next.js API Routes, TypeScript | Unified codebase, serverless deployment |
-| **Database** | PostgreSQL + pgvector (Neon) | Relational data + vector search, managed service |
-| **LLM** | Groq (dev), Gemini (prod), SEA-LION (V2) | Fast dev iteration, production quality, multilingual |
+| **Frontend** | Next.js 14 (App Router), React, TypeScript | Server Components, type safety, optimized routing |
+| **Backend** | Python FastAPI, SQLAlchemy, Alembic | Async performance, robust ORM, type hints |
+| **Database** | PostgreSQL + pgvector (Neon) | Relational data + vector embeddings, managed service |
+| **LLM** | Gemini 2.0 Flash | Cost-effective, production-ready, 1M token context |
+| **Embeddings** | text-embedding-004 | 768 dimensions, optimized for retrieval |
 | **Email** | Resend API | Developer-friendly, reliable delivery |
-| **Hosting** | Vercel | Optimized for Next.js, edge network |
-| **Testing** | Vitest (unit), Playwright (e2e) | Fast, modern test runners |
+| **Hosting** | Vercel (frontend) + Cloud Run (backend) | Edge network, serverless Python |
+| **Testing** | Vitest (frontend), pytest (backend), Playwright (E2E) | Comprehensive test coverage |
+| **Monitoring** | Sentry + Vercel Analytics | Error tracking, performance insights |
 
 ---
 
 ## 2. Core Components
 
-### 2.1 Chat Orchestrator (PR3)
+### 2.1 Multi-Agent System (backend/app/agents/)
 
-**Purpose:** Coordinates the conversation flow from user input to AI response.
+**Purpose:** Specialized agents handle different types of diving queries with domain expertise.
 
-**Responsibilities:**
-- Validate user input (length, sanitization)
-- Manage session lifecycle (create, retrieve, update)
-- Retrieve relevant context via RAG pipeline
-- Build prompts with safety guardrails
-- Call LLM provider and handle responses
-- Update conversation history
+**Agent Types:**
+- **Certification Agent** - PADI/SSI certification guidance, prerequisites, progression paths
+- **Trip Planning Agent** - Dive site recommendations, difficulty assessment, logistics
+- **Safety Agent** - Emergency procedures, medical contraindications, risk management
+- **Retrieval Agent** - RAG-powered content retrieval and context building
 
-**Flow:**
+**Architecture:**
 ```
-User Message → Validate → Get/Create Session → RAG Retrieval 
-→ Build Prompt → LLM Call → Update History → Return Response
+User Query → Mode Detection → Agent Selection → Agent Execution → Response
 ```
 
 **Key Files:**
-- `src/lib/orchestration/chat-orchestrator.ts`
-- `src/lib/orchestration/types.ts`
+- `backend/app/agents/base.py` - Base agent interface
+- `backend/app/agents/registry.py` - Agent registration & discovery
+- `backend/app/agents/certification_agent.py`
+- `backend/app/agents/trip_planning_agent.py`
+- `backend/app/agents/safety_agent.py`
+- `backend/app/agents/retrieval_agent.py`
 
 ---
 
-### 2.2 RAG Pipeline (PR2)
+### 2.2 Chat Orchestration (backend/app/orchestration/)
+
+**Purpose:** Coordinates conversation flow, manages context, and routes to appropriate agents.
+
+**Responsibilities:**
+- Session lifecycle management (create, retrieve, update)
+- Conversation context building (history + RAG context)
+- Emergency detection (safety-critical queries)
+- Mode detection (greeting, certification, trip, general)
+- Agent selection and execution
+- Response formatting and metadata
+
+**Flow:**
+```
+User Message → Emergency Check → Mode Detection → Agent Selection 
+→ Context Building → Agent Execute → History Update → Response
+```
+
+**Key Files:**
+- `backend/app/orchestration/orchestrator.py` - Main orchestration logic
+- `backend/app/orchestration/conversation_manager.py` - Conversation state
+- `backend/app/orchestration/mode_detector.py` - Query classification
+- `backend/app/orchestration/emergency_detector.py` - Safety detection
+
+---
+
+### 2.3 RAG Pipeline (backend/app/services/)
 
 **Purpose:** Retrieve relevant content chunks to ground LLM responses.
 

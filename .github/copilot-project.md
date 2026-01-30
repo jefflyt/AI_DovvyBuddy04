@@ -1,7 +1,7 @@
 # DovvyBuddy - Project Context for AI Assistants
 
-**Last Updated:** December 30, 2025  
-**Project Status:** PR0 Bootstrap Complete, PR1-8c Planned
+**Last Updated:** January 31, 2026  
+**Project Status:** PR0-PR6.2 Complete, Backend Refactored to Root
 
 ---
 
@@ -18,67 +18,134 @@
 
 ---
 
-## Tech Stack & Architecture (DECIDED)
+## Tech Stack & Architecture (CURRENT)
 
-### Web App (V1)
+### Web Application (V1 - Active)
 
-- **Framework:** Next.js 14 (App Router) + TypeScript + React
-- **Package Manager:** pnpm
-- **Hosting:** Vercel
-- **Database:** Postgres with pgvector (Neon or Supabase planned)
-- **Testing:** Vitest (unit/integration), Playwright (e2e smoke test in PR6)
-- **Linting/Formatting:** ESLint + Prettier
+- **Frontend:** Next.js 14 (App Router) + TypeScript + React
+- **Backend:** Python FastAPI + SQLAlchemy + Alembic
+- **Package Manager:** pnpm (frontend), pip (backend)
+- **Hosting:** Vercel (frontend), Cloud Run (backend planned)
+- **Database:** PostgreSQL with pgvector (Neon)
+- **Testing:** 
+  - Frontend: Vitest (unit), Playwright (E2E)
+  - Backend: pytest (unit & integration)
+- **Linting/Formatting:** ESLint + Prettier (frontend), ruff (backend)
 
-### Agent Service (Future PR)
+### Backend Architecture (PR3.2 - Complete)
 
-- **Orchestration:** Google ADK (Agent Development Kit)
-- **Deployment:** Google Cloud Run (containerized)
-- **Retrieval:** Embedded vector search (Gemini embeddings + pgvector or object-storage-backed index)
+- **Framework:** FastAPI with async/await
+- **Multi-Agent System:** Specialized agents (certification, trip, safety, retrieval)
+- **Orchestration:** Conversation manager with mode detection & emergency handling
+- **RAG Pipeline:** Vector search with Gemini embeddings (text-embedding-004)
+- **Session Management:** PostgreSQL-backed conversation history
 
-### LLM Provider Strategy
+### LLM Provider Strategy (Updated)
 
 | Phase | Provider | Model | Use Case |
 |-------|----------|-------|----------|
-| **MVP (Dev)** | Groq | `llama-3.1-70b-versatile` | Development, testing, fast iteration |
-| **Production V1** | Gemini | `gemini-2.0-flash` | English-language production traffic |
-| **Production V2** | Gemini + SEA-LION | Gemini default, SEA-LION for non-English | Multilingual support for SEA audience |
+| **Production V1** | Gemini | `gemini-2.0-flash` | Primary production LLM (cost-effective) |
+| **Embeddings** | Gemini | `text-embedding-004` | 768-dimension vectors for RAG |
 
-- **Abstraction:** `ModelProvider` interface with env switch (`LLM_PROVIDER=groq|gemini`)
-- **V2 Language Routing:** Detect input language → route non-English to SEA-LION provider
+- **Standardized:** All production traffic uses Gemini 2.0 Flash
+- **Future:** V2 may add SEA-LION for multilingual support (SEA region)
 
 ---
 
 ## Repository Structure
+ (Current)
 
 ```
 AI_DovvyBuddy04/
 ├── .github/
-│   ├── copilot-instructions.md   # Global AI coding style preferences
-│   ├── copilot-project.md        # This file (project context)
-│   ├── prompts/                  # Workflow prompt templates
-│   │   ├── initiate.prompt.md    # Bootstrap new projects
-│   │   ├── plan.prompt.md        # Generate PR plans (future)
-│   │   └── feature_epic_plan.prompt.md
-│   └── workflows/
-│       └── ci.yml                # CI: lint/typecheck/test/build
-├── docs/
-│   ├── psd/
-│   │   └── DovvyBuddy-PSD-V6.2.md  # Product Specification Document
-│   ├── technical/                # Technical specifications
-│   │   ├── README.md             # Technical docs index
-│   │   └── specification.md      # Technical Specification Document (TSD)
-│   ├── decisions/                # Architecture Decision Records (future)
-│   ├── plans/                    # PR/Epic plans (future)
-│   └── references/               # External references (future)
-├── content/                      # Curated markdown for RAG (future PR2)
-├── src/
-│   ├── app/                      # Next.js pages (App Router)
+│   ├── instructions/             # Global coding guidelines
+│   │   └── Global Instructions.instructions.md
+│   ├── workflows/                # CI/CD pipelines
+│   │   └── ci.yml                # Automated testing & checks
+│   ├── prompts/                  # AI workflow prompt templates
+│   │   ├── initiate.prompt.md
+│   │   ├── plan.prompt.md
+│   │   ├── implement_plan.prompt.md
+│   │   └── refactor_plan.prompt.md
+│   └── skills/                   # AI agent skills
+│
+├── backend/                      # Python FastAPI backend (moved from src/backend/)
+│   ├── app/
+│   │   ├── main.py               # FastAPI application entry
+│   │   ├── api/                  # API routes (chat, lead, session)
+│   │   ├── agents/               # Multi-agent system
+│   │   │   ├── base.py
+│   │   │   ├── certification_agent.py
+│   │   │   ├── trip_planning_agent.py
+│   │   │   └── safety_agent.py
+│   │   ├── orchestration/        # Chat orchestration
+│   │   │   ├── orchestrator.py
+│   │   │   ├── conversation_manager.py
+│   │   │   └── mode_detector.py
+│   │   ├── services/             # Core services
+│   │   │   ├── llm_service.py
+│   │   │   ├── rag_service.py
+│   │   │   └── embedding_service.py
+│   │   ├── db/                   # Database layer
+│   │   │   ├── models.py
+│   │   │   ├── repositories/
+│   │   │   └── session.py
+│   │   ├── core/                 # Config & utilities
+│   │   │   ├── config.py
+│   │   │   └── lead_service.py
+│   │   └── prompts/              # System prompts per agent
+│   ├── scripts/                  # Content processing scripts
+│   │   ├── ingest_content.py
+│   │   ├── validate_content.py
+│   │   └── benchmark_rag.py
+│   ├── tests/                    # Backend tests (pytest)
+│   │   ├── unit/
+│   │   └── integration/
+│   ├── alembic/                  # Database migrations
+│   ├── pyproject.toml            # Python dependencies
+│   └── README.md
+│
+├── src/                          # Next.js frontend
+│   ├── app/                      # Next.js App Router
 │   │   ├── page.tsx              # Landing page
-│   │   ├── chat/page.tsx         # Chat interface (stub)
-│   │   ├── layout.tsx            # Root layout
-│   │   └── globals.css           # Global styles
-│   ├── components/               # React components (future)
-│   ├── lib/                      # Shared utilities (future)
+│   │   ├── chat/page.tsx         # Chat interface
+│   │   └── layout.tsx            # Root layout with analytics
+│   ├── components/               # React components
+│   │   ├── landing/              # Landing page sections
+│   │   ├── chat/                 # Chat UI & lead capture
+│   │   └── ErrorBoundary.tsx
+│   ├── lib/
+│   │   ├── api-client/           # Backend API client
+│   │   ├── analytics/            # Multi-provider analytics
+│   │   ├── monitoring/           # Error monitoring (Sentry)
+│   │   └── hooks/                # React hooks
+│   └── types/                    # TypeScript definitions
+│
+├── content/                      # Curated diving content for RAG
+│   ├── certifications/           # PADI/SSI guides
+│   ├── destinations/             # Dive sites
+│   ├── safety/                   # Safety procedures
+│   └── faq/
+│
+├── docs/
+│   ├── psd/                      # Product specifications
+│   ├── plans/                    # PR implementation plans (PR1-PR10)
+│   ├── technical/                # Technical guides
+│   ├── decisions/                # Architecture Decision Records (ADRs)
+│   └── project-management/       # Implementation summaries
+│
+├── tests/                        # E2E tests (Playwright)
+│   ├── e2e/
+│   └── fixtures/
+│
+├── scripts/                      # Node.js utility scripts
+│   └── review-content.ts
+│
+├── package.json                  # Frontend dependencies & scripts
+├── next.config.js                # Next.js config (proxies /api/* to backend)
+├── tsconfig.json                 # TypeScript configuration
+└── README.md                     # Project documentation
+```
 │   │   ├── model-provider/       # LLM abstraction (PR3)
 │   │   ├── rag/                  # RAG pipeline (PR2)
 │   │   └── session/              # Session management (PR4)

@@ -1,7 +1,7 @@
 # Developer Workflow Guide
 
-**Last Updated:** January 3, 2026  
-**Status:** Active - Python Backend Migration (PR3.2d Complete)
+**Last Updated:** January 31, 2026  
+**Status:** Active - Refactored Structure (Backend at Root)
 
 ---
 

@@ -1,10 +1,14 @@
 # DovvyBuddy Python Backend
 
-This folder contains the FastAPI + SQLAlchemy Python backend for DovvyBuddy, including content processing scripts, RAG pipeline, and agent orchestration.
+FastAPI + SQLAlchemy backend for DovvyBuddy, including RAG pipeline, multi-agent orchestration, and content processing.
+
+## Project Location
+
+This backend is located at **`/backend/`** at the project root (previously at `src/backend/`).
 
 ## Quick Start
 
-Assumes Python 3.11+ and poetry:
+Requires Python 3.9+:
 
 ```bash
 cd backend

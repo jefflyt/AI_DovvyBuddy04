@@ -67,45 +67,70 @@ Visit `http://localhost:3000` to see the app.
 ```
 AI_DovvyBuddy04/
 ├── .github/
-│   ├── copilot-instructions.md   # AI coding guidelines
-│   ├── copilot-project.md        # Project context for AI
-│   └── prompts/                  # Custom AI workflow prompts
+│   ├── instructions/             # Global coding guidelines
+│   ├── workflows/                # CI/CD pipelines
+│   ├── prompts/                  # Custom AI workflow prompts
+│   └── skills/                   # AI agent skills
 │
-├── docs/
-│   ├── psd/                      # Product Specification Document
-│   ├── plans/                    # PR implementation plans (PR1-PR10)
-│   ├── technical/                # Technical specs and architecture
-│   ├── decisions/                # Architecture Decision Records (ADRs)
-│   ├── references/               # External API docs and standards
-│   └── project-management/       # AI workflow guides
+├── backend/                      # Python FastAPI backend ✅
+│   ├── app/
+│   │   ├── main.py               # FastAPI application
+│   │   ├── api/                  # API routes (chat, lead, session)
+│   │   ├── agents/               # Multi-agent system (certification, trip, safety)
+│   │   ├── orchestration/        # Chat orchestration & conversation management
+│   │   ├── services/             # Core services (LLM, RAG, embeddings)
+│   │   ├── db/                   # Database models, repositories, sessions
+│   │   ├── core/                 # Config, lead service, utilities
+│   │   └── prompts/              # System prompts per agent
+│   ├── scripts/                  # Content ingestion & benchmarking scripts
+│   ├── alembic/                  # Database migrations
+│   ├── tests/                    # Backend unit & integration tests
+│   ├── pyproject.toml            # Python dependencies
+│   └── README.md                 # Backend-specific docs
 │
-├── src/
+├── src/                          # Next.js frontend
 │   ├── app/                      # Next.js App Router pages
-│   ├── backend/                  # Python FastAPI backend ✅
-│   │   ├── app/
-│   │   │   ├── main.py               # FastAPI application
-│   │   │   ├── api/                  # API endpoints
-│   │   │   ├── agents/               # Multi-agent system
-│   │   │   ├── orchestration/        # Chat orchestration
-│   │   │   ├── services/             # Core services (LLM, RAG, embeddings)
-│   │   │   ├── db/                   # Database models & sessions
-│   │   │   ├── core/                 # Config & utilities
-│   │   │   └── prompts/              # System prompts
-│   │   ├── scripts/                  # Content management scripts
-│   │   ├── alembic/                  # Database migrations
-│   │   └── tests/                    # Backend tests
+│   │   ├── page.tsx              # Landing page
+│   │   ├── layout.tsx            # Root layout with analytics
+│   │   └── chat/                 # Chat interface
 │   ├── components/               # React components
+│   │   ├── landing/              # Landing page components
+│   │   ├── chat/                 # Chat UI & lead capture modals
+│   │   └── ErrorBoundary.tsx    # Error boundary
 │   ├── lib/
-│   │   └── api-client/           # Frontend API client
+│   │   ├── api-client/           # Backend API client with retry logic
+│   │   ├── analytics/            # Multi-provider analytics (Vercel/GA4)
+│   │   ├── monitoring/           # Error monitoring (Sentry)
+│   │   └── hooks/                # React hooks (session state)
 │   └── types/                    # TypeScript type definitions
 │
 ├── content/                      # Curated diving content for RAG
-├── tests/                        # Frontend integration tests
-├── public/                       # Static assets
+│   ├── certifications/           # PADI/SSI certification guides
+│   ├── destinations/             # Dive site information
+│   ├── safety/                   # Safety guidelines & procedures
+│   └── faq/                      # Frequently asked questions
 │
-├── package.json                  # Frontend dependencies
-├── next.config.js                # Next.js config (proxies to Python backend)
-├── tsconfig.json
+├── docs/
+│   ├── plans/                    # PR implementation plans (PR1-PR10)
+│   ├── technical/                # Technical specs and guides
+│   ├── decisions/                # Architecture Decision Records (ADRs)
+│   ├── project-management/       # Implementation summaries & AI workflow
+│   └── psd/                      # Product Specification Documents
+│
+├── tests/                        # E2E tests (Playwright)
+│   ├── e2e/                      # End-to-end test suites
+│   ├── fixtures/                 # Test fixtures
+│   └── archived/                 # Legacy integration tests
+│
+├── scripts/                      # Node.js utility scripts
+│   └── review-content.ts         # Content validation script
+│
+├── package.json                  # Frontend dependencies & scripts
+├── next.config.js                # Next.js config (proxies /api/* to Python backend)
+├── tsconfig.json                 # TypeScript configuration
+├── tailwind.config.ts            # Tailwind CSS configuration
+├── playwright.config.ts          # E2E test configuration
+├── vitest.config.ts              # Unit test configuration
 └── README.md                     # This file
 ```
 
@@ -116,20 +141,18 @@ AI_DovvyBuddy04/
 | Layer | Technology | Purpose |
 |-------|------------|---------|
 | **Frontend** | Next.js 14 (App Router) | React framework with SSR |
-| **Backend** | Python FastAPI | Async API server |
-| **Language** | TypeScript (frontend) + Python (backend) | Type safety |
-| **Database** | PostgreSQL + pgvector | Relational data + vector search |
-| **ORM** | SQLAlchemy + Alembic | Python database toolkit |
+| **Backend** | Python FastAPI | Async REST API server |
+| **Languages** | TypeScript (frontend) + Python 3.9+ (backend) | Type safety & modern features |
+| **Database** | PostgreSQL + pgvector | Relational data + vector embeddings |
+| **ORM** | SQLAlchemy + Alembic | Python database toolkit & migrations |
 | **Hosting** | Vercel (frontend) + Cloud Run (backend) | Serverless deployment |
-| **LLM** | Gemini (`gemini-2.0-flash`) | Production LLM |
-| **Email** | Resend API | Lead delivery |
-| **Testing** | Vitest (frontend) + pytest (backend) | Unit & integration tests |
-| **Styling** | Tailwind CSS | Utility-first CSS |
-
----
-
-## 📜 Available Commands
-
+| **LLM** | Gemini (`gemini-2.0-flash`) | Cost-effective production LLM |
+| **Embeddings** | `text-embedding-004` | 768-dimension vectors for RAG |
+| **Email** | Resend API | Lead delivery to dive shops |
+| **Testing** | Vitest + Playwright (frontend), pytest (backend) | Unit, integration & E2E tests |
+| **Styling** | Tailwind CSS | Utility-first CSS framework |
+| **Monitoring** | Sentry + Vercel Analytics | Error tracking & performance |
+| **CI/CD** | GitHub Actions | Automated testing & deployment |
 ```bash
 # Frontend Development
 pnpm dev              # Start Next.js dev server (http://localhost:3000)
@@ -200,11 +223,15 @@ See detailed plans in [`docs/plans/`](./docs/plans/)
 
 | Document | Purpose | Location |
 |----------|---------|----------|
+| **Master Plan** | Project roadmap & status | [`docs/plans/MASTER_PLAN.md`](./docs/plans/MASTER_PLAN.md) |
 | **Product Spec (PSD)** | What to build | [`docs/psd/DovvyBuddy-PSD-V6.2.md`](./docs/psd/DovvyBuddy-PSD-V6.2.md) |
-| **Technical Spec (TSD)** | How it works | [`docs/technical/specification.md`](./docs/technical/specification.md) |
-| **PR Plans** | Implementation steps | [`docs/plans/`](./docs/plans/) |
-| **ADRs** | Why we chose this | [`docs/decisions/`](./docs/decisions/) |
-| **AI Workflow** | Development process | [`docs/project-management/AI_WORKFLOW.md`](./docs/project-management/AI_WORKFLOW.md) |
+| **Technical Spec** | How it works | [`docs/technical/specification.md`](./docs/technical/specification.md) |
+| **Developer Workflow** | Development guide | [`docs/technical/developer-workflow.md`](./docs/technical/developer-workflow.md) |
+| **Technical Debt** | Known issues | [`docs/technical/TECHNICAL_DEBT.md`](./docs/technical/TECHNICAL_DEBT.md) |
+| **PR Plans** | Implementation details | [`docs/plans/PR*.md`](./docs/plans/) |
+| **ADRs** | Architecture decisions | [`docs/decisions/`](./docs/decisions/) |
+| **Lessons Learned** | Project insights | [`docs/project-management/lessons-learned.md`](./docs/project-management/lessons-learned.md) |
+| **AI Workflow** | AI-assisted dev process | [`docs/project-management/AI_WORKFLOW.md`](./docs/project-management/AI_WORKFLOW.md) |
 | **Project Context** | AI assistant context | [`.github/copilot-project.md`](./.github/copilot-project.md) |
 
 ---
