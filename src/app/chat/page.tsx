@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { apiClient, type ChatResponse, ApiClientError } from '@/lib/api-client';
 import { LeadCaptureModal, type LeadFormData } from '@/components/chat/LeadCaptureModal';
 import { useSessionState } from '@/lib/hooks/useSessionState'; // PR6.2
+import { FeatureFlag, isFeatureEnabled } from '@/lib/feature-flags'; // Centralized feature flags
 
 interface Message {
   id: string;
@@ -15,10 +16,6 @@ interface Message {
 const STORAGE_KEY = 'dovvybuddy-session-id';
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// PR6.2: Feature flag from environment
-const FEATURE_CONVERSATION_FOLLOWUP_ENABLED =
-  process.env.NEXT_PUBLIC_FEATURE_CONVERSATION_FOLLOWUP_ENABLED === 'true';
-
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -27,7 +24,7 @@ export default function ChatPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // PR6.2: Session state hook
+  // PR6.2: Session state hook (only if feature enabled)
   const { sessionState, updateSessionState, clearSessionState } = useSessionState();
 
   // Lead form state
@@ -99,7 +96,7 @@ export default function ChatPage() {
     setMessages([]);
     setError(null);
     // PR6.2: Clear session state
-    if (FEATURE_CONVERSATION_FOLLOWUP_ENABLED) {
+    if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)) {
       clearSessionState();
     }
   };
@@ -159,7 +156,7 @@ export default function ChatPage() {
         message: userMessage.content,
       };
       
-      if (FEATURE_CONVERSATION_FOLLOWUP_ENABLED) {
+      if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)) {
         requestPayload.sessionState = sessionState;
         console.log('Session state sent:', sessionState);
       }
@@ -173,7 +170,7 @@ export default function ChatPage() {
       }
       
       // PR6.2: Apply state updates from backend if feature enabled
-      if (FEATURE_CONVERSATION_FOLLOWUP_ENABLED && response.metadata?.stateUpdates) {
+      if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) && response.metadata?.stateUpdates) {
         console.log('State updates received:', response.metadata.stateUpdates);
         updateSessionState(response.metadata.stateUpdates);
       }

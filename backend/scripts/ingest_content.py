@@ -9,6 +9,7 @@ Ingests markdown content files by:
 """
 
 import argparse
+import asyncio
 import json
 import sys
 import time
@@ -17,7 +18,8 @@ from typing import Dict, List, Optional
 
 from app.core.config import settings
 from app.db.session import SessionLocal
-from app.services.chunking import ChunkingService, EmbeddingService
+from app.services.embeddings import create_embedding_provider_from_env
+from app.services.rag import chunk_text
 from app.services.rag.repository import RAGRepository
 from scripts.common import (
     calculate_file_hash,
@@ -107,11 +109,10 @@ def delete_existing_chunks(
     return repository.delete_by_content_path(content_path)
 
 
-def ingest_file(
+async def ingest_file(
     file_path: Path,
     content_dir: Path,
-    chunking_service: ChunkingService,
-    embedding_service: EmbeddingService,
+    embedding_provider,
     repository: RAGRepository,
     incremental: bool = False,
     dry_run: bool = False,
@@ -121,8 +122,7 @@ def ingest_file(
     Args:
         file_path: Path to markdown file
         content_dir: Root content directory
-        chunking_service: Chunking service
-        embedding_service: Embedding service
+        embedding_provider: Embedding provider (async)
         repository: RAG repository
         incremental: Enable incremental mode (check file hash)
         dry_run: Dry run mode (no database writes)
@@ -172,22 +172,27 @@ def ingest_file(
     if "date" in frontmatter:
         metadata["date"] = str(frontmatter["date"])
     
-    # Chunk text
-    chunks = chunking_service.chunk_text(
-        text=content,
-        metadata=metadata,
-        content_path=str(file_path),
-    )
+    # Chunk text using RAG chunker
+    chunk_objects = chunk_text(content, rel_path, frontmatter=metadata)
     
-    if not chunks:
+    if not chunk_objects:
         return {
             "error": "No chunks generated (content too short?)",
             "skipped": False,
         }
     
-    # Generate embeddings
+    # Convert to dictionaries
+    chunks = [
+        {
+            "text": chunk.text,
+            "metadata": chunk.metadata,
+        }
+        for chunk in chunk_objects
+    ]
+    
+    # Generate embeddings (async)
     texts = [chunk["text"] for chunk in chunks]
-    embeddings = embedding_service.generate_embeddings(texts)
+    embeddings = await embedding_provider.embed_batch(texts)
     
     if len(embeddings) != len(chunks):
         return {
@@ -296,10 +301,9 @@ Examples:
     info(f"Found {len(markdown_files)} markdown file(s)")
     
     # Initialize services
+    embedding_provider = create_embedding_provider_from_env()
     db = SessionLocal()
     try:
-        chunking_service = ChunkingService()
-        embedding_service = EmbeddingService()
         repository = RAGRepository(db)
         
         # Clear existing embeddings if requested
@@ -319,15 +323,14 @@ Examples:
             description="Ingesting content"
         ) as bar:
             for file_path in markdown_files:
-                result = ingest_file(
+                result = asyncio.run(ingest_file(
                     file_path,
                     content_dir,
-                    chunking_service,
-                    embedding_service,
+                    embedding_provider,
                     repository,
                     incremental=args.incremental,
                     dry_run=args.dry_run,
-                )
+                ))
                 
                 if result.get("error"):
                     rel_path = get_relative_path(file_path, content_dir)

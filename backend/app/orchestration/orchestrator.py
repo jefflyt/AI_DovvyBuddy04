@@ -8,14 +8,15 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.agents.registry import get_agent_registry
-from app.agents.types import AgentContext, AgentType
 from app.core.config import settings
+from app.core.feature_flags import FeatureFlag, is_feature_enabled
 
+from .agent_router import AgentRouter
 from .context_builder import ContextBuilder
 from .conversation_manager import ConversationManager, SessionState
 from .emergency_detector import EmergencyDetector
 from .mode_detector import ConversationMode, ModeDetector
+from .response_formatter import ResponseFormatter
 from .session_manager import SessionManager
 from .types import ChatRequest, ChatResponse, SessionData
 
@@ -45,9 +46,10 @@ class ChatOrchestrator:
         self.session_manager = SessionManager(db_session)
         self.mode_detector = ModeDetector()
         self.context_builder = ContextBuilder()
-        self.agent_registry = get_agent_registry()
+        self.agent_router = AgentRouter()
+        self.response_formatter = ResponseFormatter()
         
-        # PR6.2: Conversation continuity components
+        # Pis_feature_enabled(FeatureFlag.CONVERSATION_FOLLOWUP)
         if settings.feature_conversation_followup_enabled:
             self.emergency_detector = EmergencyDetector()
             self.conversation_manager = ConversationManager()
@@ -79,9 +81,9 @@ class ChatOrchestrator:
                 f"Message too long (max {settings.max_message_length} characters)"
             )
 
-        # Handle common greetings with friendly welcome
-        if self._is_greeting(request.message):
+        # Handleresponse_formatter.is_greeting(request.message):
             session = await self._get_or_create_session(request)
+            welcome_message = self.response_formatter.t_or_create_session(request)
             welcome_message = self._get_welcome_message()
             
             await self._update_session_history(
@@ -110,7 +112,7 @@ class ChatOrchestrator:
         state_updates = {}
         detected_intent = None
         
-        if settings.feature_conversation_followup_enabled and self.emergency_detector:
+        if is_feature_enabled(FeatureFlag.CONVERSATION_FOLLOWUP) and self.emergency_detector:
             is_emergency = self.emergency_detector.is_emergency(request.message)
             
             if is_emergency:
@@ -133,7 +135,7 @@ class ChatOrchestrator:
                 )
         
         # PR6.2: Run conversation manager for intent + state + follow-up
-        if settings.feature_conversation_followup_enabled and self.conversation_manager:
+        if is_feature_enabled(FeatureFlag.CONVERSATION_FOLLOWUP) and self.conversation_manager:
             try:
                 # Parse session state from request
                 session_state = None
@@ -170,7 +172,7 @@ class ChatOrchestrator:
         )
 
         # Select agent
-        agent = self._select_agent(mode)
+        agent = self.agent_router.select_agent(mode)
 
         if not agent:
             raise ValueError(f"No agent available for mode: {mode}")
@@ -190,15 +192,12 @@ class ChatOrchestrator:
         # Execute agent
         result = await agent.execute(context)
 
-        # Add safety disclaimer if needed
-        response_message = result.response
-        if settings.include_safety_disclaimer and mode == ConversationMode.SAFETY:
-            response_message = self._add_safety_disclaimer(response_message)
-        
-        # PR6.2: Append follow-up question if enabled
-        if follow_up_question:
-            response_message = f"{response_message}\n\n**{follow_up_question}**"
-            logger.info(f"Appended follow-up: {follow_up_question}")
+        # Format response with disclaimer and follow-up
+        response_message = self.response_formatter.format_response(
+            message=result.response,
+            mode=mode,
+            follow_up_question=follow_up_question,
+        )
 
         # Update session history
         await self._update_session_history(
@@ -267,52 +266,6 @@ class ChatOrchestrator:
         logger.info(f"Created new session: {session.id}")
         return session
 
-    def _select_agent(self, mode: ConversationMode) -> Optional[object]:
-        """
-        Select agent based on conversation mode.
-
-        Args:
-            mode: Detected conversation mode
-
-        Returns:
-            Agent instance or None
-        """
-        if not settings.enable_agent_routing:
-            # Fallback to retrieval agent
-            return self.agent_registry.get(AgentType.RETRIEVAL)
-
-        # Map mode to agent type
-        mode_to_agent = {
-            ConversationMode.CERTIFICATION: AgentType.CERTIFICATION,
-            ConversationMode.TRIP: AgentType.TRIP,
-            ConversationMode.SAFETY: AgentType.SAFETY,
-            ConversationMode.GENERAL: AgentType.RETRIEVAL,
-        }
-
-        agent_type = mode_to_agent.get(mode, AgentType.RETRIEVAL)
-        agent = self.agent_registry.get(agent_type)
-
-        # Fallback to retrieval if agent not found
-        if not agent:
-            logger.warning(f"Agent not found for {agent_type}, using retrieval")
-            agent = self.agent_registry.get(AgentType.RETRIEVAL)
-
-        return agent
-
-    def _add_safety_disclaimer(self, message: str) -> str:
-        """
-        Add safety disclaimer to message.
-
-        Args:
-            message: Original message
-
-        Returns:
-            Message with disclaimer appended
-        """
-        from app.prompts.safety import SAFETY_DISCLAIMER
-
-        return f"{message}\n\n{SAFETY_DISCLAIMER}"
-
     async def _update_session_history(
         self,
         session_id: UUID,
@@ -364,33 +317,3 @@ class ChatOrchestrator:
         """
         return await self.session_manager.get_session(session_id)
 
-    def _is_greeting(self, message: str) -> bool:
-        """
-        Check if message is a common greeting.
-
-        Args:
-            message: User's message
-
-        Returns:
-            True if message is a greeting, False otherwise
-        """
-        greetings = {'hi', 'hello', 'hey', 'greetings', 'howdy', 'good morning', 'good afternoon', 'good evening'}
-        normalized = message.strip().lower()
-        return normalized in greetings
-
-    def _get_welcome_message(self) -> str:
-        """
-        Return friendly welcome message with capability overview.
-
-        Returns:
-            Welcome message string
-        """
-        return (
-            "Hello! 👋 I'm DovvyBuddy, your AI diving assistant.\n\n"
-            "I can help you with:\n"
-            "🎓 Diving certifications and training\n"
-            "🌊 Dive destinations and conditions\n"
-            "⚠️ Safety procedures and best practices\n"
-            "🤿 Equipment recommendations\n\n"
-            "What would you like to know about diving?"
-        )

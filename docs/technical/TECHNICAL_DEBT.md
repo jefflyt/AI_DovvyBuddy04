@@ -4,6 +4,38 @@
 
 ---
 
+## Recent Refactoring (January 31, 2026)
+
+### Codebase Cleanup & Architecture Improvements
+
+#### ✅ Removed Deprecated Services
+- **Deleted:** `backend/app/services/embedding.py` (24 lines)
+- **Deleted:** `backend/app/services/chunking.py` (66 lines)
+- **Reason:** Replaced by proper async providers in `backend/app/services/embeddings/`
+- **Impact:** Eliminated asyncio.run() anti-pattern, removed ~90 lines of dead code
+- **Updated:** Content ingestion scripts now use async/await properly
+
+#### ✅ Orchestrator Refactoring
+- **Before:** `orchestrator.py` was 397 lines with multiple responsibilities
+- **After:** Reduced to 318 lines (20% reduction)
+- **Extracted Modules:**
+  - `response_formatter.py` - Greeting detection, welcome messages, disclaimer formatting
+  - `agent_router.py` - Agent selection and mode-to-agent mapping
+- **Benefits:** Improved testability, reduced cognitive load, clearer separation of concerns
+
+#### ✅ Feature Flag Centralization
+- **Created:** `backend/app/core/feature_flags.py` with FeatureFlag enum and manager
+- **Created:** `src/lib/feature-flags.ts` for frontend feature flag management
+- **Migrated:** All scattered feature flag checks to centralized registry
+- **Benefits:** Single source of truth, easier A/B testing, reduced coupling
+
+#### ✅ Removed Obsolete Tests
+- **Deleted:** `backend/tests/comparison/` directory
+- **Reason:** All tests were skipped, TypeScript backend removed in January 2026
+- **Impact:** Cleaner test suite, no false positives from skipped tests
+
+---
+
 ## Active Technical Debt
 
 ### Test Suite Issues
