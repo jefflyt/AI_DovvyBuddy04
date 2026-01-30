@@ -37,7 +37,7 @@ describe('Analytics', () => {
 
     it('should handle none provider', () => {
       process.env.NEXT_PUBLIC_ANALYTICS_PROVIDER = 'none'
-      process.env.NODE_ENV = 'development'
+      vi.stubEnv('NODE_ENV', 'development')
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
 
       initAnalytics()
