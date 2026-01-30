@@ -15,6 +15,7 @@ class ChatRequest:
     message: str
     session_id: Optional[str] = None
     diver_profile: Optional[Dict[str, Any]] = None
+    session_state: Optional[Dict[str, Any]] = None  # PR6.2: Session state from localStorage
 
 
 @dataclass
@@ -25,6 +26,7 @@ class ChatResponse:
     session_id: str
     agent_type: str
     metadata: Dict[str, Any] = field(default_factory=dict)
+    follow_up_question: Optional[str] = None  # PR6.2: Follow-up for conversation continuity
 
 
 @dataclass

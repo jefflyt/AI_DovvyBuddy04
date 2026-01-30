@@ -13,6 +13,8 @@ from app.agents.types import AgentContext, AgentType
 from app.core.config import settings
 
 from .context_builder import ContextBuilder
+from .conversation_manager import ConversationManager, SessionState
+from .emergency_detector import EmergencyDetector
 from .mode_detector import ConversationMode, ModeDetector
 from .session_manager import SessionManager
 from .types import ChatRequest, ChatResponse, SessionData
@@ -44,6 +46,16 @@ class ChatOrchestrator:
         self.mode_detector = ModeDetector()
         self.context_builder = ContextBuilder()
         self.agent_registry = get_agent_registry()
+        
+        # PR6.2: Conversation continuity components
+        if settings.feature_conversation_followup_enabled:
+            self.emergency_detector = EmergencyDetector()
+            self.conversation_manager = ConversationManager()
+            logger.info("Conversation continuity enabled")
+        else:
+            self.emergency_detector = None
+            self.conversation_manager = None
+            logger.info("Conversation continuity disabled")
 
     async def handle_chat(self, request: ChatRequest) -> ChatResponse:
         """
@@ -93,7 +105,65 @@ class ChatOrchestrator:
             f"message_length={len(request.message)}"
         )
 
-        # Detect conversation mode
+        # PR6.2: Check for emergency FIRST (safety-critical, keyword-based)
+        follow_up_question = None
+        state_updates = {}
+        detected_intent = None
+        
+        if settings.feature_conversation_followup_enabled and self.emergency_detector:
+            is_emergency = self.emergency_detector.is_emergency(request.message)
+            
+            if is_emergency:
+                # Emergency detected: bypass conversation manager, return safety response
+                logger.warning(f"Emergency detected for session {session.id}")
+                emergency_response = self.emergency_detector.get_emergency_response()
+                
+                await self._update_session_history(
+                    session.id,
+                    request.message,
+                    emergency_response
+                )
+                
+                return ChatResponse(
+                    message=emergency_response,
+                    session_id=str(session.id),
+                    agent_type="emergency",
+                    metadata={"mode": "emergency", "emergency_detected": True},
+                    follow_up_question=None,  # No follow-up for emergencies
+                )
+        
+        # PR6.2: Run conversation manager for intent + state + follow-up
+        if settings.feature_conversation_followup_enabled and self.conversation_manager:
+            try:
+                # Parse session state from request
+                session_state = None
+                if request.session_state:
+                    session_state = SessionState.from_dict(request.session_state)
+                
+                # Analyze conversation
+                analysis = await self.conversation_manager.analyze(
+                    message=request.message,
+                    history=session.conversation_history,
+                    state=session_state,
+                )
+                
+                detected_intent = analysis.intent.value
+                state_updates = analysis.state_updates
+                follow_up_question = analysis.follow_up
+                
+                logger.info(
+                    f"Conversation analysis: intent={detected_intent}, "
+                    f"confidence={analysis.confidence:.2f}, "
+                    f"follow_up={'yes' if follow_up_question else 'no'}, "
+                    f"state_updates={list(state_updates.keys())}"
+                )
+                
+            except Exception as e:
+                logger.error(f"Conversation manager failed: {e}", exc_info=True)
+                # Continue without conversation features on error
+                pass
+
+        # Detect conversation mode (existing flow)
         mode = self.mode_detector.detect_mode(
             request.message,
             session.conversation_history
@@ -124,6 +194,11 @@ class ChatOrchestrator:
         response_message = result.response
         if settings.include_safety_disclaimer and mode == ConversationMode.SAFETY:
             response_message = self._add_safety_disclaimer(response_message)
+        
+        # PR6.2: Append follow-up question if enabled
+        if follow_up_question:
+            response_message = f"{response_message}\n\n**{follow_up_question}**"
+            logger.info(f"Appended follow-up: {follow_up_question}")
 
         # Update session history
         await self._update_session_history(
@@ -133,16 +208,25 @@ class ChatOrchestrator:
         )
 
         # Build response
+        response_metadata = {
+            "mode": mode.value,
+            "confidence": result.confidence,
+            "has_rag": context.metadata.get("has_rag", False),
+            **result.metadata,
+        }
+        
+        # PR6.2: Add conversation metadata
+        if detected_intent:
+            response_metadata["detected_intent"] = detected_intent
+        if state_updates:
+            response_metadata["state_updates"] = state_updates
+        
         response = ChatResponse(
             message=response_message,
             session_id=str(session.id),
             agent_type=result.agent_type.value,
-            metadata={
-                "mode": mode.value,
-                "confidence": result.confidence,
-                "has_rag": context.metadata.get("has_rag", False),
-                **result.metadata,
-            },
+            metadata=response_metadata,
+            follow_up_question=follow_up_question,
         )
 
         logger.info(

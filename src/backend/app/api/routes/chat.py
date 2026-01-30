@@ -23,6 +23,7 @@ class ChatRequestPayload(BaseModel):
     message: str = Field(..., min_length=1, max_length=2000)
     session_id: Optional[str] = Field(None, alias="sessionId")
     diver_profile: Optional[dict] = Field(None, alias="diverProfile")
+    session_state: Optional[dict] = Field(None, alias="sessionState")  # PR6.2
 
     class Config:
         populate_by_name = True
@@ -35,6 +36,7 @@ class ChatResponsePayload(BaseModel):
     session_id: str = Field(..., alias="sessionId")
     agent_type: str = Field(..., alias="agentType")
     metadata: dict = {}
+    follow_up_question: Optional[str] = Field(None, alias="followUpQuestion")  # PR6.2
 
     class Config:
         populate_by_name = True
@@ -76,6 +78,7 @@ async def chat_endpoint(
             message=payload.message,
             session_id=payload.session_id,
             diver_profile=payload.diver_profile,
+            session_state=payload.session_state,  # PR6.2
         )
 
         # Handle chat
@@ -89,6 +92,7 @@ async def chat_endpoint(
             session_id=response.session_id,
             agent_type=response.agent_type,
             metadata=response.metadata,
+            follow_up_question=response.follow_up_question,  # PR6.2
         )
 
     except ValueError as e:

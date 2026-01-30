@@ -10,6 +10,7 @@
 export interface ChatRequest {
   sessionId?: string;
   message: string;
+  sessionState?: Record<string, any>; // PR6.2: Session state from localStorage
 }
 
 export interface LeadRequest {
@@ -29,6 +30,7 @@ export interface ChatResponse {
   sessionId: string;
   message: string;
   metadata?: ChatMetadata;
+  followUpQuestion?: string; // PR6.2: Follow-up question for conversation continuity
 }
 
 export interface ChatMetadata {
@@ -38,6 +40,8 @@ export interface ChatMetadata {
   promptMode?: string;
   agentsUsed?: string[];
   queryType?: string;
+  detectedIntent?: string; // PR6.2: Detected conversation intent
+  stateUpdates?: Record<string, any>; // PR6.2: Session state updates from LLM
 }
 
 export interface SessionResponse {

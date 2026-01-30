@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { apiClient, type ChatResponse, ApiClientError } from '@/lib/api-client';
 import { LeadCaptureModal, type LeadFormData } from '@/components/chat/LeadCaptureModal';
+import { useSessionState } from '@/lib/hooks/useSessionState'; // PR6.2
 
 interface Message {
   id: string;
@@ -14,6 +15,10 @@ interface Message {
 const STORAGE_KEY = 'dovvybuddy-session-id';
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// PR6.2: Feature flag from environment
+const FEATURE_CONVERSATION_FOLLOWUP_ENABLED =
+  process.env.NEXT_PUBLIC_FEATURE_CONVERSATION_FOLLOWUP_ENABLED === 'true';
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -21,6 +26,9 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // PR6.2: Session state hook
+  const { sessionState, updateSessionState, clearSessionState } = useSessionState();
 
   // Lead form state
   const [showLeadForm, setShowLeadForm] = useState(false);
@@ -90,6 +98,10 @@ export default function ChatPage() {
     setSessionId(null);
     setMessages([]);
     setError(null);
+    // PR6.2: Clear session state
+    if (FEATURE_CONVERSATION_FOLLOWUP_ENABLED) {
+      clearSessionState();
+    }
   };
 
   /**
@@ -136,15 +148,34 @@ export default function ChatPage() {
     try {
       // Call API
       console.log('Calling API with message:', userMessage.content);
-      const response: ChatResponse = await apiClient.chat({
+      
+      // PR6.2: Include session state if feature enabled
+      const requestPayload: {
+        sessionId?: string;
+        message: string;
+        sessionState?: Record<string, any>;
+      } = {
         sessionId: sessionId || undefined,
         message: userMessage.content,
-      });
+      };
+      
+      if (FEATURE_CONVERSATION_FOLLOWUP_ENABLED) {
+        requestPayload.sessionState = sessionState;
+        console.log('Session state sent:', sessionState);
+      }
+      
+      const response: ChatResponse = await apiClient.chat(requestPayload);
       console.log('API Response:', response);
 
       // Store session ID if this is first message
       if (!sessionId && response.sessionId) {
         setSessionId(response.sessionId);
+      }
+      
+      // PR6.2: Apply state updates from backend if feature enabled
+      if (FEATURE_CONVERSATION_FOLLOWUP_ENABLED && response.metadata?.stateUpdates) {
+        console.log('State updates received:', response.metadata.stateUpdates);
+        updateSessionState(response.metadata.stateUpdates);
       }
 
       // Add assistant message
