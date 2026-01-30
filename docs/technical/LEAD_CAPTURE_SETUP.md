@@ -6,7 +6,7 @@ Complete setup instructions for the PR4 Lead Capture & Delivery system.
 
 ## Prerequisites
 
-- Python backend installed and running (`src/backend`)
+- Python backend installed and running (`backend`)
 - PostgreSQL database configured
 - Database migrations up to date
 
@@ -61,7 +61,7 @@ For production use with custom sender email:
 
 ### Backend Environment (Primary)
 
-Edit `src/backend/.env`:
+Edit `backend/.env`:
 
 ```bash
 # Lead Capture & Delivery Configuration
@@ -93,7 +93,7 @@ LEAD_EMAIL_FROM=leads@dovvybuddy.com
 LEAD_WEBHOOK_URL=
 ```
 
-**Note:** Frontend doesn't directly use these. They're mirrored for documentation. The Python backend reads from `src/backend/.env`.
+**Note:** Frontend doesn't directly use these. They're mirrored for documentation. The Python backend reads from `backend/.env`.
 
 ---
 
@@ -102,7 +102,7 @@ LEAD_WEBHOOK_URL=
 ### Backend Dependencies
 
 ```bash
-cd src/backend
+cd backend
 pip install -e .
 ```
 
@@ -123,7 +123,7 @@ Should output version `0.8.0` or higher.
 Run the lead schema migration:
 
 ```bash
-cd src/backend
+cd backend
 alembic upgrade head
 ```
 
@@ -158,7 +158,7 @@ Should show columns: `id`, `type`, `request_details`, `diver_profile`, `created_
 ### Start Backend Server
 
 ```bash
-cd src/backend
+cd backend
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -218,7 +218,7 @@ curl -X POST http://localhost:8000/api/leads \
 **Cause:** `RESEND_API_KEY` not set in environment
 
 **Solution:**
-1. Verify `.env` file exists in `src/backend/`
+1. Verify `.env` file exists in `backend/`
 2. Check `RESEND_API_KEY` is set and not empty
 3. Restart backend server to pick up new environment variables
 4. Verify with: `echo $RESEND_API_KEY` (in backend terminal)
@@ -228,7 +228,7 @@ curl -X POST http://localhost:8000/api/leads \
 **Cause:** `LEAD_EMAIL_TO` not set
 
 **Solution:**
-1. Set `LEAD_EMAIL_TO` in `src/backend/.env`
+1. Set `LEAD_EMAIL_TO` in `backend/.env`
 2. Restart backend server
 3. Must be a valid email address
 
@@ -287,7 +287,7 @@ Before deploying to production:
 - [ ] Resend account created and verified
 - [ ] API key generated and stored securely
 - [ ] Domain verified (for production)
-- [ ] Environment variables set in `src/backend/.env`
+- [ ] Environment variables set in `backend/.env`
 - [ ] Dependencies installed (`pip install -e .`)
 - [ ] Database migration applied (`alembic upgrade head`)
 - [ ] Backend server starts without errors
@@ -416,7 +416,7 @@ LEAD_EMAIL_FROM=leads@dovvybuddy.com
 ### Documentation
 
 - **Implementation Guide:** `docs/project-management/PR4-Implementation-Guide.md`
-- **API Reference:** `src/backend/docs/LEAD_API_REFERENCE.md`
+- **API Reference:** `backend/docs/LEAD_API_REFERENCE.md`
 - **Project Summary:** `docs/project-management/PR4-Implementation-Summary.md`
 
 ### External Resources

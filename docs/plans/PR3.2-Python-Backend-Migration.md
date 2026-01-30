@@ -85,8 +85,8 @@ This is a substantial refactor that touches every layer of the stack (database a
 
 **Complete rewrite in Python:**
 
-- **New Python service:** `src/backend/` directory (separate from Next.js)
-  - `src/backend/app/` — FastAPI application
+- **New Python service:** `backend/` directory (separate from Next.js)
+  - `backend/app/` — FastAPI application
     - `main.py` — FastAPI app initialization, CORS, middleware
     - `api/routes/` — Route handlers (chat, session, lead)
     - `services/` — Business logic
@@ -101,15 +101,15 @@ This is a substantial refactor that touches every layer of the stack (database a
       - `session.py` — Async DB session management
     - `prompts/` — System prompts and templates
     - `core/` — Configuration, logging, dependencies
-  - `src/backend/scripts/` — Content processing
+  - `backend/scripts/` — Content processing
     - `ingest_content.py` — Content ingestion
     - `validate_content.py` — Content validation
     - `benchmark_rag.py` — RAG benchmarking
-  - `src/backend/tests/` — Pytest test suite
-  - `src/backend/alembic/` — Database migrations (replaces Drizzle)
-  - `src/backend/pyproject.toml` or `requirements.txt` — Python dependencies
-  - `src/backend/Dockerfile` — Container image
-  - `src/backend/openapi.yaml` — API specification
+  - `backend/tests/` — Pytest test suite
+  - `backend/alembic/` — Database migrations (replaces Drizzle)
+  - `backend/pyproject.toml` or `requirements.txt` — Python dependencies
+  - `backend/Dockerfile` — Container image
+  - `backend/openapi.yaml` — API specification
 
 - **Deleted TypeScript modules:**
   - `src/lib/orchestration/` — Replaced by Python orchestrator
@@ -231,7 +231,7 @@ This is a substantial refactor that touches every layer of the stack (database a
    - Test query equivalence (same inputs → same outputs)
 
 2. **Drizzle Kit → Alembic**
-   - Initialize Alembic in `src/backend/alembic/`
+   - Initialize Alembic in `backend/alembic/`
    - Generate initial migration reflecting current schema (no-op)
    - Future migrations use Alembic exclusively
 
@@ -473,17 +473,17 @@ gcloud run services update-traffic dovvybuddy-backend \
 
 **Tasks:**
 1. Design OpenAPI 3.0 spec for all backend endpoints (chat, session, lead)
-2. Create `src/backend/` directory with FastAPI project structure
+2. Create `backend/` directory with FastAPI project structure
 3. Setup Python tooling (poetry, pytest, mypy, ruff, black)
 4. Create placeholder route handlers returning mock data
 5. Generate TypeScript API client from OpenAPI spec
 6. Test: Python backend returns valid mock responses, TS client compiles
 
 **Deliverables:**
-- `src/backend/openapi.yaml` — API specification
-- `src/backend/app/main.py` — FastAPI app with placeholder routes
+- `backend/openapi.yaml` — API specification
+- `backend/app/main.py` — FastAPI app with placeholder routes
 - `src/lib/api-client/` — Generated TypeScript client
-- `src/backend/pyproject.toml` — Python dependencies
+- `backend/pyproject.toml` — Python dependencies
 
 **Checkpoint:** Backend returns mock responses matching OpenAPI spec, frontend client generates successfully, all tests pass.
 
@@ -504,10 +504,10 @@ gcloud run services update-traffic dovvybuddy-backend \
 6. Test: All database operations work in Python, vector search matches TS results
 
 **Deliverables:**
-- `src/backend/app/db/models/` — SQLAlchemy models
-- `src/backend/app/db/repositories/` — Repository classes
-- `src/backend/app/db/session.py` — Async session factory
-- `src/backend/alembic/` — Alembic configuration and migrations
+- `backend/app/db/models/` — SQLAlchemy models
+- `backend/app/db/repositories/` — Repository classes
+- `backend/app/db/session.py` — Async session factory
+- `backend/alembic/` — Alembic configuration and migrations
 - Integration tests with Docker Postgres
 
 **Checkpoint:** Database queries return same results as TypeScript implementation, test coverage ≥80%, vector search validated.
@@ -529,8 +529,8 @@ gcloud run services update-traffic dovvybuddy-backend \
 6. Test: Embeddings match TS output (cosine similarity ≈ 1.0), LLM responses equivalent
 
 **Deliverables:**
-- `src/backend/app/services/embeddings/` — Embedding providers
-- `src/backend/app/services/llm/` — LLM providers
+- `backend/app/services/embeddings/` — Embedding providers
+- `backend/app/services/llm/` — LLM providers
 - Unit tests with mocked APIs
 - Integration tests with real APIs (limited runs)
 
@@ -553,7 +553,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 6. Test: RAG pipeline returns equivalent results, chunk boundaries consistent
 
 **Deliverables:**
-- `src/backend/app/services/rag/` — RAG pipeline (chunker, retriever, pipeline)
+- `backend/app/services/rag/` — RAG pipeline (chunker, retriever, pipeline)
 - Comparison tests with 50+ test queries
 - Benchmark results (latency, accuracy)
 
@@ -576,10 +576,10 @@ gcloud run services update-traffic dovvybuddy-backend \
 6. Test: All agents respond appropriately, orchestration flow matches TS, session history preserved
 
 **Deliverables:**
-- `src/backend/app/agents/` — Agent implementations
-- `src/backend/app/orchestration/` — Chat orchestrator
-- `src/backend/app/prompts/` — System prompts
-- `src/backend/app/api/routes/chat.py` — Chat endpoint handler
+- `backend/app/agents/` — Agent implementations
+- `backend/app/orchestration/` — Chat orchestrator
+- `backend/app/prompts/` — System prompts
+- `backend/app/api/routes/chat.py` — Chat endpoint handler
 - Comparison tests with 50+ test conversations
 
 **Checkpoint:** Agents respond appropriately, orchestration matches TypeScript behavior, no response quality regressions.
@@ -601,7 +601,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 6. Test: Scripts run successfully, embeddings generated correctly, validation catches errors
 
 **Deliverables:**
-- `src/backend/scripts/` — Python scripts (ingest, validate, benchmark)
+- `backend/scripts/` — Python scripts (ingest, validate, benchmark)
 - Updated `package.json` scripts to call Python equivalents
 - CI/CD workflows updated
 
@@ -625,7 +625,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 **Deliverables:**
 - `src/lib/api-client/client.ts` — Configured API client
 - `src/app/api/chat/route.ts` — Updated to proxy (or removed)
-- CORS middleware in `src/backend/app/main.py`
+- CORS middleware in `backend/app/main.py`
 - Integration tests (frontend → backend)
 
 **Checkpoint:** Frontend successfully calls Python backend, session persistence works, no CORS issues, errors handled gracefully.
@@ -649,7 +649,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 8. Test: Production deployment successful, monitoring active, rollback tested
 
 **Deliverables:**
-- `src/backend/Dockerfile` — Container image
+- `backend/Dockerfile` — Container image
 - `.github/workflows/deploy-backend.yml` — CI/CD for backend
 - `docs/deployment.md` — Deployment documentation
 - Production deployment completed

@@ -19,7 +19,7 @@ Assume:
 
 - Solo founder, full-stack web app, unregulated environment.
 - The project structure is roughly:
-  - `src/backend/...`
+  - `backend/...`
   - `src/frontend/...`
   - `src/shared/...`
   - `tests/...`
@@ -179,7 +179,7 @@ Short description of what this step improves (e.g., “Extract user profile busi
 **Files / Areas Affected (by layer)**
 
 - Backend:
-  - Modules/namespaces and approximate file paths (e.g., `src/backend/Controllers/UsersController.*`, `src/backend/Services/UserProfileService.*`).
+  - Modules/namespaces and approximate file paths (e.g., `backend/Controllers/UsersController.*`, `backend/Services/UserProfileService.*`).
 - Frontend:
   - Pages/components (e.g., `src/frontend/pages/UserProfile.tsx`, shared components).
 - Data:

@@ -305,7 +305,7 @@ Deferred to PR6 (Playwright).
 ### Manual verification checklist
 
 Pre-requisites:
-- Backend running: cd src/backend && uvicorn app.main:app --reload
+- Backend running: cd backend && uvicorn app.main:app --reload
 - Frontend running: pnpm dev
 - Open http://localhost:3000/chat
 
@@ -424,7 +424,7 @@ Install:
 pnpm install
 
 Dev:
-Terminal 1: cd src/backend && uvicorn app.main:app --reload
+Terminal 1: cd backend && uvicorn app.main:app --reload
 Terminal 2: pnpm dev
 
 Test:

@@ -83,7 +83,7 @@ jobs:
 
       - name: Setup Python backend
         run: |
-          cd src/backend
+          cd backend
           pip install -e .
 
       - name: Run E2E tests

@@ -65,7 +65,7 @@ Implement embedding generation, LLM provider abstraction, and RAG pipeline (chun
 
 **Services Structure:**
 ```
-src/backend/app/services/
+backend/app/services/
 ├── __init__.py
 ├── embeddings/
 │   ├── __init__.py
@@ -86,7 +86,7 @@ src/backend/app/services/
     ├── pipeline.py                # RAG orchestration
     └── types.py                   # RAG-specific types
 
-src/backend/tests/
+backend/tests/
 ├── unit/services/
 │   ├── test_embeddings.py
 │   ├── test_llm.py
@@ -102,7 +102,7 @@ src/backend/tests/
     ├── test_chunking_comparison.py
     └── test_rag_comparison.py
 
-src/backend/scripts/
+backend/scripts/
 ├── test_embeddings.py             # Manual embedding test
 ├── test_llm.py                    # Manual LLM test
 ├── test_rag.py                    # Manual RAG test
@@ -134,7 +134,7 @@ src/backend/scripts/
 
 ### Modified Modules
 
-- `src/backend/app/core/config.py` — Add LLM/embedding configuration
+- `backend/app/core/config.py` — Add LLM/embedding configuration
   - `DEFAULT_LLM_PROVIDER`: groq | gemini
   - `DEFAULT_LLM_MODEL`: Model name
   - `EMBEDDING_MODEL`: text-embedding-004
@@ -142,7 +142,7 @@ src/backend/scripts/
   - `RAG_TOP_K`: Default 5
   - `RAG_MIN_SIMILARITY`: Default 0.5
 
-- `src/backend/pyproject.toml` — Add dependencies:
+- `backend/pyproject.toml` — Add dependencies:
   - `google-generativeai>=0.3.2`
   - `groq>=0.4.2`
   - `tiktoken>=0.5.2`
@@ -316,7 +316,7 @@ EMBEDDING_RETRY_DELAY=1.0              # Initial retry delay (seconds)
 
 ```bash
 # 1. Test embedding generation
-cd src/backend
+cd backend
 python -m scripts.test_embeddings "What is PADI Open Water?"
 
 # 2. Test LLM call (Groq)
@@ -329,7 +329,7 @@ python -m scripts.test_llm --provider gemini "Explain buoyancy control"
 python -m scripts.test_rag "What certifications do I need for Tioman?"
 
 # 5. Benchmark RAG performance
-cd src/backend
+cd backend
 python -m scripts.benchmark_rag --queries 50 --output benchmark-results.json
 ```
 
@@ -691,7 +691,7 @@ After PR3.2b is merged:
 - ✅ Added repository TDD snapshot: `docs/tdd/TDD_Project_Status.md` (project status and verification checklist).
 
 **What requires manual verification:**
-- ⚠️ Install dependencies: `cd src/backend && pip install -e .`
+- ⚠️ Install dependencies: `cd backend && pip install -e .`
 - ⚠️ Run unit tests: `pytest tests/unit/services -v`
 - ⚠️ Run integration tests with API keys: `pytest tests/integration/services -v`
 - ⚠️ Run comparison tests: `pytest tests/comparison/ -v`

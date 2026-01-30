@@ -18,7 +18,7 @@ Assume:
 - Solo founder, full-stack web app, unregulated environment.
 - The user works in Visual Studio / VS Code.
 - The codebase uses a conventional structure such as:
-  - `src/backend/...`
+  - `backend/...`
   - `src/frontend/...`
   - `src/shared/...`
   - `tests/...`
@@ -167,14 +167,14 @@ Implement the plan step-by-step. For each step in the plan:
        - Delete obsolete code.
 
    Use headings like:
-   - `Backend: src/backend/...`
+   - `Backend: backend/...`
    - `Frontend: src/frontend/...`
    - `Data: infra/db/migrations/...`
    - `Tests: tests/backend/...` etc.
 
 Example structure:
 
-##### Backend: src/backend/Controllers/UsersController.cs
+##### Backend: backend/Controllers/UsersController.cs
 
 Replace the `CreateUser` action with:
 

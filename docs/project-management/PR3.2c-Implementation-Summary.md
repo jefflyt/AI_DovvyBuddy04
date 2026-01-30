@@ -131,7 +131,7 @@ ChatOrchestrator
 ## File Structure
 
 ```
-src/backend/app/
+backend/app/
 ├── agents/
 │   ├── __init__.py
 │   ├── types.py              # Agent types and context

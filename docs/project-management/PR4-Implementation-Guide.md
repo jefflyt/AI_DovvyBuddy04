@@ -89,7 +89,7 @@ This PR implements the lead capture and delivery system that converts qualified 
 ### 1. Install Dependencies
 
 ```bash
-cd src/backend
+cd backend
 pip install -e .
 ```
 
@@ -119,7 +119,7 @@ LEAD_EMAIL_FROM=leads@dovvybuddy.com
 ### 3. Run Database Migration
 
 ```bash
-cd src/backend
+cd backend
 alembic upgrade head
 ```
 
@@ -132,7 +132,7 @@ This will apply the `002_update_leads` migration to update the leads table schem
 Run the full test suite:
 
 ```bash
-cd src/backend
+cd backend
 pytest tests/unit/core/lead/ -v
 pytest tests/integration/api/test_lead.py -v
 ```
@@ -147,7 +147,7 @@ Expected output:
 #### 1. Start Development Server
 
 ```bash
-cd src/backend
+cd backend
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -352,34 +352,34 @@ All core functionality remains identical to the plan; only the implementation la
 
 ### New Files Created
 ```
-src/backend/app/core/lead/
+backend/app/core/lead/
 ├── __init__.py
 ├── types.py
 ├── service.py
 └── email_template.py
 
-src/backend/alembic/versions/
+backend/alembic/versions/
 └── 002_update_leads.py
 
-src/backend/tests/unit/core/lead/
+backend/tests/unit/core/lead/
 ├── __init__.py
 ├── test_validation.py
 └── test_email_template.py
 
-src/backend/tests/integration/api/
+backend/tests/integration/api/
 ├── __init__.py
 └── test_lead.py
 ```
 
 ### Modified Files
 ```
-src/backend/app/db/models/lead.py
-src/backend/app/db/repositories/lead_repository.py
-src/backend/app/db/session.py
-src/backend/app/api/routes/lead.py
-src/backend/app/core/config.py
-src/backend/.env.example
-src/backend/pyproject.toml
+backend/app/db/models/lead.py
+backend/app/db/repositories/lead_repository.py
+backend/app/db/session.py
+backend/app/api/routes/lead.py
+backend/app/core/config.py
+backend/.env.example
+backend/pyproject.toml
 ```
 
 ## Definition of Done

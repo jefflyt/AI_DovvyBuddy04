@@ -7,7 +7,7 @@
 
 > **⚠️ OBSOLETE:** This PR is no longer needed. The agent orchestration logic was implemented directly in Python/FastAPI backend (PR3.2c) and is already a standalone service. The backend can serve multiple channels (web, Telegram) without requiring extraction.
 >
-> **Migration Complete:** Python backend at `src/backend/` already contains:
+> **Migration Complete:** Python backend at `backend/` already contains:
 > - Agent orchestration (`app/agents/`)
 > - RAG pipeline (`app/services/rag/`)
 > - Session management (`app/db/repositories/session_repository.py`)

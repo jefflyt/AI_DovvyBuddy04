@@ -54,7 +54,7 @@ Successfully implemented, verified, and tested all core backend services (embedd
 ### ✅ 5. Integration Tests (**NOW COMPLETE**)
 - **Status:** 7/11 PASSED (64% success rate with real APIs)
 - **Setup:**
-  - ✅ Created src/backend/.env with API keys from .env.local
+  - ✅ Created backend/.env with API keys from .env.local
   - ✅ Verified pgvector 0.8.0 installed in database
   - ✅ Confirmed content_embeddings table exists with HNSW index
 - **Results:**
@@ -122,17 +122,17 @@ Successfully implemented, verified, and tested all core backend services (embedd
 - scripts/{__init__.py, test_embeddings.py, test_llm.py, test_rag.py} (4 files)
 
 **Documentation:**
-- src/backend/README_SERVICES.md
+- backend/README_SERVICES.md
 
 ### Modified (5 files):
-- src/backend/pyproject.toml (added dependencies)
-- src/backend/app/core/config.py (added 20+ settings, fixed Pydantic 2.0 compatibility, set extra="ignore")
-- src/backend/.env.example (added comprehensive docs)
-- src/backend/pytest.ini (added 'slow' marker)
-- src/backend/app/services/llm/factory.py (provider-specific default models)
+- backend/pyproject.toml (added dependencies)
+- backend/app/core/config.py (added 20+ settings, fixed Pydantic 2.0 compatibility, set extra="ignore")
+- backend/.env.example (added comprehensive docs)
+- backend/pytest.ini (added 'slow' marker)
+- backend/app/services/llm/factory.py (provider-specific default models)
 
 ### Created for Verification:
-- src/backend/.env (API keys for testing)
+- backend/.env (API keys for testing)
 
 ## Known Issues & Limitations
 

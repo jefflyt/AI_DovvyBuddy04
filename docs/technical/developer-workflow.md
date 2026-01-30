@@ -24,13 +24,13 @@ cd AI_DovvyBuddy04
 pnpm install
 
 # 3. Install backend dependencies
-cd src/backend
+cd backend
 python3 -m pip install -e .
 cd ..
 
 # 4. Set up environment
-cp src/backend/.env.example src/backend/.env
-# Edit src/backend/.env with your:
+cp backend/.env.example backend/.env
+# Edit backend/.env with your:
 # - DATABASE_URL (PostgreSQL with pgvector)
 # - GEMINI_API_KEY
 # - Other required variables
@@ -43,10 +43,10 @@ pnpm db:push
 
 ```bash
 # Check Python imports
-cd src/backend && python3 -c "import scripts.common; print('✓ OK')" && cd ..
+cd backend && python3 -c "import scripts.common; print('✓ OK')" && cd ..
 
 # Run tests
-cd src/backend && python3 -m pytest tests/unit/scripts/ -v && cd ..
+cd backend && python3 -m pytest tests/unit/scripts/ -v && cd ..
 
 # Test validation script
 pnpm content:validate-py
@@ -99,7 +99,7 @@ pnpm content:validate-py
    pnpm test
    
    # Backend unit tests
-   cd src/backend
+   cd backend
    python3 -m pytest tests/unit/ -v
    cd ..
    ```
@@ -167,7 +167,7 @@ pnpm content:clear-py
 
 ```bash
 # Validation with custom fields
-cd src/backend
+cd backend
 python3 -m scripts.validate_content --required-fields title description category
 
 # Ingestion dry run
@@ -204,7 +204,7 @@ pnpm benchmark:rag
 tests/
 ├── unit/                    # Fast, isolated tests
 │   ├── frontend/           # Frontend unit tests (Vitest)
-│   └── src/backend/            # Backend unit tests (pytest)
+│   └── backend/            # Backend unit tests (pytest)
 │       └── scripts/        # Script unit tests
 └── integration/            # E2E tests
     └── scripts/            # Script integration tests
@@ -217,7 +217,7 @@ tests/
 pnpm test
 
 # Backend unit tests
-cd src/backend
+cd backend
 python3 -m pytest tests/unit/ -v
 
 # Backend integration tests (requires DB)
@@ -292,7 +292,7 @@ pnpm db:push --force-reset
 
 **Check database connection:**
 ```bash
-cd src/backend
+cd backend
 python3 -c "from app.db.session import SessionLocal; db = SessionLocal(); print('✓ Connected')"
 cd ..
 ```
@@ -308,7 +308,7 @@ cd ..
 export LOG_LEVEL=DEBUG
 
 # Run with verbose output
-cd src/backend
+cd backend
 python3 -m scripts.ingest_content --dry-run
 cd ..
 
@@ -331,7 +331,7 @@ pnpm build
 **Import errors:**
 ```bash
 # Reinstall backend package
-cd src/backend
+cd backend
 python3 -m pip install -e . --force-reinstall
 cd ..
 ```
@@ -351,7 +351,7 @@ psql "$DATABASE_URL" -c "SELECT 1"
 echo $GEMINI_API_KEY
 
 # Test API
-cd src/backend
+cd backend
 python3 -c "from app.services.embedding import EmbeddingService; s = EmbeddingService(); print(s.generate_embeddings(['test']))"
 cd ..
 ```
@@ -367,7 +367,7 @@ cd ..
 pnpm content:ingest-incremental-py
 
 # Adjust batch size for slower networks
-cd src/backend
+cd backend
 python3 -m scripts.ingest_content --batch-size 5
 cd ..
 ```
@@ -398,7 +398,7 @@ ls -lt benchmark-results-*.json | head -5
 pnpm typecheck
 pnpm lint
 pnpm test
-cd src/backend && python3 -m pytest tests/unit/ && cd ..
+cd backend && python3 -m pytest tests/unit/ && cd ..
 ```
 
 ---
@@ -415,7 +415,7 @@ Automatic deployment on push to `main`:
 
 ```bash
 # Build Docker image
-cd src/backend
+cd backend
 docker build -t dovvybuddy-backend .
 
 # Deploy to Cloud Run
@@ -436,7 +436,7 @@ cd ..
 - **Setup:** `README.md`
 - **Architecture:** `docs/technical/`
 - **Plans:** `docs/plans/`
-- **API:** `src/backend/README.md`
+- **API:** `backend/README.md`
 - **Content Guide:** `content/README.md`
 
 ### Updating Documentation
@@ -454,7 +454,7 @@ cd ..
 
 | Issue | Solution |
 |-------|----------|
-| Import errors | `cd src/backend && python3 -m pip install -e .` |
+| Import errors | `cd backend && python3 -m pip install -e .` |
 | Database errors | Check `DATABASE_URL`, verify pgvector extension |
 | API key errors | Check `GEMINI_API_KEY` in `.env` |
 | Test failures | `python3 -m pytest tests/unit/ -v` |
@@ -476,6 +476,6 @@ After PR3.2d completion:
 ---
 
 **Questions?** Check:
-- Backend: `src/backend/README.md`
+- Backend: `backend/README.md`
 - General: `docs/NEXT_STEPS.md`
 - Implementation: `docs/project-management/PR3.2d-implementation-summary.md`

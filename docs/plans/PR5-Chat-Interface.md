@@ -908,14 +908,14 @@ This is **acceptable for V1** as all functionality is present, just organized di
    - ✅ RAG retrieval integration
    - ✅ Agent orchestration
    - ✅ Error handling (SESSION_EXPIRED, SESSION_NOT_FOUND)
-   - **Location:** `src/backend/app/api/routes/chat.py`
+   - **Location:** `backend/app/api/routes/chat.py`
 
 2. **POST /api/leads** (Python/FastAPI)
    - ✅ Lead validation and capture
    - ✅ Email delivery via Resend
    - ✅ Database persistence
    - ✅ Support for training and trip leads
-   - **Location:** `src/backend/app/api/routes/lead.py`
+   - **Location:** `backend/app/api/routes/lead.py`
 
 **API Contract Verified:**
 - Request/response formats match plan specifications

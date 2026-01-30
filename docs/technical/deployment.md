@@ -54,7 +54,7 @@ Prepare these values before deployment:
 ### Step 1: Build and Test Locally
 
 ```bash
-cd src/backend
+cd backend
 
 # Build Docker image
 docker build -t dovvybuddy-backend .
@@ -76,7 +76,7 @@ curl -X POST http://localhost:8080/api/chat \
 
 **Option A: Deploy from source (recommended for iteration)**
 ```bash
-cd src/backend
+cd backend
 
 gcloud run deploy dovvybuddy-backend \
   --source . \

@@ -11,7 +11,7 @@
 ### 1. Environment Setup
 
 ```bash
-cd src/backend
+cd backend
 source .venv/bin/activate
 ```
 
@@ -526,7 +526,7 @@ curl -X POST http://localhost:8000/api/chat \
 
 - [ ] `/docs/plans/PR3.2c-Agent-Orchestration.md` - Plan exists
 - [ ] `/docs/project-management/PR3.2c-Implementation-Summary.md` - Summary exists
-- [ ] `src/backend/README_SERVICES.md` - Updated with agent info
+- [ ] `backend/README_SERVICES.md` - Updated with agent info
 - [ ] Code comments complete
 - [ ] Docstrings present
 

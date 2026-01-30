@@ -5,7 +5,7 @@
  * They require the Python backend to be running.
  * 
  * Setup:
- * Terminal 1: cd src/backend && uvicorn app.main:app --reload
+ * Terminal 1: cd backend && uvicorn app.main:app --reload
  * Terminal 2: pnpm test:integration
  * 
  * Note: These tests simulate browser behavior including localStorage operations.

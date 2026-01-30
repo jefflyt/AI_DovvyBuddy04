@@ -53,7 +53,7 @@ Migrate multi-agent system (certification, trip, safety, retrieval agents) and c
 
 **Agent & Orchestration Structure:**
 ```
-src/backend/app/agents/
+backend/app/agents/
 ├── __init__.py
 ├── base.py                        # Base agent interface
 ├── certification.py               # CertificationAgent
@@ -64,7 +64,7 @@ src/backend/app/agents/
 ├── config.py                      # Agent configuration
 └── types.py                       # Agent-specific types
 
-src/backend/app/orchestration/
+backend/app/orchestration/
 ├── __init__.py
 ├── orchestrator.py                # Chat orchestrator (main controller)
 ├── session_manager.py             # Session CRUD with history management
@@ -72,7 +72,7 @@ src/backend/app/orchestration/
 ├── context_builder.py             # Build context from history + RAG
 └── types.py                       # Orchestration types
 
-src/backend/app/prompts/
+backend/app/prompts/
 ├── __init__.py
 ├── system.py                      # Base system prompts
 ├── certification.py               # Certification prompt templates
@@ -80,7 +80,7 @@ src/backend/app/prompts/
 ├── safety.py                      # Safety disclaimers and templates
 └── templates.py                   # Jinja2 template utilities
 
-src/backend/tests/
+backend/tests/
 ├── unit/agents/
 │   ├── test_base_agent.py
 │   ├── test_certification_agent.py
@@ -135,24 +135,24 @@ src/backend/tests/
 
 ### Modified Modules
 
-- `src/backend/app/api/routes/chat.py` — **Replace placeholder with full orchestration**
+- `backend/app/api/routes/chat.py` — **Replace placeholder with full orchestration**
   - Handle POST /api/chat
   - Validate request (sessionId optional, message required)
   - Call orchestrator
   - Return response with metadata
 
-- `src/backend/app/api/routes/session.py` — **Implement GET /api/session/{id}**
+- `backend/app/api/routes/session.py` — **Implement GET /api/session/{id}**
   - Retrieve session by ID
   - Return session data with conversation history
   - Handle not found errors
 
-- `src/backend/app/core/config.py` — Add orchestration configuration:
+- `backend/app/core/config.py` — Add orchestration configuration:
   - `MAX_MESSAGE_LENGTH`: 2000
   - `SESSION_EXPIRY_HOURS`: 24
   - `ENABLE_AGENT_ROUTING`: true/false (feature flag)
   - `MAX_CONVERSATION_HISTORY`: 20 messages
 
-- `src/backend/pyproject.toml` — Add dependencies:
+- `backend/pyproject.toml` — Add dependencies:
   - `jinja2>=3.1.3` (template rendering)
 
 ---
@@ -363,28 +363,28 @@ curl -X POST http://localhost:3000/api/chat \
 **✅ Completed Components:**
 
 **Agent System:**
-- ✅ `src/backend/app/agents/base.py` — Base agent abstraction with execute() interface
-- ✅ `src/backend/app/agents/certification.py` — CertificationAgent (PADI/SSI guidance)
-- ✅ `src/backend/app/agents/trip.py` — TripAgent (destination recommendations)
-- ✅ `src/backend/app/agents/safety.py` — SafetyAgent (safety disclaimers)
-- ✅ `src/backend/app/agents/retrieval.py` — RetrievalAgent (RAG-based retrieval with RAF enforcement)
-- ✅ `src/backend/app/agents/registry.py` — Agent registry and factory pattern
-- ✅ `src/backend/app/agents/config.py` — Agent configuration
-- ✅ `src/backend/app/agents/types.py` — Agent types (AgentType, AgentCapability, AgentContext)
+- ✅ `backend/app/agents/base.py` — Base agent abstraction with execute() interface
+- ✅ `backend/app/agents/certification.py` — CertificationAgent (PADI/SSI guidance)
+- ✅ `backend/app/agents/trip.py` — TripAgent (destination recommendations)
+- ✅ `backend/app/agents/safety.py` — SafetyAgent (safety disclaimers)
+- ✅ `backend/app/agents/retrieval.py` — RetrievalAgent (RAG-based retrieval with RAF enforcement)
+- ✅ `backend/app/agents/registry.py` — Agent registry and factory pattern
+- ✅ `backend/app/agents/config.py` — Agent configuration
+- ✅ `backend/app/agents/types.py` — Agent types (AgentType, AgentCapability, AgentContext)
 
 **Orchestration:**
-- ✅ `src/backend/app/orchestration/orchestrator.py` — ChatOrchestrator (main controller)
-- ✅ `src/backend/app/orchestration/session_manager.py` — SessionManager (CRUD + history)
-- ✅ `src/backend/app/orchestration/mode_detector.py` — ModeDetector (classify queries)
-- ✅ `src/backend/app/orchestration/context_builder.py` — ContextBuilder (history + RAG)
-- ✅ `src/backend/app/orchestration/types.py` — Orchestration types
+- ✅ `backend/app/orchestration/orchestrator.py` — ChatOrchestrator (main controller)
+- ✅ `backend/app/orchestration/session_manager.py` — SessionManager (CRUD + history)
+- ✅ `backend/app/orchestration/mode_detector.py` — ModeDetector (classify queries)
+- ✅ `backend/app/orchestration/context_builder.py` — ContextBuilder (history + RAG)
+- ✅ `backend/app/orchestration/types.py` — Orchestration types
 
 **Prompts:**
-- ✅ `src/backend/app/prompts/system.py` — Base system prompts
-- ✅ `src/backend/app/prompts/certification.py` — Certification templates
-- ✅ `src/backend/app/prompts/trip.py` — Trip templates
-- ✅ `src/backend/app/prompts/safety.py` — Safety disclaimers
-- ✅ `src/backend/app/prompts/templates.py` — Jinja2 utilities
+- ✅ `backend/app/prompts/system.py` — Base system prompts
+- ✅ `backend/app/prompts/certification.py` — Certification templates
+- ✅ `backend/app/prompts/trip.py` — Trip templates
+- ✅ `backend/app/prompts/safety.py` — Safety disclaimers
+- ✅ `backend/app/prompts/templates.py` — Jinja2 utilities
 
 **API Endpoints:**
 - ✅ `POST /api/chat` — Full orchestration implementation (replaced placeholder)
@@ -401,13 +401,13 @@ curl -X POST http://localhost:3000/api/chat \
 - ✅ `jinja2>=3.1.3` dependency added
 
 **Tests:**
-- ✅ Unit tests in `src/backend/tests/unit/agents/`
+- ✅ Unit tests in `backend/tests/unit/agents/`
   - ✅ `test_base_agent.py`
   - ✅ `test_agent_registry.py`
-- ✅ Unit tests in `src/backend/tests/unit/orchestration/`
+- ✅ Unit tests in `backend/tests/unit/orchestration/`
   - ✅ `test_mode_detector.py`
   - ✅ `test_context_builder.py`
-- ✅ Integration tests in `src/backend/tests/integration/`
+- ✅ Integration tests in `backend/tests/integration/`
   - ✅ `test_chat_flow.py` (full chat flow with orchestration)
 
 **⚠️ Partially Completed (Acceptable for V1):**

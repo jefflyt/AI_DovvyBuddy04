@@ -5,7 +5,7 @@
  * They require both Next.js and Python backend to be running.
  * 
  * Setup:
- * Terminal 1: cd src/backend && uvicorn app.main:app --reload
+ * Terminal 1: cd backend && uvicorn app.main:app --reload
  * Terminal 2: pnpm dev
  * Terminal 3: pnpm test:integration
  * 
