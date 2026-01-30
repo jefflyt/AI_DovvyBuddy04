@@ -67,6 +67,24 @@ class ChatOrchestrator:
                 f"Message too long (max {settings.max_message_length} characters)"
             )
 
+        # Handle common greetings with friendly welcome
+        if self._is_greeting(request.message):
+            session = await self._get_or_create_session(request)
+            welcome_message = self._get_welcome_message()
+            
+            await self._update_session_history(
+                session.id,
+                request.message,
+                welcome_message
+            )
+            
+            return ChatResponse(
+                message=welcome_message,
+                session_id=str(session.id),
+                agent_type="general",
+                metadata={"mode": "greeting"},
+            )
+
         # Get or create session
         session = await self._get_or_create_session(request)
 
@@ -261,3 +279,34 @@ class ChatOrchestrator:
             SessionData if found, None otherwise
         """
         return await self.session_manager.get_session(session_id)
+
+    def _is_greeting(self, message: str) -> bool:
+        """
+        Check if message is a common greeting.
+
+        Args:
+            message: User's message
+
+        Returns:
+            True if message is a greeting, False otherwise
+        """
+        greetings = {'hi', 'hello', 'hey', 'greetings', 'howdy', 'good morning', 'good afternoon', 'good evening'}
+        normalized = message.strip().lower()
+        return normalized in greetings
+
+    def _get_welcome_message(self) -> str:
+        """
+        Return friendly welcome message with capability overview.
+
+        Returns:
+            Welcome message string
+        """
+        return (
+            "Hello! 👋 I'm DovvyBuddy, your AI diving assistant.\n\n"
+            "I can help you with:\n"
+            "🎓 Diving certifications and training\n"
+            "🌊 Dive destinations and conditions\n"
+            "⚠️ Safety procedures and best practices\n"
+            "🤿 Equipment recommendations\n\n"
+            "What would you like to know about diving?"
+        )

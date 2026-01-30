@@ -21,7 +21,7 @@ def mock_embedding():
 @pytest.fixture
 def gemini_provider():
     """Create a Gemini embedding provider with mocked API."""
-    with patch("google.generativeai.configure"):
+    with patch("google.genai.Client"):
         provider = GeminiEmbeddingProvider(api_key="test-key", use_cache=False)
         return provider
 
@@ -31,7 +31,7 @@ class TestGeminiEmbeddingProvider:
 
     def test_initialization(self):
         """Test provider initialization."""
-        with patch("google.generativeai.configure"):
+        with patch("google.genai.Client"):
             provider = GeminiEmbeddingProvider(api_key="test-key")
             assert provider.model == "text-embedding-004"
             assert provider.dimension == 768
@@ -45,14 +45,16 @@ class TestGeminiEmbeddingProvider:
     @pytest.mark.asyncio
     async def test_embed_text_success(self, gemini_provider, mock_embedding):
         """Test successful single text embedding."""
-        with patch("google.generativeai.embed_content") as mock_embed:
-            mock_embed.return_value = {"embedding": mock_embedding}
+        # Mock the embed_content method
+        mock_response = MagicMock()
+        mock_response.embeddings = [MagicMock(values=mock_embedding)]
+        gemini_provider.client.models.embed_content = MagicMock(return_value=mock_response)
 
-            result = await gemini_provider.embed_text("test text")
+        result = await gemini_provider.embed_text("test text")
 
-            assert result == mock_embedding
-            assert len(result) == 768
-            mock_embed.assert_called_once()
+        assert result == mock_embedding
+        assert len(result) == 768
+        gemini_provider.client.models.embed_content.assert_called_once()
 
     @pytest.mark.asyncio
     async def test_embed_text_empty_raises(self, gemini_provider):
@@ -63,25 +65,29 @@ class TestGeminiEmbeddingProvider:
     @pytest.mark.asyncio
     async def test_embed_text_invalid_dimension_raises(self, gemini_provider):
         """Test that wrong dimension raises ValueError."""
-        with patch("google.generativeai.embed_content") as mock_embed:
-            mock_embed.return_value = {"embedding": [0.1] * 100}  # Wrong dimension
+        # Mock the embed_content method with wrong dimension
+        mock_response = MagicMock()
+        mock_response.embeddings = [MagicMock(values=[0.1] * 100)]
+        gemini_provider.client.models.embed_content = MagicMock(return_value=mock_response)
 
-            with pytest.raises(ValueError, match="Expected embedding dimension"):
-                await gemini_provider.embed_text("test")
+        with pytest.raises(ValueError, match="Expected embedding dimension"):
+            await gemini_provider.embed_text("test")
 
     @pytest.mark.asyncio
     async def test_embed_batch_success(self, gemini_provider, mock_embedding):
         """Test successful batch embedding."""
         texts = ["text1", "text2", "text3"]
 
-        with patch("google.generativeai.embed_content") as mock_embed:
-            mock_embed.return_value = {"embedding": mock_embedding}
+        # Mock the embed_content method
+        mock_response = MagicMock()
+        mock_response.embeddings = [MagicMock(values=mock_embedding)]
+        gemini_provider.client.models.embed_content = MagicMock(return_value=mock_response)
 
-            results = await gemini_provider.embed_batch(texts)
+        results = await gemini_provider.embed_batch(texts)
 
-            assert len(results) == 3
-            assert all(len(emb) == 768 for emb in results)
-            assert mock_embed.call_count == 3
+        assert len(results) == 3
+        assert all(len(emb) == 768 for emb in results)
+        assert gemini_provider.client.models.embed_content.call_count == 3
 
     @pytest.mark.asyncio
     async def test_embed_batch_empty_raises(self, gemini_provider):

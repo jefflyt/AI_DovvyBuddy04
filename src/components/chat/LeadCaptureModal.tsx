@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { TrainingLeadForm } from './TrainingLeadForm.js';
-import { TripLeadForm } from './TripLeadForm.js';
+import { TrainingLeadForm } from './TrainingLeadForm';
+import { TripLeadForm } from './TripLeadForm';
 
 export interface LeadFormData {
   name: string;

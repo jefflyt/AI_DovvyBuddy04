@@ -8,7 +8,7 @@ import asyncio
 import logging
 from typing import List, Optional, Tuple
 
-import google.generativeai as genai
+from google import genai
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -56,8 +56,8 @@ class GeminiLLMProvider(LLMProvider):
         self.default_temperature = temperature
         self.default_max_tokens = max_tokens
 
-        # Configure Gemini
-        genai.configure(api_key=api_key)
+        # Create Gemini client
+        self.client = genai.Client(api_key=api_key)
 
         logger.info(f"Initialized GeminiLLMProvider with model={model}")
 
@@ -134,41 +134,35 @@ class GeminiLLMProvider(LLMProvider):
         system_instruction, conversation = self._messages_to_gemini_format(messages)
 
         try:
-            # Create model with configuration
-            generation_config = genai.GenerationConfig(
-                temperature=temp,
-                max_output_tokens=max_tok,
-                **kwargs,
-            )
+            # Prepare config
+            config = {
+                "temperature": temp,
+                "max_output_tokens": max_tok,
+            }
+            config.update(kwargs)
 
-            model = genai.GenerativeModel(
-                model_name=self.model,
-                generation_config=generation_config,
-                system_instruction=system_instruction,
-            )
+            # Prepare content with system instruction
+            contents = []
+            if system_instruction:
+                contents.append({"role": "system", "parts": [{"text": system_instruction}]})
+            contents.extend(conversation)
 
             # Run synchronous API call in thread pool
             loop = asyncio.get_event_loop()
-
-            # If conversation history exists, use chat
-            if len(conversation) > 1:
-                chat = model.start_chat(history=conversation[:-1])  # type: ignore[arg-type]
-                response = await loop.run_in_executor(
-                    None,
-                    lambda: chat.send_message(conversation[-1]["parts"][0]),
-                )
-            else:
-                # Single message
-                response = await loop.run_in_executor(
-                    None,
-                    lambda: model.generate_content(conversation[0]["parts"][0]),
-                )
+            response = await loop.run_in_executor(
+                None,
+                lambda: self.client.models.generate_content(
+                    model=self.model,
+                    contents=contents,
+                    config=config,
+                ),
+            )
 
             # Extract response
             content = response.text if hasattr(response, "text") else ""
             finish_reason = (
                 response.candidates[0].finish_reason.name
-                if response.candidates
+                if hasattr(response, "candidates") and response.candidates
                 else None
             )
 

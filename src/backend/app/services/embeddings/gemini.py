@@ -8,7 +8,7 @@ import asyncio
 import logging
 from typing import List, Optional
 
-import google.generativeai as genai
+from google import genai
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -58,8 +58,8 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
         self.model = model
         self.dimension = GEMINI_EMBEDDING_DIMENSION
 
-        # Configure Gemini
-        genai.configure(api_key=api_key)
+        # Create Gemini client
+        self.client = genai.Client(api_key=api_key)
 
         # Initialize cache
         self.cache = EmbeddingCache() if use_cache else None
@@ -94,13 +94,16 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
             # Run synchronous Gemini API call in thread pool
             loop = asyncio.get_event_loop()
             result = await loop.run_in_executor(
-                None, lambda: genai.embed_content(model=self.model, content=text)
+                None, lambda: self.client.models.embed_content(model=self.model, contents=text)
             )
 
-            if not result or "embedding" not in result:
+            # Extract embedding from response
+            if hasattr(result, "embeddings") and result.embeddings:
+                embedding = result.embeddings[0].values
+            elif isinstance(result, dict) and "embedding" in result:
+                embedding = result["embedding"]
+            else:
                 raise ValueError("Invalid embedding response from Gemini API")
-
-            embedding = result["embedding"]
 
             # Validate dimension
             if len(embedding) != self.dimension:

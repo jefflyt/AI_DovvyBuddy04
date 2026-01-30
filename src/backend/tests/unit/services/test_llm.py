@@ -20,7 +20,7 @@ def groq_provider():
 @pytest.fixture
 def gemini_provider():
     """Create a Gemini LLM provider with mocked API."""
-    with patch("google.generativeai.configure"):
+    with patch("google.genai.Client"):
         provider = GeminiLLMProvider(api_key="test-key")
         return provider
 
@@ -109,7 +109,7 @@ class TestGeminiLLMProvider:
 
     def test_initialization(self):
         """Test provider initialization."""
-        with patch("google.generativeai.configure"):
+        with patch("google.genai.Client"):
             provider = GeminiLLMProvider(api_key="test-key", model="gemini-2.0-flash")
             assert provider.model == "gemini-2.0-flash"
             assert provider.default_temperature == 0.7
@@ -168,8 +168,8 @@ class TestLLMFactory:
         assert provider.model == "llama-3.3-70b-versatile"
 
     @patch("app.core.config.settings")
-    @patch("google.generativeai.configure")
-    def test_create_gemini_provider(self, mock_genai_config, mock_settings):
+    @patch("google.genai.Client")
+    def test_create_gemini_provider(self, mock_client, mock_settings):
         """Test creating Gemini provider."""
         mock_settings.default_llm_provider = "gemini"
         mock_settings.gemini_api_key = "test-gemini-key"

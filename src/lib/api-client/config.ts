@@ -43,10 +43,10 @@ export const API_CONFIG: ApiClientConfig = {
  * API endpoints
  * These paths are appended to baseURL
  * - Server-side: baseURL=http://localhost:8000 + /api/chat = http://localhost:8000/api/chat
- * - Client-side: baseURL='' + /api/chat = /api/chat (Next.js rewrites this)
+ * - Client-side: baseURL=/api + /chat = /api/chat (Next.js rewrites /api/* to backend)
  */
 export const API_ENDPOINTS = {
-  chat: '/api/chat',
-  session: (sessionId: string) => `/api/session/${sessionId}`,
-  lead: '/api/leads',
+  chat: '/chat',
+  session: (sessionId: string) => `/session/${sessionId}`,
+  lead: '/leads',
 } as const;
