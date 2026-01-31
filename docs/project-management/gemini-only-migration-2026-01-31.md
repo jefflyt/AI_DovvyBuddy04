@@ -26,7 +26,7 @@ groq_api_key: str = ""  # Marked as deprecated - not used
 **.env.local:**
 ```env
 DEFAULT_LLM_PROVIDER=gemini  # Changed from groq
-GEMINI_API_KEY=AIzaSyB0YnrEGOMUnTf4iCcd7sVaDDiWu4a2stM  # Active
+GEMINI_API_KEY=<your_key>  # Set your Gemini API key here
 # GROQ_API_KEY - Not required, removed
 ```
 

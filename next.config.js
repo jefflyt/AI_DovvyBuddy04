@@ -11,6 +11,11 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  
+  // Enable instrumentation for Sentry
+  experimental: {
+    instrumentationHook: true,
+  },
 
   // API rewrites for Python backend
   // All /api/* requests are proxied to the Python FastAPI backend
