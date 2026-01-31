@@ -81,10 +81,10 @@ class ChatOrchestrator:
                 f"Message too long (max {settings.max_message_length} characters)"
             )
 
-        # Handleresponse_formatter.is_greeting(request.message):
+        # Handle common greetings with friendly welcome
+        if self.response_formatter.is_greeting(request.message):
             session = await self._get_or_create_session(request)
-            welcome_message = self.response_formatter.t_or_create_session(request)
-            welcome_message = self._get_welcome_message()
+            welcome_message = self.response_formatter.get_welcome_message()
             
             await self._update_session_history(
                 session.id,
