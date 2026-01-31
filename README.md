@@ -1,327 +1,240 @@
-# DovvyBuddy
+# DovvyBuddy 🤿
 
-**AI-powered scuba diving certification and trip planning assistant**
+**Your AI companion for scuba diving certification and trip planning**
 
-DovvyBuddy helps prospective and recreational divers make informed decisions about certifications (PADI, SSI) and dive trips through conversational AI powered by RAG-enhanced LLMs.
+Making diving more accessible through intelligent, conversational guidance — because everyone deserves to explore the underwater world with confidence.
+
+> 👨‍💻 **Developers:** See [README.DEV.md](./README.DEV.md) for technical documentation and setup instructions.
 
 ---
 
 ## 🌊 What is DovvyBuddy?
 
-DovvyBuddy is a diver-first AI assistant that provides:
+DovvyBuddy is an AI-powered diving assistant that helps both aspiring and experienced divers make informed decisions about their diving journey. Whether you're nervous about your first Open Water course or planning your next dive trip, DovvyBuddy provides friendly, accurate guidance powered by curated diving knowledge.
 
-- **Certification Guidance** — Navigate PADI/SSI certifications with confidence
-- **Fear Normalization** — Friendly, educational support for new divers
-- **Trip Research** — Discover dive sites matched to your certification level
-- **Lead Capture** — Connect with partner dive shops when you're ready
+### What We Help With
 
-**Key Principle:** Information-only mode. Always redirects to professionals for training, medical, or safety decisions.
+🎓 **Certification Guidance**  
+Navigate the world of diving certifications (PADI, SSI) with clarity. Understand which course is right for you, what to expect, and how to progress through different levels.
 
----
+💙 **Fear Normalization**  
+Nervous about diving? You're not alone. Get reassuring, educational support that acknowledges common fears while providing factual information to help you feel prepared.
 
-## 🚀 Quick Start
+🗺️ **Trip Planning**  
+Discover dive sites that match your certification level and interests. From tropical reefs to dramatic wrecks, find your next underwater adventure.
 
-### Prerequisites
+🤝 **Professional Connections**  
+When you're ready, we'll connect you with partner dive shops and certified instructors who can help turn your diving goals into reality.
 
-- Node.js 18+ (recommend 20+) for frontend
-- Python 3.9+ for backend
-- pnpm (install via `npm install -g pnpm`)
-- PostgreSQL with pgvector extension (or Neon account)
-- LLM API keys (Gemini for backend)
+### Our Guiding Principle
 
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/jefflyt/AI_DovvyBuddy04.git
-cd AI_DovvyBuddy04
-
-# Install frontend dependencies
-pnpm install
-
-# Set up Python backend
-python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -e backend/
-
-# Set up environment variables
-cp .env.example .env.local
-# Edit .env.local with your API keys and database URL
-
-# Run database migrations (Python backend)
-cd backend && alembic upgrade head
-
-# Start Python backend (in one terminal)
-cd backend && uvicorn app.main:app --reload
-
-# Start Next.js frontend (in another terminal)
-pnpm dev
-```
-
-Visit `http://localhost:3000` to see the app.
+**Information, Not Instruction** — DovvyBuddy provides educational content and recommendations, but always redirects to certified professionals for training, medical advice, or safety-critical decisions. We're here to inform and inspire, not to replace proper instruction.
 
 ---
 
-## 📁 Project Structure
+## ✨ Key Features
 
-```
-AI_DovvyBuddy04/
-├── .github/
-│   ├── instructions/             # Global coding guidelines
-│   ├── workflows/                # CI/CD pipelines
-│   ├── prompts/                  # Custom AI workflow prompts
-│   └── skills/                   # AI agent skills
-│
-├── backend/                      # Python FastAPI backend ✅
-│   ├── app/
-│   │   ├── main.py               # FastAPI application
-│   │   ├── api/                  # API routes (chat, lead, session)
-│   │   ├── agents/               # Multi-agent system (certification, trip, safety)
-│   │   ├── orchestration/        # Chat orchestration & conversation management
-│   │   ├── services/             # Core services (LLM, RAG, embeddings)
-│   │   ├── db/                   # Database models, repositories, sessions
-│   │   ├── core/                 # Config, lead service, utilities
-│   │   └── prompts/              # System prompts per agent
-│   ├── scripts/                  # Content ingestion & benchmarking scripts
-│   ├── alembic/                  # Database migrations
-│   ├── tests/                    # Backend unit & integration tests
-│   ├── pyproject.toml            # Python dependencies
-│   └── README.md                 # Backend-specific docs
-│
-├── src/                          # Next.js frontend
-│   ├── app/                      # Next.js App Router pages
-│   │   ├── page.tsx              # Landing page
-│   │   ├── layout.tsx            # Root layout with analytics
-│   │   └── chat/                 # Chat interface
-│   ├── components/               # React components
-│   │   ├── landing/              # Landing page components
-│   │   ├── chat/                 # Chat UI & lead capture modals
-│   │   └── ErrorBoundary.tsx    # Error boundary
-│   ├── lib/
-│   │   ├── api-client/           # Backend API client with retry logic
-│   │   ├── analytics/            # Multi-provider analytics (Vercel/GA4)
-│   │   ├── monitoring/           # Error monitoring (Sentry)
-│   │   └── hooks/                # React hooks (session state)
-│   └── types/                    # TypeScript type definitions
-│
-├── content/                      # Curated diving content for RAG
-│   ├── certifications/           # PADI/SSI certification guides
-│   ├── destinations/             # Dive site information
-│   ├── safety/                   # Safety guidelines & procedures
-│   └── faq/                      # Frequently asked questions
-│
-├── docs/
-│   ├── plans/                    # PR implementation plans (PR1-PR10)
-│   ├── technical/                # Technical specs and guides
-│   ├── decisions/                # Architecture Decision Records (ADRs)
-│   ├── project-management/       # Implementation summaries & AI workflow
-│   └── psd/                      # Product Specification Documents
-│
-├── tests/                        # E2E tests (Playwright)
-│   ├── e2e/                      # End-to-end test suites
-│   ├── fixtures/                 # Test fixtures
-│   └── archived/                 # Legacy integration tests
-│
-├── scripts/                      # Node.js utility scripts
-│   └── review-content.ts         # Content validation script
-│
-├── package.json                  # Frontend dependencies & scripts
-├── next.config.js                # Next.js config (proxies /api/* to Python backend)
-├── tsconfig.json                 # TypeScript configuration
-├── tailwind.config.ts            # Tailwind CSS configuration
-├── playwright.config.ts          # E2E test configuration
-├── vitest.config.ts              # Unit test configuration
-└── README.md                     # This file
-```
+### Intelligent Conversation
+Chat naturally about your diving questions and goals. DovvyBuddy understands context and provides personalized responses based on your certification level and experience.
+
+### Curated Knowledge Base
+Responses are grounded in carefully curated content about:
+- Certification programs (PADI, SSI)
+- Dive destinations worldwide
+- Safety procedures and best practices
+- Equipment and preparation guidance
+
+### Multi-Agent Intelligence
+Behind the scenes, specialized AI agents work together:
+- **Certification Expert** — Knows the ins and outs of diving courses
+- **Trip Advisor** — Matches you with suitable dive sites
+- **Safety Guide** — Provides emergency contacts and safety protocols
+- **Content Specialist** — Retrieves relevant information from our knowledge base
+
+### Seamless Lead Capture
+When you're ready to take action, we make it easy to connect with dive shops and instructors who can help you achieve your diving goals.
 
 ---
 
-## 🛠 Tech Stack
+## 🚀 Current Status
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| **Frontend** | Next.js 14 (App Router) | React framework with SSR |
-| **Backend** | Python FastAPI | Async REST API server |
-| **Languages** | TypeScript (frontend) + Python 3.9+ (backend) | Type safety & modern features |
-| **Database** | PostgreSQL + pgvector | Relational data + vector embeddings |
-| **ORM** | SQLAlchemy + Alembic | Python database toolkit & migrations |
-| **Hosting** | Vercel (frontend) + Cloud Run (backend) | Serverless deployment |
-| **LLM** | Gemini (`gemini-2.0-flash`) | Cost-effective production LLM |
-| **Embeddings** | `text-embedding-004` | 768-dimension vectors for RAG |
-| **Email** | Resend API | Lead delivery to dive shops |
-| **Testing** | Vitest + Playwright (frontend), pytest (backend) | Unit, integration & E2E tests |
-| **Styling** | Tailwind CSS | Utility-first CSS framework |
-| **Monitoring** | Sentry + Vercel Analytics | Error tracking & performance |
-| **CI/CD** | GitHub Actions | Automated testing & deployment |
-```bash
-# Frontend Development
-pnpm dev              # Start Next.js dev server (http://localhost:3000)
-pnpm build            # Build frontend for production
-pnpm start            # Start production server
+**Development Stage:** Active Development (V0.5 → V1.0)
 
-# Backend Development
-cd backend && uvicorn app.main:app --reload  # Start Python backend
+### ✅ What's Working
+- Multi-agent RAG system with specialized diving knowledge
+- Python FastAPI backend with async operations
+- PostgreSQL database with vector embeddings
+- Intelligent content retrieval and response generation
+- Session management and conversation continuity
 
-# Code Quality
-pnpm lint             # Run ESLint (frontend)
-pnpm typecheck        # Run TypeScript type checking
-pnpm format           # Format with Prettier
+### 🚧 In Progress
+- Web chat interface (React/Next.js)
+- Lead capture and email delivery
+- Landing page with feature showcase
+- Production deployment and monitoring
 
-# Testing
-pnpm test             # Run frontend tests (Vitest)
-pnpm test:watch       # Run tests in watch mode
-pnpm test:integration # Run integration tests
-cd backend && pytest  # Run backend tests
-
-# Database (Python backend)
-cd backend && alembic upgrade head      # Run migrations
-cd backend && alembic revision --autogenerate -m "message"  # Create migration
-
-# Content Management (Python scripts)
-pnpm content:ingest   # Ingest content into database
-pnpm content:validate # Validate markdown content
-pnpm content:clear    # Clear embeddings
-pnpm benchmark:rag    # Benchmark RAG performance
-
-# Complete Check (run before committing)
-pnpm typecheck && pnpm lint && pnpm test && pnpm build
-```
+### 🔮 Coming Soon
+- Telegram bot interface
+- User authentication and profiles
+- Conversation history and bookmarking
+- Enhanced trip planning tools
 
 ---
 
-## 🗺 Development Roadmap
+## 🎯 Use Cases
 
-### V1 Web Application (PR1-PR7.1)
+### For Aspiring Divers
+*"I'm interested in learning to dive but I'm nervous about the water. What should I expect from an Open Water course?"*
 
-- ✅ **PR0:** Bootstrap (Next.js + TypeScript setup)
-- ✅ **PR1:** Database Schema (Postgres + pgvector + migrations)
-- ✅ **PR2:** RAG Pipeline (content ingestion + retrieval)
-- ✅ **PR3:** Model Provider + Session Logic (Groq/Gemini + chat API)
-- ✅ **PR3.1:** Google ADK Multi-Agent RAG (specialized agents with tool use)
-- ✅ **PR3.2:** Python-First Backend Migration (FastAPI + SQLAlchemy + async)
-- 🔮 **PR4:** Lead Capture + Delivery (Resend email integration)
-- 🔮 **PR5:** Chat Interface + Integration (React UI + session persistence)
-- 🔮 **PR6:** Landing Page + Polish (E2E tests + launch prep)
-- 🔮 **PR6.1:** Conversation Continuity (intent + state + follow-up)
-- 🔮 **PR7.1:** Launch Checklist + Production Deployment
+Get honest, reassuring information about what training involves, common fears, and how instructors help students succeed.
 
-### V1.1 Telegram Bot (PR8a-8c)
+### For Certification Progression
+*"I'm PADI Open Water certified. What are my options for advancing my skills?"*
 
-- **PR8a:** Agent Service Extraction (Cloud Run deployment)
-- **PR8b:** Telegram Bot Adapter (basic chat flow)
-- **PR8c:** Telegram Lead Capture (production hardening)
+Explore Advanced Open Water, specialties, and other certifications. Understand prerequisites, costs, and what you'll learn.
 
-### V2 Authentication & Profiles (PR9a-9c)
+### For Trip Planning
+*"I'm Open Water certified and want to try my first dive trip. Where should I go in Southeast Asia?"*
 
-- **PR9a:** Auth Infrastructure (NextAuth.js + user tables)
-- **PR9b:** Web UI Auth Integration (signin/signup pages)
-- **PR9c:** Telegram Account Linking (cross-channel sync)
+Receive recommendations for beginner-friendly sites with calm conditions, good visibility, and professional dive operations.
 
-See detailed plans in [`docs/plans/`](./docs/plans/)
+### For Safety Questions
+*"What should I do if I experience ear pain while descending?"*
+
+Access proper equalization techniques, understand when to abort a dive, and learn when to consult a doctor — with clear boundaries about what requires professional medical advice.
+
+---
+
+## 🏗️ How It Works
+
+### The Technology
+
+DovvyBuddy combines several cutting-edge technologies to deliver intelligent responses:
+
+**RAG (Retrieval-Augmented Generation)**  
+Instead of making things up, the AI retrieves relevant information from our curated knowledge base before responding. This ensures accuracy and reduces hallucinations.
+
+**Vector Embeddings**  
+Diving content is converted into mathematical representations that capture semantic meaning. This allows the system to understand concepts, not just match keywords.
+
+**Multi-Agent Architecture**  
+Specialized AI agents handle different types of questions (certifications, trips, safety), each with domain-specific knowledge and guardrails.
+
+**Conversation Memory**  
+Sessions persist across messages, allowing for natural, context-aware conversations that build on previous exchanges.
+
+### The Stack (For the Curious)
+
+- **Frontend:** Next.js (React) for the web interface
+- **Backend:** Python FastAPI for high-performance async operations
+- **Database:** PostgreSQL with pgvector for storing content embeddings
+- **LLM:** Google Gemini for cost-effective, high-quality responses
+- **Hosting:** Vercel (frontend) + Google Cloud Run (backend)
+
+Want technical details? Check out [README.DEV.md](./README.DEV.md).
+
+---
+
+## 🗺️ Project Roadmap
+
+### Phase 1: Foundation (✅ Complete)
+- Multi-agent RAG system
+- Python backend with FastAPI
+- Content ingestion pipeline
+- Vector similarity search
+- Session management
+
+### Phase 2: Web Application (🚧 In Progress)
+- Chat interface with React
+- Lead capture forms
+- Landing page with feature showcase
+- Production deployment
+- Error monitoring and analytics
+
+### Phase 3: Telegram Bot (🔮 Planned)
+- Telegram adapter for mobile-first experience
+- Cross-channel session continuity
+- Simplified lead capture for messaging
+
+### Phase 4: User Accounts (🔮 Future)
+- Authentication and profiles
+- Conversation history
+- Bookmarked dive sites
+- Personalized recommendations
+
+---
+
+## 💡 Design Philosophy
+
+### User-First
+Every feature starts with a real diver's need. No complexity for complexity's sake.
+
+### Safety-Conscious
+Clear boundaries about what AI can and cannot advise on. Medical and training decisions always redirect to professionals.
+
+### Transparency
+Users understand they're talking to AI, not a human instructor. No deception, ever.
+
+### Continuous Learning
+The knowledge base grows with feedback. Inaccuracies are corrected, gaps are filled, and content quality improves over time.
+
+### Privacy-Aware
+Conversations are stored to improve the experience, but personal data is protected. Users control their information.
 
 ---
 
 ## 📚 Documentation
 
-| Document | Purpose | Location |
-|----------|---------|----------|
-| **Master Plan** | Project roadmap & status | [`docs/plans/MASTER_PLAN.md`](./docs/plans/MASTER_PLAN.md) |
-| **Product Spec (PSD)** | What to build | [`docs/psd/DovvyBuddy-PSD-V6.2.md`](./docs/psd/DovvyBuddy-PSD-V6.2.md) |
-| **Technical Spec** | How it works | [`docs/technical/specification.md`](./docs/technical/specification.md) |
-| **Developer Workflow** | Development guide | [`docs/technical/developer-workflow.md`](./docs/technical/developer-workflow.md) |
-| **Technical Debt** | Known issues | [`docs/technical/TECHNICAL_DEBT.md`](./docs/technical/TECHNICAL_DEBT.md) |
-| **PR Plans** | Implementation details | [`docs/plans/PR*.md`](./docs/plans/) |
-| **ADRs** | Architecture decisions | [`docs/decisions/`](./docs/decisions/) |
-| **Lessons Learned** | Project insights | [`docs/project-management/lessons-learned.md`](./docs/project-management/lessons-learned.md) |
-| **AI Workflow** | AI-assisted dev process | [`docs/project-management/AI_WORKFLOW.md`](./docs/project-management/AI_WORKFLOW.md) |
-| **Project Context** | AI assistant context | [`.github/copilot-project.md`](./.github/copilot-project.md) |
+| For... | Read... |
+|--------|---------|
+| **Understanding the project** | This README (you're here!) |
+| **Setting up development** | [README.DEV.md](./README.DEV.md) |
+| **Product vision** | [Product Spec (PSD)](./docs/psd/DovvyBuddy-PSD-V6.2.md) |
+| **Technical architecture** | [Technical Spec](./docs/technical/specification.md) |
+| **Development roadmap** | [Master Plan](./docs/plans/MASTER_PLAN.md) |
+| **Design decisions** | [Architecture Decision Records](./docs/decisions/) |
 
 ---
 
-## 🤖 AI-Assisted Development
+## 🤝 About This Project
 
-This project uses **GitHub Copilot in Plan Mode** with custom prompts for structured development.
+### Motivation
 
-**Key workflow:**
-```
-PSD → Master Plan → Feature Plan → PR Plan → Implementation → Refactor
-```
+As a diver and technologist, I saw an opportunity to make diving more accessible through AI. Too many people are intimidated by the certification process or overwhelmed by trip planning options. DovvyBuddy aims to be the friendly, knowledgeable companion that helps people take that first step into the underwater world.
 
-See the complete guide: [`docs/project-management/AI_WORKFLOW.md`](./docs/project-management/AI_WORKFLOW.md)
+### Current Status
 
----
+DovvyBuddy is a solo founder project in active development. The core RAG system and multi-agent backend are operational, and the web interface is being built out for public launch.
 
-## 🔐 Environment Variables
+### Contributing
 
-Required environment variables (see `.env.example`):
-
-```bash
-# Database
-DATABASE_URL=postgresql://...
-
-# Python Backend
-BACKEND_URL=http://localhost:8000  # Backend API URL (server-side)
-NEXT_PUBLIC_API_URL=/api           # Client-side API URL (proxied)
-
-# LLM Provider (Python backend)
-GEMINI_API_KEY=your_gemini_key
-
-# Session
-SESSION_SECRET=random_32char_string
-
-# Lead Capture (PR4+)
-RESEND_API_KEY=your_resend_key
-LEAD_EMAIL_TO=partner@diveshop.com
-
-# Optional
-MAX_SESSION_DURATION_HOURS=24
-MAX_MESSAGE_LENGTH=2000
-LLM_TIMEOUT_MS=10000
-```
-
----
-
-## 🧪 Testing Strategy
-
-- **Unit Tests:** Core business logic (model providers, session service, RAG retrieval)
-- **Integration Tests:** API endpoints (`/api/chat`, `/api/lead`)
-- **E2E Tests (V1):** Single smoke test (landing → chat → message → response → lead form)
-
-Run all checks before committing:
-```bash
-pnpm typecheck && pnpm lint && pnpm test && pnpm build
-```
-
----
-
-## 🤝 Contributing
-
-This is currently a solo founder project. Contributions are not being accepted at this time, but feedback and suggestions are welcome via issues.
-
----
-
-## 📄 License
-
-Proprietary — All rights reserved.
+This is currently a closed-source project. However, feedback and suggestions are always welcome! Feel free to open an issue if you have ideas or spot problems.
 
 ---
 
 ## 🙏 Acknowledgments
 
-- **PADI & SSI** — Diving certification standards
-- **Groq & Google** — LLM API providers
-- **Vercel** — Hosting platform
-- **Neon** — Managed PostgreSQL
+This project wouldn't be possible without:
+
+- **PADI & SSI** — Setting global standards for diver education
+- **The diving community** — Sharing knowledge and helping newcomers feel welcome
+- **Open source tools** — FastAPI, Next.js, PostgreSQL, and countless libraries
+- **AI providers** — Google (Gemini) for accessible, powerful language models
 
 ---
 
 ## 📧 Contact
 
-**Project Owner:** Jeff Lee  
-**Repository:** [github.com/jefflyt/AI_DovvyBuddy04](https://github.com/jefflyt/AI_DovvyBuddy04)
+**Creator:** Jeff Lee  
+**Repository:** [github.com/jefflyt/AI_DovvyBuddy04](https://github.com/jefflyt/AI_DovvyBuddy04)  
+**Purpose:** Making diving accessible through intelligent conversation
 
 ---
 
-**Ready to dive in?** 🤿
+**Ready to dive deeper?** 🤿
 
-Start with the [Product Specification](./docs/psd/DovvyBuddy-PSD-V6.2.md) to understand the vision, then check the [Technical Specification](./docs/technical/specification.md) for architecture details.
+- **Developers:** Start with [README.DEV.md](./README.DEV.md)
+- **Product Vision:** Read the [Product Specification](./docs/psd/DovvyBuddy-PSD-V6.2.md)
+- **Technical Deep-Dive:** Check the [Technical Specification](./docs/technical/specification.md)
+
+*Built with curiosity, powered by AI, inspired by the ocean.*
