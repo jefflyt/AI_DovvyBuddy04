@@ -120,3 +120,64 @@ class ResponseFormatter:
             formatted = ResponseFormatter.append_follow_up(formatted, follow_up_question)
 
         return formatted
+
+    @staticmethod
+    def sanitize_response(response: str) -> str:
+        """
+        Remove any leaked RAG/source references from response text.
+        
+        Strips common patterns that expose internal system behavior:
+        - "according to the context"
+        - "based on the provided information"
+        - "from the documentation"
+        - "[Source: ...]" brackets
+        - "provided context"
+        - "retrieved document"
+        - "in the document"
+        
+        This is a defensive layer in case agent prompts fail to comply.
+        
+        Args:
+            response: Original response text
+            
+        Returns:
+            Sanitized response with RAG mentions removed
+        """
+        import re
+        
+        if not response:
+            return response
+        
+        sanitized = response
+        
+        # Patterns to remove (case-insensitive)
+        # Match full phrases with context, being careful with word boundaries
+        patterns = [
+            r'\baccording to\s+(the\s+)?(provided\s+|retrieved\s+)?(context|information|document|documentation)\b,?\s*',
+            r'\bbased on\s+(the\s+)?(provided\s+|retrieved\s+)?(context|information|document|documentation)\b,?\s*',
+            r'\bfrom\s+(the\s+)?(provided\s+|retrieved\s+)?(context|information|document|documentation)\b,?\s*',
+            r'\bin\s+(the\s+)?(provided\s+|retrieved\s+)?(context|document|documentation)\b,?\s*',
+            r'\bthe\s+(provided\s+|retrieved\s+)?(context|document|documentation)\s+(shows?|states?|indicates?|mentions?|says?)\b,?\s*',
+            r'\[Source:.*?\]',  # Remove bracketed source citations
+            r'\(Source:.*?\)',  # Remove parenthetical source citations
+        ]
+        
+        for pattern in patterns:
+            sanitized = re.sub(pattern, "", sanitized, flags=re.IGNORECASE)
+        
+        # Clean up extra whitespace and punctuation artifacts
+        sanitized = re.sub(r'\s+', ' ', sanitized)  # Multiple spaces to single
+        sanitized = re.sub(r'\s+([.,!?])', r'\1', sanitized)  # Space before punctuation
+        sanitized = re.sub(r'([.,!?])\s*\1+', r'\1', sanitized)  # Duplicate punctuation
+        sanitized = re.sub(r'^[.,!?]\s*', '', sanitized)  # Leading punctuation
+        sanitized = sanitized.strip()
+        
+        # Log if sanitization made changes
+        if sanitized != response:
+            logger.warning(
+                f"Response sanitization removed RAG mentions: "
+                f"original_length={len(response)}, "
+                f"sanitized_length={len(sanitized)}"
+            )
+        
+        return sanitized

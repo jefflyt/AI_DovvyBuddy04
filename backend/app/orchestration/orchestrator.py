@@ -192,9 +192,47 @@ class ChatOrchestrator:
         # Execute agent
         result = await agent.execute(context)
 
+        # PR6.2: Sanitize response to remove any leaked RAG mentions
+        sanitized_response = self.response_formatter.sanitize_response(result.response)
+        
+        # PR6.2: Extract citations from context (if RAG was used)
+        citations = []
+        if context.rag_context and hasattr(context, 'metadata'):
+            # Try to get citations from context metadata (if available from RAG pipeline)
+            if 'rag_citations' in context.metadata:
+                citations = context.metadata['rag_citations']
+            # Also check result metadata for citations
+            elif 'citations' in result.metadata:
+                citations = result.metadata['citations']
+        
+        # Log response discipline check
+        response_length = len(sanitized_response)
+        estimated_tokens = response_length // 4  # Rough estimate: 1 token ≈ 4 chars
+        violations = []
+        
+        # Check for discipline violations
+        forbidden_terms = ["provided context", "source:", "document", "retrieval", "according to"]
+        for term in forbidden_terms:
+            if term.lower() in sanitized_response.lower():
+                violations.append(term)
+        
+        if violations or estimated_tokens > 120:
+            logger.warning(
+                "Response discipline check",
+                extra={
+                    "session_id": str(session.id),
+                    "agent_type": agent.name,
+                    "response_length": response_length,
+                    "estimated_tokens": estimated_tokens,
+                    "has_rag_mentions": len(violations) > 0,
+                    "violations": violations,
+                    "exceeds_token_limit": estimated_tokens > 120,
+                }
+            )
+
         # Format response with disclaimer and follow-up
         response_message = self.response_formatter.format_response(
-            message=result.response,
+            message=sanitized_response,
             mode=mode,
             follow_up_question=follow_up_question,
         )
@@ -213,6 +251,10 @@ class ChatOrchestrator:
             "has_rag": context.metadata.get("has_rag", False),
             **result.metadata,
         }
+        
+        # PR6.2: Add citations to metadata (not visible in response text)
+        if citations:
+            response_metadata["citations"] = citations
         
         # PR6.1: Add conversation metadata
         if detected_intent:
