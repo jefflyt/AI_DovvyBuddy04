@@ -1,6 +1,6 @@
-# PR8c: Telegram Account Linking & Cross-Channel Session Sync
+# PR9c: Telegram Account Linking & Cross-Channel Session Sync
 
-**Branch Name:** `feature/pr8c-telegram-account-linking`  
+**Branch Name:** `feature/pr9c-telegram-account-linking`  
 **Status:** Planned  
 **Date:** December 29, 2025  
 **Updated:** January 8, 2026 (Backend clarification)  
@@ -34,23 +34,23 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 ### Dependencies
 
 **Upstream (Must be complete):**
-- **PR8a:** Auth Infrastructure & User/Profile Schema (REQUIRED) — Backend user tables, auth middleware.
-- **PR8b:** Web UI Auth Integration (REQUIRED) — Web signup/signin flow, settings page.
-- **PR8a:** Agent Service Extraction (REQUIRED if agent logic is standalone).
+- **PR9a:** Auth Infrastructure & User/Profile Schema (REQUIRED) — Backend user tables, auth middleware.
+- **PR9b:** Web UI Auth Integration (REQUIRED) — Web signup/signin flow, settings page.
+- **PR9a:** Agent Service Extraction (REQUIRED if agent logic is standalone).
 - **PR7b:** Telegram Bot Adapter (REQUIRED) — Basic Telegram bot with guest sessions.
 
 **External Dependencies:**
 - **Telegram Bot:** Deployed and running from PR7b.
-- **NextAuth.js:** Already integrated for web auth in PR8a/PR8b.
-- **Database:** Postgres instance with user/profile tables from PR8a.
+- **NextAuth.js:** Already integrated for web auth in PR9a/PR9b.
+- **Database:** Postgres instance with user/profile tables from PR9a.
 
 **Optional:**
-- **PR7c (Telegram Lead Capture):** Not required for PR8c; lead capture can work with or without account linking.
+- **PR9c (Telegram Lead Capture):** Not required for PR9c; lead capture can work with or without account linking.
 
 ### Assumptions
 
 - **Assumption:** Telegram bot from PR7b is deployed and accessible (webhook mode recommended for production).
-- **Assumption:** Agent service from PR8a is deployed and shared by both web and Telegram channels.
+- **Assumption:** Agent service from PR9a is deployed and shared by both web and Telegram channels.
 - **Assumption:** Session management reuses existing `sessions` table with `channel_type` field ("web" or "telegram").
 - **Assumption:** One Telegram account can link to one web account (1:1 relationship enforced by unique constraint).
 - **Assumption:** Magic link tokens expire after 10 minutes (short-lived for security).
@@ -76,7 +76,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 - **Clear integration points:** Web settings page + Telegram bot commands + backend API endpoints.
 - **Testable independently:** Can test linking flow end-to-end with deployed Telegram bot.
 - **Low risk:** Additive feature (doesn't change existing web or Telegram guest flows).
-- **Backend mostly ready:** User tables exist (PR8a), only need `telegram_user_id` column and linking endpoints.
+- **Backend mostly ready:** User tables exist (PR9a), only need `telegram_user_id` column and linking endpoints.
 
 **Estimated Effort:**
 - **Backend:** Low-Medium (linking API endpoints, token generation/verification, lookup by Telegram ID).
@@ -94,7 +94,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 
 **Modified Pages:**
 
-1. **`/app/settings/page.tsx`** (existing from PR8b)
+1. **`/app/settings/page.tsx`** (existing from PR9b)
    - Add "Linked Accounts" section below account settings.
    - **If Telegram linked:**
      - Display: "Telegram: @username" (or Telegram user ID if username not available).
@@ -318,7 +318,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 TELEGRAM_BOT_TOKEN=<bot_token_from_BotFather>
 TELEGRAM_WEBHOOK_URL=https://your-telegram-bot.run.app/webhook
 
-# Already configured in PR8a
+# Already configured in PR9a
 CLERK_SECRET_KEY=sk_test_...
 DATABASE_URL=postgresql://...
 
@@ -704,7 +704,7 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
 
 1. **Setup:**
    - Deploy Telegram bot from PR7b.
-   - Deploy web app with PR8a + PR8b.
+   - Deploy web app with PR9a + PR9b.
    - Create test user on web (sign up).
 
 2. **Test Linking:**
@@ -983,20 +983,20 @@ psql $DATABASE_URL -c "SELECT id, user_id, channel_type, last_message_at FROM co
 
 ### Upstream Dependencies (Must be complete)
 
-- **PR8a:** Auth Infrastructure & User/Profile Schema (REQUIRED) — User tables, auth middleware.
-- **PR8b:** Web UI Auth Integration (REQUIRED) — Signup/signin flow, settings page.
-- **PR8a:** Agent Service Extraction (REQUIRED if agent is standalone).
+- **PR9a:** Auth Infrastructure & User/Profile Schema (REQUIRED) — User tables, auth middleware.
+- **PR9b:** Web UI Auth Integration (REQUIRED) — Signup/signin flow, settings page.
+- **PR9a:** Agent Service Extraction (REQUIRED if agent is standalone).
 - **PR7b:** Telegram Bot Adapter (REQUIRED) — Basic bot with guest sessions.
 
 ### External Dependencies
 
 - **Telegram Bot:** Deployed and accessible (webhook mode recommended).
 - **BotFather:** Command list updated with `/link`, `/unlink`, `/profile`.
-- **Database:** Postgres instance with migrations from PR8a.
+- **Database:** Postgres instance with migrations from PR9a.
 
 ### Optional Dependencies
 
-- **PR7c (Telegram Lead Capture):** Not required; lead capture can work with or without linking.
+- **PR9c (Telegram Lead Capture):** Not required; lead capture can work with or without linking.
 
 ---
 
@@ -1024,7 +1024,7 @@ psql $DATABASE_URL -c "SELECT id, user_id, channel_type, last_message_at FROM co
 | **10-minute token expiry** | Longer expiry (30 min, 1 hour) | Short expiry reduces security risk (token interception); 10 minutes is enough time to complete flow. Can increase if users report issues. |
 | **Require confirmation on web** | Auto-link on token click | Explicit confirmation is clearer UX and safer (user sees what they're linking). Auto-link could be confusing if user clicks wrong link. |
 | **Store Telegram username in DB** | Fetch from Telegram API on demand | Storing username avoids API calls for display; usernames rarely change. Can sync username on next bot interaction if needed. |
-| **Single PR for linking + sync** | Split into linking (PR8c) and sync (PR8d) | Linking and sync are tightly coupled; splitting would add complexity. Single PR is testable end-to-end. |
+| **Single PR for linking + sync** | Split into linking (PR9c) and sync (PR8d) | Linking and sync are tightly coupled; splitting would add complexity. Single PR is testable end-to-end. |
 | **JWT for magic link tokens** | Database-backed tokens | JWT is stateless (no DB storage needed); simpler for short-lived tokens. DB-backed tokens are overkill for 10-minute expiry. |
 | **Unlink requires confirmation** | Instant unlink | Confirmation prevents accidental unlink (no undo). User has time to reconsider. |
 
@@ -1066,7 +1066,7 @@ psql $DATABASE_URL -c "SELECT id, user_id, channel_type, last_message_at FROM co
 
 ## 12. Summary
 
-PR8c completes the multi-channel authentication experience by enabling Telegram users to link their accounts to DovvyBuddy. This ensures a seamless, unified experience across web and Telegram with synchronized conversation history and consistent diver profiles.
+PR9c completes the multi-channel authentication experience by enabling Telegram users to link their accounts to DovvyBuddy. This ensures a seamless, unified experience across web and Telegram with synchronized conversation history and consistent diver profiles.
 
 **Key Deliverables:**
 - ✅ Telegram account linking via magic link flow
@@ -1092,7 +1092,7 @@ PR8c completes the multi-channel authentication experience by enabling Telegram 
 - **Consistent profile:** Bot uses latest profile data from web.
 - **Flexibility:** Link/unlink anytime, no lock-in.
 
-**Next Steps After PR8c:**
+**Next Steps After PR9c:**
 - **PR9:** Dive log storage and management (V2 core feature).
 - **PR10:** Trip planning history and itinerary generation.
 - **PR11:** Personalized recommendations based on dive history.

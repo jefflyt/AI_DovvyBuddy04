@@ -107,7 +107,7 @@ class ChatOrchestrator:
             f"message_length={len(request.message)}"
         )
 
-        # PR6.2: Check for emergency FIRST (safety-critical, keyword-based)
+        # PR6.1: Check for emergency FIRST (safety-critical, keyword-based)
         follow_up_question = None
         state_updates = {}
         detected_intent = None
@@ -134,7 +134,7 @@ class ChatOrchestrator:
                     follow_up_question=None,  # No follow-up for emergencies
                 )
         
-        # PR6.2: Run conversation manager for intent + state + follow-up
+        # PR6.1: Run conversation manager for intent + state + follow-up
         if is_feature_enabled(FeatureFlag.CONVERSATION_FOLLOWUP) and self.conversation_manager:
             try:
                 # Parse session state from request
@@ -214,7 +214,7 @@ class ChatOrchestrator:
             **result.metadata,
         }
         
-        # PR6.2: Add conversation metadata
+        # PR6.1: Add conversation metadata
         if detected_intent:
             response_metadata["detected_intent"] = detected_intent
         if state_updates:

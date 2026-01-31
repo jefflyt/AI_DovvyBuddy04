@@ -1,7 +1,7 @@
 # DovvyBuddy - Project Context for AI Assistants
 
 **Last Updated:** January 31, 2026  
-**Project Status:** PR0-PR6.2 Complete, Backend Refactored to Root
+**Project Status:** PR0-PR6.1 Complete, Backend Refactored to Root
 
 ---
 
@@ -359,30 +359,30 @@ See `.env.example` for full list. Key vars:
 - PR5: Chat interface + integration (React components, session persistence)
 - PR6: Landing page, E2E smoke test, content review, launch preparation
 
-**V1.1 Telegram (PR7a-7c):**
-- PR7a: Agent Service Extraction to Cloud Run
-- PR7b: Telegram Bot Adapter (basic chat flow)
-- PR7c: Telegram Lead Capture & Production Hardening
+**V1.1 Telegram (PR8a-8c):**
+- PR8a: Agent Service Extraction to Cloud Run
+- PR8b: Telegram Bot Adapter (basic chat flow)
+- PR8c: Telegram Lead Capture & Production Hardening
 
-**V2 Auth & Profiles (PR8a-8c):**
-- PR8a: Auth Infrastructure (NextAuth.js, user/profile tables, backend APIs)
-- PR8b: Web UI Auth Integration (signin, signup, profile pages)
-- PR8c: Telegram Account Linking (cross-channel session sync)
+**V2 Auth & Profiles (PR9a-9c):**
+- PR9a: Auth Infrastructure (NextAuth.js, user/profile tables, backend APIs)
+- PR9b: Web UI Auth Integration (signin, signup, profile pages)
+- PR9c: Telegram Account Linking (cross-channel session sync)
 
-**PR Plans:** See `docs/plans/PR1-*.md` through `PR8c-*.md` for detailed specifications.
+**PR Plans:** See `docs/plans/PR1-*.md` through `PR11-*.md` for detailed specifications.
 
 ---
 
 ## Future Considerations
 
-### V1.1 (After Web Stabilizes) - PR7a-7c
+### V1.1 (After Web Stabilizes) - PR8a-8c
 
-- Telegram thin client (same agent service backend) — **Planned in PR7a-7c**
+- Telegram thin client (same agent service backend) — **Planned in PR8a-8c**
 - "Email me my plan" feature
 
-### V2 (Auth & Profiles) - PR8a-8c
+### V2 (Auth & Profiles) - PR9a-9c
 
-- User profiles + authentication — **Planned in PR8a-8c (NextAuth.js)**
+- User profiles + authentication — **Planned in PR9a-9c (NextAuth.js)**
 - Dive log storage
 - Enhanced personalization
 

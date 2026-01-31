@@ -508,7 +508,7 @@ SESSION_SECRET=random_32char_string
 
 ## 9. Future Architecture (V1.1+)
 
-### 9.1 Agent Service Extraction (PR7a)
+### 9.1 Agent Service Extraction (PR8a)
 
 ```
 ┌─────────────┐       ┌─────────────┐

@@ -60,7 +60,7 @@ class Settings(BaseSettings):
     enable_agent_routing: bool = True
     default_agent: str = "retrieval"
     
-    # Conversation Continuity (PR6.2)
+    # Conversation Continuity (PR6.1)
     feature_conversation_followup_enabled: bool = False  # Default OFF for gradual rollout
     
     # Prompt Configuration

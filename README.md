@@ -191,7 +191,7 @@ pnpm typecheck && pnpm lint && pnpm test && pnpm build
 
 ## 🗺 Development Roadmap
 
-### V1 Web Application (PR1-PR6)
+### V1 Web Application (PR1-PR7.1)
 
 - ✅ **PR0:** Bootstrap (Next.js + TypeScript setup)
 - ✅ **PR1:** Database Schema (Postgres + pgvector + migrations)
@@ -202,18 +202,20 @@ pnpm typecheck && pnpm lint && pnpm test && pnpm build
 - 🔮 **PR4:** Lead Capture + Delivery (Resend email integration)
 - 🔮 **PR5:** Chat Interface + Integration (React UI + session persistence)
 - 🔮 **PR6:** Landing Page + Polish (E2E tests + launch prep)
+- 🔮 **PR6.1:** Conversation Continuity (intent + state + follow-up)
+- 🔮 **PR7.1:** Launch Checklist + Production Deployment
 
-### V1.1 Telegram Bot (PR7a-7c)
+### V1.1 Telegram Bot (PR8a-8c)
 
-- **PR7a:** Agent Service Extraction (Cloud Run deployment)
-- **PR7b:** Telegram Bot Adapter (basic chat flow)
-- **PR7c:** Telegram Lead Capture (production hardening)
+- **PR8a:** Agent Service Extraction (Cloud Run deployment)
+- **PR8b:** Telegram Bot Adapter (basic chat flow)
+- **PR8c:** Telegram Lead Capture (production hardening)
 
-### V2 Authentication & Profiles (PR8a-8c)
+### V2 Authentication & Profiles (PR9a-9c)
 
-- **PR8a:** Auth Infrastructure (NextAuth.js + user tables)
-- **PR8b:** Web UI Auth Integration (signin/signup pages)
-- **PR8c:** Telegram Account Linking (cross-channel sync)
+- **PR9a:** Auth Infrastructure (NextAuth.js + user tables)
+- **PR9b:** Web UI Auth Integration (signin/signup pages)
+- **PR9c:** Telegram Account Linking (cross-channel sync)
 
 See detailed plans in [`docs/plans/`](./docs/plans/)
 

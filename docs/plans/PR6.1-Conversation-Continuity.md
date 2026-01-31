@@ -1,4 +1,4 @@
-# PR6.2: Conversation Continuity via Intent + State + Follow-up - Feature Plan
+# PR6.1: Conversation Continuity via Intent + State + Follow-up - Feature Plan
 
 **Status:** 📝 Draft
 **Created:** January 30, 2026
@@ -64,7 +64,7 @@ Transform DovvyBuddy from a one-shot Q&A assistant into a more conversational di
 - User: "What is a DSMB?"
 - Assistant: "A DSMB is a surface marker buoy used to signal your position to the dive boat."
 
-**After (PR6.2):**
+**After (PR6.1):**
 - User: "What is a DSMB?"
 - Assistant: "A DSMB is a surface marker buoy used to signal your position to the dive boat. **Are you learning about this for training, planning a dive, or just curious?**"
 
@@ -149,7 +149,7 @@ feat(conversation): Add intent-driven follow-up questions for continuity
 
 ### Branch name
 
-pr6.2-conversation-continuity
+pr6.1-conversation-continuity
 
 ### Scope (in)
 
@@ -679,32 +679,32 @@ pnpm build
 
 ## 7) Follow-ups (optional)
 
-1. **PR6.3: Fine-tune conversation manager on production data (V2)**
+1. **PR6.2: Fine-tune conversation manager on production data (V2)**
    - Collect production conversation logs (intent, state, follow-up quality).
    - Fine-tune small model on DovvyBuddy-specific patterns.
    - Improve intent accuracy and follow-up relevance.
 
-2. **PR6.4: Session state server-side persistence**
+2. **PR6.3: Session state server-side persistence**
    - Add `session_state` JSONB column to `sessions` table.
    - Sync localStorage state to backend on each turn.
    - Enable cross-device continuity (requires auth from PR8).
 
-3. **PR6.5: A/B test follow-up vs no-follow-up**
+3. **PR6.4: A/B test follow-up vs no-follow-up**
    - Split production traffic 50/50.
    - Measure: average turns/session, lead conversion rate, user sentiment.
    - Decide on permanent rollout or iteration.
 
-4. **PR6.6: Telemetry dashboard for conversation metrics**
+4. **PR6.5: Telemetry dashboard for conversation metrics**
    - Build Grafana/Metabase dashboard with:
      - Intent distribution over time.
      - Average session length trend.
      - Follow-up engagement rate (users who answer follow-up vs ignore).
 
-5. **PR6.7: Multi-turn context-aware follow-ups**
+5. **PR6.6: Multi-turn context-aware follow-ups**
    - Improve follow-up relevance by analyzing multi-turn patterns.
    - Avoid repetitive questions when state already inferred.
    - Use LLM to generate dynamic follow-ups (fallback when templates insufficient).
 
 ---
 
-**End of PR6.2 Plan**
+**End of PR6.1 Plan**
