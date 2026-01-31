@@ -15,7 +15,7 @@ from .agent_router import AgentRouter
 from .context_builder import ContextBuilder
 from .conversation_manager import ConversationManager, SessionState
 from .emergency_detector import EmergencyDetector
-from .mode_detector import ConversationMode, ModeDetector
+from .mode_detector import ModeDetector
 from .response_formatter import ResponseFormatter
 from .session_manager import SessionManager
 from .types import ChatRequest, ChatResponse, SessionData
@@ -160,8 +160,8 @@ class ChatOrchestrator:
                     f"state_updates={list(state_updates.keys())}"
                 )
                 
-            except Exception as e:
-                logger.error(f"Conversation manager failed: {e}", exc_info=True)
+            except Exception:
+                logger.error("Conversation manager failed", exc_info=True)
                 # Continue without conversation features on error
                 pass
 
@@ -297,7 +297,7 @@ class ChatOrchestrator:
 
             logger.debug(f"Updated session history: {session_id}")
 
-        except Exception as e:
+        except Exception:
             logger.error(
                 f"Failed to update session history: {session_id}",
                 exc_info=True

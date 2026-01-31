@@ -10,13 +10,11 @@ Ingests markdown content files by:
 
 import argparse
 import asyncio
-import json
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
-from app.core.config import settings
 from app.db.session import SessionLocal
 from app.services.embeddings import create_embedding_provider_from_env
 from app.services.rag import chunk_text

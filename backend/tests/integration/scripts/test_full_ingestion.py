@@ -139,13 +139,13 @@ async def test_full_ingestion_workflow(test_db: Session, test_content_dir: Path)
 
 
 @pytest.mark.integration
-def test_incremental_ingestion(test_db: Session, test_content_dir: Path):
-    """Test incremental ingestion skips unchanged files."""
 @pytest.mark.asyncio
 async def test_incremental_ingestion(test_db: Session, test_content_dir: Path):
     """Test incremental ingestion skips unchanged files."""
     # Initialize services
-    embedding_provider = create_embedding_provider_from_env
+    embedding_provider = create_embedding_provider_from_env()
+    repository = RAGRepository(test_db)
+    
     # Clear existing data
     repository.delete_all()
     
