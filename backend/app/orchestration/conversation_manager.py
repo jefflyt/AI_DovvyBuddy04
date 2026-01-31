@@ -114,8 +114,8 @@ class ConversationManager:
         """Initialize conversation manager with LLM provider."""
         # Use fast, lightweight model for conversation management
         self.llm = create_llm_provider(
-            provider_name=settings.default_llm_provider,
-            model="gemini-2.0-flash-exp" if settings.default_llm_provider == "gemini" else "llama-3.1-70b-versatile",
+            provider_name="gemini",
+            model="gemini-2.0-flash-exp",
             temperature=0.3,  # Lower temperature for more consistent structured output
             max_tokens=500,  # Short responses needed
         )
@@ -185,7 +185,8 @@ class ConversationManager:
                 )
                 intent = IntentType.INFO_LOOKUP
                 state_updates = {}
-                follow_up = "Could you tell me more about what you're looking for?"
+                # Use intent-based template instead of hardcoded generic question
+                follow_up = self.FOLLOW_UP_TEMPLATES.get(IntentType.INFO_LOOKUP, "")
 
             # Validate follow-up
             validated_follow_up = self._validate_follow_up(follow_up, intent)
@@ -327,12 +328,12 @@ Return JSON analysis:"""
         """
         Return fallback analysis when LLM fails.
         
-        Safest option: INFO_LOOKUP intent with clarifying follow-up.
+        Safest option: INFO_LOOKUP intent with template-based follow-up.
         """
         return ConversationAnalysis(
             intent=IntentType.INFO_LOOKUP,
             state_updates={},
-            follow_up="Could you tell me more about what you're looking for?",
+            follow_up=self.FOLLOW_UP_TEMPLATES.get(IntentType.INFO_LOOKUP, ""),
             bypass_followup=False,
             confidence=0.0,
         )

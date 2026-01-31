@@ -5,6 +5,7 @@ import logging
 from app.core.config import settings
 from app.prompts.safety import SAFETY_DISCLAIMER
 from .mode_detector import ConversationMode
+from .medical_detector import MedicalQueryDetector
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,9 @@ class ResponseFormatter:
     - Generate welcome messages
     - Check for greeting messages
     """
+    
+    # Shared medical detector instance (lazy initialization)
+    _medical_detector: MedicalQueryDetector = None
 
     @staticmethod
     def is_greeting(message: str) -> bool:
@@ -85,7 +89,8 @@ class ResponseFormatter:
             return message
         
         logger.info(f"Appending follow-up: {follow_up_question}")
-        return f"{message}\n\n**{follow_up_question}**"
+        # Visual separator + icon + question for better readability
+        return f"{message}\n\n─────\n💬 {follow_up_question}"
 
     @staticmethod
     def format_response(
@@ -93,6 +98,8 @@ class ResponseFormatter:
         mode: ConversationMode,
         follow_up_question: str = None,
         include_disclaimer: bool = None,
+        agent_type: str = None,
+        user_message: str = None,
     ) -> str:
         """
         Format a response with optional disclaimer and follow-up.
@@ -102,17 +109,36 @@ class ResponseFormatter:
             mode: Conversation mode
             follow_up_question: Optional follow-up question
             include_disclaimer: Override for disclaimer inclusion (defaults to settings)
+            agent_type: Agent that generated response (for disclaimer logic)
+            user_message: Original user message (for medical keyword detection)
 
         Returns:
             Formatted response message
         """
         formatted = message
 
-        # Add safety disclaimer if needed
+        # Add safety disclaimer ONLY for medical/health-related content
         if include_disclaimer is None:
             include_disclaimer = settings.include_safety_disclaimer
         
-        if include_disclaimer and mode == ConversationMode.SAFETY:
+        # Use LLM to detect if query is genuinely medical/health-related
+        # This is more robust than keyword matching (avoids false positives like "ear" in "near")
+        is_medical_query = False
+        if user_message:
+            # Lazy initialization of medical detector
+            if ResponseFormatter._medical_detector is None:
+                ResponseFormatter._medical_detector = MedicalQueryDetector()
+            
+            is_medical_query = ResponseFormatter._medical_detector.is_medical_query(user_message)
+        
+        # Add disclaimer for genuinely medical queries (must be medical AND safety context)
+        # This prevents non-medical dive site/destination queries from showing medical disclaimers
+        should_add_disclaimer = include_disclaimer and (
+            (mode == ConversationMode.SAFETY and is_medical_query) or  # Safety mode WITH medical content
+            (agent_type == "emergency")  # Always show for emergency agent
+        )
+        
+        if should_add_disclaimer:
             formatted = ResponseFormatter.add_safety_disclaimer(formatted)
 
         # Append follow-up question

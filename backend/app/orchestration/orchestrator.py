@@ -13,9 +13,9 @@ from app.core.feature_flags import FeatureFlag, is_feature_enabled
 
 from .agent_router import AgentRouter
 from .context_builder import ContextBuilder
-from .conversation_manager import ConversationManager, SessionState
-from .emergency_detector import EmergencyDetector
-from .mode_detector import ModeDetector
+from .conversation_manager import ConversationManager, IntentType, SessionState
+from .emergency_detector_hybrid import EmergencyDetector
+from .mode_detector import ConversationMode
 from .response_formatter import ResponseFormatter
 from .session_manager import SessionManager
 from .types import ChatRequest, ChatResponse, SessionData
@@ -44,7 +44,6 @@ class ChatOrchestrator:
         """
         self.db_session = db_session
         self.session_manager = SessionManager(db_session)
-        self.mode_detector = ModeDetector()
         self.context_builder = ContextBuilder()
         self.agent_router = AgentRouter()
         self.response_formatter = ResponseFormatter()
@@ -58,6 +57,21 @@ class ChatOrchestrator:
             self.emergency_detector = None
             self.conversation_manager = None
             logger.info("Conversation continuity disabled")
+
+    @staticmethod
+    def _intent_to_mode(intent: IntentType) -> ConversationMode:
+        """Map ConversationManager intent to ConversationMode for agent routing."""
+        intent_mode_map = {
+            IntentType.AGENCY_CERT: ConversationMode.CERTIFICATION,
+            IntentType.DIVE_PLANNING: ConversationMode.TRIP,
+            IntentType.EMERGENCY_MEDICAL: ConversationMode.SAFETY,
+            IntentType.SKILL_EXPLANATION: ConversationMode.GENERAL,
+            IntentType.MARINE_LIFE: ConversationMode.GENERAL,
+            IntentType.GEAR: ConversationMode.GENERAL,
+            IntentType.CONDITIONS: ConversationMode.GENERAL,
+            IntentType.INFO_LOOKUP: ConversationMode.GENERAL,
+        }
+        return intent_mode_map.get(intent, ConversationMode.GENERAL)
 
     async def handle_chat(self, request: ChatRequest) -> ChatResponse:
         """
@@ -107,18 +121,21 @@ class ChatOrchestrator:
             f"message_length={len(request.message)}"
         )
 
-        # PR6.1: Check for emergency FIRST (safety-critical, keyword-based)
+        # PR6.1: Check for emergency FIRST (safety-critical, hybrid detection)
         follow_up_question = None
         state_updates = {}
         detected_intent = None
         
         if is_feature_enabled(FeatureFlag.CONVERSATION_FOLLOWUP) and self.emergency_detector:
-            is_emergency = self.emergency_detector.is_emergency(request.message)
+            # Use hybrid detection: keywords for speed + LLM for ambiguous cases
+            is_emergency, emergency_response = await self.emergency_detector.detect_emergency(
+                request.message,
+                conversation_history=session.conversation_history
+            )
             
             if is_emergency:
                 # Emergency detected: bypass conversation manager, return safety response
                 logger.warning(f"Emergency detected for session {session.id}")
-                emergency_response = self.emergency_detector.get_emergency_response()
                 
                 await self._update_session_history(
                     session.id,
@@ -135,6 +152,7 @@ class ChatOrchestrator:
                 )
         
         # PR6.1: Run conversation manager for intent + state + follow-up
+        mode = ConversationMode.GENERAL  # Default mode
         if is_feature_enabled(FeatureFlag.CONVERSATION_FOLLOWUP) and self.conversation_manager:
             try:
                 # Parse session state from request
@@ -160,16 +178,28 @@ class ChatOrchestrator:
                     f"state_updates={list(state_updates.keys())}"
                 )
                 
+                # Map intent to conversation mode for agent routing
+                mode = self._intent_to_mode(analysis.intent)
+                logger.info(f"Mapped intent '{detected_intent}' to mode: {mode.value}")
+                
             except Exception:
                 logger.error("Conversation manager failed", exc_info=True)
-                # Continue without conversation features on error
-                pass
-
-        # Detect conversation mode (existing flow)
-        mode = self.mode_detector.detect_mode(
-            request.message,
-            session.conversation_history
-        )
+                # Fallback to GENERAL mode on error
+                mode = ConversationMode.GENERAL
+        else:
+            # Conversation manager disabled - use keyword-based detection as fallback
+            # TODO: Consider making ConversationManager non-optional in future
+            logger.info("ConversationManager disabled, using mode fallback logic")
+            # Simple keyword-based fallback
+            msg_lower = request.message.lower()
+            if any(word in msg_lower for word in ["cert", "certification", "padi", "ssi", "course"]):
+                mode = ConversationMode.CERTIFICATION
+            elif any(word in msg_lower for word in ["trip", "dive site", "destination", "where to dive"]):
+                mode = ConversationMode.TRIP
+            elif any(word in msg_lower for word in ["medical", "injury", "pain", "symptom", "hurt"]):
+                mode = ConversationMode.SAFETY
+            else:
+                mode = ConversationMode.GENERAL
 
         # Select agent
         agent = self.agent_router.select_agent(mode)
@@ -235,6 +265,8 @@ class ChatOrchestrator:
             message=sanitized_response,
             mode=mode,
             follow_up_question=follow_up_question,
+            agent_type=agent.name.lower(),  # Pass agent type for disclaimer logic
+            user_message=request.message,  # Pass original message for medical keyword detection
         )
 
         # Update session history
