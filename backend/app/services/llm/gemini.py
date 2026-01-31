@@ -63,31 +63,36 @@ class GeminiLLMProvider(LLMProvider):
 
     def _messages_to_gemini_format(
         self, messages: List[LLMMessage]
-    ) -> Tuple[Optional[str], List[dict]]:
+    ) -> Tuple[Optional[str], str]:
         """
         Convert messages to Gemini format.
 
-        Gemini uses system_instruction + conversation history format.
+        Gemini's generate_content expects a simple string prompt when using system_instruction.
 
         Args:
             messages: List of LLMMessage objects
 
         Returns:
-            Tuple of (system_instruction, conversation_messages)
+            Tuple of (system_instruction, user_prompt)
         """
         system_instruction = None
-        conversation = []
+        user_messages = []
 
         for msg in messages:
             if msg.role == "system":
                 # Gemini uses system_instruction parameter
                 system_instruction = msg.content
-            else:
-                # Map role: "assistant" -> "model" for Gemini
-                role = "model" if msg.role == "assistant" else "user"
-                conversation.append({"role": role, "parts": [msg.content]})
+            elif msg.role == "user":
+                user_messages.append(msg.content)
+            elif msg.role == "assistant":
+                # For now, skip assistant messages in prompt
+                # Multi-turn conversation would need chat session
+                pass
 
-        return system_instruction, conversation
+        # Combine user messages into single prompt
+        user_prompt = "\n\n".join(user_messages) if user_messages else ""
+
+        return system_instruction, user_prompt
 
     @retry(
         stop=stop_after_attempt(settings.llm_max_retries),
@@ -131,7 +136,7 @@ class GeminiLLMProvider(LLMProvider):
         max_tok = max_tokens if max_tokens is not None else self.default_max_tokens
 
         # Convert messages to Gemini format
-        system_instruction, conversation = self._messages_to_gemini_format(messages)
+        system_instruction, user_prompt = self._messages_to_gemini_format(messages)
 
         try:
             # Prepare config
@@ -139,13 +144,12 @@ class GeminiLLMProvider(LLMProvider):
                 "temperature": temp,
                 "max_output_tokens": max_tok,
             }
-            config.update(kwargs)
-
-            # Prepare content with system instruction
-            contents = []
+            
+            # Add system instruction if provided
             if system_instruction:
-                contents.append({"role": "system", "parts": [{"text": system_instruction}]})
-            contents.extend(conversation)
+                config["system_instruction"] = system_instruction
+                
+            config.update(kwargs)
 
             # Run synchronous API call in thread pool
             loop = asyncio.get_event_loop()
@@ -153,7 +157,7 @@ class GeminiLLMProvider(LLMProvider):
                 None,
                 lambda: self.client.models.generate_content(
                     model=self.model,
-                    contents=contents,
+                    contents=user_prompt,
                     config=config,
                 ),
             )

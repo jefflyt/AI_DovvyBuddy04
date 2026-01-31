@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     
     # RAG Configuration
     enable_rag: bool = True
-    rag_top_k: int = 5
+    rag_top_k: int = 8  # Increased to get more context for comprehensive answers
     rag_min_similarity: float = 0.5
     rag_chunk_size: int = 512
     rag_chunk_overlap: int = 50

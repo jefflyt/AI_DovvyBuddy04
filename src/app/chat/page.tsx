@@ -488,10 +488,10 @@ export default function ChatPage() {
                 </p>
                 <p>Ask me about:</p>
                 <ul style={{ marginTop: '0.5rem', paddingLeft: '1.5rem' }}>
-                  <li>PADI and SSI certifications</li>
-                  <li>Dive destinations and sites</li>
-                  <li>Training and safety</li>
-                  <li>Equipment and preparation</li>
+                  <li>🎓 PADI and SSI certifications</li>
+                  <li>🏖️ Dive destinations and sites</li>
+                  <li>🛡️ Training and safety</li>
+                  <li>⚙️ Equipment and preparation</li>
                 </ul>
               </div>
             </div>

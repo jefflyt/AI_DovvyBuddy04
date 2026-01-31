@@ -80,9 +80,24 @@ class RAGPipeline:
         citations = [r.source_citation for r in results if r.source_citation]
         has_data = len(results) > 0
 
-        logger.info(
-            f"RAG pipeline: retrieved {len(results)} chunks, {len(citations)} citations for query: {query[:100]}..."
-        )
+        # Log retrieval details for debugging
+        if results:
+            avg_similarity = sum(r.similarity for r in results) / len(results)
+            max_similarity = max(r.similarity for r in results)
+            logger.info(
+                f"RAG pipeline: retrieved {len(results)} chunks for query '{query[:80]}...'"
+                f" | avg_similarity={avg_similarity:.3f}, max_similarity={max_similarity:.3f}"
+                f" | citations={len(citations)}"
+            )
+            # Log top result for debugging context issues
+            if results:
+                top_result = results[0]
+                logger.debug(
+                    f"Top RAG result: similarity={top_result.similarity:.3f}, "
+                    f"source={top_result.source_citation}, text_preview={top_result.text[:100]}..."
+                )
+        else:
+            logger.warning(f"RAG pipeline: NO results found for query: {query[:100]}...")
 
         return RAGContext(
             query=query,
