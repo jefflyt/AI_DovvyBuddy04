@@ -1,4 +1,4 @@
-# PR7c: Telegram Lead Capture & Production Hardening
+# PR8c: Telegram Lead Capture & Production Hardening
 
 **Branch Name:** `feature/pr7c-telegram-lead-capture`  
 **Status:** Planned  
@@ -32,8 +32,8 @@ Complete the Telegram bot implementation by adding lead capture flows (Training 
 ### Dependencies
 
 **Upstream:**
-- **PR7a:** Agent service extracted and deployed to Cloud Run (REQUIRED).
-- **PR7b:** Telegram bot with basic chat flow (REQUIRED).
+- **PR8a:** Agent service extracted and deployed to Cloud Run (REQUIRED).
+- **PR8b:** Telegram bot with basic chat flow (REQUIRED).
 - **PR1-6:** Database, RAG, sessions, lead capture, landing page (REQUIRED).
 
 **External:**
@@ -62,7 +62,7 @@ Complete the Telegram bot implementation by adding lead capture flows (Training 
 ### Rationale
 
 - **Focused Scope:** Lead capture + monitoring/analytics (two related concerns).
-- **Builds on PR7b:** Existing bot infrastructure in place, adding features on top.
+- **Builds on PR8b:** Existing bot infrastructure in place, adding features on top.
 - **Limited Risk:** Lead capture is isolated flow; can be disabled via feature flag if needed.
 - **Independently Testable:** Lead capture flow can be tested end-to-end without affecting basic chat.
 - **Production Hardening:** Error monitoring and analytics are cross-cutting but straightforward to add.
@@ -171,7 +171,7 @@ Agent service already has `POST /agent/lead` endpoint from PR4. No modifications
 
 **Database (Schema Update):**
 
-Update `leads` table to support Telegram leads (if not done in PR7a/7b):
+Update `leads` table to support Telegram leads (if not done in PR8a/7b):
 
 ```sql
 ALTER TABLE leads ADD COLUMN channel_type VARCHAR(20) DEFAULT 'web';
@@ -894,11 +894,11 @@ When disabled, bot responds with: "Lead capture is temporarily unavailable. Plea
      --to-revisions=<previous-revision>=100
    ```
 2. Lead capture functionality removed
-3. Basic chat from PR7b restored
+3. Basic chat from PR8b restored
 
 **Option 3: Full Rollback (Slower - 10 minutes)**
 
-1. Revert git branch to PR7b state
+1. Revert git branch to PR8b state
 2. Rebuild and redeploy Telegram bot
 3. Rollback database migration (if needed):
    ```sql
@@ -918,8 +918,8 @@ When disabled, bot responds with: "Lead capture is temporarily unavailable. Plea
 
 ### Upstream
 
-- **PR7a:** Agent service extracted and deployed (REQUIRED)
-- **PR7b:** Telegram bot with basic chat flow (REQUIRED)
+- **PR8a:** Agent service extracted and deployed (REQUIRED)
+- **PR8b:** Telegram bot with basic chat flow (REQUIRED)
 - **PR1-6:** Database, RAG, sessions, lead capture, landing page (REQUIRED)
 
 ### External
@@ -930,7 +930,7 @@ When disabled, bot responds with: "Lead capture is temporarily unavailable. Plea
 
 ### Parallel Work
 
-- None. PR7c completes V1.1 Telegram integration.
+- None. PR8c completes V1.1 Telegram integration.
 
 ---
 
@@ -1008,7 +1008,7 @@ When disabled, bot responds with: "Lead capture is temporarily unavailable. Plea
 **Impact:** Multiple users submitting leads simultaneously could overwhelm agent service or email provider.
 
 **Mitigation:**
-- Agent service already handles concurrent requests (PR7a)
+- Agent service already handles concurrent requests (PR8a)
 - Resend has generous rate limits (100 emails/second)
 - Implement queue if needed (defer to post-launch optimization)
 - Monitor lead submission rate in analytics
@@ -1249,7 +1249,7 @@ When disabled, bot responds with: "Lead capture is temporarily unavailable. Plea
 
 ## Summary
 
-PR7c completes the Telegram integration (V1.1) by adding lead capture functionality with inline keyboards and conversational prompts, plus production hardening with error monitoring and analytics. This PR makes the Telegram channel fully feature-complete with the web interface.
+PR8c completes the Telegram integration (V1.1) by adding lead capture functionality with inline keyboards and conversational prompts, plus production hardening with error monitoring and analytics. This PR makes the Telegram channel fully feature-complete with the web interface.
 
 **Key Deliverables:**
 - ✅ Lead capture flow with inline keyboards and conversational prompts
@@ -1266,7 +1266,7 @@ PR7c completes the Telegram integration (V1.1) by adding lead capture functional
 - User confusion in prompts (mitigated with clear examples and error messages)
 - State loss on restart (accepted for V1.1, migrate to Redis if needed)
 
-**Estimated Timeline:** 3-4 days for solo founder (assuming PR7a and PR7b complete and stable).
+**Estimated Timeline:** 3-4 days for solo founder (assuming PR8a and PR8b complete and stable).
 
 **Success Criteria:**
 - Lead capture completion rate > 60%

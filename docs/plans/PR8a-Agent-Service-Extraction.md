@@ -1,6 +1,6 @@
-# PR7a: Extract Agent Service to Cloud Run (Prerequisite for Telegram)
+# PR8a: Extract Agent Service to Cloud Run (Prerequisite for Telegram)
 
-**Branch Name:** `feature/pr7a-agent-service-extraction`  
+**Branch Name:** `feature/pr8a-agent-service-extraction`  
 **Status:** ~~Planned~~ **OBSOLETE**  
 **Date:** December 29, 2025  
 **Based on:** MASTER_PLAN.md (Post-Phase 4, V1.1 Telegram Preparation)
@@ -15,7 +15,7 @@
 > - FastAPI service ready for Cloud Run deployment
 >
 > **Next Steps:** 
-> - Skip to **PR7b** (Telegram Bot Adapter) which will integrate directly with existing Python backend
+> - Skip to **PR8b** (Telegram Bot Adapter) which will integrate directly with existing Python backend
 > - No extraction or refactoring needed
 
 ---
@@ -30,7 +30,7 @@ This PR was originally planned to extract agent logic from Next.js API routes in
 
 Extract the agent orchestration logic (RAG retrieval, model provider calls, session management, prompt construction) from Next.js API routes into a standalone Cloud Run service. This enables the agent to serve multiple channels (web and Telegram) without duplicating business logic.
 
-**Note:** This PR is only required if the ADK agent logic from PR3 was implemented within Next.js API routes. If the agent service is already standalone, skip to PR7b.
+**Note:** This PR is only required if the ADK agent logic from PR3 was implemented within Next.js API routes. If the agent service is already standalone, skip to PR8b.
 
 ### User Impact
 
@@ -665,7 +665,7 @@ if (USE_AGENT_SERVICE) {
 
 ### Parallel Work
 
-- None. This PR is a prerequisite for PR7b (Telegram bot).
+- None. This PR is a prerequisite for PR8b (Telegram bot).
 
 ---
 
@@ -790,7 +790,7 @@ if (USE_AGENT_SERVICE) {
 
 - [ ] Evaluate cold start frequency, adjust min instances if needed
 - [ ] Assess need for caching layer (Redis) for session retrieval
-- [ ] Document lessons learned for PR7b (Telegram bot)
+- [ ] Document lessons learned for PR8b (Telegram bot)
 - [ ] Consider gRPC instead of REST for lower latency
 
 ---
@@ -905,4 +905,4 @@ if (USE_AGENT_SERVICE) {
 
 ## Summary
 
-PR7a extracts the agent orchestration logic into a standalone Cloud Run service, enabling multi-channel support (web and future Telegram). This is a prerequisite refactor with no user-facing changes but significant architectural improvement. Key success criteria: no regressions in web chat, response time <5s P95, and comprehensive testing to ensure feature parity.
+PR8a extracts the agent orchestration logic into a standalone Cloud Run service, enabling multi-channel support (web and future Telegram). This is a prerequisite refactor with no user-facing changes but significant architectural improvement. Key success criteria: no regressions in web chat, response time <5s P95, and comprehensive testing to ensure feature parity.

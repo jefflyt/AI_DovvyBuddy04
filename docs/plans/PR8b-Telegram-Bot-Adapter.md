@@ -1,4 +1,4 @@
-# PR7b: Telegram Bot Adapter & Basic Chat Flow
+# PR8b: Telegram Bot Adapter & Basic Chat Flow
 
 **Branch Name:** `feature/pr7b-telegram-bot-adapter`  
 **Status:** Planned  
@@ -6,7 +6,7 @@
 **Updated:** January 8, 2026 (Updated for Python backend)  
 **Based on:** MASTER_PLAN.md (V1.1 Telegram Integration)
 
-> **✅ ARCHITECTURE UPDATE:** Python/FastAPI backend (PR3.2c) already provides the agent service. No extraction needed (PR7a obsolete). This PR implements a Python Telegram bot that integrates directly with the existing FastAPI backend.
+> **✅ ARCHITECTURE UPDATE:** Python/FastAPI backend (PR3.2c) already provides the agent service. No extraction needed (PR8a obsolete). This PR implements a Python Telegram bot that integrates directly with the existing FastAPI backend.
 
 ---
 
@@ -31,7 +31,7 @@ Implement a Telegram bot that connects to the ADK agent service and provides bas
 ### Dependencies
 
 **Upstream:**
-- **PR3.2c:** Python agent orchestration (✅ Complete - no PR7a extraction needed)
+- **PR3.2c:** Python agent orchestration (✅ Complete - no PR8a extraction needed)
 - **PR1-6:** Full web V1 functionality (database, RAG, sessions, lead capture, landing page)
 
 **External:**
@@ -62,7 +62,7 @@ Implement a Telegram bot that connects to the ADK agent service and provides bas
 
 ### Rationale
 
-- **Focused Scope:** Basic chat flow only; lead capture deferred to PR7c.
+- **Focused Scope:** Basic chat flow only; lead capture deferred to PR8c.
 - **Single Service:** One new Cloud Run service (Telegram bot).
 - **Reuses Infrastructure:** Agent service, database, RAG, LLM provider all exist.
 - **Limited Risk:** Telegram bot is additive; web functionality unaffected.
@@ -174,7 +174,7 @@ src/telegram-bot/
    - `/start`: Welcome message with bot description and example questions.
    - `/help`: Lists available commands and bot capabilities.
    - `/newchat`: Clears current session and starts fresh conversation.
-   - `/cancel`: (Reserved for PR7c lead capture flow).
+   - `/cancel`: (Reserved for PR8c lead capture flow).
 
 4. **Session Manager** (`session-manager.ts`):
    - `getOrCreateSession(telegramUserId: string) => Promise<string>`: Returns session ID.
@@ -203,11 +203,11 @@ src/telegram-bot/
 
 **Agent Service (No Changes):**
 
-Agent service from PR7a already supports `channelType='telegram'` parameter. No modifications needed.
+Agent service from PR8a already supports `channelType='telegram'` parameter. No modifications needed.
 
 **Database (Schema Update):**
 
-Update `sessions` table to support Telegram (migration from PR7a if not already done):
+Update `sessions` table to support Telegram (migration from PR8a if not already done):
 
 ```sql
 ALTER TABLE sessions ADD COLUMN channel_type VARCHAR(20) DEFAULT 'web';
@@ -220,7 +220,7 @@ UPDATE sessions SET channel_type='web' WHERE channel_type IS NULL;
 
 **Migrations:**
 
-- `003_add_channel_support_to_sessions.sql` (if not done in PR7a):
+- `003_add_channel_support_to_sessions.sql` (if not done in PR8a):
   - Add `channel_type` column (varchar, default 'web').
   - Add `channel_user_id` column (varchar, nullable).
   - Add `last_active_at` column (timestamp, for session cleanup).
@@ -236,7 +236,7 @@ UPDATE sessions SET channel_type='web' WHERE channel_type IS NULL;
 - `expires_at`: 24 hours from creation
 - `last_active_at`: Updated on each message
 
-**No changes to other tables** (leads changes deferred to PR7c).
+**No changes to other tables** (leads changes deferred to PR8c).
 
 ### Infra / Config
 
@@ -792,7 +792,7 @@ if (!TELEGRAM_ENABLED) {
 
 ### Upstream
 
-- **PR7a:** Agent service extracted and deployed to Cloud Run (REQUIRED)
+- **PR8a:** Agent service extracted and deployed to Cloud Run (REQUIRED)
 - **PR1-6:** Database, RAG, sessions, lead capture, landing page (REQUIRED)
 
 ### External
@@ -806,7 +806,7 @@ if (!TELEGRAM_ENABLED) {
   - Service account with Cloud Run Admin role
 
 - **Database:**
-  - Postgres instance with session table updated (PR7a migration)
+  - Postgres instance with session table updated (PR8a migration)
 
 - **Agent Service:**
   - Deployed and accessible via `AGENT_SERVICE_URL`
@@ -814,7 +814,7 @@ if (!TELEGRAM_ENABLED) {
 
 ### Parallel Work
 
-- None. This PR is on the critical path for PR7c (lead capture).
+- None. This PR is on the critical path for PR8c (lead capture).
 
 ---
 
@@ -887,7 +887,7 @@ if (!TELEGRAM_ENABLED) {
 **Mitigation:**
 - Implement retry logic in agent client (3 retries)
 - Show user-friendly error: "I'm having trouble connecting. Please try again in a moment."
-- Monitor agent service uptime (should be >99.5% from PR7a)
+- Monitor agent service uptime (should be >99.5% from PR8a)
 - Set up alerts for agent service errors
 
 ---
@@ -939,7 +939,7 @@ if (!TELEGRAM_ENABLED) {
 - [ ] Evaluate cold start frequency, adjust min instances if needed
 - [ ] Optimize Docker image size if >150MB
 - [ ] Review logs for patterns (common questions, errors)
-- [ ] Document lessons learned for PR7c (lead capture)
+- [ ] Document lessons learned for PR8c (lead capture)
 - [ ] Consider analytics integration (track events)
 
 ---
@@ -1051,7 +1051,7 @@ if (!TELEGRAM_ENABLED) {
 
 **Trade-off:** More engaging UX but increases complexity
 
-**Decision Point:** After PR7c launch, add inline keyboards for lead type selection
+**Decision Point:** After PR8c launch, add inline keyboards for lead type selection
 
 ---
 
@@ -1075,7 +1075,7 @@ if (!TELEGRAM_ENABLED) {
 
 **Trade-off:** Adds latency (~50-100ms) and privacy considerations
 
-**Decision Point:** Add in PR7c along with web analytics
+**Decision Point:** Add in PR8c along with web analytics
 
 ---
 
@@ -1093,7 +1093,7 @@ if (!TELEGRAM_ENABLED) {
 
 ## Summary
 
-PR7b implements a Telegram bot that provides the same certification guidance and trip research functionality as the web interface. The bot reuses the agent service from PR7a and stores sessions in the existing database with `channel_type='telegram'`. Lead capture functionality is deferred to PR7c to keep this PR focused and manageable.
+PR8b implements a Telegram bot that provides the same certification guidance and trip research functionality as the web interface. The bot reuses the agent service from PR8a and stores sessions in the existing database with `channel_type='telegram'`. Lead capture functionality is deferred to PR8c to keep this PR focused and manageable.
 
 **Key Deliverables:**
 - ✅ Telegram bot service deployed to Cloud Run
@@ -1109,4 +1109,4 @@ PR7b implements a Telegram bot that provides the same certification guidance and
 - Session management bugs (mitigated with tests and database constraints)
 - Cold start latency (accepted for V1.1, can optimize later)
 
-**Estimated Timeline:** 3-5 days for solo founder (assuming PR7a complete and agent service stable).
+**Estimated Timeline:** 3-5 days for solo founder (assuming PR8a complete and agent service stable).

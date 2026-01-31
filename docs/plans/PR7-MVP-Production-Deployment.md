@@ -1,4 +1,4 @@
-# PR6.1: MVP Production Deployment
+# PR7: MVP Production Deployment
 
 **Status:** Planned  
 **Prerequisite PRs:** PR1-PR6 (Core functionality + Landing page polish)  
@@ -590,7 +590,7 @@ curl $SERVICE_URL/health
 - ⏳ **PR5** (Chat Interface) - Required (basic chat exists, needs polish)
 - ⏳ **PR6** (Landing Polish) - Recommended before public launch
 
-**Note:** PR6.1 should be completed **after PR6** to ensure the landing page and chat interface are polished before deploying to production.
+**Note:** PR7 should be completed **after PR6** to ensure the landing page and chat interface are polished before deploying to production.
 
 ### External Dependencies
 
@@ -848,7 +848,7 @@ curl $SERVICE_URL/health
 
 ## Next Steps
 
-After PR6.1 is complete (MVP deployed to production):
+After PR7 is complete (MVP deployed to production):
 
 1. **Monitor production** — Watch metrics for first week
    - Check Cloud Run dashboard daily
@@ -862,20 +862,20 @@ After PR6.1 is complete (MVP deployed to production):
    - If costs high: Optimize container size
    - If traffic high: Increase maxInstances
 
-3. **PR7: Telegram Integration** (Optional)
+3. **PR8: Telegram Integration** (Optional)
    - Build Telegram bot using Python backend
    - Expand reach beyond web-only
 
-4. **PR8: User Authentication** (Optional)
+4. **PR9: User Authentication** (Optional)
    - Add user accounts and profiles
    - Enable personalization
 
-5. **PR9: Production Polish** (If not done in PR6)
+5. **PR10: Production Polish** (If not done in PR6)
    - Advanced monitoring (Sentry, alerting)
    - Performance optimization
    - E2E testing automation
 
-6. **PR10: Post-Launch Iteration**
+6. **PR11: Post-Launch Iteration**
    - Content expansion (more destinations)
    - Feature improvements based on user feedback
    - Scaling optimizations
@@ -900,6 +900,7 @@ After PR6.1 is complete (MVP deployed to production):
 | 0.1 | 2026-01-01 | AI Assistant | Initial draft (migration-focused as PR3.2f) |
 | 0.2 | 2026-01-05 | AI Assistant | Revised for MVP deployment (post-migration) |
 | 0.3 | 2026-01-05 | AI Assistant | Renamed from PR3.2f to PR6.1 |
+| 0.4 | 2026-01-31 | AI Assistant | Renamed from PR6.1 to PR7 |
 
 ---
 
@@ -913,4 +914,4 @@ After PR6.1 is complete (MVP deployed to production):
 
 ---
 
-**END OF PR6.1 PLAN**
+**END OF PR7 PLAN**

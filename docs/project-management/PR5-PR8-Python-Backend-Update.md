@@ -41,9 +41,9 @@ Updated all future feature plans (PR5 onwards) to reflect that the backend has b
 
 ---
 
-### ✅ PR6.1: MVP Production Deployment
+### ✅ PR7: MVP Production Deployment
 
-**File:** `docs/plans/PR6.1-MVP-Production-Deployment.md`
+**File:** `docs/plans/PR7-MVP-Production-Deployment.md`
 
 **Changes:**
 - Added architecture note confirming plan is already Python/FastAPI-first

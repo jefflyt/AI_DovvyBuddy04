@@ -4,7 +4,7 @@
 **Status:** Planned  
 **Date:** December 29, 2025  
 **Updated:** January 8, 2026 (Backend clarification)  
-**Based on:** PR8-User-Auth-Profiles.md, PR8a-Auth-Infrastructure.md, PR8b-Web-UI-Auth-Integration.md
+**Based on:** PR9-User-Auth-Profiles.md, PR9a-Auth-Infrastructure.md, PR9b-Web-UI-Auth-Integration.md
 
 > **✅ BACKEND NOTE:** Account linking will be implemented in Python/FastAPI backend with Python Telegram bot integration. Original plan paths reference TypeScript but implementation will be Python-based.
 
@@ -36,7 +36,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 **Upstream (Must be complete):**
 - **PR8a:** Auth Infrastructure & User/Profile Schema (REQUIRED) — Backend user tables, auth middleware.
 - **PR8b:** Web UI Auth Integration (REQUIRED) — Web signup/signin flow, settings page.
-- **PR7a:** Agent Service Extraction (REQUIRED if agent logic is standalone).
+- **PR8a:** Agent Service Extraction (REQUIRED if agent logic is standalone).
 - **PR7b:** Telegram Bot Adapter (REQUIRED) — Basic Telegram bot with guest sessions.
 
 **External Dependencies:**
@@ -50,7 +50,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 ### Assumptions
 
 - **Assumption:** Telegram bot from PR7b is deployed and accessible (webhook mode recommended for production).
-- **Assumption:** Agent service from PR7a is deployed and shared by both web and Telegram channels.
+- **Assumption:** Agent service from PR8a is deployed and shared by both web and Telegram channels.
 - **Assumption:** Session management reuses existing `sessions` table with `channel_type` field ("web" or "telegram").
 - **Assumption:** One Telegram account can link to one web account (1:1 relationship enforced by unique constraint).
 - **Assumption:** Magic link tokens expire after 10 minutes (short-lived for security).
@@ -985,7 +985,7 @@ psql $DATABASE_URL -c "SELECT id, user_id, channel_type, last_message_at FROM co
 
 - **PR8a:** Auth Infrastructure & User/Profile Schema (REQUIRED) — User tables, auth middleware.
 - **PR8b:** Web UI Auth Integration (REQUIRED) — Signup/signin flow, settings page.
-- **PR7a:** Agent Service Extraction (REQUIRED if agent is standalone).
+- **PR8a:** Agent Service Extraction (REQUIRED if agent is standalone).
 - **PR7b:** Telegram Bot Adapter (REQUIRED) — Basic bot with guest sessions.
 
 ### External Dependencies
