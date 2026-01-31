@@ -3,9 +3,10 @@ Safety agent for medical queries and safety disclaimers.
 """
 
 import logging
-import re
 from typing import Optional
 
+from app.orchestration.emergency_detector_hybrid import EmergencyDetector
+from app.orchestration.medical_detector import MedicalQueryDetector
 from app.services.llm.base import LLMProvider
 from app.services.llm.factory import create_llm_provider
 from app.services.llm.types import LLMMessage
@@ -18,14 +19,10 @@ logger = logging.getLogger(__name__)
 
 class SafetyAgent(Agent):
     """Agent for handling safety-related and medical queries."""
-
-    # Keywords that indicate medical/safety concerns
-    MEDICAL_KEYWORDS = [
-        "medical", "health", "condition", "disease", "illness", "medication",
-        "surgery", "doctor", "physician", "cold", "flu", "asthma", "diabetes",
-        "heart", "lung", "ear", "sinus", "pregnant", "pregnancy", "injury",
-        "emergency", "accident", "dcs", "decompression", "barotrauma"
-    ]
+    
+    # Shared LLM-based detectors (replaces keyword matching)
+    _medical_detector: Optional[MedicalQueryDetector] = None
+    _emergency_detector: Optional[EmergencyDetector] = None
 
     def __init__(self, llm_provider: Optional[LLMProvider] = None):
         """
@@ -44,16 +41,20 @@ class SafetyAgent(Agent):
 
     def can_handle(self, context: AgentContext) -> bool:
         """
-        Check if query contains medical/safety keywords.
+        Check if query is medical/health-related using LLM classification.
+        More accurate than keyword matching (avoids false positives).
 
         Args:
             context: Agent context to evaluate
 
         Returns:
-            True if query contains medical/safety keywords
+            True if query is genuinely medical/health-related
         """
-        query_lower = context.query.lower()
-        return any(keyword in query_lower for keyword in self.MEDICAL_KEYWORDS)
+        # Lazy initialization of medical detector
+        if SafetyAgent._medical_detector is None:
+            SafetyAgent._medical_detector = MedicalQueryDetector()
+        
+        return SafetyAgent._medical_detector.is_medical_query(context.query)
 
     async def execute(self, context: AgentContext) -> AgentResult:
         """
@@ -66,12 +67,19 @@ class SafetyAgent(Agent):
             AgentResult with safety disclaimer and guidance
         """
         try:
-            # Detect if this is an emergency
-            is_emergency = self._is_emergency(context.query)
+            # Lazy initialization of emergency detector
+            if SafetyAgent._emergency_detector is None:
+                SafetyAgent._emergency_detector = EmergencyDetector()
+            
+            # Check if this is an emergency using shared hybrid detector
+            is_emergency, emergency_response = await SafetyAgent._emergency_detector.detect_emergency(
+                context.query,
+                conversation_history=context.conversation_history
+            )
 
             if is_emergency:
                 result = AgentResult(
-                    response=self._get_emergency_response(),
+                    response=emergency_response,
                     agent_type=self.agent_type,
                     confidence=1.0,
                     metadata={"is_emergency": True},
@@ -98,38 +106,6 @@ class SafetyAgent(Agent):
         except Exception as e:
             return await self._handle_error(context, e)
 
-    def _is_emergency(self, query: str) -> bool:
-        """Check if query indicates an emergency situation."""
-        emergency_keywords = [
-            "emergency", "urgent", "accident", "injured", "pain", "bleeding",
-            "unconscious", "drowning", "can't breathe", "chest pain", "dcs symptoms"
-        ]
-        query_lower = query.lower()
-        return any(keyword in query_lower for keyword in emergency_keywords)
-
-    def _get_emergency_response(self) -> str:
-        """Get emergency response with immediate action guidance."""
-        return """EMERGENCY SITUATION DETECTED
-
-If you or someone else is experiencing a diving-related emergency:
-
-1. CALL EMERGENCY SERVICES IMMEDIATELY (911 or local emergency number)
-
-2. For diving emergencies, contact DAN (Divers Alert Network):
-   USA/Canada: +1-919-684-9111 (24/7)
-   International: Contact your local DAN chapter
-
-3. Do NOT attempt self-treatment
-
-4. Provide 100% oxygen if available and trained to do so
-
-5. Keep the person lying flat and monitor vital signs
-
-Common diving emergencies include Decompression Sickness (DCS), Arterial Gas Embolism (AGE), lung overexpansion injuries, and near-drowning.
-
-I am an AI assistant and cannot provide emergency medical care. Please seek professional help immediately.
-"""
-
     def _build_messages(self, context: AgentContext) -> list:
         """Build message list for LLM."""
         messages = []
@@ -148,8 +124,15 @@ CRITICAL:
 - NEVER give specific medical advice or diagnoses
 - ALWAYS recommend consulting qualified medical professionals
 - For medical conditions: advise seeing a dive medicine physician
-- Emphasize proper training and certification
-- Medical clearance required for certain conditions
+
+RESPONSE DISCIPLINE (CRITICAL):
+- Default length: 3-5 sentences OR ≤120 tokens (whichever comes first)
+- Address ONE primary idea per response
+- NEVER mention: "provided context", "source", "filename", "document", "retrieval", "according to the context", bracketed references [Source: ...]
+- If information is insufficient, ask a clarifying question instead
+- Style: Professional, direct, calm. No fluff, no cheerleading, no repetition
+- Avoid generic closers like "Let me know if you need anything else"
+- Safety notes: ONE sentence max (unless emergency override)
 
 Response approach:
 1. Acknowledge the concern

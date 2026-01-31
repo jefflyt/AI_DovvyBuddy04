@@ -4,7 +4,7 @@
  * Manages session state in localStorage for conversation continuity.
  * Provides graceful degradation if localStorage is unavailable.
  * 
- * PR6.2: Conversation Continuity
+ * PR6.1: Conversation Continuity
  */
 
 import { useCallback, useEffect, useState } from 'react';

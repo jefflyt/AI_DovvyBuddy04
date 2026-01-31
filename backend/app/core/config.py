@@ -6,7 +6,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     # Configuration for Pydantic v2
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    # Read from root .env.local (one level up from backend/)
+    model_config = SettingsConfigDict(env_file="../.env.local", extra="ignore")
     
     # API Settings
     environment: str = "development"
@@ -28,11 +29,11 @@ class Settings(BaseSettings):
     
     # API Keys
     gemini_api_key: str = ""
-    groq_api_key: str = ""
+    groq_api_key: str = ""  # Deprecated - not used, Gemini only
     
     # LLM Provider Configuration
-    default_llm_provider: Literal["groq", "gemini"] = "groq"
-    default_llm_model: str = "llama-3.3-70b-versatile"  # Groq default (fast dev)
+    default_llm_provider: Literal["groq", "gemini"] = "gemini"
+    default_llm_model: str = "gemini-2.0-flash-exp"  # Gemini default per ADR-0005
     llm_temperature: float = 0.7
     llm_max_tokens: int = 2048
     llm_max_retries: int = 3
@@ -60,7 +61,7 @@ class Settings(BaseSettings):
     enable_agent_routing: bool = True
     default_agent: str = "retrieval"
     
-    # Conversation Continuity (PR6.2)
+    # Conversation Continuity (PR6.1)
     feature_conversation_followup_enabled: bool = False  # Default OFF for gradual rollout
     
     # Prompt Configuration

@@ -1,9 +1,9 @@
-# PR10: Post-Launch Iteration & Optimization
+# PR11: Post-Launch Iteration & Optimization
 
-**Branch Name:** `feature/pr10-post-launch-iteration`  
+**Branch Name:** `feature/pr11-post-launch-iteration`  
 **Status:** Planned  
 **Date:** December 29, 2025  
-**Based on:** MASTER_PLAN.md (Phase 4 continuation), PR9-Production-Launch-Readiness.md
+**Based on:** MASTER_PLAN.md (Phase 4 continuation), PR10a-Production-Launch-Readiness.md
 
 ---
 
@@ -29,14 +29,14 @@ Establish a continuous improvement cycle for DovvyBuddy based on real user behav
 ### Dependencies
 
 **Upstream (Must be complete):**
-- **PR9:** Production launch with analytics (Posthog/Vercel Analytics), error monitoring (Sentry), and observability infrastructure operational.
+- **PR11a:** Production launch with analytics (Posthog/Vercel Analytics), error monitoring (Sentry), and observability infrastructure operational.
 - **Soft Launch Period:** Minimum 7-14 days of production traffic with real users to generate meaningful data.
 - **Analytics Data:** Session recordings, event tracking, conversion funnel data, performance metrics, error logs.
 
 **External Dependencies:**
 - **Analytics Dashboards:** Posthog dashboards configured for key metrics (session duration, message count per session, lead conversion rate, response latency).
 - **Error Monitoring:** Sentry configured with sufficient retention for pattern analysis.
-- **User Feedback Channel:** Simple feedback mechanism (e.g., thumbs up/down on responses, optional comment field) deployed in PR9.
+- **User Feedback Channel:** Simple feedback mechanism (e.g., thumbs up/down on responses, optional comment field) deployed in PR10a.
 
 ### Assumptions
 
@@ -45,8 +45,8 @@ Establish a continuous improvement cycle for DovvyBuddy based on real user behav
 - **Assumption:** Performance baseline established (p50/p95 latency, error rate, bounce rate).
 - **Assumption:** Solo founder has capacity to analyze data weekly and prioritize 2-4 high-impact improvements per sprint.
 - **Assumption:** Content gaps are identified but don't require major structural changes (additive improvements only).
-- **Assumption:** No critical bugs or security issues requiring emergency patches (those would be hotfixes, not part of planned PR10).
-- **Assumption:** V2 features (auth, multi-channel, partner dashboard) remain out of scope; PR10 focuses on V1 refinement only.
+- **Assumption:** No critical bugs or security issues requiring emergency patches (those would be hotfixes, not part of planned PR11).
+- **Assumption:** V2 features (auth, multi-channel, partner dashboard) remain out of scope; PR11 focuses on V1 refinement only.
 
 ---
 
@@ -66,12 +66,12 @@ Establish a continuous improvement cycle for DovvyBuddy based on real user behav
 ### Recommended Number of PRs
 
 **4-6 PRs**, grouped by domain:
-1. **PR10a: Content Expansion & Gap Filling** (Data/Content layer)
-2. **PR10b: RAG Retrieval Tuning** (Backend/RAG layer)
-3. **PR10c: Prompt Engineering & Response Quality** (Backend/LLM layer)
-4. **PR10d: UI/UX Refinements** (Frontend layer)
-5. **PR10e: Performance Optimization** (Full-stack)
-6. **PR10f: Analytics & Feedback Loop** (Observability layer) - Optional if sufficient in PR9
+1. **PR11a: Content Expansion & Gap Filling** (Data/Content layer)
+2. **PR11b: RAG Retrieval Tuning** (Backend/RAG layer)
+3. **PR11c: Prompt Engineering & Response Quality** (Backend/LLM layer)
+4. **PR11d: UI/UX Refinements** (Frontend layer)
+5. **PR11e: Performance Optimization** (Full-stack)
+6. **PR11f: Analytics & Feedback Loop** (Observability layer) - Optional if sufficient in PR10a
 
 ---
 
@@ -150,7 +150,7 @@ Establish a continuous improvement cycle for DovvyBuddy based on real user behav
 
 ## 4. PR Roadmap (Multi-PR Plan)
 
-### PR10a: Content Expansion & Gap Filling
+### PR11a: Content Expansion & Gap Filling
 
 **Goal**
 
@@ -233,7 +233,7 @@ Manual verification checklist:
 
 ---
 
-### PR10b: RAG Retrieval Tuning
+### PR11b: RAG Retrieval Tuning
 
 **Goal**
 
@@ -311,7 +311,7 @@ Manual verification checklist:
 **Rollback Plan**
 
 - **Feature Flag:** Use env vars to revert to previous parameter values (`RAG_TOP_K=3, RAG_SIMILARITY_THRESHOLD=0.5`).
-- **Revert Strategy:** Git revert PR10b; redeploy with old parameters.
+- **Revert Strategy:** Git revert PR11b; redeploy with old parameters.
 
 **Dependencies**
 
@@ -327,7 +327,7 @@ Manual verification checklist:
 
 ---
 
-### PR10c: Prompt Engineering & Response Quality
+### PR11c: Prompt Engineering & Response Quality
 
 **Goal**
 
@@ -411,7 +411,7 @@ Manual verification checklist:
 **Rollback Plan**
 
 - **Feature Flag:** Use `PROMPT_VERSION=v1` to revert to previous prompts if quality degrades.
-- **Revert Strategy:** Git revert PR10c; redeploy with old prompts.
+- **Revert Strategy:** Git revert PR11c; redeploy with old prompts.
 
 **Dependencies**
 
@@ -427,7 +427,7 @@ Manual verification checklist:
 
 ---
 
-### PR10d: UI/UX Refinements
+### PR11d: UI/UX Refinements
 
 **Goal**
 
@@ -538,7 +538,7 @@ Manual verification checklist:
 
 ---
 
-### PR10e: Performance Optimization
+### PR11e: Performance Optimization
 
 **Goal**
 
@@ -661,7 +661,7 @@ Manual verification checklist:
 
 ---
 
-### PR10f: Analytics & Feedback Loop (Optional)
+### PR11f: Analytics & Feedback Loop (Optional)
 
 **Goal**
 
@@ -790,8 +790,8 @@ Manual verification checklist:
 **Goal:** Improve answer relevance and coverage based on soft launch data.
 
 **PRs Included:**
-- **PR10a: Content Expansion & Gap Filling**
-- **PR10b: RAG Retrieval Tuning**
+- **PR11a: Content Expansion & Gap Filling**
+- **PR11b: RAG Retrieval Tuning**
 
 **What "Done" Means:**
 - Top 10 content gaps addressed with new Markdown content.
@@ -805,8 +805,8 @@ Manual verification checklist:
 **Goal:** Polish LLM outputs and refine UI based on user behavior.
 
 **PRs Included:**
-- **PR10c: Prompt Engineering & Response Quality**
-- **PR10d: UI/UX Refinements**
+- **PR11c: Prompt Engineering & Response Quality**
+- **PR11d: UI/UX Refinements**
 
 **What "Done" Means:**
 - Prompt test suite passes at 95%+ (safety, grounding, tone).
@@ -821,8 +821,8 @@ Manual verification checklist:
 **Goal:** Optimize speed and establish continuous improvement feedback loop.
 
 **PRs Included:**
-- **PR10e: Performance Optimization**
-- **PR10f: Analytics & Feedback Loop** (Optional)
+- **PR11e: Performance Optimization**
+- **PR11f: Analytics & Feedback Loop** (Optional)
 
 **What "Done" Means:**
 - Chat response latency (p95) reduced by 20-30%.

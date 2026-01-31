@@ -22,6 +22,8 @@ pnpm-debug.log*
 # Environment variables
 .env
 .env*.local
+backend/.env
+backend/.env.local
 
 # Vercel
 .vercel

@@ -11,7 +11,6 @@ from app.core.config import settings
 
 from .base import LLMProvider
 from .gemini import GeminiLLMProvider
-from .groq import GroqLLMProvider
 
 logger = logging.getLogger(__name__)
 
@@ -44,18 +43,9 @@ def create_llm_provider(
     max_tok = max_tokens if max_tokens is not None else settings.llm_max_tokens
 
     if provider == "groq":
-        key = api_key or settings.groq_api_key
-        if not key:
-            raise ValueError("Groq API key is required (GROQ_API_KEY env var)")
-
-        model_name = model or "llama-3.3-70b-versatile"  # Groq default model
-        logger.info(f"Creating Groq LLM provider with model={model_name}")
-        return GroqLLMProvider(
-            api_key=key,
-            model=model_name,
-            temperature=temp,
-            max_tokens=max_tok,
-        )
+        # Groq is deprecated - fallback to Gemini
+        logger.warning(f"Groq provider no longer supported - using Gemini instead")
+        return create_llm_provider(provider_name="gemini", api_key=api_key, model=model, temperature=temperature, max_tokens=max_tokens)
 
     elif provider == "gemini":
         key = api_key or settings.gemini_api_key

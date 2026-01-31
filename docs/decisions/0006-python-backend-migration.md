@@ -30,7 +30,7 @@ However, as the product evolved, **limitations emerged**:
 - ADK (Agent Development Kit) while functional, has better Python support
 
 **Multi-Channel Architecture:**
-- PR7b plans Telegram bot integration
+- PR8b plans Telegram bot integration
 - Telegram bot libraries are primarily Python-based (python-telegram-bot)
 - Sharing business logic between web and Telegram requires extraction
 - Next.js API routes not ideal for non-HTTP interfaces
@@ -173,7 +173,7 @@ Migrate to a **Python-first backend architecture** with **TypeScript frontend**:
 - Serverless limitations (cold starts, timeouts, connection pooling)
 - Content processing and analytics remain limited
 
-**Why rejected:** AI/ML ecosystem limitation is a blocker for planned features (advanced RAG, better agents, data analysis). Telegram bot (PR7b) would require backend extraction anyway.
+**Why rejected:** AI/ML ecosystem limitation is a blocker for planned features (advanced RAG, better agents, data analysis). Telegram bot (PR8b) would require backend extraction anyway.
 
 ### Alternative 2: Hybrid TypeScript/Python (Gradual Extraction)
 

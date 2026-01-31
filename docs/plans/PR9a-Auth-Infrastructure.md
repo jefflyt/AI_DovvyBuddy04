@@ -1,10 +1,10 @@
-# PR8a: Auth Infrastructure & User/Profile Schema
+# PR9a: Auth Infrastructure & User/Profile Schema
 
-**Branch Name:** `feature/pr8a-auth-infrastructure`  
+**Branch Name:** `feature/pr9a-auth-infrastructure`  
 **Status:** Planned  
 **Date:** December 29, 2025  
 **Updated:** January 8, 2026 (Backend clarification)  
-**Based on:** PR8-User-Auth-Profiles.md, MASTER_PLAN.md (V2 Roadmap)
+**Based on:** PR9-User-Auth-Profiles.md, MASTER_PLAN.md (V2 Roadmap)
 
 > **✅ BACKEND NOTE:** Auth implementation will use Python/FastAPI backend with appropriate auth library (e.g., FastAPI-Users, Python-JOSE for JWT, or Authlib). Frontend uses NextAuth.js for session management and token handling. Database migrations will use Alembic (Python). Original plan references may mention Next.js/Drizzle but implementation will be Python/SQLAlchemy.
 
@@ -23,7 +23,7 @@ Establish the foundational authentication system and database schema for users a
 - **Guest sessions continue to work identically** — No disruption to existing user flows.
 
 **Internal/Architecture:**
-- Authentication infrastructure ready for PR8b (UI integration).
+- Authentication infrastructure ready for PR9b (UI integration).
 - Database schema supports user accounts, profiles, and persistent conversations.
 - API endpoints ready for client integration.
 - Foundation for cross-device history and personalization.
@@ -35,11 +35,11 @@ Establish the foundational authentication system and database schema for users a
 - **PR2:** RAG pipeline (not directly used but part of complete stack).
 - **PR3:** Model provider and session logic.
 - **PR4:** Lead capture (will be extended to include user_id).
-- **PR5:** Chat interface (will call new auth-aware endpoints in PR8b).
+- **PR5:** Chat interface (will call new auth-aware endpoints in PR9b).
 - **PR6:** Landing page and E2E testing.
 
 **Optional (Recommended):**
-- **PR7a-7c:** Telegram integration (if complete, PR8c can link Telegram accounts; if not, PR8c can be deferred).
+- **PR9a-8c:** Telegram integration (if complete, PR9c can link Telegram accounts; if not, PR9c can be deferred).
 
 **External Dependencies:**
 - **NextAuth.js:** Self-hosted auth solution (no external account needed).
@@ -57,7 +57,7 @@ Establish the foundational authentication system and database schema for users a
 - **Assumption:** Session expiry for authenticated users is 30 days of inactivity (vs. 24h for guests).
 - **Assumption:** API endpoints return 401 Unauthorized if auth token missing/invalid (no automatic redirect to login).
 - **Assumption:** Postgres foreign keys cascade delete (user deletion removes profiles, sessions, conversations, leads).
-- **Assumption:** No social login (Google, Facebook) in PR8a (can add in PR8b or V2.1).
+- **Assumption:** No social login (Google, Facebook) in PR9a (can add in PR9b or V2.1).
 - **Assumption:** Feature flag `FEATURE_USER_AUTH_ENABLED` defaults to `false` (must be explicitly enabled).
 
 ---
@@ -92,7 +92,7 @@ Establish the foundational authentication system and database schema for users a
 
 ### Frontend
 
-**No changes** — This PR is backend-only. PR8b will add UI.
+**No changes** — This PR is backend-only. PR9b will add UI.
 
 ### Backend
 
@@ -443,7 +443,7 @@ SESSION_MAX_AGE_AUTHENTICATED=2592000  # 30 days in seconds
 REQUIRE_EMAIL_VERIFICATION=true
 
 # Feature Flags
-FEATURE_USER_AUTH_ENABLED=false  # MUST be false until PR8b is ready
+FEATURE_USER_AUTH_ENABLED=false  # MUST be false until PR9b is ready
 ```
 
 **CI/CD Configuration:**
@@ -681,7 +681,7 @@ FEATURE_USER_AUTH_ENABLED=false  # MUST be false until PR8b is ready
 
 ### Phase 6: Documentation & Verification
 
-**Goal:** Document setup, verify all endpoints work, prepare for PR8b.
+**Goal:** Document setup, verify all endpoints work, prepare for PR9b.
 
 **Tasks:**
 1. Update `.env.example` with all new environment variables.
@@ -1134,7 +1134,7 @@ pnpm build
 
 **Data Safety:**
 - Guest sessions: No data loss (continue to work).
-- Authenticated users: No users exist yet (PR8a is backend-only, no UI to create accounts).
+- Authenticated users: No users exist yet (PR9a is backend-only, no UI to create accounts).
 - Existing leads: No changes (new column added but not used).
 
 ### Migration Rollback Scripts
@@ -1170,7 +1170,7 @@ DROP TABLE IF EXISTS users;
 
 ## 8. Dependencies
 
-### Upstream Dependencies (Must be complete before starting PR8a)
+### Upstream Dependencies (Must be complete before starting PR9a)
 
 - **PR1:** Database Schema & Migrations — Required for Drizzle ORM and migration tooling.
 - **PR3:** Model Provider & Session Logic — Required for existing session management code.
@@ -1184,7 +1184,7 @@ DROP TABLE IF EXISTS users;
 
 ### Optional Dependencies
 
-- **PR7a-7c (Telegram):** Not required for PR8a; if complete, PR8c can link Telegram accounts; if not, PR8c can be deferred or implemented independently.
+- **PR7a-7c (Telegram):** Not required for PR9a; if complete, PR9c can link Telegram accounts; if not, PR9c can be deferred or implemented independently.
 
 ---
 
@@ -1197,10 +1197,10 @@ DROP TABLE IF EXISTS users;
 | **Guest session regression** | Existing users lose functionality | 1. Comprehensive regression tests<br>2. Feature flag allows instant disable<br>3. Maintain parallel code paths (guest vs authenticated) |
 | **Auth middleware performance overhead** | Increased API latency | 1. Cache Clerk token verification (in-memory or Redis)<br>2. Monitor P95 latency before/after<br>3. Use connection pooling for DB queries |
 | **Clerk pricing becomes prohibitive** | Cost issue as users scale | 1. Abstract auth logic behind interface (easy to swap providers)<br>2. Keep user data in own DB (not Clerk)<br>3. Evaluate NextAuth.js as fallback |
-| **Email verification not received** | Users cannot complete signup | 1. Use Resend with domain authentication (SPF, DKIM)<br>2. Add "Resend Email" button in PR8b<br>3. Provide support email for manual verification |
-| **Foreign key cascade delete too aggressive** | Accidental data loss | 1. Test cascade delete thoroughly with sample data<br>2. Add confirmation step in PR8b (delete account UI)<br>3. Consider soft delete as alternative (future) |
+| **Email verification not received** | Users cannot complete signup | 1. Use Resend with domain authentication (SPF, DKIM)<br>2. Add "Resend Email" button in PR9b<br>3. Provide support email for manual verification |
+| **Foreign key cascade delete too aggressive** | Accidental data loss | 1. Test cascade delete thoroughly with sample data<br>2. Add confirmation step in PR9b (delete account UI)<br>3. Consider soft delete as alternative (future) |
 | **Rate limiting blocks legitimate users** | Poor UX during high traffic | 1. Set generous limits (5 attempts per 10 min)<br>2. Allow bypass for verified users<br>3. Monitor rate limit hits, adjust if needed |
-| **Token expiry during active session** | User kicked out unexpectedly | 1. Use long-lived tokens (30 days for authenticated)<br>2. Implement token refresh (Clerk handles automatically)<br>3. Graceful error handling in PR8b |
+| **Token expiry during active session** | User kicked out unexpectedly | 1. Use long-lived tokens (30 days for authenticated)<br>2. Implement token refresh (Clerk handles automatically)<br>3. Graceful error handling in PR9b |
 
 ---
 
@@ -1211,7 +1211,7 @@ DROP TABLE IF EXISTS users;
 | **Use Clerk for auth** | NextAuth.js (self-hosted) | Clerk reduces infrastructure work for solo founder; NextAuth.js is more flexible but requires more setup and maintenance. Can swap later if needed. |
 | **Email verification required** | Optional verification | Prevents spam accounts, ensures lead emails are deliverable. Adds friction but improves data quality. |
 | **Feature flag defaults to OFF** | Enabled immediately | Safer deployment; allows backend testing in production without exposing features to users. |
-| **Backend-only PR (no UI)** | Include signup UI in PR8a | Reduces risk; backend can be tested independently via Curl before exposing to users. PR8b adds UI. |
+| **Backend-only PR (no UI)** | Include signup UI in PR9a | Reduces risk; backend can be tested independently via Curl before exposing to users. PR9b adds UI. |
 | **Store user data in app DB, not Clerk** | Use Clerk's user metadata | Improves data portability (easy to migrate to another auth provider); avoids vendor lock-in. |
 | **30-day session expiry for authenticated users** | No expiry (manual signout only) | Balances convenience with security; inactive users eventually signed out to protect shared devices. |
 | **Nullable user_id columns** | Require user_id (breaking change) | 100% backward compatible; guest sessions continue to work; no data migration needed. |
@@ -1222,10 +1222,10 @@ DROP TABLE IF EXISTS users;
 
 ## 11. Open Questions
 
-**Q1: Should we implement password reset in PR8a, or rely on Clerk's built-in flow?**
+**Q1: Should we implement password reset in PR9a, or rely on Clerk's built-in flow?**
 - **Context:** Clerk provides password reset automatically via email.
-- **Recommendation:** Use Clerk's built-in flow for PR8a; can add custom UI in PR8b if branding consistency is critical.
-- **Decision:** Defer custom password reset UI to PR8b or V2.1.
+- **Recommendation:** Use Clerk's built-in flow for PR9a; can add custom UI in PR9b if branding consistency is critical.
+- **Decision:** Defer custom password reset UI to PR9b or V2.1.
 
 **Q2: Should authenticated sessions have a maximum absolute lifetime (e.g., 90 days), or only inactivity-based expiry?**
 - **Context:** Inactivity-based expiry means active users stay logged in indefinitely.
@@ -1235,7 +1235,7 @@ DROP TABLE IF EXISTS users;
 **Q3: Should we use Clerk's webhook to sync user data, or poll on signin?**
 - **Context:** Webhooks provide real-time sync but add complexity; polling on signin is simpler.
 - **Recommendation:** Poll on signin for V2.0 (simpler); add webhook in V2.1 if sync issues occur.
-- **Decision:** No webhook in PR8a; add in V2.1 if needed.
+- **Decision:** No webhook in PR9a; add in V2.1 if needed.
 
 **Q4: Should rate limiting apply to authenticated users, or only guests?**
 - **Context:** Authenticated users are less likely to abuse, but can still spam.
@@ -1251,7 +1251,7 @@ DROP TABLE IF EXISTS users;
 
 ## 12. Summary
 
-PR8a establishes the complete backend infrastructure for user authentication and profiles. This includes:
+PR9a establishes the complete backend infrastructure for user authentication and profiles. This includes:
 
 **Key Deliverables:**
 - ✅ Clerk SDK integrated for authentication
@@ -1269,10 +1269,10 @@ PR8a establishes the complete backend infrastructure for user authentication and
 - Feature flag toggle works (on/off behavior verified)
 - Manual Curl verification passes for all endpoints
 - Guest session regression tests pass (no breakage)
-- Ready for PR8b (UI integration)
+- Ready for PR9b (UI integration)
 
 **Next Steps:**
-- **PR8b:** Web UI integration (signup, signin, profile pages, session migration)
-- **PR8c:** Telegram account linking (after PR8b + PR7b complete)
+- **PR9b:** Web UI integration (signup, signin, profile pages, session migration)
+- **PR9c:** Telegram account linking (after PR9b + PR7b complete)
 
 This PR can be safely deployed to production with `FEATURE_USER_AUTH_ENABLED=false`, allowing incremental testing and rollout without affecting existing users.

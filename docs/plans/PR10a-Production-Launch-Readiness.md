@@ -1,6 +1,6 @@
-# PR9: Production Launch Readiness (Polish & Observability)
+# PR10a: Production Launch Readiness (Polish & Observability)
 
-**Branch Name:** `feature/pr9-production-launch`  
+**Branch Name:** `feature/pr10a-production-launch`  
 **Status:** Planned  
 **Date:** December 29, 2025  
 **Based on:** MASTER_PLAN.md (Phase 4), DovvyBuddy-PSD-V6.2.md
@@ -31,7 +31,7 @@ Transform DovvyBuddy from a feature-complete web application into a production-r
 **Upstream (Must be complete):**
 - **PR1-PR6:** Full V1 functionality (database, RAG, model provider, lead capture, chat interface, landing page).
 - **PR7a-PR7c (Optional):** Telegram integration (if completed, include in testing scope).
-- **PR8a-PR8c (Optional):** User authentication (if completed, include in testing scope and analytics events).
+- **PR9a-PR9c (Optional):** User authentication (if completed, include in testing scope and analytics events).
 
 **External Dependencies:**
 - **Analytics Provider:** Posthog (preferred) or Vercel Analytics (fallback) for event tracking.
@@ -68,9 +68,9 @@ Transform DovvyBuddy from a feature-complete web application into a production-r
 - **Rollback granularity:** If analytics integration has issues, can roll back without losing performance improvements.
 
 **Recommended PR Count:** 3 PRs
-1. **PR9a:** Observability & Monitoring (Analytics + Error Tracking + Logging)
-2. **PR9b:** Performance Optimization & Content Polish (Bundle size, Caching, Content review, UI refinements)
-3. **PR9c:** E2E Testing & Launch Checklist (Playwright smoke tests, Manual checklist, Production deployment validation)
+1. **PR10a:** Observability & Monitoring (Analytics + Error Tracking + Logging)
+2. **PR10b:** Performance Optimization & Content Polish (Bundle size, Caching, Content review, UI refinements)
+3. **PR10c:** E2E Testing & Launch Checklist (Playwright smoke tests, Manual checklist, Production deployment validation)
 
 **Estimated Complexity:**
 - Backend: Medium (Logging infrastructure, error handling improvements, performance profiling)
@@ -202,7 +202,7 @@ Transform DovvyBuddy from a feature-complete web application into a production-r
 
 ## 4. PR Roadmap (Multi-PR Plan)
 
-### PR9a: Observability & Monitoring Infrastructure
+### PR10a: Observability & Monitoring Infrastructure
 
 #### Goal
 
@@ -263,7 +263,7 @@ Establish real-time visibility into application health, user behavior, and busin
 - `/app/chat/page.tsx`:
   - Track: Message sent, Response received, Lead form opened, Lead form submitted, Session created, Error displayed.
 - Add Posthog `<PostHogProvider>` to `app/layout.tsx`.
-- Capture user properties: Session ID, Is authenticated (if PR8 complete).
+- Capture user properties: Session ID, Is authenticated (if PR9 complete).
 
 **Error Boundaries:**
 - Wrap `app/layout.tsx` with top-level ErrorBoundary.
@@ -385,7 +385,7 @@ Establish real-time visibility into application health, user behavior, and busin
 
 ---
 
-### PR9b: Performance Optimization & Content Polish
+### PR10b: Performance Optimization & Content Polish
 
 #### Goal
 
@@ -632,7 +632,7 @@ Optimize application performance to meet production targets (<5s chat response, 
 
 ---
 
-### PR9c: E2E Testing & Production Launch Checklist
+### PR10c: E2E Testing & Production Launch Checklist
 
 #### Goal
 
@@ -722,12 +722,12 @@ Validate end-to-end user flows with automated smoke tests and comprehensive manu
 - `RESEND_API_KEY` (production key)
 - `LEAD_EMAIL_TO` (production email)
 - `SESSION_SECRET` (secure random string)
-- `SENTRY_DSN` (from PR9a)
-- `POSTHOG_API_KEY` (from PR9a)
+- `SENTRY_DSN` (from PR10a)
+- `POSTHOG_API_KEY` (from PR10a)
 - `NODE_ENV=production`
 - `ENABLE_ANALYTICS=true`
-- `ENABLE_SESSION_CACHE=true` (from PR9b)
-- `ENABLE_RAG_CACHE=true` (from PR9b)
+- `ENABLE_SESSION_CACHE=true` (from PR10b)
+- `ENABLE_RAG_CACHE=true` (from PR10b)
 
 **Custom Domain (Optional):**
 - Configure custom domain in Vercel dashboard.
@@ -956,7 +956,7 @@ Test: Critical Path Smoke Test
 **What it unlocks:** Real-time visibility into production health, enabling data-driven decisions and proactive incident response.
 
 **PRs Included:**
-- PR9a: Observability & Monitoring Infrastructure
+- PR10a: Observability & Monitoring Infrastructure
 
 **Definition of Done:**
 - Sentry dashboard shows error rates, performance metrics, and release tracking.
@@ -971,7 +971,7 @@ Test: Critical Path Smoke Test
 **What it unlocks:** Fast, polished user experience meeting production performance targets, with refined content and professional UI.
 
 **PRs Included:**
-- PR9b: Performance Optimization & Content Polish
+- PR10b: Performance Optimization & Content Polish
 
 **Definition of Done:**
 - Landing page LCP <3s (desktop and mobile).
@@ -989,7 +989,7 @@ Test: Critical Path Smoke Test
 **What it unlocks:** Confidence in production deployment through automated smoke tests, comprehensive manual testing, and repeatable launch procedures.
 
 **PRs Included:**
-- PR9c: E2E Testing & Production Launch Checklist
+- PR10c: E2E Testing & Production Launch Checklist
 
 **Definition of Done:**
 - E2E smoke test passing in CI (critical path: Landing → Chat → Lead).

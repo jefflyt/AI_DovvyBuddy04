@@ -16,7 +16,7 @@ Migrate DovvyBuddy from a TypeScript full-stack monolith (Next.js API routes) to
 
 - **Maintained experience**: API contract unchanged; migration is transparent to users
 - **Improved performance**: Better RAG retrieval with Python-native vector operations and batching
-- **Future capabilities**: Python backend enables Telegram bot (PR7b), advanced NLP, and data science workflows
+- **Future capabilities**: Python backend enables Telegram bot (PR8b), advanced NLP, and data science workflows
 - **No UI disruption**: Frontend remains Next.js with TypeScript, preserving modern React developer experience
 
 ### Dependencies
@@ -26,7 +26,7 @@ Migrate DovvyBuddy from a TypeScript full-stack monolith (Next.js API routes) to
 - **Requires:** ✅ PR3 (Model Provider & Session Logic) — Baseline orchestration complete
 - **Requires:** ✅ PR3.1 (ADK Multi-Agent RAG) — Multi-agent system complete
 - **Integrates with:** PR5 (Chat Interface) — Frontend will consume new Python API
-- **Enables:** PR7b (Telegram Bot Adapter) — Shared Python backend for multi-channel
+- **Enables:** PR8b (Telegram Bot Adapter) — Shared Python backend for multi-channel
 - **Enables:** Advanced ML features — Python ecosystem (LangChain, LlamaIndex, sentence-transformers)
 
 ### Assumptions
@@ -681,7 +681,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 
 ### Business Success
 
-✅ **Python backend enables Telegram bot** (PR7b can proceed)  
+✅ **Python backend enables Telegram bot** (PR8b can proceed)  
 ✅ **Foundation for advanced ML features** (LangChain, custom models, etc.)  
 ✅ **Operational complexity manageable** — monitoring, CI/CD, deployment documented  
 ✅ **Technical debt reduced** — cleaner separation of concerns, better testability  
@@ -772,7 +772,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 - **PR1:** `/docs/plans/PR1-Database-Schema.md` — Database schema foundation
 - **PR2:** `/docs/plans/PR2-RAG-Pipeline.md` — Current TypeScript RAG implementation
 - **PR3:** `/docs/plans/PR3-Model-Provider-Session.md` — Current orchestration architecture
-- **PR7b:** `/docs/plans/PR7b-Telegram-Bot-Adapter.md` — Future Telegram integration (enabled by this migration)
+- **PR8b:** `/docs/plans/PR8b-Telegram-Bot-Adapter.md` — Future Telegram integration (enabled by this migration)
 
 ### External Documentation
 

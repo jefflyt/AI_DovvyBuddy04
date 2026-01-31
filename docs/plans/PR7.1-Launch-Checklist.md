@@ -1,4 +1,4 @@
-# PR6 Launch Checklist
+# PR7.1 Launch Checklist
 
 ## Pre-Deployment Verification
 
@@ -124,7 +124,7 @@
 - [ ] Install command: `pnpm install`
 
 ### Deployment Steps
-1. [ ] Merge PR6 to `main` branch
+1. [ ] Merge PR7.1 to `main` branch
 2. [ ] Verify CI passes on `main`
 3. [ ] Wait for Vercel auto-deployment
 4. [ ] Check deployment logs for errors
@@ -161,7 +161,7 @@
 - [ ] SEO score > 90
 
 ### Final Checks
-- [ ] All PR1-5 features still working
+- [ ] All PR1-7 features still working
 - [ ] No regressions in chat functionality
 - [ ] No regressions in lead capture
 - [ ] No regressions in session management
@@ -176,7 +176,7 @@
 If critical issues are found post-deployment:
 
 1. **Immediate Rollback:**
-   - [ ] Revert PR6 in Git: `git revert <commit-hash>`
+   - [ ] Revert PR7.1 in Git: `git revert <commit-hash>`
    - [ ] Push to `main`: `git push origin main`
    - [ ] Wait for Vercel auto-deployment
    - [ ] Verify rollback successful

@@ -12,8 +12,8 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import Session, sessionmaker
 
-# Load .env file
-env_path = Path(__file__).parent.parent.parent / ".env"
+# Load .env file from project root (4 levels up from backend/app/db/session.py)
+env_path = Path(__file__).resolve().parent.parent.parent.parent / ".env.local"
 if env_path.exists():
     load_dotenv(env_path)
 
@@ -24,19 +24,27 @@ _sync_session_factory = None
 
 
 def get_database_url() -> str:
-    return os.getenv(
+    """Get async database URL (converts postgresql:// to postgresql+asyncpg://)."""
+    url = os.getenv(
         "DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/dovvybuddy"
     )
+    # Ensure asyncpg driver for async operations
+    if url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    # Convert sslmode to ssl for asyncpg
+    url = url.replace("?sslmode=require", "?ssl=require")
+    url = url.replace("&sslmode=require", "&ssl=require")
+    # Remove channel_binding (not supported by asyncpg)
+    url = url.replace("&channel_binding=require", "")
+    url = url.replace("?channel_binding=require", "")
+    return url
 
 
 def get_sync_database_url() -> str:
     """Get synchronous database URL (replaces asyncpg with psycopg2)."""
-    url = get_database_url()
-    # Replace asyncpg with psycopg2 for synchronous connections
+    url = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/dovvybuddy")
+    # Ensure plain postgresql:// for sync operations
     url = url.replace("postgresql+asyncpg://", "postgresql://")
-    # Replace ssl=require with sslmode=require for psycopg2
-    url = url.replace("?ssl=require", "?sslmode=require")
-    url = url.replace("&ssl=require", "&sslmode=require")
     return url
 
 

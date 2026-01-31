@@ -23,7 +23,7 @@ class ChatRequestPayload(BaseModel):
     message: str = Field(..., min_length=1, max_length=2000)
     session_id: Optional[str] = Field(None, alias="sessionId")
     diver_profile: Optional[dict] = Field(None, alias="diverProfile")
-    session_state: Optional[dict] = Field(None, alias="sessionState")  # PR6.2
+    session_state: Optional[dict] = Field(None, alias="sessionState")  # PR6.1
 
     class Config:
         populate_by_name = True

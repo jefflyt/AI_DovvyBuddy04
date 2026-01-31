@@ -1,12 +1,12 @@
-# PR8b: Web UI Auth Integration & Guest Session Migration
+# PR9b: Web UI Auth Integration & Guest Session Migration
 
-**Branch Name:** `feature/pr8b-web-ui-auth-integration`  
+**Branch Name:** `feature/pr9b-web-ui-auth-integration`  
 **Status:** Planned  
 **Date:** December 29, 2025  
 **Updated:** January 8, 2026 (Backend clarification)  
-**Based on:** PR8-User-Auth-Profiles.md, PR8a-Auth-Infrastructure.md
+**Based on:** PR9-User-Auth-Profiles.md, PR9a-Auth-Infrastructure.md
 
-> **✅ BACKEND NOTE:** Frontend will integrate with Python/FastAPI auth endpoints (from PR8a) using NextAuth.js for session management. API calls go to FastAPI backend. Original plan focuses on React/Next.js frontend components.
+> **✅ BACKEND NOTE:** Frontend will integrate with Python/FastAPI auth endpoints (from PR9a) using NextAuth.js for session management. API calls go to FastAPI backend. Original plan focuses on React/Next.js frontend components.
 
 ---
 
@@ -34,15 +34,15 @@ Integrate authentication UI into the web interface, enabling users to sign up, s
 ### Dependencies
 
 **Upstream (Must be complete):**
-- **PR8a:** Auth Infrastructure & User/Profile Schema (REQUIRED) — Backend APIs, database tables, auth middleware.
+- **PR9a:** Auth Infrastructure & User/Profile Schema (REQUIRED) — Backend APIs, database tables, auth middleware.
 - **PR1-6:** Full web V1 functionality (database, RAG, sessions, lead capture, landing page, chat interface, E2E testing).
 
 **External Dependencies:**
 - **NextAuth.js React Hooks:** `useSession()` hook from `next-auth/react` for client-side session access.
-- **NextAuth.js:** Already configured in PR8a with Credentials provider.
+- **NextAuth.js:** Already configured in PR9a with Credentials provider.
 
 **Optional:**
-- **PR7a-7c (Telegram):** Not required for PR8b; Telegram account linking is in PR8c.
+- **PR7a-7c (Telegram):** Not required for PR9b; Telegram account linking is in PR9c.
 
 ### Assumptions
 
@@ -68,15 +68,15 @@ Integrate authentication UI into the web interface, enabling users to sign up, s
 ### Rationale
 
 **Why Single-PR:**
-- **Focused on UI layer:** All backend endpoints ready from PR8a; this PR only adds frontend components and pages.
+- **Focused on UI layer:** All backend endpoints ready from PR9a; this PR only adds frontend components and pages.
 - **Well-defined integration points:** Auth state from Clerk hooks, API calls to existing endpoints.
 - **Incremental testing:** Can test each page/flow independently before merging.
-- **Feature-flagged:** Uses same `FEATURE_USER_AUTH_ENABLED` flag from PR8a; can be enabled gradually.
+- **Feature-flagged:** Uses same `FEATURE_USER_AUTH_ENABLED` flag from PR9a; can be enabled gradually.
 - **Clear acceptance criteria:** Signup → Signin → Profile → History → Delete account flows are straightforward to test.
 
 **Estimated Effort:**
 - **Frontend:** Medium-High (10+ new components, 6 new pages, auth state integration).
-- **Backend:** None (all endpoints from PR8a).
+- **Backend:** None (all endpoints from PR9a).
 - **Testing:** Medium (component tests, integration tests, E2E smoke test).
 - **Design/UX:** Low-Medium (mobile-responsive styling with Tailwind).
 
@@ -298,7 +298,7 @@ Integrate authentication UI into the web interface, enabling users to sign up, s
 
 ### Backend
 
-**No new backend changes** — All APIs implemented in PR8a.
+**No new backend changes** — All APIs implemented in PR9a.
 
 **Frontend API Integration:**
 
@@ -317,7 +317,7 @@ Integrate authentication UI into the web interface, enabling users to sign up, s
 
 ### Data
 
-**No new data model changes** — All schema from PR8a.
+**No new data model changes** — All schema from PR9a.
 
 **Frontend State Management:**
 
@@ -328,13 +328,13 @@ Integrate authentication UI into the web interface, enabling users to sign up, s
 
 ### Infra / Config
 
-**Environment Variables (no new vars, use from PR8a):**
+**Environment Variables (no new vars, use from PR9a):**
 
 ```bash
-# Already configured in PR8a
+# Already configured in PR9a
 NEXTAUTH_SECRET=<random-32-char-string>
 NEXTAUTH_URL=http://localhost:3000
-FEATURE_USER_AUTH_ENABLED=true  # Enable for PR8b
+FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 ```
 
 **NextAuth.js Configuration:**
@@ -532,7 +532,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR8b
 2. Implement migration logic in signup flow:
    - After Clerk signup completes, check if `sessionId` exists in localStorage.
    - If yes, call `POST /api/auth/migrate-session` (new endpoint to add or inline logic).
-   - Backend (from PR8a): Update `sessions.user_id`, create conversation record.
+   - Backend (from PR9a): Update `sessions.user_id`, create conversation record.
 3. Test flow: Start chat as guest → Sign up → See migration prompt → Save → Verify conversation in history.
 
 **Acceptance Criteria:**
@@ -1064,7 +1064,7 @@ pnpm build
 **Data Safety:**
 - **Guest users:** No impact, continue using guest sessions.
 - **Authenticated users:** Cannot sign in (UI hidden), but data safe in DB. Can re-access when feature re-enabled.
-- **Backend APIs:** Still functional (from PR8a), just no UI to call them.
+- **Backend APIs:** Still functional (from PR9a), just no UI to call them.
 
 ---
 
@@ -1072,7 +1072,7 @@ pnpm build
 
 ### Upstream Dependencies (Must be complete)
 
-- **PR8a:** Auth Infrastructure & User/Profile Schema (REQUIRED) — All backend APIs and database tables.
+- **PR9a:** Auth Infrastructure & User/Profile Schema (REQUIRED) — All backend APIs and database tables.
 - **PR1-6:** Web V1 functionality (database, chat, lead capture, landing page).
 
 ### External Dependencies
@@ -1082,7 +1082,7 @@ pnpm build
 
 ### Optional Dependencies
 
-- **PR7a-7c (Telegram):** Not required; Telegram account linking is PR8c (separate from web UI).
+- **PR7a-7c (Telegram):** Not required; Telegram account linking is PR9c (separate from web UI).
 
 ---
 
@@ -1139,7 +1139,7 @@ pnpm build
 - **Recommendation:** Add to chat header (persistent button) for easy access.
 - **Decision:** Chat header (next to "New Chat" button).
 
-**Q5: Should we implement password reset UI in PR8b, or rely on Clerk's flow?**
+**Q5: Should we implement password reset UI in PR9b, or rely on Clerk's flow?**
 - **Context:** Clerk provides password reset automatically via email; custom UI is branding consistency.
 - **Recommendation:** Use Clerk's built-in flow for V2.0 (settings page links to Clerk); custom UI in V2.1 if branding critical.
 - **Decision:** Clerk's built-in flow for V2.0.
@@ -1153,7 +1153,7 @@ pnpm build
 
 ## 12. Summary
 
-PR8b completes the user-facing authentication experience for DovvyBuddy V2. This PR adds all UI components needed for users to create accounts, manage profiles, access conversation history, and control their data.
+PR9b completes the user-facing authentication experience for DovvyBuddy V2. This PR adds all UI components needed for users to create accounts, manage profiles, access conversation history, and control their data.
 
 **Key Deliverables:**
 - ✅ 6 new pages: Signin, Signup, Verify, Profile, Settings, History
@@ -1175,7 +1175,7 @@ PR8b completes the user-facing authentication experience for DovvyBuddy V2. This
 - No regressions in guest flows.
 
 **Next Steps:**
-- **PR8c:** Telegram account linking (after PR8b + PR7b complete).
+- **PR9c:** Telegram account linking (after PR9b + PR7b complete).
 - **V2.1:** Dive log storage, trip planning history, personalized recommendations.
 
 This PR is ready for implementation and will provide a complete authenticated web experience for DovvyBuddy users.

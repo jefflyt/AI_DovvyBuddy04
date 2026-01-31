@@ -7,8 +7,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from app.db.session import SessionLocal
-from app.services.chunking import ChunkingService
-from app.services.embedding import EmbeddingService
+from app.services.embeddings import create_embedding_provider_from_env
 from app.services.rag.repository import RAGRepository
 from scripts.ingest_content import ingest_file
 
@@ -80,11 +79,11 @@ Proper planning is essential for deep dives beyond 30 meters.
 
 
 @pytest.mark.integration
-def test_full_ingestion_workflow(test_db: Session, test_content_dir: Path):
+@pytest.mark.asyncio
+async def test_full_ingestion_workflow(test_db: Session, test_content_dir: Path):
     """Test complete ingestion workflow from files to database."""
     # Initialize services
-    chunking_service = ChunkingService()
-    embedding_service = EmbeddingService()
+    embedding_provider = create_embedding_provider_from_env()
     repository = RAGRepository(test_db)
     
     # Clear any existing test data
@@ -96,11 +95,10 @@ def test_full_ingestion_workflow(test_db: Session, test_content_dir: Path):
     
     # Ingest first file
     file1 = test_files[0]
-    result1 = ingest_file(
+    result1 = await ingest_file(
         file1,
         test_content_dir,
-        chunking_service,
-        embedding_service,
+        embedding_provider,
         repository,
         incremental=False,
         dry_run=False,
@@ -122,11 +120,10 @@ def test_full_ingestion_workflow(test_db: Session, test_content_dir: Path):
     
     # Ingest second file
     file2 = test_files[1]
-    result2 = ingest_file(
+    result2 = await ingest_file(
         file2,
         test_content_dir,
-        chunking_service,
-        embedding_service,
+        embedding_provider,
         repository,
         incremental=False,
         dry_run=False,
@@ -142,11 +139,11 @@ def test_full_ingestion_workflow(test_db: Session, test_content_dir: Path):
 
 
 @pytest.mark.integration
-def test_incremental_ingestion(test_db: Session, test_content_dir: Path):
+@pytest.mark.asyncio
+async def test_incremental_ingestion(test_db: Session, test_content_dir: Path):
     """Test incremental ingestion skips unchanged files."""
     # Initialize services
-    chunking_service = ChunkingService()
-    embedding_service = EmbeddingService()
+    embedding_provider = create_embedding_provider_from_env()
     repository = RAGRepository(test_db)
     
     # Clear existing data
@@ -155,11 +152,10 @@ def test_incremental_ingestion(test_db: Session, test_content_dir: Path):
     test_file = list(test_content_dir.glob("*.md"))[0]
     
     # First ingestion
-    result1 = ingest_file(
+    result1 = await ingest_file(
         test_file,
         test_content_dir,
-        chunking_service,
-        embedding_service,
+        embedding_provider,
         repository,
         incremental=True,
         dry_run=False,
@@ -170,11 +166,10 @@ def test_incremental_ingestion(test_db: Session, test_content_dir: Path):
     assert chunks_created > 0
     
     # Second ingestion (file unchanged)
-    result2 = ingest_file(
+    result2 = await ingest_file(
         test_file,
         test_content_dir,
-        chunking_service,
-        embedding_service,
+        embedding_provider,
         repository,
         incremental=True,
         dry_run=False,
@@ -190,11 +185,11 @@ def test_incremental_ingestion(test_db: Session, test_content_dir: Path):
 
 
 @pytest.mark.integration
-def test_re_ingestion_replaces_chunks(test_db: Session, test_content_dir: Path):
+@pytest.mark.asyncio
+async def test_re_ingestion_replaces_chunks(test_db: Session, test_content_dir: Path):
     """Test that re-ingesting a file replaces old chunks."""
     # Initialize services
-    chunking_service = ChunkingService()
-    embedding_service = EmbeddingService()
+    embedding_provider = create_embedding_provider_from_env()
     repository = RAGRepository(test_db)
     
     # Clear existing data
@@ -203,11 +198,10 @@ def test_re_ingestion_replaces_chunks(test_db: Session, test_content_dir: Path):
     test_file = list(test_content_dir.glob("*.md"))[0]
     
     # First ingestion
-    result1 = ingest_file(
+    result1 = await ingest_file(
         test_file,
         test_content_dir,
-        chunking_service,
-        embedding_service,
+        embedding_provider,
         repository,
         incremental=False,
         dry_run=False,
@@ -221,11 +215,10 @@ def test_re_ingestion_replaces_chunks(test_db: Session, test_content_dir: Path):
     test_file.write_text(modified_content)
     
     # Re-ingest
-    result2 = ingest_file(
+    result2 = await ingest_file(
         test_file,
         test_content_dir,
-        chunking_service,
-        embedding_service,
+        embedding_provider,
         repository,
         incremental=False,
         dry_run=False,
@@ -241,11 +234,11 @@ def test_re_ingestion_replaces_chunks(test_db: Session, test_content_dir: Path):
 
 
 @pytest.mark.integration
-def test_search_after_ingestion(test_db: Session, test_content_dir: Path):
+@pytest.mark.asyncio
+async def test_search_after_ingestion(test_db: Session, test_content_dir: Path):
     """Test that ingested content is searchable."""
     # Initialize services
-    chunking_service = ChunkingService()
-    embedding_service = EmbeddingService()
+    embedding_provider = create_embedding_provider_from_env()
     repository = RAGRepository(test_db)
     
     # Clear existing data
@@ -253,11 +246,10 @@ def test_search_after_ingestion(test_db: Session, test_content_dir: Path):
     
     # Ingest all test files
     for test_file in test_content_dir.glob("*.md"):
-        ingest_file(
+        await ingest_file(
             test_file,
             test_content_dir,
-            chunking_service,
-            embedding_service,
+            embedding_provider,
             repository,
             incremental=False,
             dry_run=False,
@@ -265,7 +257,7 @@ def test_search_after_ingestion(test_db: Session, test_content_dir: Path):
     
     # Generate query embedding
     query = "What equipment do I need for diving?"
-    query_embedding = embedding_service.generate_embeddings([query])[0]
+    query_embedding = (await embedding_provider.embed_batch([query]))[0]
     
     # Search
     results = repository.search_by_similarity(query_embedding, top_k=5)

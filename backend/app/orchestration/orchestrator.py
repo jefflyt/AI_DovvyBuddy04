@@ -8,14 +8,15 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.agents.registry import get_agent_registry
-from app.agents.types import AgentContext, AgentType
 from app.core.config import settings
+from app.core.feature_flags import FeatureFlag, is_feature_enabled
 
+from .agent_router import AgentRouter
 from .context_builder import ContextBuilder
-from .conversation_manager import ConversationManager, SessionState
-from .emergency_detector import EmergencyDetector
-from .mode_detector import ConversationMode, ModeDetector
+from .conversation_manager import ConversationManager, IntentType, SessionState
+from .emergency_detector_hybrid import EmergencyDetector
+from .mode_detector import ConversationMode
+from .response_formatter import ResponseFormatter
 from .session_manager import SessionManager
 from .types import ChatRequest, ChatResponse, SessionData
 
@@ -43,11 +44,11 @@ class ChatOrchestrator:
         """
         self.db_session = db_session
         self.session_manager = SessionManager(db_session)
-        self.mode_detector = ModeDetector()
         self.context_builder = ContextBuilder()
-        self.agent_registry = get_agent_registry()
+        self.agent_router = AgentRouter()
+        self.response_formatter = ResponseFormatter()
         
-        # PR6.2: Conversation continuity components
+        # Pis_feature_enabled(FeatureFlag.CONVERSATION_FOLLOWUP)
         if settings.feature_conversation_followup_enabled:
             self.emergency_detector = EmergencyDetector()
             self.conversation_manager = ConversationManager()
@@ -56,6 +57,21 @@ class ChatOrchestrator:
             self.emergency_detector = None
             self.conversation_manager = None
             logger.info("Conversation continuity disabled")
+
+    @staticmethod
+    def _intent_to_mode(intent: IntentType) -> ConversationMode:
+        """Map ConversationManager intent to ConversationMode for agent routing."""
+        intent_mode_map = {
+            IntentType.AGENCY_CERT: ConversationMode.CERTIFICATION,
+            IntentType.DIVE_PLANNING: ConversationMode.TRIP,
+            IntentType.EMERGENCY_MEDICAL: ConversationMode.SAFETY,
+            IntentType.SKILL_EXPLANATION: ConversationMode.GENERAL,
+            IntentType.MARINE_LIFE: ConversationMode.GENERAL,
+            IntentType.GEAR: ConversationMode.GENERAL,
+            IntentType.CONDITIONS: ConversationMode.GENERAL,
+            IntentType.INFO_LOOKUP: ConversationMode.GENERAL,
+        }
+        return intent_mode_map.get(intent, ConversationMode.GENERAL)
 
     async def handle_chat(self, request: ChatRequest) -> ChatResponse:
         """
@@ -80,9 +96,9 @@ class ChatOrchestrator:
             )
 
         # Handle common greetings with friendly welcome
-        if self._is_greeting(request.message):
+        if self.response_formatter.is_greeting(request.message):
             session = await self._get_or_create_session(request)
-            welcome_message = self._get_welcome_message()
+            welcome_message = self.response_formatter.get_welcome_message()
             
             await self._update_session_history(
                 session.id,
@@ -105,18 +121,21 @@ class ChatOrchestrator:
             f"message_length={len(request.message)}"
         )
 
-        # PR6.2: Check for emergency FIRST (safety-critical, keyword-based)
+        # PR6.1: Check for emergency FIRST (safety-critical, hybrid detection)
         follow_up_question = None
         state_updates = {}
         detected_intent = None
         
-        if settings.feature_conversation_followup_enabled and self.emergency_detector:
-            is_emergency = self.emergency_detector.is_emergency(request.message)
+        if is_feature_enabled(FeatureFlag.CONVERSATION_FOLLOWUP) and self.emergency_detector:
+            # Use hybrid detection: keywords for speed + LLM for ambiguous cases
+            is_emergency, emergency_response = await self.emergency_detector.detect_emergency(
+                request.message,
+                conversation_history=session.conversation_history
+            )
             
             if is_emergency:
                 # Emergency detected: bypass conversation manager, return safety response
                 logger.warning(f"Emergency detected for session {session.id}")
-                emergency_response = self.emergency_detector.get_emergency_response()
                 
                 await self._update_session_history(
                     session.id,
@@ -132,8 +151,9 @@ class ChatOrchestrator:
                     follow_up_question=None,  # No follow-up for emergencies
                 )
         
-        # PR6.2: Run conversation manager for intent + state + follow-up
-        if settings.feature_conversation_followup_enabled and self.conversation_manager:
+        # PR6.1: Run conversation manager for intent + state + follow-up
+        mode = ConversationMode.GENERAL  # Default mode
+        if is_feature_enabled(FeatureFlag.CONVERSATION_FOLLOWUP) and self.conversation_manager:
             try:
                 # Parse session state from request
                 session_state = None
@@ -158,19 +178,31 @@ class ChatOrchestrator:
                     f"state_updates={list(state_updates.keys())}"
                 )
                 
-            except Exception as e:
-                logger.error(f"Conversation manager failed: {e}", exc_info=True)
-                # Continue without conversation features on error
-                pass
-
-        # Detect conversation mode (existing flow)
-        mode = self.mode_detector.detect_mode(
-            request.message,
-            session.conversation_history
-        )
+                # Map intent to conversation mode for agent routing
+                mode = self._intent_to_mode(analysis.intent)
+                logger.info(f"Mapped intent '{detected_intent}' to mode: {mode.value}")
+                
+            except Exception:
+                logger.error("Conversation manager failed", exc_info=True)
+                # Fallback to GENERAL mode on error
+                mode = ConversationMode.GENERAL
+        else:
+            # Conversation manager disabled - use keyword-based detection as fallback
+            # TODO: Consider making ConversationManager non-optional in future
+            logger.info("ConversationManager disabled, using mode fallback logic")
+            # Simple keyword-based fallback
+            msg_lower = request.message.lower()
+            if any(word in msg_lower for word in ["cert", "certification", "padi", "ssi", "course"]):
+                mode = ConversationMode.CERTIFICATION
+            elif any(word in msg_lower for word in ["trip", "dive site", "destination", "where to dive"]):
+                mode = ConversationMode.TRIP
+            elif any(word in msg_lower for word in ["medical", "injury", "pain", "symptom", "hurt"]):
+                mode = ConversationMode.SAFETY
+            else:
+                mode = ConversationMode.GENERAL
 
         # Select agent
-        agent = self._select_agent(mode)
+        agent = self.agent_router.select_agent(mode)
 
         if not agent:
             raise ValueError(f"No agent available for mode: {mode}")
@@ -190,15 +222,52 @@ class ChatOrchestrator:
         # Execute agent
         result = await agent.execute(context)
 
-        # Add safety disclaimer if needed
-        response_message = result.response
-        if settings.include_safety_disclaimer and mode == ConversationMode.SAFETY:
-            response_message = self._add_safety_disclaimer(response_message)
+        # PR6.2: Sanitize response to remove any leaked RAG mentions
+        sanitized_response = self.response_formatter.sanitize_response(result.response)
         
-        # PR6.2: Append follow-up question if enabled
-        if follow_up_question:
-            response_message = f"{response_message}\n\n**{follow_up_question}**"
-            logger.info(f"Appended follow-up: {follow_up_question}")
+        # PR6.2: Extract citations from context (if RAG was used)
+        citations = []
+        if context.rag_context and hasattr(context, 'metadata'):
+            # Try to get citations from context metadata (if available from RAG pipeline)
+            if 'rag_citations' in context.metadata:
+                citations = context.metadata['rag_citations']
+            # Also check result metadata for citations
+            elif 'citations' in result.metadata:
+                citations = result.metadata['citations']
+        
+        # Log response discipline check
+        response_length = len(sanitized_response)
+        estimated_tokens = response_length // 4  # Rough estimate: 1 token ≈ 4 chars
+        violations = []
+        
+        # Check for discipline violations
+        forbidden_terms = ["provided context", "source:", "document", "retrieval", "according to"]
+        for term in forbidden_terms:
+            if term.lower() in sanitized_response.lower():
+                violations.append(term)
+        
+        if violations or estimated_tokens > 120:
+            logger.warning(
+                "Response discipline check",
+                extra={
+                    "session_id": str(session.id),
+                    "agent_type": agent.name,
+                    "response_length": response_length,
+                    "estimated_tokens": estimated_tokens,
+                    "has_rag_mentions": len(violations) > 0,
+                    "violations": violations,
+                    "exceeds_token_limit": estimated_tokens > 120,
+                }
+            )
+
+        # Format response with disclaimer and follow-up
+        response_message = self.response_formatter.format_response(
+            message=sanitized_response,
+            mode=mode,
+            follow_up_question=follow_up_question,
+            agent_type=agent.name.lower(),  # Pass agent type for disclaimer logic
+            user_message=request.message,  # Pass original message for medical keyword detection
+        )
 
         # Update session history
         await self._update_session_history(
@@ -215,7 +284,11 @@ class ChatOrchestrator:
             **result.metadata,
         }
         
-        # PR6.2: Add conversation metadata
+        # PR6.2: Add citations to metadata (not visible in response text)
+        if citations:
+            response_metadata["citations"] = citations
+        
+        # PR6.1: Add conversation metadata
         if detected_intent:
             response_metadata["detected_intent"] = detected_intent
         if state_updates:
@@ -267,52 +340,6 @@ class ChatOrchestrator:
         logger.info(f"Created new session: {session.id}")
         return session
 
-    def _select_agent(self, mode: ConversationMode) -> Optional[object]:
-        """
-        Select agent based on conversation mode.
-
-        Args:
-            mode: Detected conversation mode
-
-        Returns:
-            Agent instance or None
-        """
-        if not settings.enable_agent_routing:
-            # Fallback to retrieval agent
-            return self.agent_registry.get(AgentType.RETRIEVAL)
-
-        # Map mode to agent type
-        mode_to_agent = {
-            ConversationMode.CERTIFICATION: AgentType.CERTIFICATION,
-            ConversationMode.TRIP: AgentType.TRIP,
-            ConversationMode.SAFETY: AgentType.SAFETY,
-            ConversationMode.GENERAL: AgentType.RETRIEVAL,
-        }
-
-        agent_type = mode_to_agent.get(mode, AgentType.RETRIEVAL)
-        agent = self.agent_registry.get(agent_type)
-
-        # Fallback to retrieval if agent not found
-        if not agent:
-            logger.warning(f"Agent not found for {agent_type}, using retrieval")
-            agent = self.agent_registry.get(AgentType.RETRIEVAL)
-
-        return agent
-
-    def _add_safety_disclaimer(self, message: str) -> str:
-        """
-        Add safety disclaimer to message.
-
-        Args:
-            message: Original message
-
-        Returns:
-            Message with disclaimer appended
-        """
-        from app.prompts.safety import SAFETY_DISCLAIMER
-
-        return f"{message}\n\n{SAFETY_DISCLAIMER}"
-
     async def _update_session_history(
         self,
         session_id: UUID,
@@ -344,7 +371,7 @@ class ChatOrchestrator:
 
             logger.debug(f"Updated session history: {session_id}")
 
-        except Exception as e:
+        except Exception:
             logger.error(
                 f"Failed to update session history: {session_id}",
                 exc_info=True
@@ -364,33 +391,3 @@ class ChatOrchestrator:
         """
         return await self.session_manager.get_session(session_id)
 
-    def _is_greeting(self, message: str) -> bool:
-        """
-        Check if message is a common greeting.
-
-        Args:
-            message: User's message
-
-        Returns:
-            True if message is a greeting, False otherwise
-        """
-        greetings = {'hi', 'hello', 'hey', 'greetings', 'howdy', 'good morning', 'good afternoon', 'good evening'}
-        normalized = message.strip().lower()
-        return normalized in greetings
-
-    def _get_welcome_message(self) -> str:
-        """
-        Return friendly welcome message with capability overview.
-
-        Returns:
-            Welcome message string
-        """
-        return (
-            "Hello! 👋 I'm DovvyBuddy, your AI diving assistant.\n\n"
-            "I can help you with:\n"
-            "🎓 Diving certifications and training\n"
-            "🌊 Dive destinations and conditions\n"
-            "⚠️ Safety procedures and best practices\n"
-            "🤿 Equipment recommendations\n\n"
-            "What would you like to know about diving?"
-        )

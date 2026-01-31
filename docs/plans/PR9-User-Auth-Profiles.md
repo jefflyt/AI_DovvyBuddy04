@@ -1,6 +1,6 @@
-# PR8: User Authentication & Profiles (V2 Foundation)
+# PR9: User Authentication & Profiles (V2 Foundation)
 
-**Branch Name:** `feature/pr8-user-auth-profiles`  
+**Branch Name:** `feature/pr9-user-auth-profiles`  
 **Status:** Planned  
 **Date:** December 29, 2025  
 **Updated:** January 8, 2026 (Backend clarification)  
@@ -32,8 +32,8 @@ Implement user authentication and persistent profiles as the foundation for V2 f
 ### Dependencies
 
 **Upstream (Must be complete):**
-- **PR1-6:** Full web V1 functionality (database, RAG, sessions, lead capture, landing page, E2E testing).
-- **PR7a-7c:** Telegram integration (optional but recommended to ensure auth works cross-channel).
+- **PR1-7:** Full web V1 functionality (database, RAG, sessions, lead capture, landing page, E2E testing).
+- **PR8a-8c:** Telegram integration (optional but recommended to ensure auth works cross-channel).
 
 **External Dependencies:**
 - **Auth Provider:** NextAuth.js (self-hosted, migrate to Clerk if needed for scaling).
@@ -71,11 +71,11 @@ Implement user authentication and persistent profiles as the foundation for V2 f
 - **Deployment strategy:** Feature flags required to toggle authenticated features during rollout.
 
 **Recommended PR Count:** 3 PRs
-1. **PR8a:** Auth infrastructure + User/Profile schema (backend-only, no UI changes).
-2. **PR8b:** Web UI integration (signup, login, profile pages, session migration).
-3. **PR8c:** Telegram account linking + cross-channel session sync.
+1. **PR9a:** Auth infrastructure + User/Profile schema (backend-only, no UI changes).
+2. **PR9b:** Web UI integration (signup, login, profile pages, session migration).
+3. **PR9c:** Telegram account linking + cross-channel session sync.
 
-Alternative: If Telegram is not yet live, defer PR8c and combine PR8a+8b into a single larger PR (acceptable if solo founder can handle larger testing surface).
+Alternative: If Telegram is not yet live, defer PR9c and combine PR9a+9b into a single larger PR (acceptable if solo founder can handle larger testing surface).
 
 **Estimated Complexity:**
 - Backend: Medium-High (auth middleware, session migration, profile CRUD).
@@ -234,7 +234,7 @@ Alternative: If Telegram is not yet live, defer PR8c and combine PR8a+8b into a 
 
 ## 4. PR Roadmap (Multi-PR Plan)
 
-### PR8a: Auth Infrastructure & User/Profile Schema
+### PR9a: Auth Infrastructure & User/Profile Schema
 
 **Goal**
 
@@ -258,8 +258,8 @@ Establish the foundational authentication system and database schema for users a
 **Out of Scope:**
 - Any UI changes (landing, chat, profile pages).
 - Telegram account linking.
-- Guest session migration UI (defer to PR8b).
-- Email verification flow UI (defer to PR8b).
+- Guest session migration UI (defer to PR9b).
+- Email verification flow UI (defer to PR9b).
 
 **Backend Changes**
 
@@ -450,7 +450,7 @@ Establish the foundational authentication system and database schema for users a
 
 ---
 
-### PR8b: Web UI Integration & Guest Session Migration
+### PR9b: Web UI Integration & Guest Session Migration
 
 **Goal**
 
@@ -472,7 +472,7 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
 - E2E smoke test for signup → signin → profile update → chat → history.
 
 **Out of Scope:**
-- Telegram account linking (defer to PR8c).
+- Telegram account linking (defer to PR9c).
 - Password reset flow (use Clerk's built-in flow or defer to V2.1).
 - Social login (Google, Facebook) — defer to V2.1.
 - Multi-factor authentication (MFA) — defer to V2.1.
@@ -520,18 +520,18 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
 
 **Backend Changes**
 
-**No new endpoints** (all implemented in PR8a).
+**No new endpoints** (all implemented in PR9a).
 
 **Modified Behavior:**
 - `/api/chat` now receives auth token from client (sent in `Authorization` header).
 
 **Data Changes**
 
-**No new migrations** (all schema in PR8a).
+**No new migrations** (all schema in PR9a).
 
 **Session Migration Logic:**
 - When user signs up and has active guest session:
-  - Call `/api/auth/migrate-session` (new endpoint to add in PR8b) with `sessionId` and `userId`.
+  - Call `/api/auth/migrate-session` (new endpoint to add in PR9b) with `sessionId` and `userId`.
   - Backend links session to user (`sessions.user_id = userId`), removes `expires_at` (or extends to 30 days).
   - Create `conversations` record linked to session and user.
 
@@ -632,12 +632,12 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
 **Revert Strategy:**
 - Revert PR: Remove auth UI pages and components.
 - Guest sessions continue to work.
-- Database schema from PR8a remains (no rollback needed unless dropping feature entirely).
+- Database schema from PR9a remains (no rollback needed unless dropping feature entirely).
 
 **Dependencies**
 
 **Upstream:**
-- PR8a complete (auth backend, user/profile schema).
+- PR9a complete (auth backend, user/profile schema).
 
 **External:**
 - Clerk account and publishable key.
@@ -654,7 +654,7 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
 
 ---
 
-### PR8c: Telegram Account Linking & Cross-Channel Session Sync
+### PR9c: Telegram Account Linking & Cross-Channel Session Sync
 
 **Goal**
 
@@ -674,7 +674,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 
 **Out of Scope:**
 - WhatsApp or other messaging platforms (defer to V2.2+).
-- Telegram group chat support (1-on-1 chats only, as in PR7b).
+- Telegram group chat support (1-on-1 chats only, as in PR8b).
 - Telegram-specific features (voice messages, location sharing) — defer to V2.2+.
 - Cross-device session sync within Telegram (Telegram bot is stateless; relies on DB session).
 
@@ -692,7 +692,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
   - Response: `{ isLinked: true/false, telegramUsername: "..." }`
 
 **Modified Endpoints:**
-- **POST /api/telegram/webhook** (from PR7b)
+- **POST /api/telegram/webhook** (from PR8b)
   - Before: Creates guest session for each Telegram user.
   - After: Check if `telegram_user_id` is linked to a user account; if yes, use user's session and profile.
 
@@ -741,12 +741,12 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 
 **Backward Compatibility:**
 - Existing users have `telegram_user_id = NULL` (not linked).
-- Telegram users without linked accounts continue to use guest sessions (PR7b behavior).
+- Telegram users without linked accounts continue to use guest sessions (PR8b behavior).
 
 **Infra / Config**
 
 **Environment Variables:**
-- No new env vars (uses existing Telegram bot token from PR7b).
+- No new env vars (uses existing Telegram bot token from PR8b).
 
 **Testing**
 
@@ -794,7 +794,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 - Build: `pnpm build`
 
 **Manual Verification:**
-1. Deploy Telegram bot (from PR7b) and web app (with PR8a+8b).
+1. Deploy Telegram bot (from PR8b) and web app (with PR9a+9b).
 2. Sign in to web app as test user.
 3. Navigate to settings page.
 4. Note "Link Telegram Account" instructions.
@@ -819,7 +819,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 
 **Feature Flag:**
 - Add `FEATURE_TELEGRAM_LINKING_ENABLED` (default: false until stable).
-- If disabled, Telegram bot continues to use guest sessions (PR7b behavior).
+- If disabled, Telegram bot continues to use guest sessions (PR8b behavior).
 
 **Revert Strategy:**
 - Revert PR: Remove linking logic, drop `telegram_user_id` column.
@@ -828,9 +828,9 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 **Dependencies**
 
 **Upstream:**
-- PR8a complete (auth backend).
-- PR8b complete (web UI).
-- PR7b complete (Telegram bot with guest sessions).
+- PR9a complete (auth backend).
+- PR9b complete (web UI).
+- PR8b complete (Telegram bot with guest sessions).
 
 **External:**
 - Telegram bot deployed and accessible.
@@ -980,7 +980,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 - **Alternative:** Allow unverified accounts with limited features (e.g., no lead submission) — deferred to V2.1 if signup friction is high.
 
 **Trade-off 5: Single PR vs. Multi-PR**
-- **Decision:** Split into 3 PRs (PR8a, PR8b, PR8c).
+- **Decision:** Split into 3 PRs (PR9a, PR9b, PR9c).
 - **Rationale:** Reduces risk; allows incremental testing and deployment; backend can be merged and tested independently before exposing UI.
 - **Alternative:** Single large PR — rejected due to high risk of breaking changes and large testing surface.
 
@@ -1008,7 +1008,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 
 **Q4: Should Telegram users be required to link accounts to use advanced features (e.g., lead capture), or can they remain unlinked?**
 - **Context:** Unlinked Telegram users use guest sessions (24h expiry, no history).
-- **Decision:** Allow unlinked usage for V2.0 (same as PR7b); prompt to link when submitting lead (optional).
+- **Decision:** Allow unlinked usage for V2.0 (same as PR8b); prompt to link when submitting lead (optional).
 - **Impact:** Some Telegram users may never link (acceptable; reduces friction).
 
 **Q5: Should we implement account deletion as soft delete (mark inactive) or hard delete (remove from DB)?**
@@ -1028,9 +1028,9 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 PR8 establishes the foundation for DovvyBuddy V2 by implementing user authentication and persistent profiles. This multi-PR effort transitions the platform from guest-only sessions to authenticated users with cross-device conversation history, saved preferences, and richer lead context.
 
 **Key Deliverables:**
-- **PR8a:** Backend auth infrastructure (Clerk integration, user/profile schema, API endpoints).
-- **PR8b:** Web UI for signup, signin, profile management, conversation history, and guest session migration.
-- **PR8c:** Telegram account linking and cross-channel session sync.
+- **PR9a:** Backend auth infrastructure (Clerk integration, user/profile schema, API endpoints).
+- **PR9b:** Web UI for signup, signin, profile management, conversation history, and guest session migration.
+- **PR9c:** Telegram account linking and cross-channel session sync.
 
 **Success Criteria:**
 - Users can create accounts and access conversation history across devices.
