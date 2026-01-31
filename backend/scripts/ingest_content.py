@@ -226,11 +226,11 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Full ingestion
+  # Incremental ingestion (default - skip unchanged files)
   python -m scripts.ingest_content
   
-  # Incremental ingestion (skip unchanged files)
-  python -m scripts.ingest_content --incremental
+  # Full re-ingestion (ignore file hashes)
+  python -m scripts.ingest_content --full
   
   # Dry run (preview without database writes)
   python -m scripts.ingest_content --dry-run
@@ -252,9 +252,9 @@ Examples:
         help="File pattern to match (default: **/*.md)",
     )
     parser.add_argument(
-        "--incremental",
+        "--full",
         action="store_true",
-        help="Incremental mode (skip unchanged files)",
+        help="Full re-ingestion mode (ignore file hashes, re-ingest all files)",
     )
     parser.add_argument(
         "--dry-run",
@@ -282,8 +282,13 @@ Examples:
         warning("DRY RUN MODE: No database writes will be performed")
     
     info(f"Ingesting content from: {content_dir}")
-    if args.incremental:
-        info("Incremental mode: will skip unchanged files")
+    
+    # Determine incremental mode (default: True, unless --full flag is set)
+    incremental = not args.full
+    if args.full:
+        info("Full re-ingestion mode: will re-ingest all files")
+    else:
+        info("Incremental mode: will skip unchanged files (use --full to re-ingest all)")
     
     # Find markdown files
     try:
@@ -326,7 +331,7 @@ Examples:
                     content_dir,
                     embedding_provider,
                     repository,
-                    incremental=args.incremental,
+                    incremental=incremental,
                     dry_run=args.dry_run,
                 ))
                 
