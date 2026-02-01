@@ -1,6 +1,7 @@
 ---
 doc_type: certification_overview
 title: PADI Entry Programs Overview
+layer: system
 agency: PADI
 scope: entry_programs
 supervision_required: true

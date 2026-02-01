@@ -1,6 +1,8 @@
 ---
 doc_type: certification
 certification_name: PADI Open Water Diver
+layer: course
+certification: Open Water Diver
 agency: PADI
 cert_level: OW
 scope: recreational

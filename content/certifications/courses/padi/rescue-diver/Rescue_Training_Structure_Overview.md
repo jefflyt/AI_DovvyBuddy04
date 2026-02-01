@@ -1,9 +1,9 @@
 ---
 doc_type: certification_training
 title: PADI Rescue Diver Training Structure Overview
-agency: PADI
 layer: course
 certification: Rescue Diver
+agency: PADI
 scope: training_structure_overview
 certification_granted: true
 last_updated: 2026-02-01

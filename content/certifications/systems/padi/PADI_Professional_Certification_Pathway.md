@@ -1,6 +1,7 @@
 ---
 doc_type: certification_overview
 title: PADI Professional Certification Pathway
+layer: system
 agency: PADI
 scope: professional_pathway
 professional_level: true

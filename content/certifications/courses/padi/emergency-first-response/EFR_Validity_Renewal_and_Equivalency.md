@@ -1,6 +1,8 @@
 ---
 doc_type: certification_rules
 title: Emergency First Response Validity, Renewal, and Equivalency
+layer: course
+certification: Emergency First Response
 agency: Emergency First Response
 affiliation: PADI
 scope: validity_renewal_equivalency

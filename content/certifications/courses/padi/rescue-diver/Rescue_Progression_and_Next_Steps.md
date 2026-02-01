@@ -1,9 +1,9 @@
 ---
 doc_type: certification_progression
 title: PADI Rescue Diver Progression and Next Steps
-agency: PADI
 layer: course
 certification: Rescue Diver
+agency: PADI
 scope: progression_and_next_steps
 certification_granted: true
 last_updated: 2026-02-01

@@ -1,6 +1,8 @@
 ---
 doc_type: certification_prerequisites
 certification_name: PADI Advanced Open Water Diver
+layer: course
+certification: Advanced Open Water Diver
 agency: PADI
 cert_level: AOW
 scope: recreational

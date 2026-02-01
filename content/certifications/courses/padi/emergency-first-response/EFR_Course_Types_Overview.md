@@ -1,6 +1,8 @@
 ---
 doc_type: certification_overview
 title: Emergency First Response Course Types Overview
+layer: course
+certification: Emergency First Response
 agency: Emergency First Response
 affiliation: PADI
 scope: course_types

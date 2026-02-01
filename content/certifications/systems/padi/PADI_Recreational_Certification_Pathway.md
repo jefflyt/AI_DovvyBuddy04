@@ -1,6 +1,7 @@
 ---
 doc_type: certification_overview
 title: PADI Recreational Certification Pathway
+layer: system
 agency: PADI
 scope: recreational_pathway
 independent_diving: true

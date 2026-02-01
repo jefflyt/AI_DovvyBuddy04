@@ -1,8 +1,9 @@
 ---
 doc_type: certification_overview
 title: PADI Rescue Diver System Overview
-agency: PADI
 layer: system
+certification: Rescue Diver
+agency: PADI
 scope: recreational_safety_training
 certification_granted: true
 lifetime_valid: true

@@ -1,9 +1,9 @@
 ---
 doc_type: certification_requirements
 title: PADI Rescue Diver Prerequisites and Requirements
-agency: PADI
 layer: course
 certification: Rescue Diver
+agency: PADI
 scope: prerequisites_and_entry_requirements
 certification_granted: true
 minimum_age: 12

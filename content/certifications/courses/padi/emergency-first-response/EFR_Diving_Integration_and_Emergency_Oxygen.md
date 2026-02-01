@@ -1,6 +1,8 @@
 ---
 doc_type: certification_context
 title: Emergency First Response and Diving Integration
+layer: course
+certification: Emergency First Response
 agency: Emergency First Response
 affiliation: PADI
 scope: diving_integration_and_oxygen

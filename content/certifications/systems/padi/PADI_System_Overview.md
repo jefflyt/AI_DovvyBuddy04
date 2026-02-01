@@ -1,6 +1,7 @@
 ---
 doc_type: certification_overview
 title: PADI Certification System Overview
+layer: system
 agency: PADI
 scope: system_overview
 lifetime_valid: true

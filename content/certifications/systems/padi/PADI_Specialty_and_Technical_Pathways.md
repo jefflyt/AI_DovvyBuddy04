@@ -1,6 +1,7 @@
 ---
 doc_type: certification_overview
 title: PADI Specialty and Technical Pathways
+layer: system
 agency: PADI
 scope: specialty_and_technical
 last_updated: 2026-02-01

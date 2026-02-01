@@ -1,6 +1,8 @@
 ---
 doc_type: certification_professional
 title: Emergency First Response Professional Pathway
+layer: course
+certification: Emergency First Response
 agency: Emergency First Response
 affiliation: PADI
 scope: professional_pathway
