@@ -8,7 +8,8 @@ import asyncio
 import logging
 from typing import List, Optional, Tuple
 
-from google import genai
+import google.genai as genai
+from google.genai import types
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -17,79 +18,62 @@ from tenacity import (
 )
 
 from app.core.config import settings
-
-from .base import LLMProvider
-from .types import LLMMessage, LLMResponse
+from app.services.llm.base import LLMProvider, LLMResponse
+from app.services.llm.types import LLMMessage
 
 logger = logging.getLogger(__name__)
 
 
 class RateLimitError(Exception):
     """Raised when API rate limit is exceeded."""
-
     pass
 
-
 class GeminiLLMProvider(LLMProvider):
-    """LLM provider using Google's Gemini API."""
+    """Google Gemini LLM provider implementation."""
 
     def __init__(
         self,
         api_key: str,
-        model: str = "gemini-2.0-flash",
+        model: Optional[str] = None,
         temperature: float = 0.7,
         max_tokens: int = 2048,
     ):
         """
         Initialize Gemini LLM provider.
-
-        Args:
-            api_key: Google API key
-            model: Model name (default: gemini-2.0-flash per copilot-instructions.md)
-            temperature: Default temperature (0.0-1.0)
-            max_tokens: Default max tokens
         """
         if not api_key:
             raise ValueError("Gemini API key is required")
 
-        self.model = model
-        self.default_temperature = temperature
-        self.default_max_tokens = max_tokens
+        self.api_key = api_key
+        self.model = model or settings.default_llm_model
+        self.temperature = temperature
+        self.max_tokens = max_tokens
 
-        # Create Gemini client
+        # Create Gemini Client (New SDK)
         self.client = genai.Client(api_key=api_key)
 
-        logger.info(f"Initialized GeminiLLMProvider with model={model}")
+        logger.info(f"Initialized GeminiLLMProvider with model={self.model} (New SDK)")
 
     def _messages_to_gemini_format(
         self, messages: List[LLMMessage]
     ) -> Tuple[Optional[str], str]:
-        """
-        Convert messages to Gemini format.
-
-        Gemini's generate_content expects a simple string prompt when using system_instruction.
-
-        Args:
-            messages: List of LLMMessage objects
-
-        Returns:
-            Tuple of (system_instruction, user_prompt)
-        """
+        """Convert messages to Gemini format."""
+        
+        # New SDK supports chat history better, but for single-turn compatible interface:
         system_instruction = None
         user_messages = []
 
         for msg in messages:
             if msg.role == "system":
-                # Gemini uses system_instruction parameter
                 system_instruction = msg.content
             elif msg.role == "user":
                 user_messages.append(msg.content)
             elif msg.role == "assistant":
-                # For now, skip assistant messages in prompt
-                # Multi-turn conversation would need chat session
+                # For basic generation, we might skip or append. 
+                # For true chat, we'd build a history list. 
+                # Keeping it simple for now as per previous implementation:
                 pass
 
-        # Combine user messages into single prompt
         user_prompt = "\n\n".join(user_messages) if user_messages else ""
 
         return system_instruction, user_prompt
@@ -111,63 +95,49 @@ class GeminiLLMProvider(LLMProvider):
         max_tokens: Optional[int] = None,
         **kwargs,
     ) -> LLMResponse:
-        """
-        Generate a completion using Gemini API.
-
-        Args:
-            messages: List of conversation messages
-            temperature: Sampling temperature (overrides default)
-            max_tokens: Maximum tokens to generate (overrides default)
-            **kwargs: Additional Gemini-specific parameters
-
-        Returns:
-            LLMResponse with generated content
-
-        Raises:
-            ValueError: If messages are invalid
-            RateLimitError: If rate limit is hit (will trigger retry)
-            Exception: If API call fails
-        """
+        """Generate completion using Gemini API (New SDK)."""
         if not messages:
             raise ValueError("Messages cannot be empty")
 
-        # Use defaults if not specified
-        temp = temperature if temperature is not None else self.default_temperature
-        max_tok = max_tokens if max_tokens is not None else self.default_max_tokens
+        temp = temperature if temperature is not None else self.temperature
+        max_tok = max_tokens if max_tokens is not None else self.max_tokens
 
-        # Convert messages to Gemini format
         system_instruction, user_prompt = self._messages_to_gemini_format(messages)
 
         try:
-            # Prepare config
-            config = {
-                "temperature": temp,
-                "max_output_tokens": max_tok,
-            }
+            # New SDK usage: client.models.generate_content
+            config = types.GenerateContentConfig(
+                temperature=temp,
+                max_output_tokens=max_tok,
+                system_instruction=system_instruction,
+            )
             
-            # Add system instruction if provided
-            if system_instruction:
-                config["system_instruction"] = system_instruction
-                
-            config.update(kwargs)
-
-            # Run synchronous API call in thread pool
+            # Run in executor
             loop = asyncio.get_event_loop()
             response = await loop.run_in_executor(
                 None,
                 lambda: self.client.models.generate_content(
                     model=self.model,
                     contents=user_prompt,
-                    config=config,
+                    config=config
                 ),
             )
 
-            # Extract response
-            content = response.text if hasattr(response, "text") else ""
-            finish_reason = (
-                response.candidates[0].finish_reason.name
-                if hasattr(response, "candidates") and response.candidates
-                else None
+            # Extract content
+            content = response.text if response.text else ""
+            
+            # Finish reason in new SDK
+            finish_reason = "unknown"
+            if response.candidates and response.candidates[0].finish_reason:
+                finish_reason = response.candidates[0].finish_reason
+
+            logger.info(f"Gemini API call successful (New SDK): len={len(content)}")
+
+            return LLMResponse(
+                content=content,
+                model=self.model,
+                tokens_used=getattr(response.usage_metadata, "total_token_count", None),
+                finish_reason=str(finish_reason),
             )
 
             logger.info(f"Gemini API call successful: finish_reason={finish_reason}")

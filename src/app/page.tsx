@@ -2,6 +2,7 @@
 
 import { Hero, ValueProposition, HowItWorks, SocialProof, Footer } from '@/components/landing'
 import { trackEvent } from '@/lib/analytics'
+import { WatercolorBackground } from '@/components/ui/WatercolorBackground'
 
 export default function Home() {
   const handleCtaClick = () => {
@@ -10,19 +11,19 @@ export default function Home() {
 
   const features = [
     {
-      icon: '🎓',
+      iconPath: '/assets/icons/turtle.png',
       title: 'Certification Navigator',
       description:
         'Understand PADI, SSI, and other certification pathways without judgment. Get clear answers about prerequisites, costs, and what to expect.',
     },
     {
-      icon: '💪',
+      iconPath: '/assets/icons/ray.png',
       title: 'Confidence Building',
       description:
         'Ask questions about fears, physical requirements, or gear without shame. We provide grounded, supportive guidance to help you make informed decisions.',
     },
     {
-      icon: '🗺️',
+      iconPath: '/assets/icons/clownfish.png',
       title: 'Trip Research',
       description:
         'Discover dive destinations and sites that match your skill level. Get insights on seasons, conditions, and what makes each location special.',
@@ -51,7 +52,8 @@ export default function Home() {
   ]
 
   return (
-    <main>
+    <main className="relative min-h-screen">
+      <WatercolorBackground />
       <Hero
         headline="Your AI Diving Companion"
         subheadline="Get judgment-free guidance on certifications, dive sites, and trip planning — no pressure, just support."

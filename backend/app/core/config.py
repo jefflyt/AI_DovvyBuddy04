@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     
     # LLM Provider Configuration
     default_llm_provider: Literal["groq", "gemini"] = "gemini"
-    default_llm_model: str = "gemini-2.0-flash-exp"  # Gemini default per ADR-0005
+    default_llm_model: str = "gemini-2.5-flash-lite"
     llm_temperature: float = 0.7
     llm_max_tokens: int = 2048
     llm_max_retries: int = 3
@@ -62,7 +62,7 @@ class Settings(BaseSettings):
     default_agent: str = "retrieval"
     
     # Conversation Continuity (PR6.1)
-    feature_conversation_followup_enabled: bool = False  # Default OFF for gradual rollout
+    feature_conversation_followup_enabled: bool = True  # Enabled to show contextual follow-up questions
     
     # Prompt Configuration
     system_prompt_version: str = "v1"

@@ -45,14 +45,15 @@ def create_llm_provider(
     if provider == "groq":
         # Groq is deprecated - fallback to Gemini
         logger.warning(f"Groq provider no longer supported - using Gemini instead")
-        return create_llm_provider(provider_name="gemini", api_key=api_key, model=model, temperature=temperature, max_tokens=max_tokens)
+        return create_llm_provider(provider_name=settings.default_llm_provider, api_key=api_key, model=model, temperature=temperature, max_tokens=max_tokens)
 
     elif provider == "gemini":
         key = api_key or settings.gemini_api_key
         if not key:
             raise ValueError("Gemini API key is required (GEMINI_API_KEY env var)")
 
-        model_name = model or "gemini-2.0-flash"  # Gemini default model per copilot-instructions
+        # Use default from config as single source of truth
+        model_name = model or settings.default_llm_model
         logger.info(f"Creating Gemini LLM provider with model={model_name}")
         return GeminiLLMProvider(
             api_key=key,

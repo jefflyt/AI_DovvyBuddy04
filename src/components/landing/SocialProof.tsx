@@ -8,13 +8,13 @@ export default function SocialProof({
   subtitle = 'Trusted guidance for recreational diving enthusiasts worldwide',
 }: SocialProofProps) {
   return (
-    <section className="py-16 bg-white border-t border-b border-neutral-200">
-      <div className="container mx-auto px-4">
+    <section className="py-16 relative border-t border-primary-200/30">
+      <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 mb-3">
+          <h2 className="text-2xl md:text-3xl font-bold text-primary-900 mb-3">
             {title}
           </h2>
-          <p className="text-lg text-neutral-600">
+          <p className="text-lg text-primary-700/80">
             {subtitle}
           </p>
         </div>

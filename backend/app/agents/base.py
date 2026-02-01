@@ -97,6 +97,25 @@ class Agent(ABC):
             "capabilities": [c.value for c in self.capabilities],
         }
 
+    def get_tool_definition(self) -> dict:
+        """
+        Get the tool definition for Gemini Function Calling.
+        
+        Using Google Generative AI SDK format.
+        Subclasses should override this to provide specific parameter schemas.
+        """
+        return {
+            "name": self.agent_type.value,
+            "description": self.description,
+            "parameters": {
+                "type": "object", 
+                "properties": {
+                    "query": {"type": "string", "description": "User query"}
+                },
+                "required": ["query"]
+            }
+        }
+
     def _log_execution(self, context: AgentContext, result: AgentResult):
         """
         Log agent execution for debugging.

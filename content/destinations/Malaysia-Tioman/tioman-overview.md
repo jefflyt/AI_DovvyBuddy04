@@ -64,7 +64,7 @@ Tioman's diving is highly seasonal due to the Northeast Monsoon, which affects t
 
 ## Dive Sites Overview
 
-Tioman offers a diverse range of dive sites, from shallow coral gardens ideal for beginners to deeper pinnacles and drift dives for advanced divers.
+Tioman offers a diverse range of dive sites, from shallow coral gardens ideal for beginners to advanced pinnacle and drift dive sites.
 
 ### Popular Dive Sites
 

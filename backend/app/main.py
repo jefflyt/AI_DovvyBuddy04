@@ -1,17 +1,24 @@
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from app.api.routes import chat
 from app.api.routes import lead as lead_routes
 from app.api.routes import session as session_routes
 from app.core.config import settings
+from app.core.rate_limit import limiter
 from app.db.session import init_db
 
 
 def create_app() -> FastAPI:
     app = FastAPI(title="DovvyBuddy Backend", version="0.1.0")
+    
+    # Add rate limiter to app state
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
     # CORS configuration for frontend integration
     # Parse CORS_ORIGINS from environment (comma-separated)

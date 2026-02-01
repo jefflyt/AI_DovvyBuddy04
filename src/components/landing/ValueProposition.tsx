@@ -1,5 +1,8 @@
+import Image from 'next/image';
+
 interface Feature {
-  icon: string
+  icon?: string
+  iconPath?: string // New prop for image assets
   title: string
   description: string
 }
@@ -10,14 +13,14 @@ interface ValuePropositionProps {
 
 export default function ValueProposition({ features }: ValuePropositionProps) {
   return (
-    <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
+    <section className="py-20 relative">
+      <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-neutral-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-primary-900 mb-4">
               Your Diving Journey, Simplified
             </h2>
-            <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Whether you&apos;re exploring certifications or planning your next dive trip,
               DovvyBuddy provides grounded, judgment-free guidance.
             </p>
@@ -27,15 +30,28 @@ export default function ValueProposition({ features }: ValuePropositionProps) {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="bg-neutral-50 rounded-lg p-8 hover:shadow-medium transition-shadow duration-200"
+                className="bg-white/60 backdrop-blur-md rounded-2xl p-8 shadow-sm border border-white/50 hover:shadow-md transition-all duration-300 group"
               >
-                <div className="text-5xl mb-4" role="img" aria-label={feature.title}>
-                  {feature.icon}
+                <div className="h-40 mb-6 flex items-center justify-center relative">
+                  {feature.iconPath ? (
+                    <div className="relative w-full h-full">
+                      <Image
+                        src={feature.iconPath}
+                        alt={feature.title}
+                        fill
+                        className="object-contain drop-shadow-sm group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-5xl" role="img" aria-label={feature.title}>
+                      {feature.icon}
+                    </div>
+                  )}
                 </div>
-                <h3 className="text-xl font-semibold text-neutral-900 mb-3">
+                <h3 className="text-xl font-semibold text-primary-900 mb-3 text-center">
                   {feature.title}
                 </h3>
-                <p className="text-neutral-700 leading-relaxed">
+                <p className="text-muted-foreground leading-relaxed text-center">
                   {feature.description}
                 </p>
               </div>

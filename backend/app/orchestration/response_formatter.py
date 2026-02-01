@@ -93,7 +93,7 @@ class ResponseFormatter:
         return f"{message}\n\n─────\n💬 {follow_up_question}"
 
     @staticmethod
-    def format_response(
+    async def format_response(
         message: str,
         mode: ConversationMode,
         follow_up_question: str = None,
@@ -129,7 +129,7 @@ class ResponseFormatter:
             if ResponseFormatter._medical_detector is None:
                 ResponseFormatter._medical_detector = MedicalQueryDetector()
             
-            is_medical_query = ResponseFormatter._medical_detector.is_medical_query(user_message)
+            is_medical_query = await ResponseFormatter._medical_detector.is_medical_query(user_message)
         
         # Add disclaimer for genuinely medical queries (must be medical AND safety context)
         # This prevents non-medical dive site/destination queries from showing medical disclaimers

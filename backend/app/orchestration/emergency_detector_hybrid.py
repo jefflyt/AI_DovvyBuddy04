@@ -167,8 +167,7 @@ Respond with ONLY a JSON object:
             # Lazy initialization of LLM
             if self._llm is None:
                 self._llm = create_llm_provider(
-                    provider_name="gemini",
-                    model="gemini-2.0-flash-exp",
+                    provider_name=settings.default_llm_provider,
                     temperature=0.0,  # Deterministic
                     max_tokens=10,  # Just need {"is_emergency": true/false}
                 )

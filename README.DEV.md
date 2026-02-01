@@ -11,7 +11,7 @@
 ### Prerequisites
 
 - **Node.js 20+** — Frontend runtime
-- **Python 3.9+** — Backend runtime
+- **Python 3.11+** — Backend runtime (recommended: Python 3.11.14)
 - **pnpm** — Package manager (`npm install -g pnpm`)
 - **PostgreSQL with pgvector** — Database (or Neon account)
 - **Gemini API Key** — LLM provider
@@ -26,8 +26,8 @@ cd AI_DovvyBuddy04
 # Install frontend dependencies
 pnpm install
 
-# Set up Python backend
-python3 -m venv .venv
+# Set up Python backend (use Python 3.11+)
+python3.11 -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -e backend/
 
@@ -118,10 +118,10 @@ AI_DovvyBuddy04/
 
 ### Backend
 - **Framework:** Python FastAPI (async)
-- **Language:** Python 3.9+
+- **Language:** Python 3.11+ (recommended: 3.11.14)
 - **Database:** PostgreSQL + pgvector extension
 - **ORM:** SQLAlchemy 2.0 (async) + Alembic migrations
-- **LLM:** Gemini (`gemini-2.0-flash-exp`)
+- **LLM:** Google Gemini (`gemini-2.5-flash-lite`)
 - **Embeddings:** Google `text-embedding-004` (768-dim)
 - **Testing:** pytest
 

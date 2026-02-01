@@ -9,43 +9,76 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Ocean-inspired brand colors
+        border: "hsl(var(--border) / <alpha-value>)",
+        input: "hsl(var(--input) / <alpha-value>)",
+        ring: "hsl(var(--ring) / <alpha-value>)",
+        background: "hsl(var(--background) / <alpha-value>)",
+        foreground: "hsl(var(--foreground) / <alpha-value>)",
         primary: {
-          50: '#e6f4ff',
-          100: '#b3deff',
-          200: '#80c9ff',
-          300: '#4db3ff',
-          400: '#1a9dff',
-          500: '#0077BE', // Primary ocean blue
-          600: '#005f9a',
-          700: '#004876',
-          800: '#003052',
-          900: '#00182e',
+          DEFAULT: "hsl(var(--primary) / <alpha-value>)",
+          foreground: "hsl(var(--primary-foreground) / <alpha-value>)",
+          50: '#F0F9FF', // Bubbles
+          100: '#E0F2FE',
+          200: '#BAE6FD',
+          300: '#7DD3FC',
+          400: '#38BDF8',
+          500: '#0EA5E9', // Ocean Blue
+          600: '#0284C7',
+          700: '#0369A1',
+          800: '#075985',
+          900: '#0C4A6E',
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary) / <alpha-value>)",
+          foreground: "hsl(var(--secondary-foreground) / <alpha-value>)",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive) / <alpha-value>)",
+          foreground: "hsl(var(--destructive-foreground) / <alpha-value>)",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted) / <alpha-value>)",
+          foreground: "hsl(var(--muted-foreground) / <alpha-value>)",
         },
         accent: {
-          50: '#e6f9f5',
-          100: '#b3ede0',
-          200: '#80e1cb',
-          300: '#4dd5b6',
-          400: '#1ac9a1',
-          500: '#00B894', // Tropical teal
-          600: '#009376',
-          700: '#006e58',
-          800: '#00493a',
-          900: '#00241c',
+          DEFAULT: "hsl(var(--accent) / <alpha-value>)",
+          foreground: "hsl(var(--accent-foreground) / <alpha-value>)",
+          50: '#F5FAFA', // Seafoam
+          100: '#EAF6F5',
+          200: '#CBEBE8',
+          300: '#A3DCD7',
+          400: '#7AC9C2',
+          500: '#56B3A9', // Teal
+          600: '#40968D',
+          700: '#30766F',
+          800: '#235853',
+          900: '#193E3A',
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover) / <alpha-value>)",
+          foreground: "hsl(var(--popover-foreground) / <alpha-value>)",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card) / <alpha-value>)",
+          foreground: "hsl(var(--card-foreground) / <alpha-value>)",
         },
         neutral: {
-          50: '#f8f9fa',
-          100: '#f5f5f5',
-          200: '#e5e5e5',
-          300: '#d4d4d4',
-          400: '#a3a3a3',
+          50: '#FAFAFA', // Sand
+          100: '#F5F5F5',
+          200: '#E5E5E5',
+          300: '#D4D4D4',
+          400: '#A3A3A3',
           500: '#737373',
           600: '#525252',
           700: '#404040',
           800: '#262626',
           900: '#171717',
         },
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
         sans: [

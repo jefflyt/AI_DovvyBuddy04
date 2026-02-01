@@ -8,14 +8,13 @@ This backend is located at **`/backend/`** at the project root (previously at `s
 
 ## Quick Start
 
-Requires Python 3.9+:
+Requires Python 3.11+ (recommended: Python 3.11.14):
 
 ```bash
 cd backend
-python -m venv .venv
+python3.11 -m venv .venv
 source .venv/bin/activate
-pip install "poetry>=1.5"
-poetry install
+pip install -e .
 cp .env.example .env
 # Edit DATABASE_URL and GEMINI_API_KEY in .env
 uvicorn app.main:app --reload --port 8000

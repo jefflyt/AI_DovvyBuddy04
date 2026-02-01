@@ -8,7 +8,8 @@ import asyncio
 import logging
 from typing import List, Optional
 
-from google import genai
+import google.genai as genai
+from google.genai import types
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -58,13 +59,13 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
         self.model = model
         self.dimension = GEMINI_EMBEDDING_DIMENSION
 
-        # Create Gemini client
+        # Configure Gemini API (New SDK pattern)
         self.client = genai.Client(api_key=api_key)
 
         # Initialize cache
         self.cache = EmbeddingCache() if use_cache else None
 
-        logger.info(f"Initialized GeminiEmbeddingProvider with model={model}")
+        logger.info(f"Initialized GeminiEmbeddingProvider with model={model} (New SDK)")
 
     @retry(
         stop=stop_after_attempt(settings.embedding_max_retries),
@@ -94,22 +95,47 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
             # Run synchronous Gemini API call in thread pool
             loop = asyncio.get_event_loop()
             result = await loop.run_in_executor(
-                None, lambda: self.client.models.embed_content(model=self.model, contents=text)
+                None,
+                lambda: self.client.models.embed_content(
+                    model=self.model,
+                    contents=text,
+                    config=types.EmbedContentConfig(
+                        output_dimensionality=self.dimension
+                    )
+                ),
             )
 
             # Extract embedding from response
+            # New SDK returns object with .embeddings attribute depending on request
+            # For single content, it typically has .embedding
             if hasattr(result, "embeddings") and result.embeddings:
-                embedding = result.embeddings[0].values
-            elif isinstance(result, dict) and "embedding" in result:
-                embedding = result["embedding"]
+                 # Batch usually, but let's check single
+                 embedding = result.embeddings[0].values
+            elif hasattr(result, "embedding") and result.embedding:
+                 # Single embedding object associated
+                 embedding = result.embedding.values
             else:
-                raise ValueError("Invalid embedding response from Gemini API")
+                 # Try to inspect structure if different
+                 # Based on docs: result.embeddings is list of ContentEmbedding
+                 # ContentEmbedding has .values
+                 logger.debug(f"Unexpected result structure: {result}")
+                 if hasattr(result, "values"):
+                     embedding = result.values
+                 else:
+                     raise ValueError("Invalid embedding response from Gemini API")
 
             # Validate dimension
             if len(embedding) != self.dimension:
-                raise ValueError(
-                    f"Expected embedding dimension {self.dimension}, got {len(embedding)}"
-                )
+                # If using text-embedding-004, it supports variable dimension.
+                # But we requested self.dimension via config if feasible, or just check what we got.
+                pass 
+                # Note: text-embedding-004 might not strictly obey output_dimensionality if not supported by model version, 
+                # but latest does. Let's keep check but warn? 
+                # Actually strict check is good for database consistency.
+                if len(embedding) != self.dimension:
+                     raise ValueError(
+                        f"Expected embedding dimension {self.dimension}, got {len(embedding)}"
+                    )
 
             return embedding
 

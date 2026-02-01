@@ -5,9 +5,12 @@ Chat endpoint for conversation handling.
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.rate_limit import limiter
+from app.core.security import validate_message_safety
 
 from app.db.session import get_session as get_db_session
 from app.orchestration import ChatOrchestrator
@@ -50,7 +53,9 @@ async def get_db():
 
 
 @router.post("/chat", response_model=ChatResponsePayload)
+@limiter.limit("20/minute")
 async def chat_endpoint(
+    request: Request,
     payload: ChatRequestPayload,
     db: AsyncSession = Depends(get_db)
 ):
@@ -70,12 +75,19 @@ async def chat_endpoint(
     try:
         logger.info(f"🚀 CHAT ENDPOINT CALLED: message='{payload.message[:100]}...', session_id={payload.session_id}")
         
+        # Security validation: sanitize and detect injection attempts
+        clean_message, security_error = validate_message_safety(payload.message)
+        
+        if security_error:
+            logger.warning(f"Security validation failed for message: {payload.message[:100]}")
+            raise HTTPException(status_code=400, detail=security_error)
+        
         # Create orchestrator
         orchestrator = ChatOrchestrator(db)
 
-        # Build request
-        request = ChatRequest(
-            message=payload.message,
+        # Build request with sanitized message
+        chat_request = ChatRequest(
+            message=clean_message,
             session_id=payload.session_id,
             diver_profile=payload.diver_profile,
             session_state=payload.session_state,  # PR6.2
@@ -83,7 +95,7 @@ async def chat_endpoint(
 
         # Handle chat
         logger.info("📞 Calling orchestrator.handle_chat()")
-        response = await orchestrator.handle_chat(request)
+        response = await orchestrator.handle_chat(chat_request)
         logger.info(f"✅ Orchestrator returned response: {len(response.message)} chars")
 
         # Return response

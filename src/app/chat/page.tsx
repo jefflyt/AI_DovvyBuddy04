@@ -5,6 +5,12 @@ import { apiClient, type ChatResponse, ApiClientError } from '@/lib/api-client';
 import { LeadCaptureModal, type LeadFormData } from '@/components/chat/LeadCaptureModal';
 import { useSessionState } from '@/lib/hooks/useSessionState'; // PR6.1
 import { FeatureFlag, isFeatureEnabled } from '@/lib/feature-flags'; // Centralized feature flags
+import { WatercolorBackground } from '@/components/ui/WatercolorBackground';
+import { ChatMessage } from '@/components/chat/ChatMessage';
+import { Send, Plus, MapPin, GraduationCap } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+import Image from 'next/image';
 
 interface Message {
   id: string;
@@ -145,22 +151,22 @@ export default function ChatPage() {
     try {
       // Call API
       console.log('Calling API with message:', userMessage.content);
-      
+
       // PR6.1: Include session state if feature enabled
       const requestPayload: {
         sessionId?: string;
         message: string;
-        sessionState?: Record<string, any>;
+        sessionState?: Record<string, unknown>;
       } = {
         sessionId: sessionId || undefined,
         message: userMessage.content,
       };
-      
+
       if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)) {
-        requestPayload.sessionState = sessionState;
+        requestPayload.sessionState = sessionState as Record<string, unknown>;
         console.log('Session state sent:', sessionState);
       }
-      
+
       const response: ChatResponse = await apiClient.chat(requestPayload);
       console.log('API Response:', response);
 
@@ -168,18 +174,25 @@ export default function ChatPage() {
       if (!sessionId && response.sessionId) {
         setSessionId(response.sessionId);
       }
-      
+
       // PR6.1: Apply state updates from backend if feature enabled
       if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) && response.metadata?.stateUpdates) {
         console.log('State updates received:', response.metadata.stateUpdates);
         updateSessionState(response.metadata.stateUpdates);
       }
 
+      // PR6.1: Include follow-up question in message if present
+      let messageContent = response.message;
+      if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) && response.followUpQuestion) {
+        console.log('Follow-up question received:', response.followUpQuestion);
+        messageContent = `${response.message}\n\n─────\n💬 ${response.followUpQuestion}`;
+      }
+
       // Add assistant message
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: response.message,
+        content: messageContent,
         timestamp: new Date(),
       };
       console.log('Adding assistant message:', assistantMessage);
@@ -257,8 +270,8 @@ export default function ChatPage() {
 
     try {
       // Format payload based on lead type
-      let payload: any;
-      
+      let payload: Record<string, unknown> = {};
+
       if (leadType === 'training') {
         payload = {
           type: 'training',
@@ -271,7 +284,7 @@ export default function ChatPage() {
             message: data.message || undefined,
           },
         };
-        
+
         // Only include session_id if it's a valid UUID
         if (sessionId && UUID_REGEX.test(sessionId)) {
           payload.session_id = sessionId;
@@ -288,7 +301,7 @@ export default function ChatPage() {
             message: data.message || undefined,
           },
         };
-        
+
         // Only include session_id if it's a valid UUID
         if (sessionId && UUID_REGEX.test(sessionId)) {
           payload.session_id = sessionId;
@@ -347,302 +360,145 @@ export default function ChatPage() {
   };
 
   return (
-    <main style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <style jsx>{`
-        @media (max-width: 768px) {
-          .new-chat-text {
-            display: none;
-          }
-        }
-      `}</style>
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: 'calc(100vh - 4rem)',
-          border: '1px solid #e5e5e5',
-          borderRadius: '8px',
-          overflow: 'hidden',
-        }}
-      >
+    <main className="relative min-h-screen flex flex-col items-center">
+      <WatercolorBackground />
+
+      <div className="w-full max-w-4xl flex-1 flex flex-col h-[calc(100vh-2rem)] my-4 mx-4 md:mx-auto glass-panel rounded-2xl overflow-hidden relative z-10">
+
         {/* Header */}
-        <div
-          style={{
-            padding: '1rem 1.5rem',
-            borderBottom: '1px solid #e5e5e5',
-            backgroundColor: '#f9f9f9',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '1rem',
-          }}
-        >
+        <div className="px-6 py-4 border-b border-border/50 bg-white/50 backdrop-blur-sm flex justify-between items-center z-20">
           <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: '600' }}>
-              DovvyBuddy Chat
+            <h1 className="text-xl font-bold text-primary-800 tracking-tight">
+              DovvyBuddy<span className="text-accent-500">.</span>
             </h1>
-            <p
-              style={{
-                fontSize: '0.875rem',
-                color: '#666',
-                marginTop: '0.25rem',
-              }}
-            >
-              Ask me anything about diving certifications and destinations
-              {sessionId && (
-                <span style={{ marginLeft: '0.5rem', color: '#999' }}>
-                  (Session: {sessionId.slice(0, 8)}...)
-                </span>
-              )}
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Your Minimalist Diving Companion
             </p>
           </div>
-          
-          {/* Action buttons */}
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            {/* New Chat button */}
+
+          <div className="flex gap-2">
             <button
               onClick={handleNewChat}
-              aria-label="Start a new chat"
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: '#6b7280',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-              }}
-              title="Start a new chat"
+              className="p-2 text-muted-foreground hover:text-primary transition-colors rounded-full hover:bg-primary/5"
+              title="New Chat"
             >
-              <span style={{ fontSize: '1rem' }}>➕</span>
-              <span className="new-chat-text">New Chat</span>
-            </button>
-            
-            {/* Lead capture buttons */}
-            <button
-              onClick={() => handleOpenLeadForm('training')}
-              disabled={!sessionId}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: !sessionId ? '#e5e5e5' : '#10b981',
-                color: !sessionId ? '#999' : 'white',
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                cursor: !sessionId ? 'not-allowed' : 'pointer',
-                whiteSpace: 'nowrap',
-              }}
-              title={!sessionId ? 'Start a conversation first' : 'Request training information'}
-            >
-              🎓 Get Certified
-            </button>
-            <button
-              onClick={() => handleOpenLeadForm('trip')}
-              disabled={!sessionId}
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: !sessionId ? '#e5e5e5' : '#0070f3',
-                color: !sessionId ? '#999' : 'white',
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '0.875rem',
-                fontWeight: '500',
-                cursor: !sessionId ? 'not-allowed' : 'pointer',
-                whiteSpace: 'nowrap',
-              }}
-              title={!sessionId ? 'Start a conversation first' : 'Plan a diving trip'}
-            >
-              ✈️ Plan a Trip
+              <Plus size={20} />
             </button>
           </div>
         </div>
 
-        {/* Messages area */}
-        <div
-          style={{
-            flex: 1,
-            padding: '1.5rem',
-            overflowY: 'auto',
-            backgroundColor: '#ffffff',
-          }}
-        >
+        {/* Floating Action Buttons Implementation (optional/alternative to header buttons) */}
+        <div className="absolute top-4 right-16 flex gap-2 z-20 hidden md:flex">
+          <button
+            onClick={() => handleOpenLeadForm('training')}
+            disabled={!sessionId}
+            className={cn(
+              "px-3 py-1.5 text-xs font-medium rounded-full border transition-all flex items-center gap-1.5",
+              !sessionId
+                ? "border-border text-muted-foreground cursor-not-allowed opacity-50"
+                : "border-accent-200 bg-accent-50 text-accent-700 hover:bg-accent-100 hover:border-accent-300"
+            )}
+          >
+            <GraduationCap size={14} />
+            Get Certified
+          </button>
+          <button
+            onClick={() => handleOpenLeadForm('trip')}
+            disabled={!sessionId}
+            className={cn(
+              "px-3 py-1.5 text-xs font-medium rounded-full border transition-all flex items-center gap-1.5",
+              !sessionId
+                ? "border-border text-muted-foreground cursor-not-allowed opacity-50"
+                : "border-primary-200 bg-primary-50 text-primary-700 hover:bg-primary-100 hover:border-primary-300"
+            )}
+          >
+            <MapPin size={14} />
+            Plan Trip
+          </button>
+        </div>
+
+        {/* Messages Area */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 scroll-smooth">
           {messages.length === 0 && (
-            <div
-              style={{
-                padding: '1rem',
-                backgroundColor: '#f0f7ff',
-                borderRadius: '8px',
-                border: '1px solid #b3d9ff',
-              }}
-            >
-              <div style={{ fontSize: '0.875rem', color: '#0066cc' }}>
-                <p>
-                  👋 <strong>Welcome!</strong> I&apos;m your AI diving assistant.
-                </p>
-                <p>Ask me about:</p>
-                <ul style={{ marginTop: '0.5rem', paddingLeft: '1.5rem' }}>
-                  <li>🎓 PADI and SSI certifications</li>
-                  <li>🏖️ Dive destinations and sites</li>
-                  <li>🛡️ Training and safety</li>
-                  <li>⚙️ Equipment and preparation</li>
-                </ul>
+            <div className="flex flex-col items-center justify-center h-full text-center p-8 opacity-60">
+              <div className="w-24 h-24 mb-6 opacity-80 mix-blend-multiply relative">
+                <Image
+                  src="/assets/icons/dive-mask.png"
+                  alt="DovvyBuddy"
+                  fill
+                  className="object-contain"
+                  priority
+                />
               </div>
+              <h2 className="text-lg font-medium text-primary-900 mb-2">How can I help you dive today?</h2>
+              <p className="text-sm text-muted-foreground max-w-md">
+                Ask about PADI/SSI courses, dive sites, or safety tips.
+              </p>
             </div>
           )}
 
           {messages.map((message) => (
-            <div
+            <ChatMessage
               key={message.id}
-              style={{
-                marginBottom: '1rem',
-                display: 'flex',
-                justifyContent: 
-                  message.role === 'user' 
-                    ? 'flex-end' 
-                    : message.role === 'system'
-                    ? 'center'
-                    : 'flex-start',
-              }}
-            >
-              <div
-                data-testid={message.role === 'assistant' ? 'ai-message' : message.role === 'user' ? 'user-message' : 'system-message'}
-                style={{
-                  maxWidth: message.role === 'system' ? '90%' : '80%',
-                  padding: '0.75rem 1rem',
-                  borderRadius: '8px',
-                  backgroundColor: 
-                    message.role === 'user' 
-                      ? '#0070f3' 
-                      : message.role === 'system'
-                      ? '#f0f7ff'
-                      : '#f5f5f5',
-                  color: 
-                    message.role === 'user' 
-                      ? 'white' 
-                      : message.role === 'system'
-                      ? '#0066cc'
-                      : '#333',
-                  border: message.role === 'system' ? '1px solid #b3d9ff' : 'none',
-                }}
-              >
-                <div style={{ fontSize: '0.875rem', whiteSpace: 'pre-wrap' }}>
-                  {message.content}
-                </div>
-                {message.role !== 'system' && (
-                  <div
-                    style={{
-                      fontSize: '0.75rem',
-                      marginTop: '0.25rem',
-                      opacity: 0.7,
-                    }}
-                  >
-                    {message.timestamp.toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
+              role={message.role}
+              content={message.content}
+              timestamp={message.timestamp}
+            />
           ))}
 
           {isLoading && (
-            <div
-              style={{
-                marginBottom: '1rem',
-                display: 'flex',
-                justifyContent: 'flex-start',
-              }}
-            >
-              <div
-                style={{
-                  padding: '0.75rem 1rem',
-                  borderRadius: '8px',
-                  backgroundColor: '#f5f5f5',
-                  color: '#666',
-                  fontSize: '0.875rem',
-                }}
-              >
+            <div className="flex justify-start mb-6">
+              <div className="bg-white/50 backdrop-blur-sm px-4 py-3 rounded-2xl rounded-tl-sm border border-border/50 text-sm text-muted-foreground animate-pulse">
                 Thinking...
               </div>
             </div>
           )}
 
           {error && (
-            <div
-              style={{
-                marginBottom: '1rem',
-                padding: '1rem',
-                backgroundColor: '#fff0f0',
-                border: '1px solid #ffcccc',
-                borderRadius: '8px',
-              }}
-            >
-              <p style={{ fontSize: '0.875rem', color: '#cc0000' }}>
-                <strong>Error:</strong> {error}
-              </p>
+            <div className="mx-auto max-w-md my-4 p-3 bg-red-50 text-red-600 text-xs rounded-lg border border-red-100 text-center">
+              {error}
             </div>
           )}
 
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input area */}
-        <form
-          onSubmit={handleSubmit}
-          style={{
-            padding: '1rem 1.5rem',
-            borderTop: '1px solid #e5e5e5',
-            backgroundColor: '#f9f9f9',
-          }}
-        >
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+        {/* Input Area */}
+        <div className="p-4 bg-white/60 backdrop-blur-md border-t border-white/50">
+          <form
+            onSubmit={handleSubmit}
+            className="flex gap-2 max-w-3xl mx-auto relative"
+          >
             <input
-              data-testid="chat-input"
               type="text"
-              placeholder="Type your message..."
+              placeholder="Ask anything about diving..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               disabled={isLoading}
-              style={{
-                flex: 1,
-                padding: '0.75rem',
-                border: '1px solid #e5e5e5',
-                borderRadius: '6px',
-                backgroundColor: isLoading ? '#f5f5f5' : 'white',
-                fontSize: '1rem',
-              }}
+              className="flex-1 bg-white/80 border-0 ring-1 ring-border/50 focus:ring-2 focus:ring-primary/20 rounded-xl px-4 py-3 text-sm shadow-sm placeholder:text-muted-foreground/70 transition-all outline-none"
             />
             <button
-              data-testid="send-button"
               type="submit"
               disabled={!input.trim() || isLoading}
-              style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: !input.trim() || isLoading ? '#cccccc' : '#0070f3',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                fontSize: '1rem',
-                fontWeight: '500',
-                cursor: !input.trim() || isLoading ? 'not-allowed' : 'pointer',
-              }}
+              className={cn(
+                "p-3 rounded-xl transition-all shadow-sm flex items-center justify-center",
+                !input.trim() || isLoading
+                  ? "bg-muted text-muted-foreground cursor-not-allowed"
+                  : "bg-primary text-white hover:bg-primary-600 hover:shadow-md active:scale-95"
+              )}
             >
-              Send
+              <Send size={18} />
             </button>
+          </form>
+          <div className="text-center mt-2">
+            <p className="text-[10px] text-muted-foreground/60">
+              AI can make mistakes. Always verify with a certified instructor.
+            </p>
           </div>
-        </form>
+        </div>
       </div>
 
-      {/* Lead capture modal */}
       <LeadCaptureModal
         isOpen={showLeadForm}
         onClose={handleCloseLeadForm}

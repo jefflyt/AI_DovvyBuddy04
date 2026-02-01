@@ -13,12 +13,15 @@ from app.core.feature_flags import FeatureFlag, is_feature_enabled
 
 from .agent_router import AgentRouter
 from .context_builder import ContextBuilder
-from .conversation_manager import ConversationManager, IntentType, SessionState
+from .agent_router import AgentRouter
+from .context_builder import ContextBuilder
+# ConversationManager replaced by GeminiOrchestrator
+from .gemini_orchestrator import GeminiOrchestrator
 from .emergency_detector_hybrid import EmergencyDetector
 from .mode_detector import ConversationMode
 from .response_formatter import ResponseFormatter
 from .session_manager import SessionManager
-from .types import ChatRequest, ChatResponse, SessionData
+from .types import ChatRequest, ChatResponse, SessionData, IntentType, SessionState
 
 logger = logging.getLogger(__name__)
 
@@ -51,11 +54,12 @@ class ChatOrchestrator:
         # Pis_feature_enabled(FeatureFlag.CONVERSATION_FOLLOWUP)
         if settings.feature_conversation_followup_enabled:
             self.emergency_detector = EmergencyDetector()
-            self.conversation_manager = ConversationManager()
-            logger.info("Conversation continuity enabled")
+            # Initialize Gemini Orchestrator for routing
+            self.orchestrator = GeminiOrchestrator()
+            logger.info("Conversation continuity enabled with GeminiOrchestrator")
         else:
             self.emergency_detector = None
-            self.conversation_manager = None
+            self.orchestrator = None
             logger.info("Conversation continuity disabled")
 
     @staticmethod
@@ -151,45 +155,51 @@ class ChatOrchestrator:
                     follow_up_question=None,  # No follow-up for emergencies
                 )
         
-        # PR6.1: Run conversation manager for intent + state + follow-up
+        
+        # PR6.1: Run orchestrator for intent + state BEFORE agent execution
         mode = ConversationMode.GENERAL  # Default mode
-        if is_feature_enabled(FeatureFlag.CONVERSATION_FOLLOWUP) and self.conversation_manager:
+        detected_intent = None
+        session_state = None
+        
+        if is_feature_enabled(FeatureFlag.CONVERSATION_FOLLOWUP) and self.orchestrator:
             try:
                 # Parse session state from request
-                session_state = None
                 if request.session_state:
                     session_state = SessionState.from_dict(request.session_state)
                 
-                # Analyze conversation
-                analysis = await self.conversation_manager.analyze(
+                # Route request using Gemini Function Calling
+                route_result = await self.orchestrator.route_request(
                     message=request.message,
                     history=session.conversation_history,
                     state=session_state,
                 )
                 
-                detected_intent = analysis.intent.value
-                state_updates = analysis.state_updates
-                follow_up_question = analysis.follow_up
+                target_agent = route_result.get("target_agent")
+                parameters = route_result.get("parameters", {})
                 
-                logger.info(
-                    f"Conversation analysis: intent={detected_intent}, "
-                    f"confidence={analysis.confidence:.2f}, "
-                    f"follow_up={'yes' if follow_up_question else 'no'}, "
-                    f"state_updates={list(state_updates.keys())}"
-                )
+                logger.info(f"Gemini routed to: {target_agent} with params: {parameters}")
                 
-                # Map intent to conversation mode for agent routing
-                mode = self._intent_to_mode(analysis.intent)
-                logger.info(f"Mapped intent '{detected_intent}' to mode: {mode.value}")
+                # Map Gemini Agent -> Conversation Mode
+                if target_agent == "trip_planner":
+                    mode = ConversationMode.TRIP
+                    detected_intent = IntentType.DIVE_PLANNING.value
+                    
+                    # Extract location state if present
+                    if "location" in parameters and parameters["location"]:
+                        state_updates["location_known"] = True
+                        
+                else: 
+                    # Default / knowledge_base
+                    mode = ConversationMode.GENERAL
+                    detected_intent = IntentType.INFO_LOOKUP.value
                 
             except Exception:
-                logger.error("Conversation manager failed", exc_info=True)
+                logger.error("Orchestrator routing failed", exc_info=True)
                 # Fallback to GENERAL mode on error
                 mode = ConversationMode.GENERAL
         else:
-            # Conversation manager disabled - use keyword-based detection as fallback
-            # TODO: Consider making ConversationManager non-optional in future
-            logger.info("ConversationManager disabled, using mode fallback logic")
+            # Orchestrator disabled - use keyword-based detection as fallback
+            logger.info("Orchestrator disabled, using mode fallback logic")
             # Simple keyword-based fallback
             msg_lower = request.message.lower()
             if any(word in msg_lower for word in ["cert", "certification", "padi", "ssi", "course"]):
@@ -224,6 +234,13 @@ class ChatOrchestrator:
 
         # PR6.2: Sanitize response to remove any leaked RAG mentions
         sanitized_response = self.response_formatter.sanitize_response(result.response)
+        
+        # PR6.1: Follow-up generation (Simplified for now - can be re-added to GeminiOrchestrator later)
+        # For now, we rely on the Agent's response or simple rules.
+        follow_up_question = None
+        # We could implement a simple follow-up generator here if needed, 
+        # but for clean architecture we rely on the specific agents or a dedicated call.
+        pass
         
         # PR6.2: Extract citations from context (if RAG was used)
         citations = []
@@ -261,7 +278,7 @@ class ChatOrchestrator:
             )
 
         # Format response with disclaimer and follow-up
-        response_message = self.response_formatter.format_response(
+        response_message = await self.response_formatter.format_response(
             message=sanitized_response,
             mode=mode,
             follow_up_question=follow_up_question,

@@ -45,16 +45,15 @@ No explanations, no extra text."""
 
     def __init__(self):
         """Initialize with fast, lightweight LLM."""
-        # Use fastest model for quick classification
+        # Use fastest model for quick classification (from settings)
         self.llm = create_llm_provider(
-            provider_name="gemini",
-            model="gemini-2.0-flash-exp",
+            provider_name=settings.default_llm_provider,
             temperature=0.0,  # Deterministic
             max_tokens=10,  # Just need {"is_medical": true/false}
         )
         logger.info("MedicalQueryDetector initialized")
 
-    def is_medical_query(self, user_message: str) -> bool:
+    async def is_medical_query(self, user_message: str) -> bool:
         """
         Classify if user query is medical/health-related.
 
@@ -73,7 +72,7 @@ No explanations, no extra text."""
                 LLMMessage(role="user", content=f"Classify this query:\n\n{user_message}")
             ]
 
-            response = self.llm.generate(messages)
+            response = await self.llm.generate(messages)
             response_text = response.content.strip()
 
             # Parse JSON response

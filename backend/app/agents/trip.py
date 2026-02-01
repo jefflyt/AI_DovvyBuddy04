@@ -33,6 +33,27 @@ class TripAgent(Agent):
         )
         self.llm_provider = llm_provider or create_llm_provider()
 
+    def get_tool_definition(self) -> dict:
+        """Define trip planning tool for Gemini."""
+        return {
+            "name": "trip_planner",
+            "description": "Plan a diving trip, recommend destinations, or find dive sites.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string", 
+                        "description": "The user's trip-related request"
+                    },
+                    "location": {
+                        "type": "string",
+                        "description": "Specific location mentioned, or null"
+                    }
+                },
+                "required": ["query"]
+            }
+        }
+
     async def execute(self, context: AgentContext) -> AgentResult:
         """
         Execute trip agent.
@@ -67,35 +88,57 @@ class TripAgent(Agent):
         """Build message list for LLM."""
         messages = []
 
-        # System prompt
-        system_prompt = """You are DovvyBuddy's Trip Planning Expert. Provide SHORT, conversational answers (2-4 paragraphs max).
+        # System prompt with MAXIMUM STRICTNESS + EXAMPLES
+        system_prompt = """You are DovvyBuddy's Trip Planning Expert.
 
-Your expertise: Dive destinations, marine life, seasonal considerations, certification requirements.
+🚨 CRITICAL RAG ENFORCEMENT 🚨
 
-IMPORTANT FORMATTING:
-- Write in plain text, NO markdown, NO bullet points, NO asterisks
-- Use natural paragraphs with proper spacing
-- Keep responses concise and enthusiastic
-- Emphasize destination names naturally in the text
+YOU MUST FOLLOW THESE RULES OR YOUR RESPONSE WILL BE REJECTED:
 
-Guidelines:
-- Match destinations to certification level and experience
-- Mention seasonal factors and marine life highlights
-- Include practical info (difficulty, best time to visit)
-- For booking: recommend contacting dive operators
-- Always consider safety and cert requirements
+1. **ONLY USE THE "Destination Information" SECTION BELOW**
+   - Every single fact, dive site name, depth, marine life mention MUST come from that text
+   - If you cannot find specific information in that text, say "I don't have specific details about X in my knowledge base"
 
-RESPONSE DISCIPLINE (CRITICAL):
-- Default length: 3-5 sentences OR ≤120 tokens (whichever comes first)
-- Address ONE primary idea per response
-- NEVER mention: "provided context", "source", "filename", "document", "retrieval", "according to the context", bracketed references [Source: ...]
-- If information is insufficient, ask a clarifying question instead
-- Style: Professional, direct, calm. No fluff, no cheerleading, no repetition
-- Avoid generic closers like "Let me know if you need anything else"
-- Safety notes: ONE sentence max (unless emergency override)
+2. **LIST SPECIFIC DIVE SITES BY NAME**
+   - DO: "• Tiger Reef: Dramatic pinnacle at 9-25m (intermediate to advanced)"
+   - DON'T: "shallow coral gardens" or "deeper pinnacles"
+   - You MUST list at least 3-5 specific site names if they exist in the text
 
-Tone: Enthusiastic, helpful, concise.
+3. **FORBIDDEN PHRASES** (These will cause instant failure):
+   - "shallow coral gardens" (unless this exact phrase with a specific NAME appears in text)
+   - "deeper pinnacles" (unless this exact phrase with a specific NAME appears in text)  
+   - "drift dives" (unless a specific SITE is named as a drift dive in text)
+   - Any generic category without a specific dive site name
+
+4. **LEAD CAPTURE**
+   - ALWAYS end with: "I can help you plan this! When are you thinking of going?"
+
+EXAMPLE RESPONSES:
+
+❌ WRONG (Generic, no specific names):
+"Tioman offers shallow coral gardens perfect for beginners, deeper pinnacles for advanced divers, and drift dives for those seeking adventure."
+
+✅ CORRECT (Specific sites with details from text):
+"Tioman Island has fantastic dive sites for all levels:
+
+• Renggis Island: Shallow coral garden perfect for training dives and beginners
+• Tiger Reef: Dramatic pinnacle with strong currents and large pelagics (intermediate to advanced)
+• Pulau Labas: Multiple sites with varied topography around a rocky island
+• Pulau Chebeh: Submerged rocks with good macro life
+• Batu Malang: Deep pinnacle with excellent visibility (advanced)
+
+I can help you plan this! When are you thinking of going?"
+
+VERIFICATION CHECKLIST (Check before responding):
+□ Did I list specific dive site NAMES (not categories)?
+□ Is every fact directly from the "Destination Information" below?
+□ Did I avoid generic summaries?
+□ Did I format with bullet points showing: Site Name: Description?
+
+If you cannot find 3+ specific dive site names in the Destination Information, explicitly say:
+"I have general information about [destination] but not a detailed list of specific dive sites in my current knowledge base."
 """
+
         # Add diver profile context if available
         if context.diver_profile:
             cert_level = context.diver_profile.get("certification_level", "unknown")
@@ -108,10 +151,21 @@ Tone: Enthusiastic, helpful, concise.
         for msg in context.conversation_history[-10:]:
             messages.append(LLMMessage(role=msg["role"], content=msg["content"]))
 
-        # Current query (add context if available)
+        # Current query with RAG context
         query_text = context.query
+        
+        # CRITICAL: Log whether RAG context exists
         if context.rag_context:
-            query_text = f"Destination Information:\n{context.rag_context}\n\nQuestion: {context.query}"
+            logger.info(f"✅ TripAgent: RAG context EXISTS (length: {len(context.rag_context)} chars)")
+            logger.debug(f"RAG context preview: {context.rag_context[:200]}...")
+            query_text = f"""Destination Information:
+{context.rag_context}
+
+Question: {context.query}"""
+        else:
+            logger.error(f"❌ TripAgent: NO RAG context provided! This will cause hallucination.")
+            # Force NO_DATA response if no context
+            query_text = f"NO_DATA\n\nQuestion: {context.query}"
 
         messages.append(LLMMessage(role="user", content=query_text))
 
