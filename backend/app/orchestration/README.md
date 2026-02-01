@@ -57,6 +57,21 @@ graph TD
   - **Persona**: Enthusiastic, professional, safety-conscious.
   - **Output Format**: Bullet points for lists, clear separation of facts.
 
+### 4. Safety Guardrails (Pre-Processing)
+Before any request reaches the Router or Agents, it passes through specialized safety detectors. These are **NOT** part of the RAG retrieval loop but act as critical interceptors.
+
+#### `EmergencyDetector` (`emergency_detector_hybrid.py`)
+- **Purpose**: Detect active medical emergencies (e.g., "I have chest pain after diving").
+- **Mechanism**: **Hybrid Approach**
+  1. **Keyword Fast-Fail**: Checks for symptom keywords ("pain", "numbness") + first-person context ("I", "my") + dive context.
+  2. **LLM Validation**: If ambiguous (e.g., "What is chest pain?"), a lightweight LLM clarifies if it's an emergency or educational query.
+- **Action**: If triggered, immediately returns a hard-coded safety response with emergency contacts (DAN, MERS), bypassing the entire RAG system.
+
+#### `MedicalQueryDetector` (`medical_detector.py`)
+- **Purpose**: Classify general medical questions that aren't emergencies.
+- **Mechanism**: Lightweight classification.
+- **Action**: Tags the query so the Orchestrator can route it to `knowledge_base` with a "Medical Advice Disclaimer" instruction (or blocks it depending on configuration).
+
 ## Conversational Engagement Strategy
 
 To keep the conversation interesting and ongoing while remaining grounded, we employ specific strategies in the Agent Prompts and Orchestration logic:

@@ -31,6 +31,7 @@ class VectorRetriever:
         self.embedding_provider = (
             embedding_provider or create_embedding_provider_from_env()
         )
+        self._result_cache = {}  # Cache for RRF merging
 
     async def retrieve(
         self,
@@ -143,3 +144,173 @@ class VectorRetriever:
             )
 
             return results
+
+    async def retrieve_hybrid(
+        self,
+        query: str,
+        options: Optional[RetrievalOptions] = None,
+        keyword_weight: float = 0.3,
+    ) -> List[RetrievalResult]:
+        """
+        Hybrid search combining keyword + semantic search.
+        
+        Args:
+            query: Search query
+            options: Retrieval options (default: RetrievalOptions())
+            keyword_weight: Weight for keyword results (0-1, default: 0.3)
+        
+        Returns:
+            Merged and re-ranked results using Reciprocal Rank Fusion
+        """
+        if options is None:
+            options = RetrievalOptions()
+        
+        # Clear cache for new query
+        self._result_cache = {}
+        
+        # 1. Semantic search (existing method)
+        logger.info(f"Hybrid search: Running semantic search for '{query[:50]}...'")
+        semantic_results = await self.retrieve(query, options)
+        
+        # 2. Keyword search (new)
+        logger.info(f"Hybrid search: Running keyword search for '{query[:50]}...'")
+        keyword_results = await self._keyword_search(query, options)
+        
+        # 3. Merge using Reciprocal Rank Fusion
+        logger.info(f"Hybrid search: Merging {len(semantic_results)} semantic + {len(keyword_results)} keyword results")
+        merged_results = self._merge_rrf(
+            semantic_results, 
+            keyword_results,
+            keyword_weight
+        )
+        
+        # Return top-k results
+        final_results = merged_results[:options.top_k]
+        logger.info(f"Hybrid search: Returning {len(final_results)} merged results")
+        
+        return final_results
+
+    async def _keyword_search(
+        self,
+        query: str,
+        options: RetrievalOptions,
+    ) -> List[RetrievalResult]:
+        """
+        Full-text search using PostgreSQL tsvector.
+        
+        Args:
+            query: Search query
+            options: Retrieval options
+        
+        Returns:
+            List of results ranked by FTS relevance
+        """
+        if not query or not query.strip():
+            return []
+        
+        session_maker = get_session()
+        async with session_maker() as session:
+            # Use ts_rank for relevance scoring
+            stmt = select(
+                ContentEmbedding.id,
+                ContentEmbedding.content_path,
+                ContentEmbedding.chunk_text,
+                ContentEmbedding.metadata_,
+                func.ts_rank(
+                    ContentEmbedding.chunk_text_tsv,
+                    func.plainto_tsquery('english', query)
+                ).label("rank")
+            ).where(
+                ContentEmbedding.chunk_text_tsv.op('@@')(
+                    func.plainto_tsquery('english', query)
+                )
+            )
+            
+            # Apply metadata filters if present
+            if options.filters:
+                if "doc_type" in options.filters:
+                    doc_type = options.filters["doc_type"]
+                    if isinstance(doc_type, list):
+                        stmt = stmt.where(
+                            ContentEmbedding.metadata_["doc_type"].astext.in_(doc_type)
+                        )
+                    else:
+                        stmt = stmt.where(
+                            ContentEmbedding.metadata_["doc_type"].astext == doc_type
+                        )
+            
+            stmt = stmt.order_by(text("rank DESC")).limit(options.top_k * 2)
+            
+            result = await session.execute(stmt)
+            rows = result.all()
+            
+            results = [
+                RetrievalResult(
+                    chunk_id=str(row.id),
+                    text=row.chunk_text,
+                    similarity=float(row.rank),  # Use FTS rank as similarity
+                    metadata=row.metadata_ or {},
+                    source_citation=(row.metadata_ or {}).get("content_path")
+                )
+                for row in rows
+            ]
+            
+            logger.info(f"Keyword search found {len(results)} results")
+            return results
+
+    def _merge_rrf(
+        self,
+        semantic_results: List[RetrievalResult],
+        keyword_results: List[RetrievalResult],
+        keyword_weight: float = 0.3,
+        k: int = 60,
+    ) -> List[RetrievalResult]:
+        """
+        Merge results using Reciprocal Rank Fusion.
+        
+        RRF formula: score = Σ(weight / (k + rank))
+        
+        Args:
+            semantic_results: Results from semantic search
+            keyword_results: Results from keyword search
+            keyword_weight: Weight for keyword results (0-1)
+            k: RRF constant (default: 60)
+        
+        Returns:
+            Merged and re-ranked results
+        """
+        scores = {}
+        semantic_weight = 1 - keyword_weight
+        
+        # Score semantic results
+        for rank, result in enumerate(semantic_results, 1):
+            chunk_id = result.chunk_id
+            scores[chunk_id] = scores.get(chunk_id, 0) + semantic_weight / (k + rank)
+            if chunk_id not in self._result_cache:
+                self._result_cache[chunk_id] = result
+        
+        # Score keyword results
+        for rank, result in enumerate(keyword_results, 1):
+            chunk_id = result.chunk_id
+            scores[chunk_id] = scores.get(chunk_id, 0) + keyword_weight / (k + rank)
+            if chunk_id not in self._result_cache:
+                self._result_cache[chunk_id] = result
+        
+        # Sort by combined score
+        sorted_ids = sorted(scores.keys(), key=lambda x: scores[x], reverse=True)
+        
+        # Return merged results with updated similarity scores
+        merged = []
+        for chunk_id in sorted_ids:
+            result = self._result_cache[chunk_id]
+            # Create new result with RRF score
+            merged_result = RetrievalResult(
+                chunk_id=result.chunk_id,
+                text=result.text,
+                similarity=scores[chunk_id],  # Use RRF score
+                metadata=result.metadata,
+                source_citation=result.source_citation
+            )
+            merged.append(merged_result)
+        
+        return merged

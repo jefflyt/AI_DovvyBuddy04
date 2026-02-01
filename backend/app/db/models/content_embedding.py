@@ -1,7 +1,7 @@
 import uuid
 
 from sqlalchemy import Column, DateTime, Float, String, Text, func
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID, TSVECTOR
 
 from app.db.base import Base
 
@@ -12,6 +12,7 @@ class ContentEmbedding(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     content_path = Column(String, nullable=False)
     chunk_text = Column(Text, nullable=False)
+    chunk_text_tsv = Column(TSVECTOR)  # Full-text search column
     # Storing embeddings as an ARRAY of FLOAT for now (pgvector integration can be added later)
     embedding = Column(ARRAY(Float), nullable=True)
     metadata_ = Column(

@@ -1,13 +1,18 @@
+from pathlib import Path
 from typing import List, Literal, Optional
 
 from pydantic import AnyUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Resolve .env.local path relative to THIS file (backend/app/core/config.py)
+# Go up 3 levels: config.py -> core/ -> app/ -> backend/, then to project root
+_ENV_FILE = Path(__file__).resolve().parent.parent.parent.parent / ".env.local"
+
 
 class Settings(BaseSettings):
     # Configuration for Pydantic v2
-    # Read from root .env.local (one level up from backend/)
-    model_config = SettingsConfigDict(env_file="../.env.local", extra="ignore")
+    # Read from root .env.local using absolute path
+    model_config = SettingsConfigDict(env_file=str(_ENV_FILE), extra="ignore")
     
     # API Settings
     environment: str = "development"
@@ -53,6 +58,10 @@ class Settings(BaseSettings):
     rag_min_similarity: float = 0.5
     rag_chunk_size: int = 512
     rag_chunk_overlap: int = 50
+    
+    # Hybrid Search Configuration
+    rag_use_hybrid: bool = True
+    rag_keyword_weight: float = 0.3  # 30% keyword, 70% semantic
     
     # Orchestration Configuration
     max_message_length: int = 2000

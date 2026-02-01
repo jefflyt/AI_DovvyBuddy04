@@ -233,7 +233,10 @@ class ChatOrchestrator:
         result = await agent.execute(context)
 
         # PR6.2: Sanitize response to remove any leaked RAG mentions
-        sanitized_response = self.response_formatter.sanitize_response(result.response)
+        # DISABLED: This was too aggressive and removed valid phrases like "the information provided"
+        # which caused confusing responses. Agent prompts should handle this instead.
+        # sanitized_response = self.response_formatter.sanitize_response(result.response)
+        sanitized_response = result.response  # Use original response
         
         # PR6.1: Follow-up generation (Simplified for now - can be re-added to GeminiOrchestrator later)
         # For now, we rely on the Agent's response or simple rules.

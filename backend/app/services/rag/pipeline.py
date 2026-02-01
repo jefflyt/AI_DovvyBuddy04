@@ -70,8 +70,17 @@ class RAGPipeline:
             filters=filters or {},
         )
 
-        # Retrieve chunks
-        results = await self.retriever.retrieve(query, options)
+        # Retrieve chunks using hybrid or semantic search
+        if settings.rag_use_hybrid:
+            logger.info(f"Using hybrid search (keyword_weight={settings.rag_keyword_weight})")
+            results = await self.retriever.retrieve_hybrid(
+                query, 
+                options,
+                keyword_weight=settings.rag_keyword_weight
+            )
+        else:
+            logger.info("Using semantic-only search")
+            results = await self.retriever.retrieve(query, options)
 
         # Format context
         formatted_context = self._format_context(results)

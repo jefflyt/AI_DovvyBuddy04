@@ -1,5 +1,8 @@
-export { default as Hero } from './Hero'
-export { default as ValueProposition } from './ValueProposition'
-export { default as HowItWorks } from './HowItWorks'
-export { default as SocialProof } from './SocialProof'
-export { default as Footer } from './Footer'
+export { Hero } from './Hero';
+export { ChatPreview } from './ChatPreview';
+export { TrustStrip } from './TrustStrip';
+export { FeatureGrid } from './FeatureGrid';
+export { HowItWorks } from './HowItWorks';
+export { FAQ } from './FAQ';
+export { Footer } from './Footer';
+export { OceanBackground } from './OceanBackground';

@@ -1,70 +1,23 @@
-'use client'
-
-import { Hero, ValueProposition, HowItWorks, SocialProof, Footer } from '@/components/landing'
-import { trackEvent } from '@/lib/analytics'
-import { WatercolorBackground } from '@/components/ui/WatercolorBackground'
+import { OceanBackground } from '@/components/landing/OceanBackground';
+import { Hero } from '@/components/landing/Hero';
+import { TrustStrip } from '@/components/landing/TrustStrip';
+import { FeatureGrid } from '@/components/landing/FeatureGrid';
+import { HowItWorks } from '@/components/landing/HowItWorks';
+import { FAQ } from '@/components/landing/FAQ';
+import { Footer } from '@/components/landing/Footer';
 
 export default function Home() {
-  const handleCtaClick = () => {
-    trackEvent('cta_click', { location: 'hero' })
-  }
-
-  const features = [
-    {
-      iconPath: '/assets/icons/turtle.png',
-      title: 'Certification Navigator',
-      description:
-        'Understand PADI, SSI, and other certification pathways without judgment. Get clear answers about prerequisites, costs, and what to expect.',
-    },
-    {
-      iconPath: '/assets/icons/ray.png',
-      title: 'Confidence Building',
-      description:
-        'Ask questions about fears, physical requirements, or gear without shame. We provide grounded, supportive guidance to help you make informed decisions.',
-    },
-    {
-      iconPath: '/assets/icons/clownfish.png',
-      title: 'Trip Research',
-      description:
-        'Discover dive destinations and sites that match your skill level. Get insights on seasons, conditions, and what makes each location special.',
-    },
-  ]
-
-  const steps = [
-    {
-      number: 1,
-      title: 'Ask Your Question',
-      description:
-        'Type anything about certifications, dive sites, or trip planning. No question is too basic.',
-    },
-    {
-      number: 2,
-      title: 'Get Grounded Answers',
-      description:
-        'Receive accurate information based on official certification guides and real dive site data.',
-    },
-    {
-      number: 3,
-      title: 'Connect with Pros',
-      description:
-        'When you\'re ready, we can connect you with certified instructors and reputable dive shops.',
-    },
-  ]
-
   return (
     <main className="relative min-h-screen">
-      <WatercolorBackground />
-      <Hero
-        headline="Your AI Diving Companion"
-        subheadline="Get judgment-free guidance on certifications, dive sites, and trip planning — no pressure, just support."
-        ctaText="Start Chatting"
-        ctaLink="/chat"
-        onCtaClick={handleCtaClick}
-      />
-      <ValueProposition features={features} />
-      <HowItWorks steps={steps} />
-      <SocialProof />
+      <OceanBackground />
+      <Hero />
+      <TrustStrip />
+      <FeatureGrid />
+      <HowItWorks />
+      <div id="faq">
+        <FAQ />
+      </div>
       <Footer />
     </main>
-  )
+  );
 }

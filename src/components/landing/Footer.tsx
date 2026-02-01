@@ -1,95 +1,65 @@
-import Link from 'next/link'
+import Link from 'next/link';
 
-export default function Footer() {
-  const currentYear = new Date().getFullYear()
-
+export const Footer = () => {
   return (
-    <footer className="bg-neutral-900 text-neutral-300 py-12">
+    <footer className="border-t border-gray-200/50 bg-white/40 backdrop-blur-sm py-12">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            {/* Brand */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="text-white font-bold text-xl mb-3">DovvyBuddy</h3>
-              <p className="text-neutral-400 leading-relaxed">
-                Your AI diving companion for certification guidance and trip planning.
-              </p>
-            </div>
-
-            {/* Links */}
-            <div>
-              <h4 className="text-white font-semibold mb-3">Resources</h4>
+              <h3 className="font-semibold text-gray-900 mb-4">Product</h3>
               <ul className="space-y-2">
                 <li>
-                  <Link
-                    href="/chat"
-                    className="text-neutral-400 hover:text-white transition-colors"
-                  >
+                  <Link href="/chat" className="text-gray-600 hover:text-primary-600 transition-colors">
                     Start Chat
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="#"
-                    className="text-neutral-400 hover:text-white transition-colors"
-                  >
-                    About
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="#"
-                    className="text-neutral-400 hover:text-white transition-colors"
-                  >
+                  <Link href="/#faq" className="text-gray-600 hover:text-primary-600 transition-colors">
                     FAQ
                   </Link>
                 </li>
               </ul>
             </div>
-
-            {/* Legal */}
             <div>
-              <h4 className="text-white font-semibold mb-3">Legal</h4>
+              <h3 className="font-semibold text-gray-900 mb-4">Legal</h3>
               <ul className="space-y-2">
                 <li>
-                  <Link
-                    href="#"
-                    className="text-neutral-400 hover:text-white transition-colors"
-                  >
-                    Privacy Policy
+                  <Link href="/privacy" className="text-gray-600 hover:text-primary-600 transition-colors">
+                    Privacy
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    href="#"
-                    className="text-neutral-400 hover:text-white transition-colors"
-                  >
-                    Terms of Service
+                  <Link href="/terms" className="text-gray-600 hover:text-primary-600 transition-colors">
+                    Terms
                   </Link>
                 </li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-4">Support</h3>
+              <ul className="space-y-2">
                 <li>
-                  <Link
-                    href="#"
-                    className="text-neutral-400 hover:text-white transition-colors"
-                  >
+                  <Link href="/contact" className="text-gray-600 hover:text-primary-600 transition-colors">
                     Contact
                   </Link>
                 </li>
               </ul>
             </div>
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-4">DovvyBuddy</h3>
+              <p className="text-sm text-gray-600">
+                Your AI diving companion for certifications, dive sites, and trip planning.
+              </p>
+            </div>
           </div>
-
-          {/* Bottom bar */}
-          <div className="border-t border-neutral-800 pt-8 text-center">
-            <p className="text-neutral-500 text-sm">
-              &copy; {currentYear} DovvyBuddy. All rights reserved. | V1 - Web Chat Only | Guest Sessions (24h)
-            </p>
-            <p className="text-neutral-600 text-xs mt-2">
-              Always consult certified professionals for dive training and medical advice.
+          <div className="pt-8 border-t border-gray-200/50">
+            <p className="text-sm text-gray-600 text-center">
+              © {new Date().getFullYear()} DovvyBuddy. Not a substitute for professional instruction or medical advice.
             </p>
           </div>
         </div>
       </div>
     </footer>
-  )
-}
+  );
+};

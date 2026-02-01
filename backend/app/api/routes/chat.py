@@ -117,3 +117,42 @@ async def chat_endpoint(
             status_code=500,
             detail="An error occurred processing your request. Please try again."
         )
+
+
+# Debug endpoint to test RAG directly in-server
+@router.get("/debug/rag")
+async def debug_rag_endpoint(q: str = "Where can I dive in Tioman?"):
+    """Debug endpoint to test RAG pipeline in running server."""
+    from app.core.config import settings
+    from app.services.rag.pipeline import RAGPipeline
+    
+    pipeline = RAGPipeline()
+    
+    result = {
+        "settings.enable_rag": settings.enable_rag,
+        "settings.gemini_api_key_set": bool(settings.gemini_api_key),
+        "pipeline.enabled": pipeline.enabled,
+        "query": q,
+    }
+    
+    try:
+        context = await pipeline.retrieve_context(q)
+        result["results_count"] = len(context.results)
+        result["has_data"] = context.has_data
+        if context.results:
+            result["top_results"] = [
+                {
+                    "similarity": r.similarity,
+                    "text_preview": r.text[:200]
+                }
+                for r in context.results[:3]
+            ]
+        else:
+            result["top_results"] = []
+            result["formatted_context"] = context.formatted_context
+    except Exception as e:
+        result["error"] = str(e)
+        import traceback
+        result["traceback"] = traceback.format_exc()
+    
+    return result

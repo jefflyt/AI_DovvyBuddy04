@@ -18,9 +18,9 @@ class ContentChunk:
 class ChunkingOptions:
     """Options for text chunking."""
 
-    target_tokens: int = 650
-    max_tokens: int = 800
-    min_tokens: int = 100
+    target_tokens: int = 300  # Reduced from 650 for better granularity
+    max_tokens: int = 400     # Reduced from 800 for better granularity
+    min_tokens: int = 50      # Reduced from 100 to allow smaller chunks
     overlap_tokens: int = 50
 
 
