@@ -271,99 +271,12 @@ Pulau Labas (commonly referred to as "Labas Island" in English) is a small, unin
 
 ***
 
-## 13. Example Dive Narrative
 
-You descend the shot line into the pale blue, touching down on sand at 10 m in front of the towering volcanic rock formation. The water is clear—25 m of visibility—and the sun casts shifting shadows across the boulders ahead. Your guide signals the direction, and you move forward into the maze. The rocks are enormous, stacked and tumbled, their surfaces carpeted in soft coral: brilliant oranges, hot pinks, and purples that seem to glow in the filtered sunlight. Swim-throughs beckon—narrow passages between boulders, some barely wider than your body. You enter one carefully, exhale to lighten, and glide through to emerge into an open chamber where a school of fusiliers scatter at your approach.
 
-You continue exploring, descending slightly to 14 m as your guide points out a large moray eel tucked into a crevice, its head visible, its yellow-and-black body coiled in shadow. A little further on, you spot a camouflaged scorpionfish perfectly still on a rock—a macro photographer's dream. You move on, weaving around formations, checking your depth and NDL; bottom time ticking away. At 17 m, your guide stops and signals upward: a Green turtle, motionless in the blue, apparently resting. Everyone freezes; the turtle pays no attention, utterly unconcerned. A perfect moment.
-
-After about 35 minutes, it's time to turn around. You ascend gently, moving back through the rock formations with less urgency, pausing to observe a Banded Sea Krait (cautiously, from distance) and a cluster of colourful nudibranchs in the rubble. You shallow to 6 m, then 5 m, finding a natural coral bummock to park at for your safety stop. Three minutes of stillness, watching small reef fish work the corals. A final check of gear, then you begin your controlled ascent to the surface and the waiting boat.
-
-***
-
-## 14. Keywords & Tags
+## 13. Keywords & Tags
 
 - **Keywords:** Pulau Labas, Labas Island, Tioman diving, rock formations, swim-throughs, caverns, volcanic rocks, soft corals, macro diving, intermediate diving, advanced diving, scorpionfish, nudibranch, sea turtle, reef shark.
 
 - **Categories:** Reef exploration, rock/boulder site, swim-through diving, intermediate-to-advanced, mixed marine life, macro-friendly, Malaysia, Tioman Island.
 
 ***
-
-## 15. Source Notes (Internal Only)
-
-### Sources Consulted
-
-1. **Dive Sessi** (divessi.com) — Pulau Labas site overview; swim-through and cavern descriptions; depth and marine life.
-2. **GS Diving** (gs-diving.com) — Specific depth (15 m average), marine life (angelfish, butterfly fish, gorgonians, scorpionfish, stonefish, urchins, sea stars, trigger fish warning).
-3. **Dive Adventures** (diveadventures.com.au) — Labas categorized as deeper/more challenging than beginner sites; current and larger species mentioned.
-4. **PADI Blog** (blog.padi.com) — Tioman overview; Labas mentioned as part of north-west sites; soft corals and macro life noted.
-5. **Underwater Asia** (underwaterasia.info) — Labas described as "many swim-throughs," with soft coral and nurse shark, Napoleon Wrasse, and turtle sightings.
-6. **Dive Zone** (divezone.net) — Labas has "two dive sites depending on conditions"; "caverns and swimthroughs full of fishes"; "nice reef."
-7. **Nautica Diving** (nautica-diving.com) — Depth to 24 m noted; suitable for Advanced Diver course.
-8. **sgmytaxi.com** — Labas described as "Swiss cheese–like maze" with caverns; "turtles, sharks and angel fish" as you go deeper.
-9. **Dive Booker** (divebooker.com) — Two dive sites ("head" and "tail"); "equally challenging and fascinating."
-10. **Tioman Dive Centre** (tioman-dive-centre.com) — Tioman season (early February–mid-November); best visibility March–June (up to 30 m); water temp 28 °C.
-11. **sgmytaxi.com (comprehensive Tioman guide)** — Diving season, monsoon closure, water temperature, best visibility seasons.
-
-### Verification & Conflict Resolution
-
-- **Depth:** Sources cite "15 m average" (GS Diving) and "24 m" maximum (Nautica Diving). Combined into **10–24 m** range to reflect full useable depth profile.
-- **Two dive sites ("head" and "tail"):** Confirmed by multiple sources (Dive Zone, Dive Booker); included as key operational detail.
-- **Visibility:** Tioman general range (10–30 m high season; 8–12 m low season) applied to Labas; no Labas-specific visibility conflict noted.
-- **Marine life:** Sources consistently mention soft corals, angelfish, butterfly fish, gorgonians, scorpionfish, stonefish, sea urchins. Turtles and sharks mentioned but less frequently than other animals; categorized as "common" based on high-season reports.
-- **Difficulty:** No explicit PADI/certification mention except "suitable for Advanced Diver course" (Nautica). Inferred **AOWD minimum** from depth (24 m) and structural complexity (swim-throughs, caverns), noting that training-site context supports this.
-- **Current:** Described as "variable," "strong at times," "current-dependent" in multiple sources; no specific direction or tidal pattern detailed. Characterized as **moderate to strong, variable.**
-- **Seasonality:** Tioman-wide data used (no Labas-specific seasonal variation provided). March–June consistently cited as best for all sites.
-
-### Inferences Made
-
-- **Difficulty rating (3/5):** Inferred from structural complexity, depth (24 m), requirement for Advanced certification, and navigation challenges. Not explicitly rated in sources.
-- **Min cert level (AOWD):** Inferred from depth (24 m) and site training use (Advanced Diver course reference). No explicit minimum stated.
-- **Exposure suit thickness (3–5 mm):** Standard tropical diving practice applied; no Labas-specific guidance in sources.
-- **Gas choice (air standard):** No nitrox advantage mentioned; air assumed standard based on recreational profile and depth.
-- **Photography lens mix:** Inferred from soft coral, rock formations (wide-angle subjects) and abundant small critters (macro subjects); no photography-specific guidance provided for Labas.
-- **Hazards (stonefish, lionfish, fire coral, urchins):** Listed based on general Tioman marine life knowledge and reported presence on Labas; no specific Labas-incident data provided.
-- **Entry method (giant stride, descent on line):** Inferred from typical boat-based diving practice and site characteristics (no shore access mentioned).
-
-### Gaps & Uncertainties
-
-- **Specific incident history:** No documented incidents or cautions at Labas reported in sources; site described as safe without caveats. Level of incident data for Labas is limited.
-- **Monthly variation in marine life:** No month-by-month migration or breeding cycle specific to Labas provided. High-season vs. low-season activity inferred from regional Tioman data.
-- **Operator-specific practices:** Routes and "head" vs. "tail" selection vary by operator experience; not detailed in sources. Guide choice and current assessment determine actual dive profile on the day.
-- **Night diving:** Not mentioned in relation to Labas specifically (though Soyak and Salang Jetty are noted for night dives). Unknown if Labas supports night dives.
-- **Specific swim-through distances/complexity:** Described qualitatively as "labyrinth," "Swiss cheese," and "cavern-rich," but precise passage dimensions and navigation difficulty not quantified.
-- **Pharaoh Reef Cuttlefish specificity:** Mentioned for Tioman in general (mating season, October–November); unknown if specifically present at Labas.
-
-### Choices Made
-
-- Prioritized operational guidance (depth, difficulty, marine life, conditions, hazards) over marketing language.
-- Used "two dive sites (head/tail)" as a key structural detail to reflect actual operational practice.
-- Assigned **3/5 difficulty** (intermediate-to-advanced) to reflect depth, navigation complexity, and required certification, acknowledging this is an inference, not an explicit source rating.
-- Treated **AOWD as minimum** based on depth and training-site context.
-- Grouped marine life as "common," "occasional," and "rare" based on frequency of mention in sources and seasonal likelihood.
-- Used Tioman regional data (visibility, temperature, seasons, closures) to fill gaps not explicitly stated for Labas.
-- Emphasized "follow your guide" and "navigate carefully" in practical tips to reflect the site's structural complexity and disorientation risk.
-
-***
-
-## End of Dive Site Documentation: Pulau Labas (Labas Island), Tioman Island, Malaysia
-
-[1](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/68510663/8faf6716-65f9-448c-ad28-6251fca6651d/tioman-renggis-island.md)
-[2](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/collection_2898f707-007d-4fe6-a74d-cd0f3f9d7ecb/5412e72c-8835-4503-9ce8-cf6f3e61be02/DiveSiteDocTemplate.md)
-[3](https://www.divessi.com/en/mydiveguide/divesite/pulau-labas-island-tioman-reef-malaysia-193151)
-[4](https://gs-diving.com/live-on-board-dive-info/reefs-of-the-south-china-sea/tioman-malaysia/)
-[5](https://diveadventures.com.au/region/malaysia-tioman-island/)
-[6](https://www.youtube.com/watch?v=JV-9h9PVPyw)
-[7](https://blog.padi.com/diving-tioman-island-the-jewel-in-the-malaysian-crown/)
-[8](https://dev.underwaterasia.info/malaysia/tioman-aur-diving)
-[9](https://divezone.net/divesite/pulau-labas)
-[10](https://scubadiving.place/divesite/pulau-labas)
-[11](https://www.sgmytaxi.com/tioman-diving/)
-[12](https://divebooker.com/labas-island-baz13009)
-[13](https://www.tioman-dive-centre.com/environment/weather/)
-[14](https://www.cuddlefishdivers.com/post/tioman-dive-adventures-uncovering-the-hidden-gems)
-[15](https://www.diveplanit.com/malaysia/tioman-island/pulau-tioman-diving/)
-[16](https://www.padi.com/dive-site/malaysia/labas-island/)
-[17](https://scubaverse.com/dive-guide/asia/malaysia/)
-[18](https://nautica-diving.com/blog/2016/01/28/pulau-labas-tioman-liveaboard/)
-[19](https://www.facebook.com/maoridive/videos/-top-10-tioman-dive-sites-ep4-labas-island-get-ready-to-explore-the-famous-swim-/7893115040787900/)

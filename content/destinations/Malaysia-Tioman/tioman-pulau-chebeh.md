@@ -260,91 +260,11 @@ Pulau Chebeh is a steep, sloping offshore island northeast of Tioman's main hub,
 
 ***
 
-## 13. Example Dive Narrative
 
-The boat releases you in clear, warm water over sand roughly 50 metres from the main boulder formation of Chebeh North. You descend alongside a guide along a natural slope, equalizing smoothly as depth increases. At 12 metres, the massive granite boulders appear through the blue—towering shapes festooned in brilliant orange and purple gorgonian fans and soft coral polyps. The current is moderate from the northeast, pushing gently but noticeably. You use the boulder face as an anchor, holding steady to observe the landscape. Yellow-striped snappers school in a tight formation overhead, their silhouettes flickering across the boulder lip. Your guide gestures toward a distinctive rock formation shaped roughly like a Pac-Man face (famous among local guides), encrusted in coral and alive with smaller fish huddled in its lee. You navigate slowly toward it, using buoyancy and brief hand-holds on the rock to manage the current. Around the formation, you spot a brilliant blue starfish and a small scorpionfish, perfectly camouflaged on the rust-colored rock. Your macro photographer guide signals for a closer look; you frame the scorpionfish against the coral backdrop as light refracts through the water above. After 15 minutes at the Pac-Man zone, your guide indicates it's time to move. You ascend slightly to 14 metres and drift-kick across a rubble saddle, pausing occasionally to inspect crevices. A small moray eel peers from a crack; a pair of spanner crabs skitter across open sand. Deeper, at 20 metres, you explore an overhang adorned with whip corals and black corals, their branches stirring gently in the current. A small school of juvenile barracudas darts past. You check your air gauge—50 bar remaining—and signal to your guide that you're ready to ascend. You return to the boulder formation and begin a gradual ascent to 8 metres over the final 5 minutes, pausing momentarily in the shallows where soft coral branches frame the view back into blue water. At 5 metres, you conduct your safety stop, floating in open water as smaller reef fish dart and circle. The dive ends as it began: a giant stride back to the boat, and a brief surface swim to the stern ladder. Forty-two minutes bottom time. Salt, sun, and the satisfaction of having seen a wild, beautiful reef.
 
-***
-
-## 14. Keywords & Tags
+## 13. Keywords & Tags
 
 - **Keywords:** Chebeh Island, Tioman, boulder formations, swim-throughs, gorgonian sea fans, strong current, schooling fish, intermediate diving, offshore reef, Malaysia dive site.
 - **Categories:** Offshore reef dive; boat-access only; mixed-depth site; current-dependent; suitable for intermediate-to-advanced recreational divers; macro and wide-angle photography opportunities.
 
 ***
-
-## 15. Source Notes (Internal Use Only)
-
-- **Sources:**
-  - Scuba Diving Magazine (2024): "Why Tioman Island Is the Perfect Dive Detour" (Brandon Cole photography/narrative; depth/visibility/current data).
-  - Scuba Travel Ventures (2025): Tioman Island diving guide (divemaster interviews; site descriptions).
-  - TDB SunBeach (2025): "Top 10 Dive Sites in Tioman Island" (Chebeh Island profile; depth/marine life).
-  - DiveZone.net (Chebeh Island dive site profile; visibility/current notes).
-  - PADI.com: "Chebeh Island dive site" (certification level/general guidance).
-  - Tioman Dive Operators: Weather/tide information (multiple operator sites: Tioman Dive Centre, Tioman Reef Divers, Amigo Dive Centre, B&J Diving).
-  - XRay Mag (2025): "Glimpses of Malaysia" (visibility seasonality; deep-water data).
-  - DiveAdventures.com.au (Malaysia/Tioman section; wrecks and offshore site guidance).
-
-- **Verification notes:**
-  - **Depth range (10–28 m):** Consistent across all sources; 28 m represents deeper flanks mentioned in Scuba Travel Ventures ("30-plus meters" in narrative); 10 m confirmed as shallow-entry depth.
-  - **Visibility:** March–June 20–30 m (Scuba Diving, TDB SunBeach, Tioman operators). June–August 8–15 m (summer season data from multiple operators). November–February <10 m (monsoon period consistent across sources).
-  - **Current:** Described as "moderate to strong" in Scuba Travel Ventures and operator notes; varies by zone and tidal phase (consistent across all descriptions).
-  - **Water temperature:** 27–30 °C (consistent across all Tioman-wide data; tropical constant).
-  - **Marine life:** Specific species (barracudas, trevallies, snappers, turtles, sharks, gorgonians) mentioned across Scuba Travel Ventures, TDB SunBeach, DiveAdventures, and operator pages. Whale shark sighting documented in Facebook post (B&J Diving Centre; 7 m depth at Chebeh; April–October migration window). Spanner crabs, lobsters confirmed in TDB SunBeach and other sources.
-  - **Pac-Man boulder:** Specific reference in Scuba Travel Ventures (Martin Ritter narrative) with precise details (north side, narrow swim-through, glass fish and juvenile barracudas). Confirmed as reliable feature across guides.
-  - **Two zones (North/South):** Mentioned in Scuba Travel Ventures and operator references (choice depends on current direction).
-  - **Difficulty/certification:** AOWD inferred from combination of depth (28 m max), current description, and site descriptions by professional sources. Intermediate divers mentioned as "suitable for all levels" in TDB SunBeach but cautioned with "advanced divers" reference in Scuba Travel Ventures (current management).
-  - **Season (February–November):** Consistent across all Tioman-wide season data; monsoon closure November–early February standard.
-
-- **Inferences:**
-  - **Min cert level code (AOWD):** Inferred from depth (28 m), current (moderate-to-strong), and source references to "advanced divers" at this site. Recreational depth limit for OWD is 18 m; current-diving at 20+ m logically requires AOWD or equivalent. Conservatively set as minimum; OWD with significant experience might dive shallow zones (10–18 m) under guidance.
-  - **Difficulty rating (3 / 5):** Inferred from: depth (20+ m = above-intermediate), current (moderate-to-strong = challenging), topography (complex but not overhead/technical = intermediate-plus), and source descriptions of "suitable for all levels" with cautionary notes on current. Not a 2 (would be Renggis/beginner-zone sites). Not a 4–5 (would be deep technical or wreck-dependent). 3 = intermediate-to-advanced sweet spot.
-  - **Drift diving description:** Mentioned in Scuba Travel Ventures as possible "drift-assisted" exploration but also stationary "formation-holding" dives; described as both drift and exploratory based on current/guide choice.
-  - **Exposure protection (3 mm):** Inferred from year-round tropical 27–30 °C water and Tioman-wide operator recommendations (standard 3 mm for comfort); 5 mm suggested for extended bottom time (standard diving practice).
-  - **Best dive time (March–June):** Supported by visibility data (20–30 m peak); March–May specifically highlighted in multiple sources as "best" for visibility and fish activity.
-
-- **Gaps / Uncertainty:**
-  - **Precise GPS coordinates:** Not provided in sources; would require operator contact or third-party mapping integration.
-  - **Exact boat ride time from ABC:** Scuba Travel Ventures mentions "30–40 minutes by speedboat" from main hub; exact time variable with sea state and boat speed.
-  - **Specific max depth on deeper flanks:** Sources mention "30+ meters" (Scuba Travel Ventures) and "28 m" (TDB SunBeach); used conservative 28 m as max-recommended recreational depth; actual bottom may be deeper.
-  - **Frequency of whale shark sightings:** One Facebook anecdote (B&J Diving) confirms sighting at Chebeh; frequency not quantified. Described as rare in broader Tioman context; included as "occasional" in seasonal highlights with caveats.
-  - **Specific mooring/entry point details:** Not provided; standard practice is boat mooring with giant stride entry (confirmed by guide narratives).
-  - **Night diving availability:** Not mentioned in sources; presumably offered but not documented here.
-
-***
-
-## End of Dive Site Documentation: Pulau Chebeh, Tioman Island, Malaysia
-
-[1](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/attachments/68510663/3dce4336-aaeb-410b-911f-dd7fef8b29a4/tioman-pulau-labas.md)
-[2](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/collection_2898f707-007d-4fe6-a74d-cd0f3f9d7ecb/5412e72c-8835-4503-9ce8-cf6f3e61be02/DiveSiteDocTemplate.md)
-[3](https://www.padi.com/dive-sites/malaysia/tioman-island/)
-[4](https://www.scubadiving.com/tioman-island-perfect-dive-detour)
-[5](https://www.tdb-sb.com/top-10-dive-sites-in-tioman-island/)
-[6](https://www.amantioman.com/diving-sites-in-tioman/)
-[7](https://www.sgmytaxi.com/tioman-diving/)
-[8](https://scubatravelventures.com/tioman-island-sea-stories-2/)
-[9](https://divezone.net/divesite/chebeh-island)
-[10](https://diveadventures.com.au/region/malaysia-tioman-island/)
-[11](https://www.cuddlefishdivers.com/post/tioman-dive-adventures-uncovering-the-hidden-gems)
-[12](https://www.padi.com/dive-site/malaysia/chebeh-island/)
-[13](https://www.tioman-dive-centre.com/environment/weather/)
-[14](https://www.uwphotographyguide.com/trip-report-tioman-island)
-[15](https://www.divessi.com/en/mydiveguide/divesite/chebeh-east-chi-bi-1-malaysia-66692)
-[16](https://www.divessi.com/en/mydiveguide/divesite/chebeh-west-deep-malaysia-115778)
-[17](http://www.myoutdoor.com/tiomanisland/thingstoseeanddo/thingstoseeanddo_scuba.html)
-[18](https://nautica-diving.com/blog/2016/01/09/chebeh-pulau-tioman-liveaboard/)
-[19](https://divechamp.com/divesite/chebeh-west-deep)
-[20](https://www.instagram.com/reel/DBGpXWDSw5x/)
-[21](https://www.goislands.com.sg/best-time-to-visit-tioman-island/)
-[22](https://miezegreattravels.weebly.com/pulau-tioman.html)
-[23](https://www.tiomanreefdivers.com)
-[24](https://www.tdb-sb.com/tioman-island-weather-tides/)
-[25](https://www.cataferry.com/mobile/pagesub/Guide-for-Tioman-Divers)
-[26](https://tiomanferry.com.sg/tioman_monsoon.html)
-[27](https://www.facebook.com/BnJDivingCentre/videos/whale-shark-sighted-at-tioman/2466958380064455/)
-[28](https://sg.trip.com/guide/info/tioman-diving.html)
-[29](https://www.tiomandiveresort.com/faqs)
-[30](https://www.facebook.com/frienddiver/videos/having-a-great-day-with-the-sharks-and-turtle-in-one-of-the-most-wanted-dive-sit/2634062876811954/)
-[31](https://xray-mag.com/content/glimpses-malaysia)
-[32](https://www.facebook.com/groups/kohtaoturtles/posts/3382134868584606/)
-[33](https://divetioman.com/useful-information-for-tioman)

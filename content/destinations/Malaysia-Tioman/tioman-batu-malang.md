@@ -238,17 +238,9 @@ Batu Malang (meaning "Unlucky Rock" in Malay) is a submerged boulder formation l
 
 ***
 
-## 13. Example Dive Narrative
 
-The boat slows as it approaches the rocky outcrop of Batu Malang. The water is a vibrant turquoise, hinting at the shallow sandy bottom below. After a giant stride entry, you descend into a world of giants—massive granite boulders stacked like a child's building blocks. You hover at 8 meters, checking your buoyancy. A school of fusiliers streams past, flashing silver in the sunlight.
 
-Your guide signals towards a dark opening at the base of a boulder. You follow, gliding through a short, wide swim-through. Inside, the walls are encrusted with sponges and small fans. A cleaner shrimp waves its antennae from a crevice. Emerging on the other side, you find yourself in a garden of table corals, stretching out like platforms. A hawksbill turtle is busy munching on a sponge, ignoring your presence.
-
-You spend the next 40 minutes circling the rock pile, poking your light into holes to find nudibranchs and watching clownfish defend their anemones. The current picks up slightly, so you tuck behind a massive slab of granite, watching the water rush past. As you ascend to 5 meters for your safety stop, you realize you've hardly used any air—the joy of a shallow, fascinating dive.
-
-***
-
-## 14. Keywords & Tags
+## 13. Keywords & Tags
 
 - **Keywords:**
   - Batu Malang
@@ -272,58 +264,3 @@ You spend the next 40 minutes circling the rock pile, poking your light into hol
   - **Activity:** Recreational diving, Photography, Snorkeling
 
 ***
-
-## 15. Source Notes (Internal Only)
-
-- **Sources used:**
-  1. Scuba Travel Ventures (2025) — Site description, swim-throughs.
-  2. DiveJourney — Depth profile, boulder characteristics.
-  3. PADI Dive Site Directory — Official naming, general description.
-  4. Tioman Dive Resort / BnJ Diving Centre — Logistics, seasonal patterns.
-  5. Dive Adventures Australia — Marine life diversity.
-  6. Aman Tioman Diving Center — Access info.
-
-- **Verification and conflicts:**
-  - **Depth:** Sources consistently cite shallow depths (0–10 m or 6–10 m). Used 0–10 m to reflect surface-breaking rocks to seabed.
-  - **Current:** Described as "variable" and "quite strong" at times, despite the shallow depth. This is a key safety note included in the text.
-  - **Visibility:** Seasonal variation is significant (8 m vs 30 m). Ranges consolidated to reflect this.
-  - **Name:** "Batu Malang" translates to "Unlucky Rock" or "Poor Rock" - noted in overview for context.
-
-- **Inferences (where not explicitly stated):**
-  - **Max recommended depth:** Set at 10 m based on the seabed depth.
-  - **Dive style:** Inferred as "exploration/circumnavigation" due to the nature of a boulder pile.
-  - **Difficulty:** Rated 2/5 (Easy to Moderate) due to shallow depth but potential current.
-
-- **Gaps and uncertainties:**
-  - **Specific incident history:** None found.
-  - **Exact GPS:** Not verified, but location relative to Coral Island is standard.
-
-- **Choices made:**
-  - Emphasized the "swim-through" aspect as it's a unique feature of this site compared to other Tioman reefs.
-  - Highlighted "Table Corals" as a specific biological feature based on source descriptions.
-
-***
-
-## End of Dive Site Documentation: Batu Malang, Tioman Island
-
-[1](https://www.youtube.com/watch?v=NhBBMNIek68)
-[2](https://www.taxitojb.com/tioman-diving/)
-[3](https://scubatravelventures.com/tioman-island-sea-stories-2/)
-[4](https://www.amantioman.com/diving-sites-in-tioman/)
-[5](https://diveadventures.com.au/region/malaysia-tioman-island/)
-[6](https://www.tioman-dive-centre.com/environment/weather/)
-[7](https://sg.trip.com/guide/info/tioman-diving.html)
-[8](https://blog.padi.com/diving-tioman-island-the-jewel-in-the-malaysian-crown/)
-[9](https://www.scubatravel.co.uk/malaysia/best-diving.html)
-[10](https://divejourney.io/dive-spots/malaysia-batu-malang)
-[11](https://divezone.net/diving/tioman-island)
-[12](https://www.tiomandiveresort.com/faqs)
-[13](https://www.padi.com/dive-site/malaysia/batu-malang/)
-[14](https://www.scubadiving.com/tioman-island-perfect-dive-detour)
-[15](https://divechamp.com/divesite/mumbang-rock)
-[16](https://www.divessi.com/en/mydiveguide/divesite/batu-malang-rocks-malan-rock-malangtioman-malaysia-62950)
-[17](https://www.sgmytaxi.com/tioman-diving/)
-[18](https://www.tioman-dive-centre.com/leisure-diving-tioman/tioman-dive-sites/)
-[19](https://www.lemon8-app.com/naomiclouds/7199937130989240833?region=sg)
-[20](https://sgjbtaxis.com/blog/batu-malang-spots-in-tioman-islands/)
-[21](https://dev.underwaterasia.info/malaysia/tioman-aur-diving)

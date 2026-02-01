@@ -245,13 +245,9 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
 
 ***
 
-## 13. Example Dive Narrative
 
-You step back from the boat rail, regulator in, and descend the anchor line into a haze of blue. Current is moderate today—noticeable but manageable. Within 30 seconds, the massive pinnacle materializes below: enormous boulders stacked like a fortress, covered in pinks, oranges, and purples of soft coral. You reach the anchor at 12 m and pause to orient yourself. To your left, a canyon disappears deeper into the boulder maze. Above, the shallower shelf glimmers. Your guide signals the plan—move right along the shallower edge first, then drop into the canyons if current permits. You kick gently forward. Immediately, angelfish dart between coral heads, and you spot a moray eel's head poking from a crevice. A school of yellow-fin barracudas passes overhead—sleek and silver. You don't follow; you've learned they move fast. Instead, you drift slowly, scanning coral detail. A nudibranch, impossibly bright. A scorpionfish, perfectly camouflaged. Time passes in a blur. Twenty minutes in, you notice the current has shifted; your guide signals a shallow-up to 15 m to work along the upper edge. A wall of jacks suddenly appears from the blue—perhaps 40 fish, moving in perfect unison. You grab your camera, but they're gone in seconds. Your dive computer beeps—50 minutes. Air pressure is good, but your guide signals a slow ascent to 5 m anyway. You reach the safety stop, watching the pinnacle fade above you. The final 5 minutes seem to last forever, but when you surface and remove your regulator, you're grinning. Tiger Reef delivered exactly what it promised: drama, color, and pelagic thrills.
 
-***
-
-## 14. Keywords & Tags
+## 13. Keywords & Tags
 
 - **Keywords:**
   - Tiger Reef
@@ -278,57 +274,3 @@ You step back from the boat rail, regulator in, and descend the anchor line into
   - **Activity:** Recreational diving, photography (wide-angle & macro)
 
 ***
-
-## 15. Source Notes (Internal)
-
-- **Sources:**
-  1. divebooker.com (Tiger Reef, Tioman Island dive site article, 2024-10-31)
-  2. diveadventures.com.au (Tioman Island Scuba Diving, 2020-07-23)
-  3. blog.padi.com (Diving Tioman Island – The Jewel in the Malaysian Crown, 2020-07-28)
-  4. divessi.com (Tiger Reef, MySSI dive site data, 2022-12-31)
-  5. trevo.my (10 Best Diving Sites in Malaysia, 2025-09-12)
-  6. tiomanreefdivers.com (Tioman Reef Divers dive centre and seasonal info)
-  7. nautica-diving.com (Dive Site 101 - Tiger Reef, Pulau Tioman, 2016-04-07)
-  8. divezone.net (Tiger Reef map and reviews)
-  9. padi.com (Tiger Reef dive site summary)
-
-- **Verification notes:**
-  1. Depth range: Sources consistently cite 9–22 m or 9–25 m. Used 9–25 m as conservative max based on divebooker.com and oracle scuba maximum depth cited as 30 m (likely rare/exceptional). Conservative approach: 9–25 m recommended working depth.
-  2. Current: Described as "moderate to strong" across all sources; consistent terminology used.
-  3. Visibility: Sources cite 10–30 m and 15–30 m (high season) vs. 8–12 m (summer). Consolidated to 10–30 m range with seasonal notes.
-  4. Season: Consistent across all sources: March/February to October/November, with best March–May and mid-September–early November.
-  5. Marine life: Cross-referenced across 5+ sources; common species list is well-corroborated. Rare encounters (turtles) noted cautiously based on source specificity.
-  6. Difficulty: Inferred from certification recommendations (AOWD+) and skill descriptions across sources. No explicit numeric rating provided; derived from "experienced advanced" language and current/depth challenges cited.
-
-- **Inferences:**
-  1. Difficulty rating (3/5): Inferred from current strength, depth, and skill requirements described; not explicitly rated in sources.
-  2. Min cert level (AOWD): Derived from source language ("experienced advanced diver," "AOWD recommended") and site characteristics.
-  3. Entry method: Assumed boat entry with anchor line based on typical Tioman boat-diving protocols and site geography; no explicit mention found but consistent with regional practice.
-  4. Safety stop depth and duration: Standard recreational protocol (5 m, 3–5 min) applied; not explicitly documented.
-
-- **Gaps and uncertainties:**
-  1. No detailed incident or accident history available; assumed good safety record based on operator experience and lack of documented major issues.
-  2. Exact boat access protocols and specific operator procedures not detailed; general best practices applied.
-  3. Precise current measurement (knots) not provided in most sources; "moderate to strong" is the consensus descriptor.
-  4. GPS coordinates: One source provided (2.89302, 104.05593) but not independently verified.
-  5. Specific seasonal marine life triggers (cuttlefish mating season cited for Tioman generally, but not specifically for Tiger Reef).
-
-***
-
-## End of Dive Site Documentation: Tiger Reef, Tioman Island
-
-[1](https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/collection_2898f707-007d-4fe6-a74d-cd0f3f9d7ecb/5412e72c-8835-4503-9ce8-cf6f3e61be02/DiveSiteDocTemplate.md)
-[2](https://divebooker.com/tiger-reef-tioman-island-baz13010)
-[3](https://diveadventures.com.au/region/malaysia-tioman-island/)
-[4](https://blog.padi.com/diving-tioman-island-the-jewel-in-the-malaysian-crown/)
-[5](https://www.divessi.com/en/mydiveguide/divesite/tiger-reef-malaysia-249778)
-[6](https://oraclescuba.com/tioman-island,-malaysia)
-[7](https://trevo.my/stories/diving-sites-in-malaysia/)
-[8](https://www.tiomanreefdivers.com)
-[9](https://forevervacation.com/tioman-island/tiger-reef)
-[10](https://divezone.net/divesite/tiger-reef)
-[11](https://underwaterasia.info/malaysia/tioman-aur-diving)
-[12](https://www.padi.com/dive-site/malaysia/tiger-reef-2/)
-[13](https://www.tioman-dive-centre.com/leisure-diving-tioman/tioman-dive-sites/)
-[14](https://nautica-diving.com/blog/2016/04/07/tiger-reef-pulau-tioman-liveaboard/)
-[15](https://www.instagram.com/reel/DBWMq51yuFc/?hl=en)
