@@ -64,7 +64,7 @@ DovvyBuddy is an AI-powered conversational assistant that helps prospective and 
 | **Backend** | Python FastAPI, SQLAlchemy, Alembic | Async performance, robust ORM, type hints |
 | **Database** | PostgreSQL + pgvector (Neon) | Relational data + vector embeddings, managed service |
 | **LLM** | Gemini 2.0 Flash | Cost-effective, production-ready, 1M token context |
-| **Embeddings** | text-embedding-004 | 768 dimensions, optimized for retrieval |
+| **Embeddings** | gemini-embedding-001 | 768 dimensions, optimized for retrieval |
 | **Email** | Resend API | Developer-friendly, reliable delivery |
 | **Hosting** | Vercel (frontend) + Cloud Run (backend) | Edge network, serverless Python |
 | **Testing** | Vitest (frontend), pytest (backend), Playwright (E2E) | Comprehensive test coverage |
@@ -142,7 +142,7 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 
 **Key Decisions:**
 - Chunk size: 500-800 tokens (balance between context and precision)
-- Embedding model: Gemini `text-embedding-004` (1536 dimensions)
+- Embedding model: Gemini `gemini-embedding-001` (768 dimensions)
 - Retrieval: HNSW index for fast similarity search
 - Metadata: JSONB fields for filtering (content type, certification level)
 
@@ -390,7 +390,7 @@ CREATE TABLE content_embeddings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   content_path VARCHAR(500) NOT NULL,
   chunk_text TEXT NOT NULL,
-  embedding vector(1536),
+  embedding vector(768),
   metadata JSONB,
   created_at TIMESTAMP DEFAULT NOW()
 );

@@ -23,7 +23,7 @@ All planned features implemented and verified. All known limitations have been r
 
 #### ✅ Corrected Vector Dimensions
 - **Before**: Schema had 1536 dimensions (incorrect for Gemini)
-- **After**: Updated to 768 dimensions (correct for text-embedding-004)
+- **After**: Updated to 768 dimensions (correct for gemini-embedding-001)
 - **Migration**: Generated `0001_past_human_fly.sql` to alter column type
 
 #### ✅ Complete Dive Site Metadata
@@ -129,7 +129,7 @@ Build the content ingestion pipeline that enables DovvyBuddy to "read" and seman
 
 - **Upstream:** PR1 (Database Schema & Migrations) — Must be complete with `content_embeddings` table available.
 - **External:**
-  - Gemini API key (`GEMINI_API_KEY`) with `text-embedding-004` access — ✅ Ready.
+  - Gemini API key (`GEMINI_API_KEY`) with `gemini-embedding-001` access — ✅ Ready.
 
 ### Assumptions
 
@@ -202,7 +202,7 @@ Build the content ingestion pipeline that enables DovvyBuddy to "read" and seman
     - `EMBEDDING_PROVIDER` (gemini|groq)
     - `GEMINI_API_KEY` (if using Gemini)
     - `GROQ_API_KEY` (if using Groq, though Groq may not have embedding endpoint yet)
-  - Note: Gemini `text-embedding-004` is the recommended default.
+  - Note: Gemini `gemini-embedding-001` is the recommended default.
 - **Package Dependencies:**
   - Add `@google/generative-ai` or `groq-sdk` for embedding API.
   - Add `gray-matter` for markdown frontmatter parsing.
@@ -252,11 +252,11 @@ Enable the bot to semantically search curated documentation by building a conten
      - Keep sections intact if within token limit.
      - Fall back to paragraph split (double newline) if section too large.
      - Include section headers in chunks for context.
-   - Generate embeddings via Gemini API (`text-embedding-004`).
+  - Generate embeddings via Gemini API (`gemini-embedding-001`).
    - Store in `content_embeddings` table:
      - `content_path`: Relative file path.
      - `chunk_text`: The text chunk.
-     - `embedding`: Vector (1536 dimensions).
+    - `embedding`: Vector (768 dimensions).
      - `metadata`: JSONB with frontmatter + chunk index.
    - Make script idempotent (check if file already ingested by path/hash).
    - Log progress (files processed, chunks generated, embeddings stored).
@@ -358,7 +358,7 @@ Enable the bot to semantically search curated documentation by building a conten
   - Unique ID (UUID).
   - File path reference.
   - Text chunk.
-  - 1536-dimension vector embedding.
+  - 768-dimension vector embedding.
   - Metadata (frontmatter + chunk index).
 
 **Indexes:**
@@ -418,7 +418,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 - **Embedding Provider (`src/lib/embeddings/gemini-provider.test.ts`):**
   - Mock API calls.
   - Test retry logic on rate limit errors.
-  - Verify embedding dimensions (1536).
+  - Verify embedding dimensions (768).
 - **Content Validation (`scripts/validate-content.test.ts`):**
   - Test frontmatter schema validation.
   - Test safety disclaimer detection.
@@ -498,7 +498,7 @@ pnpm content:validate
    LIMIT 5;
    ```
 
-   - Expected: Sample rows with file paths, chunk text lengths, embedding dimensions (1536).
+  - Expected: Sample rows with file paths, chunk text lengths, embedding dimensions (768).
 
 6. **Test Retrieval Function:**
    - Create a test script or use Node REPL:
@@ -555,7 +555,7 @@ pnpm content:validate
 - [ ] Sources cited in frontmatter where applicable.
 - [ ] Ingestion script processes all files without errors.
 - [ ] `content_embeddings` table populated with expected number of chunks.
-- [ ] Embeddings are 1536-dimensional vectors.
+- [ ] Embeddings are 768-dimensional vectors.
 - [ ] Retrieval function returns relevant chunks for test queries.
 - [ ] Chunks preserve context (headers included, not cut mid-sentence).
 - [ ] Hybrid chunking works (sections intact when possible).
@@ -588,7 +588,7 @@ pnpm content:validate
 
 **External Dependencies:**
 
-- Gemini API key (`GEMINI_API_KEY`) with text-embedding-004 access.
+- Gemini API key (`GEMINI_API_KEY`) with gemini-embedding-001 access.
 - Database connection working (from PR1).
 - Sufficient API quota for embeddings (Gemini free tier: 1500 requests/day should be enough for V1 content).
 
@@ -625,7 +625,7 @@ pnpm content:validate
 
 - **Impact:** If embedding provider changes or returns wrong dimensions, retrieval will fail.
 - **Mitigation:**
-  - Validate embedding dimensions (1536) before storing in database.
+  - Validate embedding dimensions (768) before storing in database.
   - Add unit test to verify embedding provider returns correct shape.
   - Document expected dimensions in code comments.
 
@@ -682,7 +682,7 @@ pnpm content:validate
    - **Decision:** ✅ **Hybrid approach** — Try semantic split first (detect markdown headers), fall back to paragraph split if section exceeds 800 tokens. Best of both worlds.
 
 2. **Gemini vs Groq for Embeddings**
-   - **Trade-off:** Gemini has proven embedding models (`text-embedding-004`). Groq is faster for inference but may lack embedding endpoint.
+  - **Trade-off:** Gemini has proven embedding models (`gemini-embedding-001`). Groq is faster for inference but may lack embedding endpoint.
    - **Decision:** Use Gemini for embeddings in V1. Abstract provider interface allows switching later if needed.
 
 3. **Content in Git vs CMS**
@@ -697,7 +697,7 @@ pnpm content:validate
 
 | Topic | Decision | Rationale |
 |-------|----------|--------|
-| **Embedding Provider** | Gemini `text-embedding-004` | Proven, 1536 dimensions, good performance; use `@google/generative-ai` SDK |
+| **Embedding Provider** | Gemini `gemini-embedding-001` | Proven, 768 dimensions, good performance; use `@google/generative-ai` SDK |
 | **Chunk Size** | 500-800 tokens per chunk | Balance between context and relevance; preserve paragraph boundaries |
 | **Chunking Strategy** | Hybrid (semantic + paragraph split) | Try semantic split first (markdown headers), fall back to paragraph split if section >800 tokens |
 | **Metadata Storage** | Frontmatter + chunk index in JSONB | Flexible for filtering and debugging; parse with `gray-matter` |

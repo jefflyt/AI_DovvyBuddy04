@@ -75,6 +75,9 @@ class TripAgent(Agent):
                 metadata={
                     "model": response.model,
                     "tokens_used": response.tokens_used,
+                    "prompt_tokens": response.prompt_tokens,
+                    "completion_tokens": response.completion_tokens,
+                    "cost_usd": response.cost_usd,
                 },
             )
 
@@ -114,7 +117,7 @@ IMPORTANT:
         messages.append(LLMMessage(role="system", content=system_prompt))
 
         # Conversation history
-        for msg in context.conversation_history[-10:]:
+        for msg in context.conversation_history[-6:]:
             messages.append(LLMMessage(role=msg["role"], content=msg["content"]))
 
         # Current query with RAG context

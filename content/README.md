@@ -136,7 +136,7 @@ The ingestion pipeline:
 1. **Read**: Recursively scan markdown files in `content/`.
 2. **Parse**: Extract frontmatter and body text.
 3. **Chunk**: Split text using hybrid strategy (semantic + paragraph split).
-4. **Embed**: Generate 1536-dimensional vectors via Gemini API.
+4. **Embed**: Generate 768-dimensional vectors via Gemini API.
 5. **Store**: Save chunks and embeddings to `content_embeddings` table.
 
 Run ingestion:

@@ -63,12 +63,32 @@ class RAGPipeline:
         if not query or not query.strip():
             raise ValueError("Query cannot be empty")
 
+        complexity = None
+        if top_k is None:
+            complexity = self._assess_query_complexity(query)
+            if complexity == "skip":
+                logger.info("Query complexity: skip, skipping RAG")
+                return RAGContext(
+                    query=query,
+                    results=[],
+                    formatted_context="NO_DATA",
+                    citations=[],
+                    has_data=False,
+                )
+
+        selected_top_k = top_k
+        if selected_top_k is None and complexity:
+            selected_top_k = 3 if complexity == "medium" else 5
+
         # Build retrieval options
         options = RetrievalOptions(
-            top_k=top_k or settings.rag_top_k,
+            top_k=selected_top_k or settings.rag_top_k,
             min_similarity=min_similarity or settings.rag_min_similarity,
             filters=filters or {},
         )
+
+        if complexity:
+            logger.info(f"Query complexity: {complexity}, using top_k={options.top_k}")
 
         # Retrieve chunks using hybrid or semantic search
         if settings.rag_use_hybrid:
@@ -137,6 +157,61 @@ class RAGPipeline:
             formatted_chunks.append(result.text)
 
         return "\n\n".join(formatted_chunks)
+
+    def _assess_query_complexity(self, query: str) -> str:
+        """
+        Assess query complexity for dynamic top_k selection.
+
+        Returns:
+            "skip" | "medium" | "complex"
+        """
+        normalized = query.strip().lower()
+
+        if not normalized:
+            return "medium"
+
+        skip_phrases = {
+            "hi",
+            "hello",
+            "hey",
+            "thanks",
+            "thank you",
+            "ok",
+            "okay",
+            "yes",
+            "no",
+        }
+
+        if normalized in skip_phrases:
+            return "skip"
+
+        if any(phrase in normalized for phrase in [
+            "can you repeat",
+            "what do you mean",
+            "clarify",
+            "more detail",
+            "say that again",
+        ]):
+            return "skip"
+
+        complex_indicators = [
+            "where can i",
+            "best sites",
+            "dive sites",
+            "destination",
+            "plan a trip",
+            "plan trip",
+            "recommend",
+            "itinerary",
+        ]
+
+        if len(normalized) > 100:
+            return "complex"
+
+        if any(indicator in normalized for indicator in complex_indicators):
+            return "complex"
+
+        return "medium"
 
     async def retrieve_context_raw(
         self,

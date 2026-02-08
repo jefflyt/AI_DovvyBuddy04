@@ -32,7 +32,7 @@ Establish the persistent data layer for DovvyBuddy, including database schema, m
 - **Assumption:** Postgres instance provisioned on Neon — ✅ Complete
 - **Assumption:** pgvector extension enabled via SQL — ✅ Verified
 - **Assumption:** Initial seed data includes 1 destination (Tioman Island, Malaysia) with 5 dive sites — ✅ Complete
-- **Assumption:** Vector embeddings use 1536 dimensions (Gemini text-embedding-004 standard) — ✅ Implemented
+- **Assumption:** Vector embeddings use 768 dimensions (Gemini gemini-embedding-001 standard) — ✅ Implemented
 - **Assumption:** HNSW index used for vector similarity search — ✅ Implemented
 
 ---
@@ -51,7 +51,7 @@ Establish the persistent data layer for DovvyBuddy, including database schema, m
 - ✅ `dive_sites` — Dive sites with certifications & difficulty requirements
 - ✅ `leads` — Lead capture submissions (training/trip)
 - ✅ `sessions` — Chat session state with 24h expiry
-- ✅ `content_embeddings` — RAG vector embeddings (1536 dimensions)
+- ✅ `content_embeddings` — RAG vector embeddings (768 dimensions)
 
 **Database Tooling:**
 - ✅ Migration generation (`pnpm db:generate`)
@@ -245,7 +245,7 @@ Set up the persistent storage layer with type-safe schema definitions, migration
   - id: UUID (primary key)
   - content_path: TEXT (e.g., "certifications/padi-open-water.md")
   - chunk_text: TEXT (the actual text chunk)
-  - embedding: VECTOR(1536) (pgvector type, 1536 dimensions for Gemini text-embedding-004)
+  - embedding: VECTOR(768) (pgvector type, 768 dimensions for Gemini gemini-embedding-001)
   - metadata: JSONB (e.g., {section, tags, source})
   - created_at: TIMESTAMP (default now())
   ```
@@ -454,7 +454,7 @@ SESSION_SECRET=your_random_32_char_string_here
 - [x] pgvector extension enabled (`SELECT * FROM pg_extension WHERE extname = 'vector';`).
 - [x] Seed data inserted and queryable (1 destination, 5 dive sites).
 - [x] Foreign key constraints work (verified via schema push).
-- [x] Vector column accepts embeddings (VECTOR(1536) type created).
+- [x] Vector column accepts embeddings (VECTOR(768) type created).
 - [x] Drizzle types are exported and usable in TypeScript files.
 - [x] Verification script confirms database state.
 - [x] All CI checks pass (lint, typecheck, build, test).
@@ -569,7 +569,7 @@ SESSION_SECRET=your_random_32_char_string_here
 |-------|----------|--------|
 | **Postgres Provider** | Neon | Better cold start performance, excellent pgvector support |
 | **ORM** | Drizzle | Lighter bundle size than Prisma, better serverless performance |
-| **Vector Dimensions** | 1536 dimensions | Gemini `text-embedding-004` standard; column: `VECTOR(1536)` |
+| **Vector Dimensions** | 768 dimensions | Gemini `gemini-embedding-001` standard; column: `VECTOR(768)` |
 | **Vector Index** | HNSW | Better recall and query performance than IVFFlat |
 | **Primary Keys** | UUID v4 | Distributed-friendly, merge-safe, better for future sharding |
 | **Schema Design** | Normalized | Separate tables for destinations/sites; easier to maintain and extend |

@@ -24,7 +24,7 @@ Shared utilities and core logic for DovvyBuddy.
   - Retained as fallback during Python migration
   
 - **embeddings/** — Embedding generation (PR2)
-  - Gemini text-embedding-004 provider
+  - Gemini gemini-embedding-001 provider
   
 - **rag/** — Retrieval-Augmented Generation pipeline (PR2)
   - Chunking, embedding, vector search

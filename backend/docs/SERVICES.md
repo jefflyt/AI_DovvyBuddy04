@@ -151,13 +151,13 @@ All configuration is via environment variables (see `.env.example`):
 ### LLM Configuration
 
 - `DEFAULT_LLM_PROVIDER`: `groq` or `gemini`
-- `DEFAULT_LLM_MODEL`: Model name (default: `gemini-2.0-flash`)
+- `DEFAULT_LLM_MODEL`: Model name (default: `gemini-2.5-flash-lite`)
 - `LLM_TEMPERATURE`: 0.0-1.0 (default: 0.7)
 - `LLM_MAX_TOKENS`: Max tokens per generation (default: 2048)
 
 ### Embedding Configuration
 
-- `EMBEDDING_MODEL`: Gemini model (default: `text-embedding-004`)
+- `EMBEDDING_MODEL`: Gemini model (default: `gemini-embedding-001`)
 - `EMBEDDING_BATCH_SIZE`: Max texts per batch (default: 100)
 - `EMBEDDING_CACHE_SIZE`: Cache entries (default: 1000)
 - `EMBEDDING_CACHE_TTL`: TTL in seconds (default: 3600)

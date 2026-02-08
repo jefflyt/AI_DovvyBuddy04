@@ -34,8 +34,8 @@ class TestGeminiLLMProvider:
     def test_initialization(self):
         """Test provider initialization."""
         with patch("google.genai.Client"):
-            provider = GeminiLLMProvider(api_key="test-key", model="gemini-2.0-flash")
-            assert provider.model == "gemini-2.0-flash"
+            provider = GeminiLLMProvider(api_key="test-key", model="gemini-2.5-flash-lite")
+            assert provider.model == "gemini-2.5-flash-lite"
             assert provider.temperature == 0.7  # Changed from default_temperature
             assert provider.max_tokens == 2048   # Changed from default_max_tokens
 
@@ -78,6 +78,43 @@ class TestGeminiLLMProvider:
         # We can either assert the new default or check self.model
         assert "gemini" in gemini_provider.get_model_name()
 
+    def test_llm_response_extended_fields(self):
+        """Test LLMResponse includes extended fields."""
+        response = LLMResponse(
+            content="ok",
+            model="gemini-2.5-flash-lite",
+            tokens_used=10,
+            prompt_tokens=6,
+            completion_tokens=4,
+            cost_usd=0.0001,
+            finish_reason="stop",
+        )
+
+        assert response.prompt_tokens == 6
+        assert response.completion_tokens == 4
+        assert response.cost_usd == 0.0001
+
+    @pytest.mark.asyncio
+    async def test_generate_missing_usage_metadata(self, gemini_provider):
+        """Test graceful handling when usage_metadata is missing."""
+        mock_response = MagicMock()
+        mock_response.text = "Hello"
+        mock_response.candidates = [MagicMock(finish_reason="stop")]
+        mock_response.usage_metadata = None
+
+        gemini_provider.client.models.generate_content = MagicMock(
+            return_value=mock_response
+        )
+
+        response = await gemini_provider.generate(
+            [LLMMessage(role="user", content="Hi")]
+        )
+
+        assert response.tokens_used is None
+        assert response.prompt_tokens is None
+        assert response.completion_tokens is None
+        assert response.cost_usd is None
+
 
 class TestLLMFactory:
     """Test LLM provider factory."""
@@ -88,14 +125,14 @@ class TestLLMFactory:
         """Test creating Gemini provider."""
         mock_settings.default_llm_provider = "gemini"
         mock_settings.gemini_api_key = "test-gemini-key"
-        mock_settings.default_llm_model = "gemini-2.0-flash"
+        mock_settings.default_llm_model = "gemini-2.5-flash-lite"
         mock_settings.llm_temperature = 0.7
         mock_settings.llm_max_tokens = 2048
 
         provider = create_llm_provider()
 
         assert isinstance(provider, GeminiLLMProvider)
-        assert provider.model == "gemini-2.0-flash"
+        assert provider.model == "gemini-2.5-flash-lite"
 
     @patch("app.services.llm.factory.settings")
     @patch("google.genai.Client")

@@ -20,6 +20,7 @@ from tenacity import (
 from app.core.config import settings
 from app.services.llm.base import LLMProvider, LLMResponse
 from app.services.llm.types import LLMMessage
+from app.services.rag.token_utils import calculate_gemini_cost
 
 logger = logging.getLogger(__name__)
 
@@ -131,22 +132,33 @@ class GeminiLLMProvider(LLMProvider):
             if response.candidates and response.candidates[0].finish_reason:
                 finish_reason = response.candidates[0].finish_reason
 
-            logger.info(f"Gemini API call successful (New SDK): len={len(content)}")
+            usage_metadata = getattr(response, "usage_metadata", None)
+            prompt_tokens = getattr(usage_metadata, "prompt_token_count", None)
+            completion_tokens = getattr(usage_metadata, "candidates_token_count", None)
+            total_tokens = getattr(usage_metadata, "total_token_count", None)
+            cost_usd = calculate_gemini_cost(prompt_tokens, completion_tokens)
 
-            return LLMResponse(
-                content=content,
-                model=self.model,
-                tokens_used=getattr(response.usage_metadata, "total_token_count", None),
-                finish_reason=str(finish_reason),
+            if usage_metadata is None:
+                logger.warning("Gemini API response missing usage_metadata")
+
+            logger.info(
+                "LLM generation complete: model=%s, finish_reason=%s, prompt_tokens=%s, completion_tokens=%s, total_tokens=%s, cost_usd=%s",
+                self.model,
+                finish_reason,
+                prompt_tokens,
+                completion_tokens,
+                total_tokens,
+                cost_usd,
             )
 
-            logger.info(f"Gemini API call successful: finish_reason={finish_reason}")
-
             return LLMResponse(
                 content=content,
                 model=self.model,
-                tokens_used=None,  # Gemini doesn't return token count in all cases
-                finish_reason=finish_reason,
+                tokens_used=total_tokens,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                cost_usd=cost_usd,
+                finish_reason=str(finish_reason),
             )
 
         except Exception as e:

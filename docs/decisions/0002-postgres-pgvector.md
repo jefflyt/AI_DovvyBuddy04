@@ -29,7 +29,7 @@ Use **PostgreSQL with pgvector extension**, hosted on **Neon** (or Supabase as a
 - **Vector Extension:** pgvector (HNSW index for similarity search)
 - **Hosting:** Neon (serverless Postgres)
 - **ORM:** Drizzle ORM (type-safe, lightweight)
-- **Vector Dimensions:** 1536 (Gemini `text-embedding-004`)
+- **Vector Dimensions:** 768 (Gemini `gemini-embedding-001`)
 
 ---
 

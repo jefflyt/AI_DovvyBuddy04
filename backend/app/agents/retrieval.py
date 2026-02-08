@@ -112,6 +112,9 @@ class RetrievalAgent(Agent):
                 metadata={
                     "model": response.model,
                     "tokens_used": response.tokens_used,
+                    "prompt_tokens": response.prompt_tokens,
+                    "completion_tokens": response.completion_tokens,
+                    "cost_usd": response.cost_usd,
                     "has_rag_context": bool(rag_context_str),
                     "has_citations": has_citations,
                     "citations": rag_context.citations if rag_context else [],
@@ -142,7 +145,7 @@ class RetrievalAgent(Agent):
         messages.append(LLMMessage(role="system", content=system_prompt))
 
         # Conversation history (recent context for continuity)
-        for msg in context.conversation_history[-10:]:  # Last 5 turns (10 messages)
+        for msg in context.conversation_history[-6:]:  # Last 3 turns (6 messages)
             messages.append(
                 LLMMessage(
                     role=msg["role"],

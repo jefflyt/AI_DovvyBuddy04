@@ -1,9 +1,10 @@
 import os
+import asyncio
 from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -11,6 +12,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.orm import Session, sessionmaker
+from pgvector.psycopg2 import register_vector
 
 # Load .env file from project root (4 levels up from backend/app/db/session.py)
 env_path = Path(__file__).resolve().parent.parent.parent.parent / ".env.local"
@@ -19,6 +21,7 @@ if env_path.exists():
 
 _engine: Optional[AsyncEngine] = None
 _async_session: Optional[async_sessionmaker[AsyncSession]] = None
+_engine_loop: Optional[asyncio.AbstractEventLoop] = None
 _sync_engine = None
 _sync_session_factory = None
 
@@ -49,11 +52,15 @@ def get_sync_database_url() -> str:
 
 
 async def init_db() -> None:
-    global _engine, _async_session
-    if _engine is None:
+    global _engine, _async_session, _engine_loop
+    current_loop = asyncio.get_running_loop()
+    if _engine is None or _engine_loop is None or _engine_loop != current_loop:
+        if _engine is not None:
+            await _engine.dispose()
         database_url = get_database_url()
         _engine = create_async_engine(database_url, future=True, echo=False)
         _async_session = async_sessionmaker(_engine, expire_on_commit=False)
+        _engine_loop = current_loop
 
 
 def get_session() -> async_sessionmaker[AsyncSession]:
@@ -68,6 +75,10 @@ def get_sync_engine():
     if _sync_engine is None:
         database_url = get_sync_database_url()
         _sync_engine = create_engine(database_url, echo=False)
+
+        @event.listens_for(_sync_engine, "connect")
+        def _register_vector(dbapi_connection, connection_record):
+            register_vector(dbapi_connection)
     return _sync_engine
 
 

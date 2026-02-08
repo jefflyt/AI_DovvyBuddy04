@@ -48,6 +48,7 @@ async def test_build_context_with_history():
 
     assert len(context.conversation_history) == 2
     assert context.metadata["history_length"] == 2
+    assert context.metadata["history_tokens"] is not None
 
 
 @pytest.mark.asyncio
@@ -60,7 +61,8 @@ async def test_build_context_with_rag():
         query="test query",
         results=[
             RetrievalResult(
-                chunk_text="Retrieved chunk",
+                chunk_id="1",
+                text="Retrieved chunk",
                 similarity=0.9,
                 metadata={},
             )
@@ -125,6 +127,47 @@ def test_trim_history_no_trim_needed():
     trimmed = builder.trim_history(history, max_messages=20)
 
     assert len(trimmed) == 10
+    assert trimmed == history
+
+
+def test_truncate_history_by_tokens_empty():
+    builder = ContextBuilder()
+    trimmed, tokens = builder._truncate_history_by_tokens([], 100)
+    assert trimmed == []
+    assert tokens == 0
+
+
+def test_truncate_history_by_tokens_under_budget():
+    builder = ContextBuilder()
+    history = [
+        {"role": "user", "content": "Short message"},
+        {"role": "assistant", "content": "Short response"},
+    ]
+    trimmed, tokens = builder._truncate_history_by_tokens(history, 1000)
+    assert trimmed == history
+    assert tokens > 0
+
+
+def test_truncate_history_by_tokens_over_budget():
+    builder = ContextBuilder()
+    history = [
+        {"role": "user", "content": "Message 1"},
+        {"role": "assistant", "content": "Message 2"},
+        {"role": "user", "content": "Message 3"},
+    ]
+    trimmed, tokens = builder._truncate_history_by_tokens(history, 2)
+    assert len(trimmed) <= 1
+    assert tokens <= 2
+
+
+def test_truncate_history_preserves_order():
+    builder = ContextBuilder()
+    history = [
+        {"role": "user", "content": "A"},
+        {"role": "assistant", "content": "B"},
+        {"role": "user", "content": "C"},
+    ]
+    trimmed, _ = builder._truncate_history_by_tokens(history, 1000)
     assert trimmed == history
 
 

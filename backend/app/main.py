@@ -1,4 +1,5 @@
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,9 +13,14 @@ from app.core.config import settings
 from app.core.rate_limit import limiter
 from app.db.session import init_db
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    yield
+
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="DovvyBuddy Backend", version="0.1.0")
+    app = FastAPI(title="DovvyBuddy Backend", version="0.1.0", lifespan=lifespan)
     
     # Add rate limiter to app state
     app.state.limiter = limiter
@@ -38,10 +44,6 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
         expose_headers=["*"],
     )
-
-    @app.on_event("startup")
-    async def startup():
-        await init_db()
 
     app.include_router(chat.router, prefix="/api")
     app.include_router(session_routes.router, prefix="/api")

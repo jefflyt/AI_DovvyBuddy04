@@ -3,6 +3,7 @@ Integration tests for chat flow.
 """
 
 import pytest
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
@@ -27,6 +28,8 @@ def mock_session_data():
     return SessionData(
         id=uuid4(),
         conversation_history=[],
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
         diver_profile=None,
     )
 
@@ -52,10 +55,15 @@ async def test_chat_flow_new_session(mock_db_session, mock_session_data):
         confidence=0.8,
     )
 
+    mock_agent = MagicMock()
+    mock_agent.name = "Retrieval Agent"
+    mock_agent.execute = AsyncMock(return_value=mock_result)
+    orchestrator.agent_router.select_agent = MagicMock(return_value=mock_agent)
+
     with patch.object(
-        orchestrator.agent_registry.get(AgentType.RETRIEVAL),
-        "execute",
-        return_value=mock_result,
+        orchestrator.agent_router,
+        "select_agent",
+        return_value=mock_agent,
     ):
         request = ChatRequest(
             message="What is scuba diving?",
@@ -95,8 +103,10 @@ async def test_chat_flow_existing_session(mock_db_session, mock_session_data):
         agent_type=AgentType.RETRIEVAL,
     )
 
-    retrieval_agent = orchestrator.agent_registry.get(AgentType.RETRIEVAL)
+    retrieval_agent = MagicMock()
+    retrieval_agent.name = "Retrieval Agent"
     retrieval_agent.execute = AsyncMock(return_value=mock_result)
+    orchestrator.agent_router.select_agent = MagicMock(return_value=retrieval_agent)
 
     request = ChatRequest(
         message="Tell me more",
@@ -131,8 +141,10 @@ async def test_chat_flow_certification_query(mock_db_session, mock_session_data)
         agent_type=AgentType.CERTIFICATION,
     )
 
-    cert_agent = orchestrator.agent_registry.get(AgentType.CERTIFICATION)
+    cert_agent = MagicMock()
+    cert_agent.name = "Certification Agent"
     cert_agent.execute = AsyncMock(return_value=mock_result)
+    orchestrator.agent_router.select_agent = MagicMock(return_value=cert_agent)
 
     request = ChatRequest(
         message="What is PADI Open Water certification?",
@@ -163,8 +175,10 @@ async def test_chat_flow_safety_query(mock_db_session, mock_session_data):
         agent_type=AgentType.SAFETY,
     )
 
-    safety_agent = orchestrator.agent_registry.get(AgentType.SAFETY)
+    safety_agent = MagicMock()
+    safety_agent.name = "Safety Agent"
     safety_agent.execute = AsyncMock(return_value=mock_result)
+    orchestrator.agent_router.select_agent = MagicMock(return_value=safety_agent)
 
     request = ChatRequest(
         message="Can I dive with asthma?",

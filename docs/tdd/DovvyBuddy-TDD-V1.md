@@ -43,7 +43,7 @@ This document is the Technology & Technical Design Decisions (TDD) reference for
 ## 6. LLM & Embeddings Providers
 
 - **Production target:** Google Gemini — model: `gemini-2.0-flash` (generation + preferred embeddings provider)
-- **Embeddings model:** `text-embedding-004` (768 dims)
+- **Embeddings model:** `gemini-embedding-001` (768 dims)
 - **Development/testing:** Groq used for fast dev iterations; agent switch keeps interfaces consistent
 - **Orchestration:** ADK / Genkit integration code lives under `src/lib/agent/` for multi-agent flows
 - **Env vars (examples):** `GEMINI_API_KEY`, `GROQ_API_KEY`, `ENABLE_ADK`, `ADK_MODEL`
@@ -84,7 +84,7 @@ This document is the Technology & Technical Design Decisions (TDD) reference for
 
 - Keep Drizzle as the canonical DB schema source-of-truth; mirror schema updates into Python SQLAlchemy models and Alembic migrations.
 - All model calls should use the `ModelProvider` abstraction so providers can be swapped via env vars.
-- Prefer `gemini-2.0-flash` for production LLM usage and `text-embedding-004` for embeddings to ensure retrieval/generation alignment.
+- Prefer `gemini-2.0-flash` for production LLM usage and `gemini-embedding-001` for embeddings to ensure retrieval/generation alignment.
 - When adding provider env vars, update `.env.example` and document new variables in `docs/`.
 
 ## 13. Changelog

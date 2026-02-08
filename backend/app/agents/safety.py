@@ -96,6 +96,9 @@ class SafetyAgent(Agent):
                     metadata={
                         "model": response.model,
                         "tokens_used": response.tokens_used,
+                        "prompt_tokens": response.prompt_tokens,
+                        "completion_tokens": response.completion_tokens,
+                        "cost_usd": response.cost_usd,
                         "is_emergency": False,
                     },
                 )

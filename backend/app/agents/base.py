@@ -124,10 +124,18 @@ class Agent(ABC):
             context: Agent context that was processed
             result: Result produced by agent
         """
+        metadata = result.metadata or {}
         self.logger.info(
-            f"Agent executed: query='{context.query[:50]}...', "
-            f"confidence={result.confidence:.2f}, "
-            f"response_length={len(result.response)}"
+            "Agent executed: query='%s...', confidence=%.2f, response_length=%s, tokens_used=%s, prompt_tokens=%s, completion_tokens=%s, cost_usd=%s, rag_tokens=%s, history_messages=%s",
+            context.query[:50],
+            result.confidence,
+            len(result.response),
+            metadata.get("tokens_used"),
+            metadata.get("prompt_tokens"),
+            metadata.get("completion_tokens"),
+            metadata.get("cost_usd"),
+            context.metadata.get("rag_tokens"),
+            len(context.conversation_history),
         )
 
     async def _handle_error(self, context: AgentContext, error: Exception) -> AgentResult:

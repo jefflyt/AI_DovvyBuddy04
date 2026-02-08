@@ -37,7 +37,7 @@ describe('ApiClient', () => {
         message: 'Hello! How can I help you with diving today?',
         metadata: {
           tokensUsed: 150,
-          model: 'gemini-2.0-flash',
+          model: 'gemini-2.5-flash-lite',
         },
       };
 

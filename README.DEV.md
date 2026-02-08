@@ -122,7 +122,7 @@ AI_DovvyBuddy04/
 - **Database:** PostgreSQL + pgvector extension
 - **ORM:** SQLAlchemy 2.0 (async) + Alembic migrations
 - **LLM:** Google Gemini (`gemini-2.5-flash-lite`)
-- **Embeddings:** Google `text-embedding-004` (768-dim)
+- **Embeddings:** Google `gemini-embedding-001` (768-dim)
 - **Testing:** pytest
 
 ### Infrastructure

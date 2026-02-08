@@ -7,6 +7,7 @@ Tests real API calls (marked as slow for CI).
 import pytest
 import os
 
+from app.core.config import settings
 from app.services.llm import GeminiLLMProvider, LLMMessage
 
 
@@ -25,7 +26,7 @@ def gemini_api_key():
 @pytest.fixture
 def gemini_provider(gemini_api_key):
     """Create real Gemini LLM provider."""
-    return GeminiLLMProvider(api_key=gemini_api_key, model="gemini-2.0-flash")
+    return GeminiLLMProvider(api_key=gemini_api_key, model=settings.default_llm_model)
 
 
 @pytest.fixture
@@ -44,7 +45,20 @@ async def test_gemini_generate(gemini_provider, test_messages):
 
     assert response.content
     assert len(response.content) > 10
-    assert response.model == "gemini-2.0-flash"
+    assert response.model == settings.default_llm_model
+
+
+@pytest.mark.asyncio
+async def test_gemini_usage_metadata_fields(gemini_provider, test_messages):
+    """Test token usage fields are populated when usage_metadata is available."""
+    response = await gemini_provider.generate(test_messages)
+
+    if response.tokens_used is None:
+        pytest.skip("Gemini usage_metadata not returned")
+
+    assert response.prompt_tokens is not None
+    assert response.completion_tokens is not None
+    assert response.cost_usd is not None
 
 
 @pytest.mark.asyncio

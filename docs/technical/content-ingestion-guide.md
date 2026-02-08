@@ -51,7 +51,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 DATABASE_URL=postgresql+asyncpg://user:password@host:port/database?ssl=require
 
 # Embedding Configuration
-EMBEDDING_MODEL=text-embedding-004
+EMBEDDING_MODEL=gemini-embedding-001
 EMBEDDING_BATCH_SIZE=100
 ```
 
@@ -194,7 +194,7 @@ pnpm tsx scripts/ingest-content.ts
 **TypeScript Script Behavior:**
 - Reads all markdown files from `content/` directory
 - Chunks content using markdown-aware splitting
-- Generates embeddings via Gemini API (text-embedding-004)
+- Generates embeddings via Gemini API (gemini-embedding-001)
 - Stores in PostgreSQL `content_embeddings` table
 - Shows progress and statistics
 - **Does NOT update structured data tables** (use `update-dive-sites.ts` separately)
@@ -291,7 +291,7 @@ RAG_CHUNK_OVERLAP = 50       # Overlap between chunks (tokens)
 Default configuration:
 
 ```python
-EMBEDDING_MODEL = "text-embedding-004"  # Gemini model (768 dimensions)
+EMBEDDING_MODEL = "gemini-embedding-001"  # Gemini model (768 dimensions)
 EMBEDDING_BATCH_SIZE = 100              # Max texts per API call
 ```
 
@@ -299,7 +299,7 @@ EMBEDDING_BATCH_SIZE = 100              # Max texts per API call
 
 Set in `backend/.env`:
 ```bash
-EMBEDDING_MODEL=text-embedding-004
+EMBEDDING_MODEL=gemini-embedding-001
 EMBEDDING_BATCH_SIZE=50  # Reduce if hitting rate limits
 ```
 
@@ -451,10 +451,10 @@ psql "$DATABASE_URL" -c "SELECT COUNT(*) FROM content_embeddings WHERE created_a
 psql "$DATABASE_URL" -c "SELECT array_length(embedding::text::float[], 1) as dims, COUNT(*) FROM content_embeddings GROUP BY dims;"
 ```
 
-**Expected:** All embeddings should be 768 dimensions (for text-embedding-004)
+**Expected:** All embeddings should be 768 dimensions (for gemini-embedding-001)
 
 **Solution:**
-1. Verify `EMBEDDING_MODEL=text-embedding-004` in `.env`
+1. Verify `EMBEDDING_MODEL=gemini-embedding-001` in `.env`
 2. Clear and re-ingest all content:
    ```bash
    pnpm tsx scripts/clear-embeddings.ts
@@ -505,7 +505,7 @@ pnpm tsx scripts/ingest-content.ts
 ### API Costs
 
 **Gemini Embedding API:**
-- Model: text-embedding-004
+- Model: gemini-embedding-001
 - Free tier: Up to 1,500 requests/day
 - Cost estimate: ~$0.00025 per 1,000 characters
 
@@ -634,7 +634,7 @@ psql "$DATABASE_URL" -c "SELECT content_path, created_at FROM content_embeddings
 ```bash
 GEMINI_API_KEY=your_key_here
 DATABASE_URL=postgresql+asyncpg://...
-EMBEDDING_MODEL=text-embedding-004
+EMBEDDING_MODEL=gemini-embedding-001
 EMBEDDING_BATCH_SIZE=100
 RAG_CHUNK_SIZE=512
 RAG_CHUNK_OVERLAP=50

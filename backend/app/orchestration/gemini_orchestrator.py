@@ -27,6 +27,7 @@ from google.genai import types
 
 from app.core.config import settings
 from app.orchestration.types import IntentType, SessionState
+from app.services.rag.token_utils import calculate_gemini_cost
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,15 @@ class GeminiOrchestrator:
     
     Acts as a router that translates user intent into specific agent calls.
     """
+
+    ROUTING_SYSTEM_INSTRUCTION = """Route user queries to specialist agents.
+
+RULES:
+- Location/destination/sites/trip -> trip_planner
+- Safety/certification/equipment/marine life -> knowledge_base
+
+You MUST call a tool. Use exact query in args.
+"""
     
     def __init__(self):
         """Initialize Gemini model with tool definitions."""
@@ -102,6 +112,14 @@ class GeminiOrchestrator:
         Route the request to the appropriate agent using Gemini Function Calling.
         """
         try:
+            heuristic_route = self._quick_route_heuristic(message)
+            if heuristic_route:
+                logger.info(
+                    "Routing heuristic: target_agent=%s, prompt_tokens=0, completion_tokens=0, total_tokens=0, cost_usd=0",
+                    heuristic_route["target_agent"],
+                )
+                return heuristic_route
+
             # Construct chat history for context
             # New SDK format involves Content/Part objects, but text strings usually work for simple cases.
             # To be robust, we'll format conversation history into a single turn with context if needed, 
@@ -123,26 +141,31 @@ class GeminiOrchestrator:
                         mode="ANY" # FORCE the model to call a function
                     )
                 ),
-                system_instruction="""You are the DovvyBuddy Orchestrator.
-Your job is to route the user's request to the correct specialist agent.
-
-ROUTING RULES:
-- If the user mentions a LOCATION (e.g., "Bali", "Tioman", "Phuket") -> `trip_planner`.
-- "Where can I dive..." / "Best sites in..." -> `trip_planner`.
-- "Recommend a dive shop..." -> `trip_planner`.
-- "Plan a trip..." -> `trip_planner`.
-- EVERYTHING ELSE (Safety, Certifications, Marine Life, Equipment) -> `knowledge_base`.
-
-CRITICAL:
-- You MUST call a tool.
-- "Where can I dive in Tioman?" -> Call `trip_planner(query="Where can I dive in Tioman?", location="Tioman")`
-""",
+                system_instruction=self.ROUTING_SYSTEM_INSTRUCTION,
             )
 
             response = self.client.models.generate_content(
                 model=self.model_name,
                 contents=full_prompt,
                 config=config
+            )
+
+            usage_metadata = getattr(response, "usage_metadata", None)
+            prompt_tokens = getattr(usage_metadata, "prompt_token_count", None)
+            completion_tokens = getattr(usage_metadata, "candidates_token_count", None)
+            total_tokens = getattr(usage_metadata, "total_token_count", None)
+            cost_usd = calculate_gemini_cost(prompt_tokens, completion_tokens)
+
+            if usage_metadata is None:
+                logger.warning("Routing response missing usage_metadata")
+
+            logger.info(
+                "Routing LLM complete: model=%s, prompt_tokens=%s, completion_tokens=%s, total_tokens=%s, cost_usd=%s",
+                self.model_name,
+                prompt_tokens,
+                completion_tokens,
+                total_tokens,
+                cost_usd,
             )
 
             # Parse Response
@@ -169,3 +192,52 @@ CRITICAL:
                 "target_agent": "knowledge_base",
                 "parameters": {"query": message}
             }
+
+    def _quick_route_heuristic(self, message: str) -> Optional[Dict[str, Any]]:
+        """
+        Lightweight heuristic routing for obvious cases.
+
+        Returns:
+            Dict with target_agent/parameters, or None if ambiguous.
+        """
+        if not message or not message.strip():
+            return None
+
+        normalized = message.lower()
+
+        trip_keywords = [
+            "where can i dive",
+            "best sites",
+            "dive sites",
+            "destination",
+            "plan trip",
+            "plan a trip",
+            "itinerary",
+            "where to dive",
+        ]
+
+        info_keywords = [
+            "certification",
+            "padi",
+            "ssi",
+            "equipment",
+            "gear",
+            "safety",
+            "nitrox",
+            "buoyancy",
+            "what is",
+        ]
+
+        if any(keyword in normalized for keyword in trip_keywords):
+            return {
+                "target_agent": "trip_planner",
+                "parameters": {"query": message},
+            }
+
+        if any(keyword in normalized for keyword in info_keywords):
+            return {
+                "target_agent": "knowledge_base",
+                "parameters": {"query": message},
+            }
+
+        return None

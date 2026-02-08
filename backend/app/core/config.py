@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     
     # RAG Configuration
     enable_rag: bool = True
-    rag_top_k: int = 8  # Increased to get more context for comprehensive answers
+    rag_top_k: int = 5  # Default reduced for cost efficiency
     rag_min_similarity: float = 0.5
     rag_chunk_size: int = 512
     rag_chunk_overlap: int = 50
@@ -67,6 +67,7 @@ class Settings(BaseSettings):
     max_message_length: int = 2000
     session_expiry_hours: int = 24
     max_conversation_history: int = 20
+    max_history_tokens: int = 1500
     enable_agent_routing: bool = True
     default_agent: str = "retrieval"
     

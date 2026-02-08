@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Literal, Optional, Union
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import ConfigDict
 
 
 class LeadType(str, Enum):
@@ -123,6 +124,4 @@ class LeadRecord(BaseModel):
         ..., description="Lead-specific request data"
     )
     created_at: datetime = Field(..., description="Lead creation timestamp")
-
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

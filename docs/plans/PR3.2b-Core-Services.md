@@ -137,7 +137,7 @@ backend/scripts/
 - `backend/app/core/config.py` — Add LLM/embedding configuration
   - `DEFAULT_LLM_PROVIDER`: groq | gemini
   - `DEFAULT_LLM_MODEL`: Model name
-  - `EMBEDDING_MODEL`: text-embedding-004
+   - `EMBEDDING_MODEL`: gemini-embedding-001
   - `ENABLE_RAG`: true | false
   - `RAG_TOP_K`: Default 5
   - `RAG_MIN_SIMILARITY`: Default 0.5
@@ -179,7 +179,7 @@ LLM_TEMPERATURE=0.7                    # Generation temperature (0.0-1.0)
 LLM_MAX_TOKENS=2048                    # Maximum tokens per generation
 
 # Embedding Configuration
-EMBEDDING_MODEL=text-embedding-004     # Gemini embedding model (768 dimensions)
+EMBEDDING_MODEL=gemini-embedding-001   # Gemini embedding model (768 dimensions)
 EMBEDDING_BATCH_SIZE=100               # Max texts per batch request
 EMBEDDING_CACHE_SIZE=1000              # In-memory cache size
 EMBEDDING_CACHE_TTL=3600               # Cache TTL in seconds

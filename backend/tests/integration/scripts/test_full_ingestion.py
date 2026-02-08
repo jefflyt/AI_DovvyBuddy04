@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 from app.db.session import SessionLocal
 from app.services.embeddings import create_embedding_provider_from_env
@@ -20,6 +21,44 @@ def test_db():
         yield db
     finally:
         db.close()
+
+
+def _is_model_not_found_error(exc: Exception) -> bool:
+    message = str(exc).lower()
+    return "not found" in message and "model" in message or "404" in message
+
+
+def _skip_if_model_unavailable(exc: Exception) -> None:
+    if _is_model_not_found_error(exc):
+        pytest.skip("Embedding model not available for ingestion tests")
+
+
+def _ensure_pgvector_available(db: Session) -> None:
+    dialect = getattr(db.bind, "dialect", None)
+    if not dialect or getattr(dialect, "name", None) != "postgresql":
+        pytest.skip("PostgreSQL with pgvector required for ingestion tests")
+
+    try:
+        result = db.execute(text("SELECT 1 FROM pg_extension WHERE extname = 'vector'"))
+        if result.scalar() is None:
+            pytest.skip("pgvector extension not installed")
+    except Exception:
+        pytest.skip("pgvector extension not available")
+
+
+def _get_embedding_provider():
+    try:
+        return create_embedding_provider_from_env()
+    except ValueError as exc:
+        pytest.skip(str(exc))
+
+
+async def _ensure_embedding_model_available(embedding_provider) -> None:
+    try:
+        await embedding_provider.embed_text("health check")
+    except Exception as exc:
+        _skip_if_model_unavailable(exc)
+        raise
 
 
 @pytest.fixture
@@ -83,8 +122,11 @@ Proper planning is essential for deep dives beyond 30 meters.
 async def test_full_ingestion_workflow(test_db: Session, test_content_dir: Path):
     """Test complete ingestion workflow from files to database."""
     # Initialize services
-    embedding_provider = create_embedding_provider_from_env()
+    embedding_provider = _get_embedding_provider()
     repository = RAGRepository(test_db)
+
+    _ensure_pgvector_available(test_db)
+    await _ensure_embedding_model_available(embedding_provider)
     
     # Clear any existing test data
     repository.delete_all()
@@ -143,8 +185,11 @@ async def test_full_ingestion_workflow(test_db: Session, test_content_dir: Path)
 async def test_incremental_ingestion(test_db: Session, test_content_dir: Path):
     """Test incremental ingestion skips unchanged files."""
     # Initialize services
-    embedding_provider = create_embedding_provider_from_env()
+    embedding_provider = _get_embedding_provider()
     repository = RAGRepository(test_db)
+
+    _ensure_pgvector_available(test_db)
+    await _ensure_embedding_model_available(embedding_provider)
     
     # Clear existing data
     repository.delete_all()
@@ -189,8 +234,11 @@ async def test_incremental_ingestion(test_db: Session, test_content_dir: Path):
 async def test_re_ingestion_replaces_chunks(test_db: Session, test_content_dir: Path):
     """Test that re-ingesting a file replaces old chunks."""
     # Initialize services
-    embedding_provider = create_embedding_provider_from_env()
+    embedding_provider = _get_embedding_provider()
     repository = RAGRepository(test_db)
+
+    _ensure_pgvector_available(test_db)
+    await _ensure_embedding_model_available(embedding_provider)
     
     # Clear existing data
     repository.delete_all()
@@ -238,8 +286,11 @@ async def test_re_ingestion_replaces_chunks(test_db: Session, test_content_dir: 
 async def test_search_after_ingestion(test_db: Session, test_content_dir: Path):
     """Test that ingested content is searchable."""
     # Initialize services
-    embedding_provider = create_embedding_provider_from_env()
+    embedding_provider = _get_embedding_provider()
     repository = RAGRepository(test_db)
+
+    _ensure_pgvector_available(test_db)
+    await _ensure_embedding_model_available(embedding_provider)
     
     # Clear existing data
     repository.delete_all()

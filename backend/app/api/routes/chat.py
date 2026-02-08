@@ -6,7 +6,7 @@ import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.rate_limit import limiter
@@ -28,8 +28,7 @@ class ChatRequestPayload(BaseModel):
     diver_profile: Optional[dict] = Field(None, alias="diverProfile")
     session_state: Optional[dict] = Field(None, alias="sessionState")  # PR6.1
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class ChatResponsePayload(BaseModel):
@@ -41,8 +40,7 @@ class ChatResponsePayload(BaseModel):
     metadata: dict = {}
     follow_up_question: Optional[str] = Field(None, alias="followUpQuestion")  # PR6.2
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 async def get_db():

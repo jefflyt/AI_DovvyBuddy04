@@ -1,7 +1,8 @@
 import uuid
 
-from sqlalchemy import Column, Computed, DateTime, Float, String, Text, func
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID, TSVECTOR
+from sqlalchemy import Column, Computed, DateTime, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB, UUID, TSVECTOR
+from pgvector.sqlalchemy import Vector
 
 from app.db.base import Base
 
@@ -13,8 +14,8 @@ class ContentEmbedding(Base):
     content_path = Column(String, nullable=False)
     chunk_text = Column(Text, nullable=False)
     chunk_text_tsv = Column(TSVECTOR, Computed("to_tsvector('english', chunk_text)", persisted=True))  # Full-text search column (database-generated)
-    # Storing embeddings as an ARRAY of FLOAT for now (pgvector integration can be added later)
-    embedding = Column(ARRAY(Float), nullable=True)
+    # Store embeddings using pgvector
+    embedding = Column(Vector(768), nullable=True)
     metadata_ = Column(
         "metadata", JSONB, nullable=True
     )  # Use metadata_ to avoid SQLAlchemy conflict

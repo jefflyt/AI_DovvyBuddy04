@@ -42,7 +42,7 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
     def __init__(
         self,
         api_key: str,
-        model: str = GEMINI_EMBEDDING_MODEL,
+        model: Optional[str] = None,
         use_cache: bool = True,
     ):
         """
@@ -56,7 +56,8 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
         if not api_key:
             raise ValueError("Gemini API key is required")
 
-        self.model = model
+        resolved_model = model or settings.embedding_model or GEMINI_EMBEDDING_MODEL
+        self.model = resolved_model
         self.dimension = GEMINI_EMBEDDING_DIMENSION
 
         # Configure Gemini API (New SDK pattern)
@@ -65,7 +66,10 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
         # Initialize cache
         self.cache = EmbeddingCache() if use_cache else None
 
-        logger.info(f"Initialized GeminiEmbeddingProvider with model={model} (New SDK)")
+        logger.info(
+            "Initialized GeminiEmbeddingProvider with model=%s (New SDK)",
+            self.model,
+        )
 
     @retry(
         stop=stop_after_attempt(settings.embedding_max_retries),

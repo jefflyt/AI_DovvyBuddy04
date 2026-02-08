@@ -24,7 +24,7 @@ Provide guidance for automated workflows, LLMs, and humans working on this proje
 
 ## LLM Standards
 - Default model: `gemini-2.0-flash` (cost-effective)
-- Embeddings: `text-embedding-004` (768 dimensions)
+- Embeddings: `gemini-embedding-001` (768 dimensions)
 
 ## Documentation
 - Place docs appropriately:

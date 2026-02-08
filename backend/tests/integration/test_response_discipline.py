@@ -3,6 +3,7 @@ Integration tests for response discipline (PR6.2).
 """
 
 import pytest
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
@@ -27,6 +28,8 @@ def mock_session_data():
     return SessionData(
         id=uuid4(),
         conversation_history=[],
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
         diver_profile=None,
     )
 
