@@ -1,7 +1,8 @@
 import uuid
 
-from sqlalchemy import Column, DateTime, Float, String, Text, func
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
+from sqlalchemy import Column, DateTime, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB, UUID
+from pgvector.sqlalchemy import Vector
 
 from app.db.base import Base
 
@@ -12,8 +13,8 @@ class ContentEmbedding(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     content_path = Column(String, nullable=False)
     chunk_text = Column(Text, nullable=False)
-    # Storing embeddings as an ARRAY of FLOAT for now (pgvector integration can be added later)
-    embedding = Column(ARRAY(Float), nullable=True)
+    # Using pgvector Vector type for gemini-embedding-001 (3072 dimensions)
+    embedding = Column(Vector(3072), nullable=True)
     metadata_ = Column(
         "metadata", JSONB, nullable=True
     )  # Use metadata_ to avoid SQLAlchemy conflict

@@ -17,6 +17,24 @@ Provide guidance for automated workflows, LLMs, and humans working on this proje
 - For multi-step changes: plan first, show progress, use small testable diffs
 - Consult `/docs` for architectural decisions
 
+## Reference Documentation
+**Check these files BEFORE starting work to save context:**
+
+### Backend Work
+- `src/backend/README.md` - Backend structure, scripts, quick start commands
+- `docs/technical/backend-testing-guide.md` - Test paths, commands, environment setup
+- `docs/technical/developer-workflow.md` - General development workflows
+
+### Frontend Work
+- `README.md` - Project overview and quick start
+- `docs/technical/deployment.md` - Deployment procedures
+
+### Content Work
+- `content/README.md` - Content structure and guidelines
+- `docs/technical/content-ingestion-guide.md` - Content processing
+
+**Benefits:** Avoids searching for paths, correct commands already documented, saves token usage
+
 ## Python Environment
 - Single virtual environment at project root: `.venv`
 - Install backend: `.venv/bin/pip install -e backend/`
@@ -24,7 +42,7 @@ Provide guidance for automated workflows, LLMs, and humans working on this proje
 
 ## LLM Standards
 - Default model: `gemini-2.0-flash` (cost-effective)
-- Embeddings: `text-embedding-004` (768 dimensions)
+- Embeddings: `text-embedding-004` (768 dimensions, recommended by Google)
 
 ## Documentation
 - Place docs appropriately:

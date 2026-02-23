@@ -60,7 +60,8 @@ async def test_build_context_with_rag():
         query="test query",
         results=[
             RetrievalResult(
-                chunk_text="Retrieved chunk",
+                chunk_id="test-chunk-1",
+                text="Retrieved chunk",
                 similarity=0.9,
                 metadata={},
             )

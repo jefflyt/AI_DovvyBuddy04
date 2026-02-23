@@ -32,7 +32,8 @@ class ModeDetector:
     TRIP_KEYWORDS = [
         "destination", "trip", "travel", "visit", "dive site", "where to dive",
         "best place", "recommend", "location", "country", "island", "reef",
-        "wreck", "season", "when to go", "book", "resort", "liveaboard"
+        "wreck", "season", "when to go", "book", "resort", "liveaboard",
+        "where", "go diving", "best dive", "top dive", "diving in", "dive in"
     ]
 
     SAFETY_KEYWORDS = [
