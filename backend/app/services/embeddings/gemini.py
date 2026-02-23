@@ -1,7 +1,7 @@
 """
 Gemini embedding provider implementation.
 
-Uses Google's Generative AI API to generate embeddings with text-embedding-004.
+Uses Google's Generative AI SDK to generate embeddings with text-embedding-004.
 """
 
 import asyncio
@@ -26,7 +26,13 @@ logger = logging.getLogger(__name__)
 
 # Constants
 GEMINI_EMBEDDING_MODEL = "text-embedding-004"
-GEMINI_EMBEDDING_DIMENSION = 768
+# Embedding dimensions per model
+EMBEDDING_DIMENSIONS = {
+    "text-embedding-004": 768,
+    "gemini-embedding-001": 3072,
+    "models/text-embedding-004": 768,
+    "models/gemini-embedding-001": 3072,
+}
 MAX_BATCH_SIZE = 100
 
 
@@ -57,7 +63,8 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
             raise ValueError("Gemini API key is required")
 
         self.model = model
-        self.dimension = GEMINI_EMBEDDING_DIMENSION
+        # Get dimension for this model, default to 768 if unknown
+        self.dimension = EMBEDDING_DIMENSIONS.get(model, 768)
 
         # Configure Gemini API (New SDK pattern)
         self.client = genai.Client(api_key=api_key)
@@ -65,7 +72,11 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
         # Initialize cache
         self.cache = EmbeddingCache() if use_cache else None
 
+<<<<<<< HEAD:backend/app/services/embeddings/gemini.py
         logger.info(f"Initialized GeminiEmbeddingProvider with model={model} (New SDK)")
+=======
+        logger.info(f"Initialized GeminiEmbeddingProvider with model={model}, dimension={self.dimension}")
+>>>>>>> feature/pr5.1-localstorage-persistence:src/backend/app/services/embeddings/gemini.py
 
     @retry(
         stop=stop_after_attempt(settings.embedding_max_retries),
@@ -92,6 +103,7 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
             Exception: If other error occurs
         """
         try:
+<<<<<<< HEAD:backend/app/services/embeddings/gemini.py
             # Run synchronous Gemini API call in thread pool
             loop = asyncio.get_event_loop()
             result = await loop.run_in_executor(
@@ -123,6 +135,18 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
                      embedding = result.values
                  else:
                      raise ValueError("Invalid embedding response from Gemini API")
+=======
+            # Use new google.genai SDK
+            result = await self.client.aio.models.embed_content(
+                model=self.model,
+                contents=text
+            )
+
+            if not result or not result.embeddings:
+                raise ValueError("Invalid embedding response from Gemini API")
+
+            embedding = result.embeddings[0].values
+>>>>>>> feature/pr5.1-localstorage-persistence:src/backend/app/services/embeddings/gemini.py
 
             # Validate dimension
             if len(embedding) != self.dimension:

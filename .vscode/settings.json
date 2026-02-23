@@ -6,5 +6,11 @@
     "scss.lint.unknownAtRules": "ignore",
     "files.associations": {
         "*.css": "tailwindcss"
+    },
+    "chat.tools.terminal.autoApprove": {
+        "/^python3 -m pytest tests/ -v --tb=short -x 2>&1 \\| tail -150$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
     }
 }
