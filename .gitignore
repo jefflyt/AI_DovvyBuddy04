@@ -48,3 +48,8 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
