@@ -7,8 +7,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from app.db.session import SessionLocal
-from app.services.chunking import ChunkingService
-from app.services.embedding import EmbeddingService
+from app.services.chunking import ChunkingService, EmbeddingService
 from app.services.rag.repository import RAGRepository
 from scripts.ingest_content import ingest_file
 

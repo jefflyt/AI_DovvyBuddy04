@@ -9,6 +9,7 @@ import os
 import numpy as np
 
 from app.services.embeddings import GeminiEmbeddingProvider
+from app.core.config import settings
 
 
 pytestmark = pytest.mark.slow
@@ -26,7 +27,11 @@ def api_key():
 @pytest.fixture
 def provider(api_key):
     """Create Python embedding provider."""
-    return GeminiEmbeddingProvider(api_key=api_key, use_cache=False)
+    return GeminiEmbeddingProvider(
+        api_key=api_key,
+        model=settings.embedding_model,
+        use_cache=False
+    )
 
 
 def cosine_similarity(a, b):
@@ -58,7 +63,7 @@ async def test_embedding_dimensions(provider):
     
     embedding = await provider.embed_text(text)
     
-    assert len(embedding) == 768
+    assert len(embedding) == provider.dimension
     assert all(isinstance(x, float) for x in embedding)
 
 
@@ -123,7 +128,7 @@ async def test_embeddings_sample_set(provider):
         print(f"Norm: {np.linalg.norm(emb):.4f}")
     
     assert len(embeddings) == 5
-    assert all(len(emb) == 768 for emb in embeddings)
+    assert all(len(emb) == provider.dimension for emb in embeddings)
 
 
 # Manual comparison instructions

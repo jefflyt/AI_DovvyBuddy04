@@ -8,6 +8,7 @@ import pytest
 import os
 
 from app.services.embeddings import GeminiEmbeddingProvider
+from app.core.config import settings
 
 
 pytestmark = pytest.mark.slow
@@ -25,7 +26,11 @@ def gemini_api_key():
 @pytest.fixture
 def provider(gemini_api_key):
     """Create real Gemini embedding provider."""
-    return GeminiEmbeddingProvider(api_key=gemini_api_key, use_cache=False)
+    return GeminiEmbeddingProvider(
+        api_key=gemini_api_key,
+        model=settings.embedding_model,
+        use_cache=False
+    )
 
 
 @pytest.mark.asyncio
@@ -36,7 +41,7 @@ async def test_real_embed_text(provider):
     embedding = await provider.embed_text(text)
 
     assert isinstance(embedding, list)
-    assert len(embedding) == 768
+    assert len(embedding) == provider.dimension
     assert all(isinstance(x, float) for x in embedding)
     assert any(x != 0.0 for x in embedding)  # Not all zeros
 
@@ -53,7 +58,7 @@ async def test_real_embed_batch(provider):
     embeddings = await provider.embed_batch(texts)
 
     assert len(embeddings) == 3
-    assert all(len(emb) == 768 for emb in embeddings)
+    assert all(len(emb) == provider.dimension for emb in embeddings)
     # Verify embeddings are different
     assert embeddings[0] != embeddings[1]
     assert embeddings[1] != embeddings[2]
@@ -62,7 +67,11 @@ async def test_real_embed_batch(provider):
 @pytest.mark.asyncio
 async def test_cache_behavior(gemini_api_key):
     """Test that cache reduces API calls."""
-    provider = GeminiEmbeddingProvider(api_key=gemini_api_key, use_cache=True)
+    provider = GeminiEmbeddingProvider(
+        api_key=gemini_api_key,
+        model=settings.embedding_model,
+        use_cache=True
+    )
     text = "Test caching behavior"
 
     # First call - cache miss
