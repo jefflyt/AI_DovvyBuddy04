@@ -35,6 +35,12 @@ Provide guidance for automated workflows, LLMs, and humans working on this proje
 
 **Benefits:** Avoids searching for paths, correct commands already documented, saves token usage
 
+## Security
+- **NEVER embed API keys, secrets, or credentials in ANY file** — not in source code, scripts, docs, config files, or comments
+- All secrets must live exclusively in `.env.local` (gitignored) at the project root
+- If a key is accidentally committed, rotate it immediately at the provider dashboard
+- `.env.example` files must only contain placeholder values (e.g., `your_api_key_here`)
+
 ## Python Environment
 - Single virtual environment at project root: `.venv`
 - Install backend: `.venv/bin/pip install -e backend/`

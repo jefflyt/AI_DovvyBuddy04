@@ -72,11 +72,7 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
         # Initialize cache
         self.cache = EmbeddingCache() if use_cache else None
 
-<<<<<<< HEAD:backend/app/services/embeddings/gemini.py
-        logger.info(f"Initialized GeminiEmbeddingProvider with model={model} (New SDK)")
-=======
-        logger.info(f"Initialized GeminiEmbeddingProvider with model={model}, dimension={self.dimension}")
->>>>>>> feature/pr5.1-localstorage-persistence:src/backend/app/services/embeddings/gemini.py
+        logger.info(f"Initialized GeminiEmbeddingProvider with model={model}, dimension={self.dimension} (New SDK)")
 
     @retry(
         stop=stop_after_attempt(settings.embedding_max_retries),
@@ -103,7 +99,6 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
             Exception: If other error occurs
         """
         try:
-<<<<<<< HEAD:backend/app/services/embeddings/gemini.py
             # Run synchronous Gemini API call in thread pool
             loop = asyncio.get_event_loop()
             result = await loop.run_in_executor(
@@ -118,35 +113,16 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
             )
 
             # Extract embedding from response
-            # New SDK returns object with .embeddings attribute depending on request
-            # For single content, it typically has .embedding
             if hasattr(result, "embeddings") and result.embeddings:
-                 # Batch usually, but let's check single
-                 embedding = result.embeddings[0].values
+                embedding = result.embeddings[0].values
             elif hasattr(result, "embedding") and result.embedding:
-                 # Single embedding object associated
-                 embedding = result.embedding.values
+                embedding = result.embedding.values
             else:
-                 # Try to inspect structure if different
-                 # Based on docs: result.embeddings is list of ContentEmbedding
-                 # ContentEmbedding has .values
-                 logger.debug(f"Unexpected result structure: {result}")
-                 if hasattr(result, "values"):
-                     embedding = result.values
-                 else:
-                     raise ValueError("Invalid embedding response from Gemini API")
-=======
-            # Use new google.genai SDK
-            result = await self.client.aio.models.embed_content(
-                model=self.model,
-                contents=text
-            )
-
-            if not result or not result.embeddings:
-                raise ValueError("Invalid embedding response from Gemini API")
-
-            embedding = result.embeddings[0].values
->>>>>>> feature/pr5.1-localstorage-persistence:src/backend/app/services/embeddings/gemini.py
+                logger.debug(f"Unexpected result structure: {result}")
+                if hasattr(result, "values"):
+                    embedding = result.values
+                else:
+                    raise ValueError("Invalid embedding response from Gemini API")
 
             # Validate dimension
             if len(embedding) != self.dimension:
