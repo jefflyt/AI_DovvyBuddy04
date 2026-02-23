@@ -59,3 +59,8 @@ sentry.properties
 test-results/
 playwright-report/
 playwright/.cache/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
