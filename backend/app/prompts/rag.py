@@ -22,6 +22,5 @@ FORMATTING:
 """
 
 NO_RAG_PROMPT = """No verified info is available. I can provide general guidance on safety, certification, or equipment.
-
-For specific sites or destinations, please rephrase or ask another topic.
+For specific sites/destinations, please rephrase.
 """

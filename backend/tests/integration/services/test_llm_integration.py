@@ -14,6 +14,26 @@ from app.services.llm import GeminiLLMProvider, LLMMessage
 pytestmark = pytest.mark.slow
 
 
+def _is_network_error(exc: Exception) -> bool:
+    message = str(exc).lower()
+    return any(
+        token in message
+        for token in [
+            "nodename nor servname",
+            "name or service not known",
+            "failed to resolve",
+            "connection error",
+            "connecterror",
+            "temporarily unavailable",
+        ]
+    )
+
+
+def _skip_if_unavailable(exc: Exception) -> None:
+    if _is_network_error(exc):
+        pytest.skip("Network unavailable for integration test")
+
+
 @pytest.fixture
 def gemini_api_key():
     """Get Gemini API key from environment."""
@@ -41,7 +61,11 @@ def test_messages():
 @pytest.mark.asyncio
 async def test_gemini_generate(gemini_provider, test_messages):
     """Test real Gemini API call."""
-    response = await gemini_provider.generate(test_messages)
+    try:
+        response = await gemini_provider.generate(test_messages)
+    except Exception as exc:
+        _skip_if_unavailable(exc)
+        raise
 
     assert response.content
     assert len(response.content) > 10
@@ -51,7 +75,11 @@ async def test_gemini_generate(gemini_provider, test_messages):
 @pytest.mark.asyncio
 async def test_gemini_usage_metadata_fields(gemini_provider, test_messages):
     """Test token usage fields are populated when usage_metadata is available."""
-    response = await gemini_provider.generate(test_messages)
+    try:
+        response = await gemini_provider.generate(test_messages)
+    except Exception as exc:
+        _skip_if_unavailable(exc)
+        raise
 
     if response.tokens_used is None:
         pytest.skip("Gemini usage_metadata not returned")
@@ -69,10 +97,18 @@ async def test_gemini_different_temperatures(gemini_provider):
     ]
 
     # Temperature 0 (deterministic)
-    response1 = await gemini_provider.generate(messages, temperature=0.0)
+    try:
+        response1 = await gemini_provider.generate(messages, temperature=0.0)
+    except Exception as exc:
+        _skip_if_unavailable(exc)
+        raise
 
     # Temperature 1 (creative)
-    response2 = await gemini_provider.generate(messages, temperature=1.0)
+    try:
+        response2 = await gemini_provider.generate(messages, temperature=1.0)
+    except Exception as exc:
+        _skip_if_unavailable(exc)
+        raise
 
     assert response1.content
     assert response2.content
@@ -89,7 +125,11 @@ async def test_gemini_conversation(gemini_provider):
         LLMMessage(role="user", content="What does it stand for?"),
     ]
 
-    response = await gemini_provider.generate(messages)
+    try:
+        response = await gemini_provider.generate(messages)
+    except Exception as exc:
+        _skip_if_unavailable(exc)
+        raise
 
     assert response.content
     assert "professional" in response.content.lower() or "association" in response.content.lower()

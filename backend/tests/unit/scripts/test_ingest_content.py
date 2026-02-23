@@ -2,7 +2,7 @@
 
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import pytest
 
@@ -76,7 +76,9 @@ def test_delete_existing_chunks():
 
 @patch("scripts.ingest_content.calculate_file_hash")
 @patch("scripts.ingest_content.parse_markdown")
-def test_ingest_file_success(mock_parse, mock_hash):
+@patch("scripts.ingest_content.chunk_text")
+@pytest.mark.asyncio
+async def test_ingest_file_success(mock_chunk_text, mock_parse, mock_hash):
     """Test successful file ingestion."""
     # Setup mocks
     mock_hash.return_value = "file_hash_123"
@@ -89,17 +91,16 @@ def test_ingest_file_success(mock_parse, mock_hash):
         "content": "# Test\n\nContent here.",
     }
     
-    mock_chunking = MagicMock()
-    mock_chunking.chunk_text.return_value = [
-        {"text": "Chunk 1", "metadata": {}},
-        {"text": "Chunk 2", "metadata": {}},
+    mock_chunk_text.return_value = [
+        MagicMock(text="Chunk 1", metadata={}),
+        MagicMock(text="Chunk 2", metadata={}),
     ]
     
     mock_embedding = MagicMock()
-    mock_embedding.generate_embeddings.return_value = [
+    mock_embedding.embed_batch = AsyncMock(return_value=[
         [0.1, 0.2, 0.3],
         [0.4, 0.5, 0.6],
-    ]
+    ])
     
     mock_repository = MagicMock()
     mock_repository.delete_by_content_path.return_value = 0
@@ -110,10 +111,9 @@ def test_ingest_file_success(mock_parse, mock_hash):
         temp_file = Path(f.name)
     
     try:
-        result = ingest_file(
+        result = await ingest_file(
             temp_file,
             temp_file.parent,
-            mock_chunking,
             mock_embedding,
             mock_repository,
             incremental=False,
@@ -124,8 +124,8 @@ def test_ingest_file_success(mock_parse, mock_hash):
         assert result["chunks_created"] == 2
         assert result["embeddings_generated"] == 2
         
-        mock_chunking.chunk_text.assert_called_once()
-        mock_embedding.generate_embeddings.assert_called_once()
+        mock_chunk_text.assert_called_once()
+        mock_embedding.embed_batch.assert_called_once()
         mock_repository.insert_chunks.assert_called_once()
     finally:
         temp_file.unlink()
@@ -133,14 +133,16 @@ def test_ingest_file_success(mock_parse, mock_hash):
 
 @patch("scripts.ingest_content.calculate_file_hash")
 @patch("scripts.ingest_content.get_stored_file_hash")
-def test_ingest_file_incremental_skip(mock_get_hash, mock_calc_hash):
+@patch("scripts.ingest_content.chunk_text")
+@pytest.mark.asyncio
+async def test_ingest_file_incremental_skip(mock_chunk_text, mock_get_hash, mock_calc_hash):
     """Test incremental ingestion skips unchanged files."""
     # Setup mocks - same hash
     mock_calc_hash.return_value = "same_hash"
     mock_get_hash.return_value = "same_hash"
     
-    mock_chunking = MagicMock()
     mock_embedding = MagicMock()
+    mock_embedding.embed_batch = AsyncMock()
     mock_repository = MagicMock()
     
     # Create temp file
@@ -149,10 +151,9 @@ def test_ingest_file_incremental_skip(mock_get_hash, mock_calc_hash):
         temp_file = Path(f.name)
     
     try:
-        result = ingest_file(
+        result = await ingest_file(
             temp_file,
             temp_file.parent,
-            mock_chunking,
             mock_embedding,
             mock_repository,
             incremental=True,
@@ -163,15 +164,17 @@ def test_ingest_file_incremental_skip(mock_get_hash, mock_calc_hash):
         assert result["chunks_created"] == 0
         
         # Should not call chunking or embedding services
-        mock_chunking.chunk_text.assert_not_called()
-        mock_embedding.generate_embeddings.assert_not_called()
+        mock_chunk_text.assert_not_called()
+        mock_embedding.embed_batch.assert_not_called()
     finally:
         temp_file.unlink()
 
 
 @patch("scripts.ingest_content.calculate_file_hash")
 @patch("scripts.ingest_content.parse_markdown")
-def test_ingest_file_dry_run(mock_parse, mock_hash):
+@patch("scripts.ingest_content.chunk_text")
+@pytest.mark.asyncio
+async def test_ingest_file_dry_run(mock_chunk_text, mock_parse, mock_hash):
     """Test dry run mode doesn't write to database."""
     # Setup mocks
     mock_hash.return_value = "file_hash"
@@ -180,11 +183,10 @@ def test_ingest_file_dry_run(mock_parse, mock_hash):
         "content": "Content",
     }
     
-    mock_chunking = MagicMock()
-    mock_chunking.chunk_text.return_value = [{"text": "Chunk", "metadata": {}}]
+    mock_chunk_text.return_value = [MagicMock(text="Chunk", metadata={})]
     
     mock_embedding = MagicMock()
-    mock_embedding.generate_embeddings.return_value = [[0.1, 0.2]]
+    mock_embedding.embed_batch = AsyncMock(return_value=[[0.1, 0.2]])
     
     mock_repository = MagicMock()
     
@@ -194,10 +196,9 @@ def test_ingest_file_dry_run(mock_parse, mock_hash):
         temp_file = Path(f.name)
     
     try:
-        result = ingest_file(
+        result = await ingest_file(
             temp_file,
             temp_file.parent,
-            mock_chunking,
             mock_embedding,
             mock_repository,
             incremental=False,

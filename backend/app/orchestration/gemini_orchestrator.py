@@ -7,20 +7,8 @@ by defining agents as "tools" and letting the model decide which tool to call.
 
 import logging
 import os
+import re
 from typing import Dict, List, Optional, Any
-import json
-
-"""
-Gemini Orchestrator using Native Function Calling (Google ADK Pattern).
-
-Uses Gemini 2.5 Flash Lite to semantically route user queries to the appropriate agent
-by defining agents as "tools" and letting the model decide which tool to call.
-"""
-
-import logging
-import os
-from typing import Dict, List, Optional, Any
-import json
 
 import google.genai as genai
 from google.genai import types
@@ -229,9 +217,13 @@ You MUST call a tool. Use exact query in args.
         ]
 
         if any(keyword in normalized for keyword in trip_keywords):
+            parameters: Dict[str, Any] = {"query": message}
+            location = self._extract_location(message)
+            if location:
+                parameters["location"] = location
             return {
                 "target_agent": "trip_planner",
-                "parameters": {"query": message},
+                "parameters": parameters,
             }
 
         if any(keyword in normalized for keyword in info_keywords):
@@ -241,3 +233,28 @@ You MUST call a tool. Use exact query in args.
             }
 
         return None
+
+    def _extract_location(self, message: str) -> Optional[str]:
+        """
+        Extract a likely location phrase from a trip query.
+
+        Examples:
+        - "Where can I dive in Bali?" -> "Bali"
+        - "Best dive sites at Tioman for beginners" -> "Tioman"
+        """
+        if not message:
+            return None
+
+        match = re.search(
+            r"\b(?:in|at|to)\s+([A-Za-z][A-Za-z\s'\-]{1,60}?)(?=(?:\s+(?:for|with|and|or|near|around)\b|[?.!,]|$))",
+            message,
+            flags=re.IGNORECASE,
+        )
+        if not match:
+            return None
+
+        raw_location = match.group(1).strip().strip(".,!?")
+        if not raw_location:
+            return None
+
+        return " ".join(part.capitalize() for part in raw_location.split())

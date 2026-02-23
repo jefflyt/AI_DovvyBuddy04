@@ -16,6 +16,28 @@ from app.db.session import init_db
 pytestmark = pytest.mark.slow
 
 
+def _is_network_error(exc: Exception) -> bool:
+    message = str(exc).lower()
+    return any(
+        token in message
+        for token in [
+            "nodename nor servname",
+            "name or service not known",
+            "failed to resolve",
+            "connection error",
+            "connecterror",
+            "temporarily unavailable",
+        ]
+    )
+
+
+def _skip_if_unavailable(exc: Exception) -> None:
+    if isinstance(exc, genai_errors.ClientError) and "text-embedding-004" in str(exc):
+        pytest.skip("Embedding model not available for integration test")
+    if _is_network_error(exc):
+        pytest.skip("Network unavailable for integration test")
+
+
 @pytest.fixture(scope="module")
 async def db():
     """Initialize database."""
@@ -43,9 +65,8 @@ async def test_rag_end_to_end(pipeline, db):
     query = "What is PADI Open Water certification?"
     try:
         context = await pipeline.retrieve_context(query, top_k=3)
-    except genai_errors.ClientError as exc:
-        if "text-embedding-004" in str(exc):
-            pytest.skip("Embedding model not available for integration test")
+    except Exception as exc:
+        _skip_if_unavailable(exc)
         raise
 
     assert context.query == query
@@ -64,9 +85,8 @@ async def test_rag_with_filters(pipeline, db):
         context = await pipeline.retrieve_context(
             query, top_k=5, filters={"doc_type": "certification"}
         )
-    except genai_errors.ClientError as exc:
-        if "text-embedding-004" in str(exc):
-            pytest.skip("Embedding model not available for integration test")
+    except Exception as exc:
+        _skip_if_unavailable(exc)
         raise
 
     assert isinstance(context.results, list)
@@ -82,9 +102,8 @@ async def test_rag_similarity_threshold(pipeline, db):
     query = "What is decompression sickness?"
     try:
         context = await pipeline.retrieve_context(query, min_similarity=0.7)
-    except genai_errors.ClientError as exc:
-        if "text-embedding-004" in str(exc):
-            pytest.skip("Embedding model not available for integration test")
+    except Exception as exc:
+        _skip_if_unavailable(exc)
         raise
 
     # All results should meet threshold
@@ -98,9 +117,8 @@ async def test_rag_raw_results(pipeline, db):
     query = "How deep can I dive?"
     try:
         results = await pipeline.retrieve_context_raw(query, top_k=2)
-    except genai_errors.ClientError as exc:
-        if "text-embedding-004" in str(exc):
-            pytest.skip("Embedding model not available for integration test")
+    except Exception as exc:
+        _skip_if_unavailable(exc)
         raise
 
     assert isinstance(results, list)

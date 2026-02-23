@@ -21,13 +21,26 @@ logger = logging.getLogger(__name__)
 # Use GPT-3.5 tokenizer as approximation for Gemini
 # (Gemini's tokenizer isn't available in tiktoken, but token counts are close enough)
 _tokenizer = None
+_tokenizer_failed = False
+_FALLBACK_TOKENS_PER_CHAR_ESTIMATE = 0.25
 
 
 def get_tokenizer():
     """Get or create tiktoken tokenizer."""
-    global _tokenizer
+    global _tokenizer, _tokenizer_failed
+    if _tokenizer_failed:
+        return None
+
     if _tokenizer is None:
-        _tokenizer = tiktoken.encoding_for_model("gpt-3.5-turbo")
+        try:
+            _tokenizer = tiktoken.encoding_for_model("gpt-3.5-turbo")
+        except Exception as exc:
+            _tokenizer_failed = True
+            logger.warning(
+                "Tokenizer initialization failed, using approximate token counting: %s",
+                exc,
+            )
+            return None
     return _tokenizer
 
 
@@ -41,8 +54,15 @@ def count_tokens(text: str) -> int:
     Returns:
         Token count
     """
+    if not text:
+        return 0
+
     encoder = get_tokenizer()
-    return len(encoder.encode(text))
+    if encoder is not None:
+        return len(encoder.encode(text))
+
+    # Fallback for restricted/offline environments where tiktoken assets are unavailable.
+    return max(1, int(len(text) * _FALLBACK_TOKENS_PER_CHAR_ESTIMATE))
 
 
 def split_into_sections(text: str) -> List[Dict[str, str]]:

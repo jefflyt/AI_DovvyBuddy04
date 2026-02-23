@@ -10,7 +10,7 @@ from typing import List, Optional
 from sqlalchemy import func, select, text, literal_column
 
 from app.db.models.content_embedding import ContentEmbedding
-from app.db.session import get_session
+from app.db import session as db_session
 from app.services.embeddings import create_embedding_provider_from_env
 
 from .types import RetrievalOptions, RetrievalResult
@@ -66,7 +66,7 @@ class VectorRetriever:
         embedding_str = "[" + ",".join(str(x) for x in query_embedding) + "]"
 
         # Build query
-        session_maker = get_session()
+        session_maker = db_session.get_session()
         async with session_maker() as session:
             # Base query with cosine similarity
             # Using pgvector <=> operator: cosine distance = 1 - cosine similarity
@@ -208,7 +208,7 @@ class VectorRetriever:
         if not query or not query.strip():
             return []
         
-        session_maker = get_session()
+        session_maker = db_session.get_session()
         async with session_maker() as session:
             # Use ts_rank for relevance scoring
             stmt = select(

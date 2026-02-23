@@ -6,6 +6,7 @@ Detects symptom keywords + first-person context to identify medical emergencies.
 """
 
 import logging
+import re
 from typing import List
 
 logger = logging.getLogger(__name__)
@@ -25,6 +26,7 @@ class EmergencyDetector:
     # Symptom keywords indicating potential medical emergency
     SYMPTOM_KEYWORDS: List[str] = [
         "chest pain",
+        "chest hurts",
         "can't breathe",
         "cannot breathe",
         "difficulty breathing",
@@ -69,6 +71,7 @@ class EmergencyDetector:
     # Dive-related context indicators
     DIVE_CONTEXT_KEYWORDS: List[str] = [
         "after dive",
+        "after the dive",
         "after diving",
         "during dive",
         "during diving",
@@ -105,9 +108,28 @@ class EmergencyDetector:
         if not has_symptom:
             return False
 
+        educational_patterns = [
+            r"^what\s+is\b",
+            r"^tell\s+me\s+about\b",
+            r"^explain\b",
+            r"^can\s+you\s+explain\b",
+        ]
+        if any(re.search(pattern, normalized) for pattern in educational_patterns):
+            return False
+
         # Check for first-person context
         has_first_person = any(
-            keyword in normalized for keyword in self.FIRST_PERSON_KEYWORDS
+            re.search(rf"\b{re.escape(keyword)}\b", normalized)
+            for keyword in self.FIRST_PERSON_KEYWORDS
+        )
+
+        # Exclude third-person framing even when first-person tokens appear.
+        third_person_patterns = [
+            r"\bmy\s+(friend|buddy|partner|wife|husband|son|daughter|mom|dad)\b",
+            r"\bhe|she|they\b",
+        ]
+        has_third_person_context = any(
+            re.search(pattern, normalized) for pattern in third_person_patterns
         )
 
         # Check for dive context
@@ -115,7 +137,8 @@ class EmergencyDetector:
             keyword in normalized for keyword in self.DIVE_CONTEXT_KEYWORDS
         )
 
-        is_emergency = has_symptom and (has_first_person or has_dive_context)
+        # Emergency requires personal or dive context, but not third-person framing.
+        is_emergency = has_symptom and (has_first_person or has_dive_context) and not has_third_person_context
 
         if is_emergency:
             logger.warning(

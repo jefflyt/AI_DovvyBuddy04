@@ -18,9 +18,26 @@ def _is_model_not_found_error(exc: Exception) -> bool:
     return "not found" in message and "model" in message or "404" in message
 
 
+def _is_network_error(exc: Exception) -> bool:
+    message = str(exc).lower()
+    return any(
+        token in message
+        for token in [
+            "nodename nor servname",
+            "name or service not known",
+            "failed to resolve",
+            "connection error",
+            "connecterror",
+            "temporarily unavailable",
+        ]
+    )
+
+
 def _skip_if_model_unavailable(exc: Exception) -> None:
     if _is_model_not_found_error(exc):
         pytest.skip("Embedding model not available for integration test")
+    if _is_network_error(exc):
+        pytest.skip("Network unavailable for integration test")
 
 
 @pytest.fixture
@@ -92,7 +109,11 @@ async def test_cache_behavior(gemini_api_key):
     assert stats1["hits"] == 0
 
     # Second call - cache hit
-    embedding2 = await provider.embed_text(text)
+    try:
+        embedding2 = await provider.embed_text(text)
+    except Exception as exc:
+        _skip_if_model_unavailable(exc)
+        raise
     stats2 = provider.cache.get_stats()
     assert stats2["hits"] == 1
     assert embedding1 == embedding2

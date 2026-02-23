@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 # Patterns that indicate potential prompt injection attempts
 INJECTION_PATTERNS = [
     r"ignore\s+(previous|all|above|prior)\s+(instructions|prompts|rules)",
+    r"ignore[\s\w]{0,30}\binstructions?\b",
     r"disregard\s+(previous|all|above|prior)\s+(instructions|prompts|rules)",
     r"forget\s+(previous|all|above|everything|your)\s+(instructions|prompts|rules|training)",
     r"system\s+(prompt|instruction|message)",
@@ -51,9 +52,17 @@ def sanitize_input(text: str) -> str:
     if not text:
         return text
     
-    # Remove all HTML tags, keep only text
-    sanitized = bleach.clean(
+    # Remove script/style blocks with their content first.
+    stripped = re.sub(
+        r"<\s*(script|style)\b[^>]*>.*?<\s*/\s*\1\s*>",
+        "",
         text,
+        flags=re.IGNORECASE | re.DOTALL,
+    )
+
+    # Remove all remaining HTML tags, keep only text
+    sanitized = bleach.clean(
+        stripped,
         tags=[],  # Allow no HTML tags
         strip=True,  # Strip tags instead of escaping
         strip_comments=True,

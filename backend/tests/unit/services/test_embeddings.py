@@ -7,6 +7,7 @@ Tests embedding generation with mocked API calls.
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
+from app.core.config import settings
 from app.services.embeddings import GeminiEmbeddingProvider
 from app.services.embeddings.cache import EmbeddingCache
 from app.services.embeddings.gemini import RateLimitError
@@ -33,7 +34,7 @@ class TestGeminiEmbeddingProvider:
         """Test provider initialization."""
         with patch("google.genai.Client"):
             provider = GeminiEmbeddingProvider(api_key="test-key")
-            assert provider.model == "text-embedding-004"
+            assert provider.model == settings.embedding_model
             assert provider.dimension == 768
             assert provider.cache is not None
 
@@ -80,14 +81,18 @@ class TestGeminiEmbeddingProvider:
 
         # Mock the embed_content method
         mock_response = MagicMock()
-        mock_response.embeddings = [MagicMock(values=mock_embedding)]
+        mock_response.embeddings = [
+            MagicMock(values=mock_embedding),
+            MagicMock(values=mock_embedding),
+            MagicMock(values=mock_embedding),
+        ]
         gemini_provider.client.models.embed_content = MagicMock(return_value=mock_response)
 
         results = await gemini_provider.embed_batch(texts)
 
         assert len(results) == 3
         assert all(len(emb) == 768 for emb in results)
-        assert gemini_provider.client.models.embed_content.call_count == 3
+        assert gemini_provider.client.models.embed_content.call_count == 1
 
     @pytest.mark.asyncio
     async def test_embed_batch_empty_raises(self, gemini_provider):
@@ -101,7 +106,7 @@ class TestGeminiEmbeddingProvider:
 
     def test_get_model_name(self, gemini_provider):
         """Test get_model_name method."""
-        assert gemini_provider.get_model_name() == "text-embedding-004"
+        assert gemini_provider.get_model_name() == settings.embedding_model
 
 
 class TestEmbeddingCache:

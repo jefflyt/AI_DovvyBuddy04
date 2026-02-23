@@ -18,6 +18,7 @@ def test_heuristic_routing_trip():
     result = orchestrator._quick_route_heuristic("Where can I dive in Bali?")
     assert result is not None
     assert result["target_agent"] == "trip_planner"
+    assert result["parameters"]["location"] == "Bali"
 
 
 def test_heuristic_routing_info():
