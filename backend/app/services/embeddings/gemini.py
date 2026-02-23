@@ -6,7 +6,9 @@ Uses Google's Generative AI API to generate embeddings with text-embedding-004.
 
 import asyncio
 import logging
-from typing import List, Optional
+import time
+from collections import deque
+from typing import Deque, List, Optional, Tuple
 
 import google.genai as genai
 from google.genai import types
@@ -27,13 +29,71 @@ logger = logging.getLogger(__name__)
 # Constants
 GEMINI_EMBEDDING_MODEL = "text-embedding-004"
 GEMINI_EMBEDDING_DIMENSION = 768
-MAX_BATCH_SIZE = 100
+MAX_EMBEDDING_BATCH_SIZE = 250
+TOKENS_PER_CHAR_ESTIMATE = 0.25
 
 
 class RateLimitError(Exception):
     """Raised when API rate limit is exceeded."""
 
     pass
+
+
+class _EmbeddingRateLimiter:
+    """Simple sliding-window limiter for requests and tokens."""
+
+    def __init__(self, rpm_limit: int, tpm_limit: int, window_seconds: int) -> None:
+        self.rpm_limit = rpm_limit
+        self.tpm_limit = tpm_limit
+        self.window_seconds = window_seconds
+        self._lock = asyncio.Lock()
+        self._events: Deque[Tuple[float, int]] = deque()
+
+    def _prune(self, now: float) -> None:
+        while self._events and now - self._events[0][0] >= self.window_seconds:
+            self._events.popleft()
+
+    def _current_usage(self, now: float) -> Tuple[int, int]:
+        self._prune(now)
+        tokens_used = sum(tokens for _, tokens in self._events)
+        return len(self._events), tokens_used
+
+    def _time_until_tokens_available(self, now: float, needed_tokens: int) -> float:
+        if needed_tokens <= 0:
+            return 0.0
+
+        running = 0
+        for timestamp, tokens in self._events:
+            running += tokens
+            if running >= needed_tokens:
+                return max(0.0, (timestamp + self.window_seconds) - now)
+        return 0.0
+
+    async def wait_for_slot(self, request_tokens: int) -> None:
+        async with self._lock:
+            while True:
+                now = time.time()
+                request_count, tokens_used = self._current_usage(now)
+
+                under_rpm = request_count < self.rpm_limit
+                under_tpm = (tokens_used + request_tokens) <= self.tpm_limit
+
+                if under_rpm and under_tpm:
+                    self._events.append((now, request_tokens))
+                    return
+
+                wait_for_rpm = 0.0
+                if not under_rpm and self._events:
+                    wait_for_rpm = (self._events[0][0] + self.window_seconds) - now
+
+                required_tokens = (tokens_used + request_tokens) - self.tpm_limit
+                wait_for_tpm = self._time_until_tokens_available(now, required_tokens)
+
+                sleep_for = max(0.0, wait_for_rpm, wait_for_tpm)
+                if sleep_for > 0:
+                    await asyncio.sleep(sleep_for)
+                else:
+                    await asyncio.sleep(0.01)
 
 
 class GeminiEmbeddingProvider(EmbeddingProvider):
@@ -65,6 +125,11 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
 
         # Initialize cache
         self.cache = EmbeddingCache() if use_cache else None
+        self.rate_limiter = _EmbeddingRateLimiter(
+            rpm_limit=settings.embedding_rpm_limit,
+            tpm_limit=settings.embedding_tpm_limit,
+            window_seconds=settings.embedding_rate_window_seconds,
+        )
 
         logger.info(
             "Initialized GeminiEmbeddingProvider with model=%s (New SDK)",
@@ -96,6 +161,9 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
             Exception: If other error occurs
         """
         try:
+            request_tokens = self._estimate_tokens(text)
+            await self.rate_limiter.wait_for_slot(request_tokens)
+
             # Run synchronous Gemini API call in thread pool
             loop = asyncio.get_event_loop()
             result = await loop.run_in_executor(
@@ -104,7 +172,8 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
                     model=self.model,
                     contents=text,
                     config=types.EmbedContentConfig(
-                        output_dimensionality=self.dimension
+                        output_dimensionality=self.dimension,
+                        task_type="RETRIEVAL_DOCUMENT"
                     )
                 ),
             )
@@ -153,6 +222,54 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
 
             # Other errors
             logger.error(f"Error generating embedding: {e}")
+            raise
+
+    async def _embed_batch_with_retry(self, texts: List[str]) -> List[List[float]]:
+        """
+        Generate embeddings for a batch of texts with retry logic.
+
+        Args:
+            texts: List of texts to embed
+
+        Returns:
+            List of embedding vectors
+        """
+        try:
+            request_tokens = sum(self._estimate_tokens(text) for text in texts)
+            await self.rate_limiter.wait_for_slot(request_tokens)
+
+            loop = asyncio.get_event_loop()
+            result = await loop.run_in_executor(
+                None,
+                lambda: self.client.models.embed_content(
+                    model=self.model,
+                    contents=texts,
+                    config=types.EmbedContentConfig(
+                        output_dimensionality=self.dimension,
+                        task_type="RETRIEVAL_DOCUMENT"
+                    ),
+                ),
+            )
+
+            if not hasattr(result, "embeddings") or not result.embeddings:
+                raise ValueError("Invalid embedding response from Gemini API")
+
+            embeddings = [item.values for item in result.embeddings]
+            for embedding in embeddings:
+                if len(embedding) != self.dimension:
+                    raise ValueError(
+                        f"Expected embedding dimension {self.dimension}, got {len(embedding)}"
+                    )
+
+            return embeddings
+        except Exception as e:
+            error_msg = str(e).lower()
+
+            if "429" in error_msg or "rate limit" in error_msg or "quota" in error_msg:
+                logger.warning(f"Rate limit hit: {e}")
+                raise RateLimitError(str(e)) from e
+
+            logger.error(f"Error generating embeddings: {e}")
             raise
 
     async def embed_text(self, text: str) -> List[float]:
@@ -209,9 +326,11 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
 
         embeddings: List[List[float]] = []
 
+        batch_size = min(settings.embedding_batch_size, MAX_EMBEDDING_BATCH_SIZE)
+
         # Process in batches
-        for i in range(0, len(texts), MAX_BATCH_SIZE):
-            batch = texts[i : i + MAX_BATCH_SIZE]
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i : i + batch_size]
 
             # Check cache for each text
             batch_embeddings: List[Optional[List[float]]] = []
@@ -232,15 +351,14 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
 
             # Generate embeddings for uncached texts
             if texts_to_embed:
-                # Process sequentially to avoid rate limits
-                for j, text in enumerate(texts_to_embed):
-                    embedding = await self._embed_with_retry(text)
+                embeddings_to_insert = await self._embed_batch_with_retry(texts_to_embed)
 
-                    # Store in cache
+                for j, embedding in enumerate(embeddings_to_insert):
+                    text = texts_to_embed[j]
+
                     if self.cache:
                         self.cache.set(text, embedding)
 
-                    # Insert at correct position
                     batch_idx = indices_to_embed[j]
                     batch_embeddings[batch_idx] = embedding
 
@@ -256,3 +374,7 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
     def get_model_name(self) -> str:
         """Get the name of the embedding model."""
         return self.model
+
+    def _estimate_tokens(self, text: str) -> int:
+        estimated = max(1, int(len(text) * TOKENS_PER_CHAR_ESTIMATE))
+        return estimated

@@ -43,14 +43,21 @@ class Settings(BaseSettings):
     llm_max_tokens: int = 2048
     llm_max_retries: int = 3
     llm_retry_delay: float = 1.0
+    llm_rpm_limit: int = 15
+    llm_tpm_limit: int = 250_000
+    llm_rpd_limit: int = 1_000
+    llm_rate_window_seconds: int = 60
     
     # Embedding Configuration
     embedding_model: str = "text-embedding-004"  # Gemini embedding model (768 dimensions)
-    embedding_batch_size: int = 100
+    embedding_batch_size: int = 250
     embedding_cache_size: int = 1000
     embedding_cache_ttl: int = 3600  # 1 hour in seconds
     embedding_max_retries: int = 3
     embedding_retry_delay: float = 1.0
+    embedding_rpm_limit: int = 1500
+    embedding_tpm_limit: int = 1_000_000
+    embedding_rate_window_seconds: int = 60
     
     # RAG Configuration
     enable_rag: bool = True

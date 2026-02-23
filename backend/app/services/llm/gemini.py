@@ -6,7 +6,9 @@ Uses Google's Generative AI API for text generation.
 
 import asyncio
 import logging
-from typing import List, Optional, Tuple
+import time
+from collections import deque
+from typing import Deque, List, Optional, Tuple
 
 import google.genai as genai
 from google.genai import types
@@ -24,10 +26,85 @@ from app.services.rag.token_utils import calculate_gemini_cost
 
 logger = logging.getLogger(__name__)
 
+TOKENS_PER_CHAR_ESTIMATE = 0.25
+
 
 class RateLimitError(Exception):
     """Raised when API rate limit is exceeded."""
     pass
+
+
+class _LLMRateLimiter:
+    """Sliding-window rate limiter for RPM/TPM/RPD constraints."""
+
+    def __init__(
+        self,
+        rpm_limit: int,
+        tpm_limit: int,
+        rpd_limit: int,
+        window_seconds: int,
+    ) -> None:
+        self.rpm_limit = rpm_limit
+        self.tpm_limit = tpm_limit
+        self.rpd_limit = rpd_limit
+        self.window_seconds = window_seconds
+        self._lock = asyncio.Lock()
+        self._events: Deque[Tuple[float, int]] = deque()
+        self._daily_events: Deque[float] = deque()
+
+    def _prune(self, now: float) -> None:
+        while self._events and now - self._events[0][0] >= self.window_seconds:
+            self._events.popleft()
+        while self._daily_events and now - self._daily_events[0] >= 86400:
+            self._daily_events.popleft()
+
+    def _current_usage(self, now: float) -> Tuple[int, int, int]:
+        self._prune(now)
+        tokens_used = sum(tokens for _, tokens in self._events)
+        return len(self._events), tokens_used, len(self._daily_events)
+
+    def _time_until_tokens_available(self, now: float, needed_tokens: int) -> float:
+        if needed_tokens <= 0:
+            return 0.0
+
+        running = 0
+        for timestamp, tokens in self._events:
+            running += tokens
+            if running >= needed_tokens:
+                return max(0.0, (timestamp + self.window_seconds) - now)
+        return 0.0
+
+    async def wait_for_slot(self, request_tokens: int) -> None:
+        async with self._lock:
+            while True:
+                now = time.time()
+                request_count, tokens_used, daily_count = self._current_usage(now)
+
+                under_rpm = request_count < self.rpm_limit
+                under_tpm = (tokens_used + request_tokens) <= self.tpm_limit
+                under_rpd = daily_count < self.rpd_limit
+
+                if under_rpm and under_tpm and under_rpd:
+                    self._events.append((now, request_tokens))
+                    self._daily_events.append(now)
+                    return
+
+                wait_for_rpm = 0.0
+                if not under_rpm and self._events:
+                    wait_for_rpm = (self._events[0][0] + self.window_seconds) - now
+
+                required_tokens = (tokens_used + request_tokens) - self.tpm_limit
+                wait_for_tpm = self._time_until_tokens_available(now, required_tokens)
+
+                wait_for_rpd = 0.0
+                if not under_rpd and self._daily_events:
+                    wait_for_rpd = (self._daily_events[0] + 86400) - now
+
+                sleep_for = max(0.0, wait_for_rpm, wait_for_tpm, wait_for_rpd)
+                if sleep_for > 0:
+                    await asyncio.sleep(sleep_for)
+                else:
+                    await asyncio.sleep(0.01)
 
 class GeminiLLMProvider(LLMProvider):
     """Google Gemini LLM provider implementation."""
@@ -52,6 +129,13 @@ class GeminiLLMProvider(LLMProvider):
 
         # Create Gemini Client (New SDK)
         self.client = genai.Client(api_key=api_key)
+
+        self.rate_limiter = _LLMRateLimiter(
+            rpm_limit=settings.llm_rpm_limit,
+            tpm_limit=settings.llm_tpm_limit,
+            rpd_limit=settings.llm_rpd_limit,
+            window_seconds=settings.llm_rate_window_seconds,
+        )
 
         logger.info(f"Initialized GeminiLLMProvider with model={self.model} (New SDK)")
 
@@ -104,6 +188,10 @@ class GeminiLLMProvider(LLMProvider):
         max_tok = max_tokens if max_tokens is not None else self.max_tokens
 
         system_instruction, user_prompt = self._messages_to_gemini_format(messages)
+
+        # Estimate tokens for rate limiting
+        request_tokens = self._estimate_tokens(system_instruction, user_prompt, max_tok)
+        await self.rate_limiter.wait_for_slot(request_tokens)
 
         try:
             # New SDK usage: client.models.generate_content
@@ -176,3 +264,11 @@ class GeminiLLMProvider(LLMProvider):
     def get_model_name(self) -> str:
         """Get the name of the LLM model."""
         return self.model
+
+    def _estimate_tokens(
+        self, system_instruction: Optional[str], user_prompt: str, max_tokens: int
+    ) -> int:
+        """Estimate total tokens (input + output) for rate limiting."""
+        input_text = (system_instruction or "") + user_prompt
+        input_tokens = max(1, int(len(input_text) * TOKENS_PER_CHAR_ESTIMATE))
+        return input_tokens + max_tokens
