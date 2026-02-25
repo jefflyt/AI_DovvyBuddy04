@@ -14,12 +14,12 @@
 All PR6.2 objectives successfully implemented, tested, and manually verified:
 
 ### ✅ Backend Implementation (100% Complete)
-- ✅ **Response Formatter** (`backend/app/orchestration/response_formatter.py`) - Added `sanitize_response()` method with pattern matching for RAG mentions
-- ✅ **Medical Detector** (`backend/app/orchestration/medical_detector.py`) - NEW: LLM-based medical query classification
-- ✅ **Orchestrator** (`backend/app/orchestration/orchestrator.py`) - Integrated sanitization + citation extraction + telemetry logging
-- ✅ **Context Builder** (`backend/app/orchestration/context_builder.py`) - Extracts and passes citations through metadata
-- ✅ **Conversation Manager** (`backend/app/orchestration/conversation_manager.py`) - Intent-based follow-up templates
-- ✅ **Safety Prompts** (`backend/app/prompts/safety.py`) - Asia/SEA DAN contacts, removed ** markdown
+- ✅ **Response Formatter** (`src/backend/app/orchestration/response_formatter.py`) - Added `sanitize_response()` method with pattern matching for RAG mentions
+- ✅ **Medical Detector** (`src/backend/app/orchestration/medical_detector.py`) - NEW: LLM-based medical query classification
+- ✅ **Orchestrator** (`src/backend/app/orchestration/orchestrator.py`) - Integrated sanitization + citation extraction + telemetry logging
+- ✅ **Context Builder** (`src/backend/app/orchestration/context_builder.py`) - Extracts and passes citations through metadata
+- ✅ **Conversation Manager** (`src/backend/app/orchestration/conversation_manager.py`) - Intent-based follow-up templates
+- ✅ **Safety Prompts** (`src/backend/app/prompts/safety.py`) - Asia/SEA DAN contacts, removed ** markdown
 - ✅ **All 4 Agent Prompts Updated**:
   - ✅ `CertificationAgent` - Added RESPONSE DISCIPLINE block
   - ✅ `TripAgent` - Added RESPONSE DISCIPLINE block
@@ -27,8 +27,8 @@ All PR6.2 objectives successfully implemented, tested, and manually verified:
   - ✅ `RetrievalAgent` - Added RESPONSE DISCIPLINE block + removed [Source: ...] instructions
 
 ### ✅ Testing (100% Complete)
-- ✅ **Unit Tests** (`backend/tests/unit/orchestration/test_response_formatter.py`) - 15 tests for sanitization logic
-- ✅ **Integration Tests** (`backend/tests/integration/test_response_discipline.py`) - 5 tests for end-to-end discipline
+- ✅ **Unit Tests** (`src/backend/tests/unit/orchestration/test_response_formatter.py`) - 15 tests for sanitization logic
+- ✅ **Integration Tests** (`src/backend/tests/integration/test_response_discipline.py`) - 5 tests for end-to-end discipline
 - ✅ **Manual Testing** - 5/5 scenarios verified via API testing
 - ✅ All 20 PR6.2 tests passing
 - ✅ No regressions in existing tests (pre-existing failures unrelated to PR6.2)
@@ -197,7 +197,7 @@ None – applies to all guest sessions uniformly.
 
 ### Scope (in)
 
-1. **Update all agent system prompts** (`backend/app/agents/*.py`) with strict response discipline instructions.
+1. **Update all agent system prompts** (`src/backend/app/agents/*.py`) with strict response discipline instructions.
 2. **Update orchestrator/response formatter** to strip any leaked RAG references if agents fail to comply.
 3. **Update RAG service integration** to ensure citations are extracted and moved to metadata, not response text.
 4. **Update tests** to validate response format (no forbidden terms, concise length guidelines).
@@ -220,7 +220,7 @@ None – applies to all guest sessions uniformly.
 
 #### Backend
 
-**1. Agent System Prompts** (`backend/app/agents/*.py`)
+**1. Agent System Prompts** (`src/backend/app/agents/*.py`)
 
 Update all agent classes:
 - `CertificationAgent` (`certification.py`)
@@ -244,7 +244,7 @@ RESPONSE DISCIPLINE (CRITICAL):
 - Safety notes: ONE sentence max (unless emergency override)
 ```
 
-**2. Response Formatter** (`backend/app/orchestration/response_formatter.py`)
+**2. Response Formatter** (`src/backend/app/orchestration/response_formatter.py`)
 
 Add post-processing method to strip any leaked RAG references:
 
@@ -266,7 +266,7 @@ def sanitize_response(self, response: str) -> str:
 
 Call this method in orchestrator before returning `ChatResponse`.
 
-**3. RAG Service** (`backend/app/services/rag_service.py`)
+**3. RAG Service** (`src/backend/app/services/rag_service.py`)
 
 Update `retrieve()` method to return citations separately:
 
@@ -286,7 +286,7 @@ class Citation:
 
 Agents use `result.context` in prompts; orchestrator attaches `result.citations` to `metadata.citations`.
 
-**4. Orchestrator** (`backend/app/orchestration/orchestrator.py`)
+**4. Orchestrator** (`src/backend/app/orchestration/orchestrator.py`)
 
 In `_build_agent_response()`:
 1. Call agent with RAG context (text only).
@@ -351,7 +351,7 @@ Use for post-launch monitoring to identify prompt drift.
 
 #### Unit tests
 
-**1. Response Formatter Tests** (`backend/tests/unit/orchestration/test_response_formatter.py`)
+**1. Response Formatter Tests** (`src/backend/tests/unit/orchestration/test_response_formatter.py`)
 
 New test file for sanitization logic:
 
@@ -387,7 +387,7 @@ def test_sanitize_response_preserves_clean_text():
     assert sanitized == response
 ```
 
-**2. Agent Tests** (`backend/tests/unit/agents/test_*.py`)
+**2. Agent Tests** (`src/backend/tests/unit/agents/test_*.py`)
 
 Update existing agent tests to validate response discipline:
 
@@ -419,7 +419,7 @@ async def test_certification_agent_response_is_concise(mock_llm, mock_rag):
 
 Apply similar tests to `TripAgent`, `SafetyAgent`, `RetrievalAgent`.
 
-**3. RAG Service Tests** (`backend/tests/unit/services/test_rag.py`)
+**3. RAG Service Tests** (`src/backend/tests/unit/services/test_rag.py`)
 
 ```python
 def test_rag_retrieve_returns_citations_separately():
@@ -437,7 +437,7 @@ def test_rag_retrieve_returns_citations_separately():
 
 #### Integration tests
 
-**Orchestrator Integration** (`backend/tests/integration/test_orchestrator.py`)
+**Orchestrator Integration** (`src/backend/tests/integration/test_orchestrator.py`)
 
 ```python
 @pytest.mark.asyncio
@@ -520,18 +520,18 @@ async def test_chat_response_excludes_rag_mentions(db_session):
 - Removed `**` markdown formatting from disclaimer
 
 ✅ **Environment Consolidation**
-- Single `.env.local` at project root (no more backend/.env confusion)
+- Single `.env.local` at project root (no more src/backend/.env confusion)
 - Backend reads from `../.env.local`
 - Feature flag: `FEATURE_CONVERSATION_FOLLOWUP_ENABLED=true`
 
 **Files Modified:**
-1. `backend/app/orchestration/response_formatter.py` - LLM-based medical detection
-2. `backend/app/orchestration/medical_detector.py` - NEW: Medical query classifier
-3. `backend/app/orchestration/conversation_manager.py` - Intent-based follow-up templates
-4. `backend/app/prompts/safety.py` - Asia DAN contacts, removed ** markdown
-5. `backend/app/orchestration/orchestrator.py` - Pass user message for medical detection
+1. `src/backend/app/orchestration/response_formatter.py` - LLM-based medical detection
+2. `src/backend/app/orchestration/medical_detector.py` - NEW: Medical query classifier
+3. `src/backend/app/orchestration/conversation_manager.py` - Intent-based follow-up templates
+4. `src/backend/app/prompts/safety.py` - Asia DAN contacts, removed ** markdown
+5. `src/backend/app/orchestration/orchestrator.py` - Pass user message for medical detection
 6. `.env.local` - Consolidated all environment variables
-7. `backend/app/core/config.py` - Read from root `.env.local`
+7. `src/backend/app/core/config.py` - Read from root `.env.local`
 
 1. **Test conversation flow with concise responses:**
    - [ ] Start new chat session
@@ -578,7 +578,7 @@ pnpm dev
 
 ```bash
 # Install dependencies
-cd backend
+cd src/backend
 source ../.venv/bin/activate
 pip install -e .
 
@@ -586,19 +586,19 @@ pip install -e .
 .venv/bin/uvicorn app.main:app --reload --app-dir backend
 
 # Run tests
-cd backend
+cd src/backend
 pytest                                    # All tests
 pytest tests/unit/orchestration/         # Response formatter tests
 pytest tests/unit/agents/                # Agent tests
 pytest tests/integration/                # Orchestrator integration
 
 # Lint & format
-cd backend
+cd src/backend
 ruff check app/ tests/
 ruff format app/ tests/
 
 # Typecheck (optional - not currently enforced)
-cd backend
+cd src/backend
 mypy app/
 
 # Build (no build step for backend)
@@ -665,17 +665,17 @@ pnpm typecheck                           # TypeScript check (no changes)
 ### ✅ Code Changes Verified
 
 **Backend files modified (7):**
-1. ✅ `backend/app/orchestration/response_formatter.py` - Added `sanitize_response()` (63 lines)
-2. ✅ `backend/app/orchestration/orchestrator.py` - Integrated sanitization + citations (28 lines)
-3. ✅ `backend/app/orchestration/context_builder.py` - Citation extraction (2 lines)
-4. ✅ `backend/app/agents/certification.py` - RESPONSE DISCIPLINE block (9 lines)
-5. ✅ `backend/app/agents/trip.py` - RESPONSE DISCIPLINE block (9 lines)
-6. ✅ `backend/app/agents/safety.py` - RESPONSE DISCIPLINE block (9 lines)
-7. ✅ `backend/app/agents/retrieval.py` - RESPONSE DISCIPLINE block + removed [Source: ...] (9 lines)
+1. ✅ `src/backend/app/orchestration/response_formatter.py` - Added `sanitize_response()` (63 lines)
+2. ✅ `src/backend/app/orchestration/orchestrator.py` - Integrated sanitization + citations (28 lines)
+3. ✅ `src/backend/app/orchestration/context_builder.py` - Citation extraction (2 lines)
+4. ✅ `src/backend/app/agents/certification.py` - RESPONSE DISCIPLINE block (9 lines)
+5. ✅ `src/backend/app/agents/trip.py` - RESPONSE DISCIPLINE block (9 lines)
+6. ✅ `src/backend/app/agents/safety.py` - RESPONSE DISCIPLINE block (9 lines)
+7. ✅ `src/backend/app/agents/retrieval.py` - RESPONSE DISCIPLINE block + removed [Source: ...] (9 lines)
 
 **Test files created (2):**
-1. ✅ `backend/tests/unit/orchestration/test_response_formatter.py` (179 lines, 15 tests)
-2. ✅ `backend/tests/integration/test_response_discipline.py` (262 lines, 5 tests)
+1. ✅ `src/backend/tests/unit/orchestration/test_response_formatter.py` (179 lines, 15 tests)
+2. ✅ `src/backend/tests/integration/test_response_discipline.py` (262 lines, 5 tests)
 
 ### ✅ Test Coverage
 
@@ -693,15 +693,15 @@ $ pytest tests/unit/orchestration/test_response_formatter.py tests/integration/t
 
 ```bash
 # Verify RESPONSE DISCIPLINE in all 4 agents
-$ grep -r "RESPONSE DISCIPLINE" backend/app/agents/*.py
+$ grep -r "RESPONSE DISCIPLINE" src/backend/app/agents/*.py
 # ✅ Found in: certification.py, trip.py, safety.py, retrieval.py
 
 # Verify sanitize_response usage
-$ grep -r "sanitize_response" backend/app/orchestration/*.py
+$ grep -r "sanitize_response" src/backend/app/orchestration/*.py
 # ✅ Found: definition in response_formatter.py, usage in orchestrator.py
 
 # Verify citation flow
-$ grep -r "rag_citations" backend/app/orchestration/*.py
+$ grep -r "rag_citations" src/backend/app/orchestration/*.py
 # ✅ Found: extraction in context_builder.py, usage in orchestrator.py
 ```
 

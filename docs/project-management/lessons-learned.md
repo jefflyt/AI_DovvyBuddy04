@@ -35,7 +35,7 @@
 
 ### Directory Structure Matters
 **Challenge:** Backend nested under `src/backend/` created confusion about boundaries  
-**Solution:** Moved to root-level `/backend/`, frontend stays in `/src/`  
+**Solution:** Moved to root-level `/src/backend/`, frontend stays in `/src/`  
 **Lesson:** Follow industry conventions:
 - Next.js expects frontend in root or `src/`
 - Backend services belong at root in monorepos

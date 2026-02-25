@@ -59,9 +59,9 @@ For production use with custom sender email:
 
 ## 2. Environment Configuration
 
-### Backend Environment (Primary)
+### Environment (Primary)
 
-Edit `backend/.env`:
+Edit project root `.env.local`:
 
 ```bash
 # Lead Capture & Delivery Configuration
@@ -93,7 +93,7 @@ LEAD_EMAIL_FROM=leads@dovvybuddy.com
 LEAD_WEBHOOK_URL=
 ```
 
-**Note:** Frontend doesn't directly use these. They're mirrored for documentation. The Python backend reads from `backend/.env`.
+**Note:** The Python backend reads from project root `.env.local`.
 
 ---
 
@@ -102,7 +102,7 @@ LEAD_WEBHOOK_URL=
 ### Backend Dependencies
 
 ```bash
-cd backend
+cd src/backend
 pip install -e .
 ```
 
@@ -123,7 +123,7 @@ Should output version `0.8.0` or higher.
 Run the lead schema migration:
 
 ```bash
-cd backend
+cd src/backend
 alembic upgrade head
 ```
 
@@ -158,7 +158,7 @@ Should show columns: `id`, `type`, `request_details`, `diver_profile`, `created_
 ### Start Backend Server
 
 ```bash
-cd backend
+cd src/backend
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -218,7 +218,7 @@ curl -X POST http://localhost:8000/api/leads \
 **Cause:** `RESEND_API_KEY` not set in environment
 
 **Solution:**
-1. Verify `.env` file exists in `backend/`
+1. Verify root `.env.local` exists
 2. Check `RESEND_API_KEY` is set and not empty
 3. Restart backend server to pick up new environment variables
 4. Verify with: `echo $RESEND_API_KEY` (in backend terminal)
@@ -228,7 +228,7 @@ curl -X POST http://localhost:8000/api/leads \
 **Cause:** `LEAD_EMAIL_TO` not set
 
 **Solution:**
-1. Set `LEAD_EMAIL_TO` in `backend/.env`
+1. Set `LEAD_EMAIL_TO` in `.env.local`
 2. Restart backend server
 3. Must be a valid email address
 
@@ -265,7 +265,7 @@ curl -X POST http://localhost:8000/api/leads \
 1. Verify API key is correct (no extra spaces)
 2. Check API key hasn't been revoked in Resend dashboard
 3. Regenerate API key if necessary
-4. Update `.env` file with new key
+4. Update `.env.local` with new key
 5. Restart backend server
 
 ### Issue: Rate limit exceeded
@@ -287,7 +287,7 @@ Before deploying to production:
 - [ ] Resend account created and verified
 - [ ] API key generated and stored securely
 - [ ] Domain verified (for production)
-- [ ] Environment variables set in `backend/.env`
+- [ ] Environment variables set in root `.env.local`
 - [ ] Dependencies installed (`pip install -e .`)
 - [ ] Database migration applied (`alembic upgrade head`)
 - [ ] Backend server starts without errors
@@ -416,7 +416,7 @@ LEAD_EMAIL_FROM=leads@dovvybuddy.com
 ### Documentation
 
 - **Implementation Guide:** `docs/project-management/PR4-Implementation-Guide.md`
-- **API Reference:** `backend/docs/LEAD_API_REFERENCE.md`
+- **API Reference:** `src/backend/docs/LEAD_API_REFERENCE.md`
 - **Project Summary:** `docs/project-management/PR4-Implementation-Summary.md`
 
 ### External Resources

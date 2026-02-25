@@ -221,7 +221,7 @@ This ensures deterministic, structured engineering.
 ### Refactor Command
 
 ```text
-/refactor Create a refactor plan for backend/google-calendar/.
+/refactor Create a refactor plan for src/backend/google-calendar/.
 ```
 
 This creates a **refactor plan**, not code.

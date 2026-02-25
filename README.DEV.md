@@ -29,17 +29,17 @@ pnpm install
 # Set up Python backend (use Python 3.11+)
 python3.11 -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -e backend/
+pip install -e src/backend/
 
 # Set up environment variables
 cp .env.example .env.local
 # Edit .env.local with your API keys and database URL
 
 # Run database migrations
-cd backend && alembic upgrade head && cd ..
+cd src/backend && alembic upgrade head && cd ../..
 
 # Start Python backend (terminal 1)
-.venv/bin/uvicorn app.main:app --reload --app-dir backend
+.venv/bin/uvicorn app.main:app --reload --app-dir src/backend
 
 # Start Next.js frontend (terminal 2)
 pnpm dev
@@ -53,7 +53,7 @@ Visit `http://localhost:3000` to see the app.
 
 ```
 AI_DovvyBuddy04/
-├── backend/                      # Python FastAPI backend
+├── src/backend/                  # Python FastAPI backend
 │   ├── app/
 │   │   ├── main.py               # FastAPI application entry point
 │   │   ├── api/                  # API routes (chat, lead, session)
@@ -156,18 +156,18 @@ pnpm test:e2e:ui      # Run E2E tests with UI
 
 ```bash
 # Development server
-.venv/bin/uvicorn app.main:app --reload --app-dir backend
+.venv/bin/uvicorn app.main:app --reload --app-dir src/backend
 
 # Testing
-cd backend && pytest                    # Run all tests
-cd backend && pytest -v                 # Verbose output
-cd backend && pytest tests/unit         # Unit tests only
-cd backend && pytest tests/integration  # Integration tests only
+cd src/backend && pytest                    # Run all tests
+cd src/backend && pytest -v                 # Verbose output
+cd src/backend && pytest tests/unit         # Unit tests only
+cd src/backend && pytest tests/integration  # Integration tests only
 
 # Database migrations
-cd backend && alembic upgrade head                        # Apply migrations
-cd backend && alembic revision --autogenerate -m "msg"    # Create migration
-cd backend && alembic downgrade -1                        # Rollback one migration
+cd src/backend && alembic upgrade head                        # Apply migrations
+cd src/backend && alembic revision --autogenerate -m "msg"    # Create migration
+cd src/backend && alembic downgrade -1                        # Rollback one migration
 
 # Content management
 pnpm content:ingest            # Ingest content (incremental by default)
@@ -273,7 +273,7 @@ See [PR1-Database-Schema.md](./docs/plans/PR1-Database-Schema.md) for details.
 
 ```bash
 pnpm test           # Frontend unit tests
-cd backend && pytest tests/unit  # Backend unit tests
+cd src/backend && pytest tests/unit  # Backend unit tests
 ```
 
 ### Integration Tests (pytest)
@@ -283,7 +283,7 @@ cd backend && pytest tests/unit  # Backend unit tests
 - RAG retrieval accuracy
 
 ```bash
-cd backend && pytest tests/integration
+cd src/backend && pytest tests/integration
 ```
 
 ### E2E Tests (Playwright)
@@ -356,13 +356,13 @@ See [AI_WORKFLOW.md](./docs/project-management/AI_WORKFLOW.md) for complete guid
 
 ### Database Connection Errors
 
-Ensure `.env.local` is in project root (not `backend/.env`):
+Ensure `.env.local` is in project root (not `src/backend/.env`):
 ```bash
 # Correct location
 /Users/you/AI_DovvyBuddy04/.env.local
 
 # Wrong location
-/Users/you/AI_DovvyBuddy04/backend/.env
+/Users/you/AI_DovvyBuddy04/src/backend/.env
 ```
 
 ### Backend Not Starting

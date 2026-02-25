@@ -25,13 +25,13 @@ jobs:
 
       - name: Install backend dependencies
         run: |
-          cd backend
+          cd src/backend
           pip install -e .
 
       - name: Validate content files
         run: |
-          cd backend
-          python -m scripts.validate_content --content-dir ../content
+          cd src/backend
+          python -m scripts.validate_content --content-dir ../../content
         continue-on-error: true # Non-blocking until content is complete
 
       - name: Post validation results

@@ -43,7 +43,7 @@ Provide guidance for automated workflows, LLMs, and humans working on this proje
 
 ## Python Environment
 - Single virtual environment at project root: `.venv`
-- Install backend: `.venv/bin/pip install -e backend/`
+- Install backend: `.venv/bin/pip install -e src/backend/`
 - All dependencies use the root `.venv` (no subdirectory environments)
 
 ## LLM Standards
@@ -56,7 +56,7 @@ Provide guidance for automated workflows, LLMs, and humans working on this proje
   - Architecture decisions: `/docs/decisions/`
   - Implementation plans: `/docs/plans/`
   - **Summaries & retrospectives: `/docs/project-management/`**
-  - Backend-specific: `backend/docs/`
+  - Backend-specific: `src/backend/docs/`
   - Content guides: `content/`
   - Workflow instructions: `.github/`
 - Use `kebab-case` or `snake_case` filenames

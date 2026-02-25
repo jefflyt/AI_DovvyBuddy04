@@ -452,7 +452,7 @@ _Note: PR0 (Bootstrap) is already complete._
 ### Completed Work ✅
 
 **Infrastructure & Refactoring:**
-- ✅ Backend moved from `src/backend/` to root-level `/backend/` for clear separation
+- ✅ Backend moved from `src/backend/` to root-level `/src/backend/` for clear separation
 - ✅ All documentation updated to reflect new structure
 - ✅ Tests passing after refactor (97% pass rate)
 - ✅ CI/CD pipelines updated

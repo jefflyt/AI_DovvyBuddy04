@@ -196,6 +196,6 @@ Documentation:
 
 Refer to:
 
-- Main README: [README.md](../README.md)
-- Product Spec: [docs/psd/DovvyBuddy-PSD-V6.2.md](../docs/psd/DovvyBuddy-PSD-V6.2.md)
-- Project Context: [.github/copilot-project.md](../.github/copilot-project.md)
+- Main README: [README.md](../../README.md)
+- Product Spec: [docs/psd/DovvyBuddy-PSD-V6.2.md](../psd/DovvyBuddy-PSD-V6.2.md)
+- Project Context: [.github/copilot-project.md](../../.github/copilot-project.md)

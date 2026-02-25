@@ -10,27 +10,27 @@
 
 ### 1. RAF (Retrieval-Augmented Facts) Enforcement ✅
 
-#### Citation Tracking (`backend/app/services/rag/types.py`)
+#### Citation Tracking (`src/backend/app/services/rag/types.py`)
 - Added `source_citation: Optional[str]` field to `RetrievalResult`
 - Added `__post_init__` to auto-extract citation from `content_path` metadata
 - Added `citations: List[str]` and `has_data: bool` fields to `RAGContext`
 
 **Purpose:** Track source documents for transparency and grounding verification
 
-#### NO_DATA Signal (`backend/app/services/rag/pipeline.py`)
+#### NO_DATA Signal (`src/backend/app/services/rag/pipeline.py`)
 - `_format_context()` returns `"NO_DATA"` when no results found (instead of empty string)
 - `retrieve_context()` extracts citations and sets `has_data` flag
 - When RAG disabled, returns `NO_DATA` with `has_data=False`
 
 **Purpose:** Explicit signal to agents that no grounding data is available
 
-#### Citation Extraction (`backend/app/services/rag/retriever.py`)
+#### Citation Extraction (`src/backend/app/services/rag/retriever.py`)
 - Modified result building to extract `source_citation` from metadata
 - Passes citation through to `RetrievalResult`
 
 **Purpose:** Preserve source document reference through retrieval pipeline
 
-#### Agent-Level Enforcement (`backend/app/agents/retrieval.py`)
+#### Agent-Level Enforcement (`src/backend/app/agents/retrieval.py`)
 - Added `_handle_no_data()` method that refuses to answer without sources
 - Modified `execute()` to check for `NO_DATA` signal
 - Updated confidence scoring: 0.8 with citations, 0.5 without, 0.0 for NO_DATA
@@ -38,7 +38,7 @@
 
 **Purpose:** Prevent hallucination by refusing to answer factual questions without grounding
 
-#### Prompt Improvements (`backend/app/agents/retrieval.py`)
+#### Prompt Improvements (`src/backend/app/agents/retrieval.py`)
 - Updated system prompt to require source citations in responses
 - Added `[Source: filename]` notation requirement
 - Explicit "never make up facts" instruction
@@ -50,7 +50,7 @@
 
 ### 2. Cloud Run Deployment Preparation ✅
 
-#### Dockerfile (`backend/Dockerfile`)
+#### Dockerfile (`src/backend/Dockerfile`)
 - Python 3.11 slim base image
 - System dependencies: gcc, postgresql-client
 - Editable install of backend package
@@ -58,7 +58,7 @@
 - Health check configured
 - Uvicorn server on port 8080 (Cloud Run default)
 
-#### Docker Ignore (`backend/.dockerignore`)
+#### Docker Ignore (`src/backend/.dockerignore`)
 - Excludes tests, docs, dev files
 - Reduces image size
 - Faster builds
@@ -87,7 +87,7 @@
 
 ### 4. Test Updates ✅
 
-#### RAG Pipeline Tests (`backend/tests/unit/services/test_rag_pipeline.py`)
+#### RAG Pipeline Tests (`src/backend/tests/unit/services/test_rag_pipeline.py`)
 - Updated mock retriever to include `source_citation`
 - Updated `test_format_context_empty` to expect `"NO_DATA"` instead of `""`
 - Added `source_citation` to test fixtures
@@ -136,7 +136,7 @@
 ### Local Testing
 ```bash
 # Run unit tests
-cd backend
+cd src/backend
 pytest
 
 # Test NO_DATA handling
@@ -157,7 +157,7 @@ asyncio.run(test())
 
 # Test Docker build
 docker build -t dovvybuddy-backend ./backend
-docker run -p 8080:8080 --env-file backend/.env dovvybuddy-backend
+docker run -p 8080:8080 --env-file src/backend/.env dovvybuddy-backend
 
 # Test endpoints
 curl http://localhost:8080/health
@@ -239,13 +239,13 @@ curl -X POST $SERVICE_URL/api/chat \
 ## Files Modified
 
 ```
-backend/app/services/rag/types.py          # Added citation fields
-backend/app/services/rag/pipeline.py       # NO_DATA signal, citation extraction
-backend/app/services/rag/retriever.py      # Citation passthrough
-backend/app/agents/retrieval.py            # RAF enforcement, _handle_no_data()
-backend/tests/unit/services/test_rag_pipeline.py  # Updated tests
-backend/Dockerfile                         # NEW: Cloud Run deployment
-backend/.dockerignore                      # NEW: Docker build optimization
+src/backend/app/services/rag/types.py          # Added citation fields
+src/backend/app/services/rag/pipeline.py       # NO_DATA signal, citation extraction
+src/backend/app/services/rag/retriever.py      # Citation passthrough
+src/backend/app/agents/retrieval.py            # RAF enforcement, _handle_no_data()
+src/backend/tests/unit/services/test_rag_pipeline.py  # Updated tests
+src/backend/Dockerfile                         # NEW: Cloud Run deployment
+src/backend/.dockerignore                      # NEW: Docker build optimization
 docs/NEXT_STEPS.md                         # Updated status and next steps
 docs/technical/deployment.md               # NEW: Complete deployment guide
 ```

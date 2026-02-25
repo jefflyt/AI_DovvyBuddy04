@@ -7,8 +7,8 @@
 ## Problems Identified
 
 ### 1. Path Resolution Issues
-- **backend/app/db/session.py**: Was looking for `backend/.env` instead of root `.env.local`
-- **backend/alembic/env.py**: Path calculation was incorrect
+- **src/backend/app/db/session.py**: Was looking for `src/backend/.env` instead of root `.env.local`
+- **src/backend/alembic/env.py**: Path calculation was incorrect
 - **Solution**: Updated to use `Path(__file__).resolve()` with correct parent levels
 
 ### 2. Database Driver Compatibility
@@ -19,9 +19,9 @@
 
 ## Files Fixed
 
-### 1. backend/app/db/session.py
+### 1. src/backend/app/db/session.py
 ```python
-# Load .env file from project root (4 levels up from backend/app/db/session.py)
+# Load .env file from project root (4 levels up from src/backend/app/db/session.py)
 env_path = Path(__file__).resolve().parent.parent.parent.parent / ".env.local"
 if env_path.exists():
     load_dotenv(env_path)
@@ -50,17 +50,17 @@ def get_sync_database_url() -> str:
     return url
 ```
 
-**Path levels:** `backend/app/db/session.py` → 4 parents → `root/.env.local`
+**Path levels:** `src/backend/app/db/session.py` → 4 parents → `root/.env.local`
 
-### 2. backend/alembic/env.py
+### 2. src/backend/alembic/env.py
 ```python
-# Calculate project root (3 levels up from backend/alembic/env.py)
+# Calculate project root (3 levels up from src/backend/alembic/env.py)
 project_root = Path(__file__).resolve().parent.parent.parent
 env_path = project_root / ".env.local"
 load_dotenv(dotenv_path=env_path)
 ```
 
-**Path levels:** `backend/alembic/env.py` → 3 parents → `root/.env.local`
+**Path levels:** `src/backend/alembic/env.py` → 3 parents → `root/.env.local`
 
 ## Verification Results
 
@@ -149,13 +149,13 @@ postgresql://neondb_owner:npg_xxx@ep-jolly-hall-a1bialaz-pooler.ap-southeast-1.a
 
 ## Files Using .env.local
 
-1. `backend/app/db/session.py` - Main database session manager
-2. `backend/alembic/env.py` - Database migrations
+1. `src/backend/app/db/session.py` - Main database session manager
+2. `src/backend/alembic/env.py` - Database migrations
 3. All scripts inherit from session.py via imports
 
 ## No Other .env Files
-- No `backend/.env` file exists
-- No `backend/.env.local` file exists
+- No `src/backend/.env` file exists
+- No `src/backend/.env.local` file exists
 - **Single source of truth:** `/Users/jefflee/Documents/AIProjects/AI_DovvyBuddy04/.env.local`
 
 ---

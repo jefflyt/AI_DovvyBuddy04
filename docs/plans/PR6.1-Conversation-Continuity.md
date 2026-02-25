@@ -13,12 +13,12 @@
 All PR6.1 objectives successfully implemented:
 
 ### ✅ Backend Implementation (100% Complete)
-- ✅ `backend/app/orchestration/conversation_manager.py` - LLM-based intent classification, state extraction, follow-up generation (339 lines)
-- ✅ `backend/app/orchestration/emergency_detector.py` - Keyword-based safety detection (157 lines)
-- ✅ `backend/app/orchestration/orchestrator.py` - Integrated conversation manager with feature flag
-- ✅ `backend/app/core/config.py` - Feature flag: `feature_conversation_followup_enabled` (default: false)
-- ✅ `backend/app/api/routes/chat.py` - Session state payload handling
-- ✅ `backend/app/orchestration/types.py` - SessionState type definitions
+- ✅ `src/backend/app/orchestration/conversation_manager.py` - LLM-based intent classification, state extraction, follow-up generation (339 lines)
+- ✅ `src/backend/app/orchestration/emergency_detector.py` - Keyword-based safety detection (157 lines)
+- ✅ `src/backend/app/orchestration/orchestrator.py` - Integrated conversation manager with feature flag
+- ✅ `src/backend/app/core/config.py` - Feature flag: `feature_conversation_followup_enabled` (default: false)
+- ✅ `src/backend/app/api/routes/chat.py` - Session state payload handling
+- ✅ `src/backend/app/orchestration/types.py` - SessionState type definitions
 
 ### ✅ Frontend Implementation (100% Complete)
 - ✅ `src/lib/hooks/useSessionState.ts` - localStorage session state management (148 lines)
@@ -27,15 +27,15 @@ All PR6.1 objectives successfully implemented:
 - ✅ Feature flag integration: `FeatureFlag.CONVERSATION_FOLLOWUP`
 
 ### ✅ Testing (100% Complete)
-- ✅ `backend/tests/unit/orchestration/test_conversation_manager.py` - 474 lines, LLM mocking
-- ✅ `backend/tests/unit/orchestration/test_emergency_detector.py` - 136 lines, keyword detection
+- ✅ `src/backend/tests/unit/orchestration/test_conversation_manager.py` - 474 lines, LLM mocking
+- ✅ `src/backend/tests/unit/orchestration/test_emergency_detector.py` - 136 lines, keyword detection
 - ✅ Intent classification tests (DIVE_PLANNING, INFO_LOOKUP, etc.)
 - ✅ Emergency detection tests (symptom + first-person context)
 - ✅ State extraction tests with mocked LLM responses
 
 ### ✅ Configuration (100% Complete)
 - ✅ `.env.example` - `NEXT_PUBLIC_FEATURE_CONVERSATION_FOLLOWUP_ENABLED=false`
-- ✅ `backend/.env.example` - `FEATURE_CONVERSATION_FOLLOWUP_ENABLED=false`
+- ✅ `src/backend/.env.example` - `FEATURE_CONVERSATION_FOLLOWUP_ENABLED=false`
 - ✅ Feature flag documented in both environments
 
 ### 🎯 Acceptance Criteria Met
@@ -268,7 +268,7 @@ pr6.1-conversation-continuity
 
 #### Backend
 
-**File: `backend/app/orchestration/emergency_detector.py` (new file)**
+**File: `src/backend/app/orchestration/emergency_detector.py` (new file)**
 - Define **symptom-based** emergency patterns (first-person, present-tense):
   - Symptom keywords: ["chest pain", "can't breathe", "difficulty breathing", "dizzy", "numb", "paralyzed", "bleeding", "unconscious", "confused", "tingling"]
   - Context filters (must include one of): ["I", "I'm", "I am", "my", "me", "after dive", "after diving", "during dive"]
@@ -286,7 +286,7 @@ pr6.1-conversation-continuity
 - No LLM call for safety-critical detection.
 - Log all emergency detections for monitoring false positive/negative rates.
 
-**File: `backend/app/orchestration/conversation_manager.py` (new file)**
+**File: `src/backend/app/orchestration/conversation_manager.py` (new file)**
 - Define `IntentType` enum: INFO_LOOKUP, DIVE_PLANNING, CONDITIONS, SKILL_EXPLANATION, MARINE_LIFE, GEAR, AGENCY_CERT, EMERGENCY_MEDICAL.
 - Define `SessionState` dataclass: cert_level, context_mode, location_known, conditions_known, last_intent.
 - Define `ConversationAnalysis` dataclass: intent, state_updates, follow_up, bypass_followup, confidence.
@@ -318,12 +318,12 @@ pr6.1-conversation-continuity
   - If validation fails: fall back to intent-based template (e.g., "What certification level are you?").
 - Error handling: if LLM call fails entirely, return fallback (intent=INFO_LOOKUP, no state updates, template follow-up).
 
-**File: `backend/app/orchestration/types.py` (modifications)**
+**File: `src/backend/app/orchestration/types.py` (modifications)**
 - Add `session_state: Optional[Dict[str, Any]]` to `ChatRequest` dataclass.
 - Add `follow_up_question: Optional[str]` to `ChatResponse` dataclass.
 - Add `state_updates: Optional[Dict[str, Any]]` to `ChatResponse` metadata (for syncing to frontend).
 
-**File: `backend/app/orchestration/orchestrator.py` (modifications)**
+**File: `src/backend/app/orchestration/orchestrator.py` (modifications)**
 - Import `ConversationManager` and `EmergencyDetector`.
 - Instantiate in `__init__`.
 - **Before mode detection:** Check for emergency: `emergency_detector.is_emergency(request.message)`.
@@ -335,16 +335,16 @@ pr6.1-conversation-continuity
 - Update session state with LLM-extracted state_updates.
 - Add logging: "Intent: {intent}, State updates: {state_updates}, Follow-up: {yes/no}, LLM latency: {ms}".
 
-**File: `backend/app/api/routes/chat.py` (modifications)**
+**File: `src/backend/app/api/routes/chat.py` (modifications)**
 - Update `ChatRequestPayload` to include optional `session_state: Optional[dict]` field.
 - Pass `session_state` to `ChatRequest` when calling orchestrator.
 - Return `follow_up_question` and `state_updates` in `ChatResponsePayload` metadata.
 
-**File: `backend/app/core/config.py` (modifications)**
+**File: `src/backend/app/core/config.py` (modifications)**
 - Add `feature_conversation_followup_enabled: bool = Field(default=False)` setting.
 - Load from `FEATURE_CONVERSATION_FOLLOWUP_ENABLED` env var.
 
-**File: `backend/pyproject.toml` (dependencies)**
+**File: `src/backend/pyproject.toml` (dependencies)**
 - No new dependencies required (uses existing LLM provider from PR3.2c).
 
 #### Data
@@ -471,7 +471,7 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
 
 #### Unit Tests
 
-**File: `backend/tests/unit/orchestration/test_emergency_detector.py` (new)**
+**File: `src/backend/tests/unit/orchestration/test_emergency_detector.py` (new)**
 - Test symptom + context detection (keyword-based, no LLM):
   - **True (emergency):**
     - "I have chest pain after diving" → True (symptom + first-person)
@@ -489,7 +489,7 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
   - "I want to learn about DCS" → False (informational intent)
   - "I think my friend has chest pain" → False (third-person, not first-person emergency)
 
-**File: `backend/tests/unit/orchestration/test_conversation_manager.py` (new)**
+**File: `src/backend/tests/unit/orchestration/test_conversation_manager.py` (new)**
 - Mock LLM provider to return fixed JSON responses.
 - Test intent classification with mocked responses:
   - DIVE_PLANNING: mock LLM returns `{"intent": "DIVE_PLANNING", ...}`
@@ -519,7 +519,7 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
   - Mock LLM returns invalid state_updates → verify skipped (empty dict).
   - Mock LLM returns missing follow_up → verify uses template fallback.
 
-**File: `backend/tests/unit/orchestration/test_orchestrator.py` (update existing)**
+**File: `src/backend/tests/unit/orchestration/test_orchestrator.py` (update existing)**
 - Test emergency detector called before conversation manager.
 - Test emergency bypass (no conversation manager call, no follow-up).
 - Test conversation manager called when no emergency.
@@ -538,7 +538,7 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
 
 #### Integration Tests
 
-**File: `backend/tests/integration/test_chat_with_followup.py` (new)**
+**File: `src/backend/tests/integration/test_chat_with_followup.py` (new)**
 - Test full chat flow with follow-up:
   - Send user message → verify response includes follow-up.
   - Send follow-up answer → verify next response has new follow-up.
@@ -558,7 +558,7 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
 ### Manual verification checklist
 
 **Pre-requisites:**
-- Backend running: `cd backend && uvicorn app.main:app --reload`
+- Backend running: `cd src/backend && uvicorn app.main:app --reload`
 - Frontend running: `pnpm dev`
 - Feature flag ON: `FEATURE_CONVERSATION_FOLLOWUP_ENABLED=true` in backend and `NEXT_PUBLIC_FEATURE_CONVERSATION_FOLLOWUP_ENABLED=true` in frontend.
 
@@ -621,7 +621,7 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
 **Install dependencies:**
 ```bash
 pnpm install
-cd backend && pip install -e .
+cd src/backend && pip install -e .
 ```
 
 **Run frontend dev server:**
@@ -631,7 +631,7 @@ pnpm dev
 
 **Run backend dev server:**
 ```bash
-cd backend
+cd src/backend
 uvicorn app.main:app --reload
 ```
 
@@ -641,13 +641,13 @@ uvicorn app.main:app --reload
 pnpm test
 
 # Backend
-cd backend
+cd src/backend
 pytest tests/unit/orchestration/
 ```
 
 **Run integration tests:**
 ```bash
-cd backend
+cd src/backend
 pytest tests/integration/test_chat_with_followup.py
 ```
 

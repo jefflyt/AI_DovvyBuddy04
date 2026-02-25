@@ -40,7 +40,7 @@ Successfully migrated all content processing scripts from TypeScript to Python, 
 - Blocks merges if validation fails
 
 ### 6. Documentation (✅ Complete)
-- **Comprehensive README** in `backend/README.md`
+- **Comprehensive README** in `src/backend/README.md`
 - All CLI options documented with examples
 - Common workflows section
 - Troubleshooting guide
@@ -114,7 +114,7 @@ Successfully migrated all content processing scripts from TypeScript to Python, 
 
 ### New Files (19)
 ```
-backend/scripts/
+src/backend/scripts/
   __init__.py (modified)
   validate_content.py
   ingest_content.py
@@ -126,12 +126,12 @@ backend/scripts/
     markdown_parser.py
     cli.py
 
-backend/app/services/
+src/backend/app/services/
   chunking.py
   embedding.py
   rag/repository.py
 
-backend/tests/unit/scripts/
+src/backend/tests/unit/scripts/
   __init__.py
   test_file_utils.py
   test_markdown_parser.py
@@ -139,7 +139,7 @@ backend/tests/unit/scripts/
   test_ingest_content.py
   test_benchmark_rag.py
 
-backend/tests/integration/scripts/
+src/backend/tests/integration/scripts/
   __init__.py
   test_full_ingestion.py
 
@@ -149,10 +149,10 @@ backend/tests/integration/scripts/
 
 ### Modified Files (4)
 ```
-backend/pyproject.toml - Added dependencies and scripts package
-backend/README.md - Added comprehensive script documentation
-backend/app/db/session.py - Added SessionLocal for sync operations
-backend/app/services/rag/__init__.py - Exported RAGRepository
+src/backend/pyproject.toml - Added dependencies and scripts package
+src/backend/README.md - Added comprehensive script documentation
+src/backend/app/db/session.py - Added SessionLocal for sync operations
+src/backend/app/services/rag/__init__.py - Exported RAGRepository
 package.json - Added 5 Python script wrappers
 ```
 
@@ -189,7 +189,7 @@ package.json - Added 5 Python script wrappers
 3. **Environment setup** - Need .env with DATABASE_URL and GEMINI_API_KEY
 
 ### Documentation
-- Scripts are documented in backend/README.md
+- Scripts are documented in src/backend/README.md
 - CI workflow documented in .github/workflows/content-validation.yml
 - Test examples in test files
 

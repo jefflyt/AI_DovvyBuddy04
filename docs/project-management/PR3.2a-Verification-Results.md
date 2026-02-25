@@ -87,7 +87,7 @@ $ ruff format app tests
 
 ### Created Files (Complete)
 ```
-backend/
+src/backend/
 ├── .venv/                          ✅ Virtual environment
 ├── .env.example                    ✅ Environment template
 ├── .gitignore                      ✅ Python gitignore
@@ -179,7 +179,7 @@ backend/
 
 ### Development Setup
 ```bash
-cd backend
+cd src/backend
 source .venv/bin/activate
 cp .env.example .env
 # Edit .env with your DATABASE_URL

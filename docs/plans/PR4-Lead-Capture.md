@@ -87,8 +87,8 @@
 3. Running database migration: `alembic upgrade head`
 
 **Documentation Available:**
-- `backend/PR4_IMPLEMENTATION.md` - Complete setup guide
-- `backend/docs/LEAD_API_REFERENCE.md` - API endpoint reference
+- `src/backend/PR4_IMPLEMENTATION.md` - Complete setup guide
+- `src/backend/docs/LEAD_API_REFERENCE.md` - API endpoint reference
 - `docs/project-management/PR4-Implementation-Summary.md` - Executive summary
 
 ---
@@ -702,7 +702,7 @@ LEAD_WEBHOOK_URL=                       # Optional: Webhook endpoint for CRM int
 
 #### Verification
 
-> **✅ COMPLETED:** All verification steps documented in `backend/PR4_IMPLEMENTATION.md`. Key items completed:
+> **✅ COMPLETED:** All verification steps documented in `src/backend/PR4_IMPLEMENTATION.md`. Key items completed:
 > - All 40+ tests passing (18 validation + 12 templates + 10 integration)
 > - Database migration created and tested
 > - Email templates rendering correctly
@@ -1042,7 +1042,7 @@ The system can convert chat conversations into actionable business leads that pa
 
 1. **Install dependencies:**
    ```bash
-   cd backend && pip install -e .
+   cd src/backend && pip install -e .
    ```
 
 2. **Configure environment:**
@@ -1065,8 +1065,8 @@ The system can convert chat conversations into actionable business leads that pa
 
 ### Documentation
 
-- **Setup Guide:** `backend/PR4_IMPLEMENTATION.md`
-- **API Reference:** `backend/docs/LEAD_API_REFERENCE.md`
+- **Setup Guide:** `src/backend/PR4_IMPLEMENTATION.md`
+- **API Reference:** `src/backend/docs/LEAD_API_REFERENCE.md`
 - **Summary:** `docs/project-management/PR4-Implementation-Summary.md`
 
 ### Next Steps

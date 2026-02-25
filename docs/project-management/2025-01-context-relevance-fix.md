@@ -18,7 +18,7 @@ Users reported that chat responses were contextually incorrect:
 
 ### Issue 1: Conversation History Not Prioritized
 
-**Location**: [backend/app/agents/retrieval.py](../backend/app/agents/retrieval.py)
+**Location**: [src/backend/app/agents/retrieval.py](../../src/backend/app/agents/retrieval.py)
 
 The system included conversation history BUT didn't teach the LLM to prioritize the **current question** over historical context. When users changed topics:
 - History contained Tioman → Indonesia question got Tioman answer
@@ -37,7 +37,7 @@ The system included conversation history BUT didn't teach the LLM to prioritize 
 
 ### Issue 3: Generic Follow-up Questions
 
-**Location**: [backend/app/orchestration/conversation_manager.py](../backend/app/orchestration/conversation_manager.py)
+**Location**: [src/backend/app/orchestration/conversation_manager.py](../../src/backend/app/orchestration/conversation_manager.py)
 
 Follow-up templates were too generic:
 - "Is this for learning, planning a dive, or just curious?" (repetitive)
@@ -48,7 +48,7 @@ Follow-up templates were too generic:
 
 ### Fix 1: Smart Context Prioritization
 
-**File**: [backend/app/agents/retrieval.py](../backend/app/agents/retrieval.py)
+**File**: [src/backend/app/agents/retrieval.py](../../src/backend/app/agents/retrieval.py)
 
 **Changed**: ~~Reduce history window~~ → Keep 6 messages (3 turns) BUT mark current query as primary focus
 
@@ -68,7 +68,7 @@ messages.append(LLMMessage(role="user", content=f"[CURRENT QUESTION]: {context.q
 
 ### Fix 2: Topic Change Detection in Prompt
 
-**File**: [backend/app/agents/retrieval.py](../backend/app/agents/retrieval.py)
+**File**: [src/backend/app/agents/retrieval.py](../../src/backend/app/agents/retrieval.py)
 
 Added explicit context handling rules to system prompt:
 
@@ -93,7 +93,7 @@ CONTEXT HANDLING RULES (CRITICAL):
 
 ### Fix 3: Contextual, Varied Follow-ups
 
-**File**: [backend/app/orchestration/conversation_manager.py](../backend/app/orchestration/conversation_manager.py)
+**File**: [src/backend/app/orchestration/conversation_manager.py](../../src/backend/app/orchestration/conversation_manager.py)
 
 **Improved Templates**:
 ```python
@@ -118,7 +118,7 @@ FOLLOW_UP_TEMPLATES: Dict[IntentType, str] = {
 
 ### Fix 4: Enhanced RAG Logging
 
-**File**: [backend/app/services/rag/pipeline.py](../backend/app/services/rag/pipeline.py)
+**File**: [src/backend/app/services/rag/pipeline.py](../../src/backend/app/services/rag/pipeline.py)
 
 Added detailed similarity scoring and debug logging:
 
@@ -221,10 +221,10 @@ After deploying changes:
 
 ## Related Documentation
 
-- [backend/app/agents/retrieval.py](../backend/app/agents/retrieval.py) - Retrieval agent implementation
-- [backend/app/services/rag/pipeline.py](../backend/app/services/rag/pipeline.py) - RAG pipeline
-- [backend/app/orchestration/conversation_manager.py](../backend/app/orchestration/conversation_manager.py) - Follow-up generation
-- [backend/app/orchestration/context_builder.py](../backend/app/orchestration/context_builder.py) - Context building
+- [src/backend/app/agents/retrieval.py](../../src/backend/app/agents/retrieval.py) - Retrieval agent implementation
+- [src/backend/app/services/rag/pipeline.py](../../src/backend/app/services/rag/pipeline.py) - RAG pipeline
+- [src/backend/app/orchestration/conversation_manager.py](../../src/backend/app/orchestration/conversation_manager.py) - Follow-up generation
+- [src/backend/app/orchestration/context_builder.py](../../src/backend/app/orchestration/context_builder.py) - Context building
 
 ---
 

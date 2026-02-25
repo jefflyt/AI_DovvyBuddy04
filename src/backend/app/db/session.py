@@ -12,8 +12,8 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import Session, sessionmaker
 
-# Load .env file from project root (4 levels up from backend/app/db/session.py)
-env_path = Path(__file__).resolve().parent.parent.parent.parent / ".env.local"
+# Load .env file from project root (5 levels up from src/backend/app/db/session.py)
+env_path = Path(__file__).resolve().parent.parent.parent.parent.parent / ".env.local"
 if env_path.exists():
     load_dotenv(env_path)
 

@@ -12,7 +12,7 @@ The codebase has been updated to use Gemini exclusively as the LLM provider, wit
 
 ### 1. Configuration Updates
 
-**backend/app/core/config.py:**
+**src/backend/app/core/config.py:**
 ```python
 default_llm_provider: Literal["groq", "gemini"] = "gemini"  # Changed from "groq"
 default_llm_model: str = "gemini-2.0-flash-exp"  # Changed from "llama-3.3-70b-versatile"
@@ -32,7 +32,7 @@ GEMINI_API_KEY=<your_key>  # Set your Gemini API key here
 
 ### 3. Orchestration Components Hardcoded to Gemini
 
-**backend/app/orchestration/medical_detector.py:**
+**src/backend/app/orchestration/medical_detector.py:**
 ```python
 # Before: Conditional provider selection
 provider_name="groq" if settings.default_llm_provider == "groq" else "gemini"
@@ -42,7 +42,7 @@ provider_name="gemini"
 model="gemini-2.0-flash-exp"
 ```
 
-**backend/app/orchestration/emergency_detector_hybrid.py:**
+**src/backend/app/orchestration/emergency_detector_hybrid.py:**
 ```python
 # Same change - hardcoded to Gemini
 provider_name="gemini"
@@ -51,7 +51,7 @@ model="gemini-2.0-flash-exp"
 
 ### 4. LLM Factory Graceful Fallback
 
-**backend/app/services/llm/factory.py:**
+**src/backend/app/services/llm/factory.py:**
 ```python
 if provider == "groq":
     key = api_key or settings.groq_api_key
@@ -150,24 +150,24 @@ Response: ✅ Working perfectly
 
 ## Files Modified
 
-1. `backend/app/core/config.py` - Default provider and model
+1. `src/backend/app/core/config.py` - Default provider and model
 2. `.env.local` - Provider configuration
-3. `backend/app/orchestration/medical_detector.py` - Hardcoded Gemini
-4. `backend/app/orchestration/emergency_detector_hybrid.py` - Hardcoded Gemini
-5. `backend/app/services/llm/factory.py` - Graceful fallback
+3. `src/backend/app/orchestration/medical_detector.py` - Hardcoded Gemini
+4. `src/backend/app/orchestration/emergency_detector_hybrid.py` - Hardcoded Gemini
+5. `src/backend/app/services/llm/factory.py` - Graceful fallback
 
 ## Files NOT Modified (Preserved for Compatibility)
 
-1. `backend/app/services/llm/groq.py` - GroqLLMProvider class still exists
-2. `backend/pyproject.toml` - groq package dependency preserved
-3. `backend/tests/**/*` - Tests using Groq preserved (will skip if no key)
+1. `src/backend/app/services/llm/groq.py` - GroqLLMProvider class still exists
+2. `src/backend/pyproject.toml` - groq package dependency preserved
+3. `src/backend/tests/**/*` - Tests using Groq preserved (will skip if no key)
 
 ## Verification Tools
 
 New scripts added:
-- `backend/scripts/verify_gemini_config.py` - Comprehensive configuration check
-- `backend/scripts/test_rag_retrieval.py` - RAG retrieval with Gemini
-- `backend/scripts/verify_env_config.py` - Environment configuration check
+- `src/backend/scripts/verify_gemini_config.py` - Comprehensive configuration check
+- `src/backend/scripts/test_rag_retrieval.py` - RAG retrieval with Gemini
+- `src/backend/scripts/verify_env_config.py` - Environment configuration check
 
 All scripts verified working with Gemini-only setup.
 

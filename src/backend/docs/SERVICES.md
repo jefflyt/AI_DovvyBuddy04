@@ -10,17 +10,17 @@ Python backend implementation for DovvyBuddy, featuring:
 ### 1. Install Dependencies
 
 ```bash
-cd backend
+cd src/backend
 pip install -e .
 ```
 
 ### 2. Configure Environment
 
-Copy `.env.example` to `.env` and set your API keys:
+Use project root `.env.local` (single source of truth) and set your API keys there:
 
 ```bash
-cp .env.example .env
-# Edit .env and add your keys:
+# from project root
+# Edit .env.local and add your keys:
 # GEMINI_API_KEY=your_key_here
 # GROQ_API_KEY=your_key_here
 ```
@@ -116,7 +116,7 @@ mypy app
 ## Project Structure
 
 ```
-backend/
+src/backend/
 ├── app/
 │   ├── services/
 │   │   ├── embeddings/       # Embedding generation with Gemini

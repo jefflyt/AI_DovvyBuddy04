@@ -12,7 +12,7 @@ Before starting manual verification:
 
 1. **Backend running:**
    ```bash
-   cd backend
+   cd src/backend
    uvicorn app.main:app --reload
    ```
 

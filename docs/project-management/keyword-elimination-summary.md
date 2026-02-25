@@ -27,7 +27,7 @@ During PR6.2 manual testing, keyword-based systems produced false positives:
 - Fallback: Simple keyword logic when ConversationManager disabled
 
 **Files Modified:**
-- [backend/app/orchestration/orchestrator.py](../../backend/app/orchestration/orchestrator.py)
+- [src/backend/app/orchestration/orchestrator.py](../../src/backend/app/orchestration/orchestrator.py)
   - Removed `ModeDetector` initialization
   - Added `_intent_to_mode()` static method (30 lines)
   - Updated mode detection to use `ConversationManager.analyze().intent`
@@ -47,13 +47,13 @@ During PR6.2 manual testing, keyword-based systems produced false positives:
 - Safety-first fallback (default to emergency if LLM fails)
 
 **New File:**
-- [backend/app/orchestration/emergency_detector_hybrid.py](../../backend/app/orchestration/emergency_detector_hybrid.py) (214 lines)
+- [src/backend/app/orchestration/emergency_detector_hybrid.py](../../src/backend/app/orchestration/emergency_detector_hybrid.py) (214 lines)
   - `async detect_emergency(message, history) -> (bool, str)` 
   - Returns detection result AND emergency response in one call
   - LLM prompt distinguishes educational from urgent queries
 
 **Files Modified:**
-- [backend/app/orchestration/orchestrator.py](../../backend/app/orchestration/orchestrator.py)
+- [src/backend/app/orchestration/orchestrator.py](../../src/backend/app/orchestration/orchestrator.py)
   - Import from `emergency_detector_hybrid`
   - Updated to use async `detect_emergency()` method
   - Removed separate `get_emergency_response()` call
@@ -73,7 +73,7 @@ During PR6.2 manual testing, keyword-based systems produced false positives:
 - Consistent emergency detection across entire system
 
 **Files Modified:**
-- [backend/app/agents/safety.py](../../backend/app/agents/safety.py)
+- [src/backend/app/agents/safety.py](../../src/backend/app/agents/safety.py)
   - Added `_emergency_detector` class variable
   - Removed `_is_emergency()` and `_get_emergency_response()` methods
   - Updated `execute()` to call `EmergencyDetector.detect_emergency()`
@@ -86,7 +86,7 @@ During PR6.2 manual testing, keyword-based systems produced false positives:
 ### 4. Export Updates ✅
 
 **Files Modified:**
-- [backend/app/orchestration/__init__.py](../../backend/app/orchestration/__init__.py)
+- [src/backend/app/orchestration/__init__.py](../../src/backend/app/orchestration/__init__.py)
   - Added `EmergencyDetector` to exports
   - Marked `ModeDetector` as deprecated in comments
   - Kept `ModeDetector` export for `ConversationMode` enum
@@ -183,9 +183,9 @@ User Message
 
 ## Related Documents
 
-- [PR6.2 Conversation Continuity Plan](../plans/PR6.2-Conversation-Continuity.md)
+- [PR6.1 Conversation Continuity Plan](../plans/PR6.1-Conversation-Continuity.md)
 - [PR6.2 Manual Testing Verification](../plans/PR0-VERIFICATION-RESULTS.md)
-- [Medical Detection Implementation](../technical/medical-detection.md) (if exists)
+- Medical Detection Implementation (not yet documented)
 
 ## Validation
 

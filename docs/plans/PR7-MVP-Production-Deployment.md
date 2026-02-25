@@ -66,7 +66,7 @@ docs/
 
 **Optional Enhancements (if time permits):**
 ```
-backend/app/
+src/backend/app/
 ├── middleware/
 │   └── request_id.py              # Request ID tracking
 └── core/
@@ -75,12 +75,12 @@ backend/app/
 
 ### Modified Modules (Minimal Changes)
 
-1. **backend/app/core/config.py** — Add production-specific settings
+1. **src/backend/app/core/config.py** — Add production-specific settings
    - `LOG_LEVEL`: INFO (production default)
    - `ENVIRONMENT`: production indicator
    - Ensure all secrets loaded from environment variables
 
-2. **backend/app/main.py** — Production readiness
+2. **src/backend/app/main.py** — Production readiness
    - Verify CORS configured for production domain
    - Ensure health check endpoint is robust
    - Optional: Add request ID middleware
@@ -121,7 +121,7 @@ backend/app/
 
 ### Docker Configuration (Already Complete ✅)
 
-The existing `backend/Dockerfile` is production-ready:
+The existing `src/backend/Dockerfile` is production-ready:
 - Python 3.11 slim base image
 - System dependencies (gcc, postgresql-client)
 - Editable pip install (`pip install -e .`)
@@ -230,7 +230,7 @@ jobs:
       
       - name: Build Docker image
         run: |
-          cd backend
+          cd src/backend
           docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/dovvybuddy-backend:${{ github.sha }} .
           docker tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/dovvybuddy-backend:${{ github.sha }} \
                      gcr.io/${{ secrets.GCP_PROJECT_ID }}/dovvybuddy-backend:latest
@@ -377,7 +377,7 @@ gcloud alpha monitoring policies create \
 **Local Docker Testing:**
 ```bash
 # Build and test locally
-cd backend
+cd src/backend
 docker build -t dovvybuddy-backend:local .
 
 # Run with production-like config
@@ -443,7 +443,7 @@ echo "✅ All smoke tests passed!"
 
 ```bash
 # 1. Build Docker image locally (optional verification)
-cd backend
+cd src/backend
 docker build -t dovvybuddy-backend:test .
 docker run -p 8080:8080 --env-file .env dovvybuddy-backend:test
 
@@ -452,7 +452,7 @@ docker run -p 8080:8080 --env-file .env dovvybuddy-backend:test
 # Or push to main branch if auto-deploy configured
 
 # 3. Manual deployment (if needed)
-cd backend
+cd src/backend
 gcloud builds submit --tag gcr.io/PROJECT_ID/dovvybuddy-backend
 gcloud run deploy dovvybuddy-backend \
   --image gcr.io/PROJECT_ID/dovvybuddy-backend:latest \

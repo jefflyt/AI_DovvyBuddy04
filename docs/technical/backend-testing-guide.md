@@ -4,14 +4,14 @@
 
 ### 1. Environment Setup
 
-Create `.env` file in `src/backend/`:
+Use project root `.env.local`:
 
 ```bash
-cd src/backend
-cp .env.example .env
+# from project root
+cp .env.example .env.local
 ```
 
-Edit `.env` with your credentials:
+Edit `.env.local` with your credentials:
 ```bash
 # Required for integration tests
 GEMINI_API_KEY=your_actual_gemini_key
@@ -217,4 +217,4 @@ psql $DATABASE_URL -c "\\d content_embeddings"
 
 **For CI/CD:** Export environment variables in your CI configuration before running tests.
 
-**For Local Development:** Keep `.env` file with test credentials (don't commit to git).
+**For Local Development:** Keep test credentials in root `.env.local` (don't commit to git).

@@ -34,7 +34,7 @@ Updated emergency response text in multiple locations to reference Malaysia-spec
 
 ### 1. Hybrid EmergencyDetector
 
-**File:** [backend/app/orchestration/emergency_detector_hybrid.py](../../backend/app/orchestration/emergency_detector_hybrid.py)
+**File:** [src/backend/app/orchestration/emergency_detector_hybrid.py](../../src/backend/app/orchestration/emergency_detector_hybrid.py)
 
 **Changes:**
 - Updated `get_emergency_response()` to include Malaysia contacts
@@ -46,7 +46,7 @@ Updated emergency response text in multiple locations to reference Malaysia-spec
 
 ### 2. Safety Prompts
 
-**File:** [backend/app/prompts/safety.py](../../backend/app/prompts/safety.py)
+**File:** [src/backend/app/prompts/safety.py](../../src/backend/app/prompts/safety.py)
 
 **Changes:**
 - Updated `SAFETY_DISCLAIMER` to include DAN Malaysia hotline
@@ -71,7 +71,7 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
 Once API key is configured, run:
 ```bash
-cd backend
+cd src/backend
 python scripts/ingest_content.py
 ```
 

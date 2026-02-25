@@ -199,7 +199,7 @@ If you want isolated test environment:
 
 2. **Create Test Connection String:**
    - Replace `/neondb` with `/dovvybuddy_test` in your connection string.
-   - Add to `.env`:
+   - Add to root `.env.local`:
      ```env
      DATABASE_URL=postgresql://username:password@ep-xxx-xxx-xxx.region.aws.neon.tech/neondb?sslmode=require
      DATABASE_URL_TEST=postgresql://username:password@ep-xxx-xxx-xxx.region.aws.neon.tech/dovvybuddy_test?sslmode=require
@@ -216,7 +216,7 @@ If you want isolated test environment:
 
 ## Step 9: Next Steps (Ready for PR1)
 
-Once your database is set up and connection string is in `.env`:
+Once your database is set up and connection string is in `.env.local`:
 
 ✅ **You are ready to implement PR1: Database Schema & Migrations.**
 
@@ -249,7 +249,7 @@ Refer to `docs/plans/PR1-Database-Schema.md` for implementation details.
 
 **Solutions:**
 
-- Verify connection string in `.env` matches Neon console.
+- Verify connection string in `.env.local` matches Neon console.
 - Check Neon console → "Operations" tab for project status.
 - Wake suspended project by visiting Neon dashboard.
 
@@ -283,7 +283,7 @@ Refer to `docs/plans/PR1-Database-Schema.md` for implementation details.
 ## Security Best Practices
 
 1. **Never Commit Credentials:**
-   - `.env` must be in `.gitignore`.
+   - `.env.local` must be in `.gitignore`.
    - Use environment variables in CI/CD (GitHub Secrets).
 
 2. **Rotate Passwords Regularly:**

@@ -4,19 +4,19 @@ FastAPI + SQLAlchemy backend for DovvyBuddy, including RAG pipeline, multi-agent
 
 ## Project Location
 
-This backend is located at **`/backend/`** at the project root (previously at `src/backend/`).
+This backend is located at **`/src/backend/`**.
 
 ## Quick Start
 
 Requires Python 3.11+ (recommended: Python 3.11.14):
 
 ```bash
-cd backend
+cd src/backend
 python3.11 -m venv .venv
 source .venv/bin/activate
 pip install -e .
-cp .env.example .env
-# Edit DATABASE_URL and GEMINI_API_KEY in .env
+# Configure environment in project root .env.local (single source of truth)
+# Edit DATABASE_URL and GEMINI_API_KEY in ../../.env.local
 uvicorn app.main:app --reload --port 8000
 ```
 
@@ -236,7 +236,7 @@ Content validation runs automatically on PRs that modify `content/` files. See `
 ### Troubleshooting
 
 **"No embeddings generated"**
-- Check `GEMINI_API_KEY` in `.env`
+- Check `GEMINI_API_KEY` in project root `.env.local`
 - Verify Gemini API quota/billing
 - Check network connectivity
 
@@ -246,7 +246,7 @@ Content validation runs automatically on PRs that modify `content/` files. See `
 - Check YAML syntax in frontmatter
 
 **"Database connection failed"**
-- Verify `DATABASE_URL` in `.env`
+- Verify `DATABASE_URL` in project root `.env.local`
 - Ensure PostgreSQL is running
 - Check pgvector extension: `CREATE EXTENSION IF NOT EXISTS vector`
 

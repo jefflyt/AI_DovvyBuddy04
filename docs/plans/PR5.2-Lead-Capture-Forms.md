@@ -389,7 +389,7 @@ Manual testing covers E2E scenarios for now.
 ### Manual verification checklist
 
 Pre-requisites:
-- Backend running: cd backend && uvicorn app.main:app --reload
+- Backend running: cd src/backend && uvicorn app.main:app --reload
 - Frontend running: pnpm dev
 - Open http://localhost:3000/chat
 
@@ -520,7 +520,7 @@ pnpm install
 Note: May add email validation library (e.g., validator or zod) - update package.json if needed.
 
 Dev:
-Terminal 1: cd backend && uvicorn app.main:app --reload
+Terminal 1: cd src/backend && uvicorn app.main:app --reload
 Terminal 2: pnpm dev
 
 Test:
@@ -658,7 +658,7 @@ Leads submitted during this PR:
    - ✅ Error handling with ApiClientError
 
 5. **Backend Integration**
-   - ✅ POST /api/leads endpoint exists (backend/app/api/routes/lead.py)
+   - ✅ POST /api/leads endpoint exists (src/backend/app/api/routes/lead.py)
    - ✅ Lead capture and email delivery working
    - ✅ Payload format matches (training/trip types)
    - ✅ Session ID included in lead payload

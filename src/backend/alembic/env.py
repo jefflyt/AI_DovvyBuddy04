@@ -7,8 +7,8 @@ from alembic import context
 from dotenv import load_dotenv
 
 # Load environment variables from project root .env.local
-# alembic/env.py is in backend/alembic/, so go up 2 levels to project root
-project_root = Path(__file__).resolve().parent.parent.parent
+# alembic/env.py is in src/backend/alembic/, so go up 3 levels to project root
+project_root = Path(__file__).resolve().parent.parent.parent.parent
 env_path = project_root / ".env.local"
 load_dotenv(dotenv_path=env_path)
 

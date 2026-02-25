@@ -226,7 +226,7 @@ As part of this review, also corrected file organization per Global Instructions
 1. **PR4_IMPLEMENTATION.md** → `docs/project-management/PR4-Implementation-Guide.md`
    - Implementation guide belongs in project-management folder
 
-2. **README_SERVICES.md** → `backend/docs/SERVICES.md`
+2. **README_SERVICES.md** → `src/backend/docs/SERVICES.md`
    - Backend-specific documentation belongs in backend docs
 
 3. **LEAD_CAPTURE_SETUP.md** → `docs/technical/LEAD_CAPTURE_SETUP.md`

@@ -4,9 +4,9 @@ from typing import List, Literal, Optional
 from pydantic import AnyUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Resolve .env.local path relative to THIS file (backend/app/core/config.py)
-# Go up 3 levels: config.py -> core/ -> app/ -> backend/, then to project root
-_ENV_FILE = Path(__file__).resolve().parent.parent.parent.parent / ".env.local"
+# Resolve .env.local path relative to THIS file (src/backend/app/core/config.py)
+# Go up 4 levels: config.py -> core/ -> app/ -> backend/ -> src/, then to project root
+_ENV_FILE = Path(__file__).resolve().parent.parent.parent.parent.parent / ".env.local"
 
 
 class Settings(BaseSettings):

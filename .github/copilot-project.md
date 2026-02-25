@@ -401,8 +401,8 @@ See `.env.example` for full list. Key vars:
 
 - **PSD:** [docs/psd/DovvyBuddy-PSD-V6.2.md](../docs/psd/DovvyBuddy-PSD-V6.2.md)
 - **Technical Spec:** [docs/technical/specification.md](../docs/technical/specification.md)
-- **README:** [README.md](../../README.md)
-- **Workflow Prompts:** [.github/prompts/](.github/prompts/)
+- **README:** [README.md](../README.md)
+- **Workflow Prompts:** [.github/prompts/](prompts/)
 
 ---
 

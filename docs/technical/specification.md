@@ -37,7 +37,7 @@ DovvyBuddy is an AI-powered conversational assistant that helps prospective and 
 │   Python Backend (Cloud Run)               │
 │   ┌──────────────────────────────────┐     │
 │   │  FastAPI Application             │     │
-│   │  Location: /backend/             │     │
+│   │  Location: /src/backend/             │     │
 │   │  - Multi-Agent System            │     │
 │   │  - Chat Orchestration            │     │
 │   │  - RAG Pipeline                  │     │
@@ -74,7 +74,7 @@ DovvyBuddy is an AI-powered conversational assistant that helps prospective and 
 
 ## 2. Core Components
 
-### 2.1 Multi-Agent System (backend/app/agents/)
+### 2.1 Multi-Agent System (src/backend/app/agents/)
 
 **Purpose:** Specialized agents handle different types of diving queries with domain expertise.
 
@@ -90,16 +90,16 @@ User Query → Mode Detection → Agent Selection → Agent Execution → Respon
 ```
 
 **Key Files:**
-- `backend/app/agents/base.py` - Base agent interface
-- `backend/app/agents/registry.py` - Agent registration & discovery
-- `backend/app/agents/certification_agent.py`
-- `backend/app/agents/trip_planning_agent.py`
-- `backend/app/agents/safety_agent.py`
-- `backend/app/agents/retrieval_agent.py`
+- `src/backend/app/agents/base.py` - Base agent interface
+- `src/backend/app/agents/registry.py` - Agent registration & discovery
+- `src/backend/app/agents/certification_agent.py`
+- `src/backend/app/agents/trip_planning_agent.py`
+- `src/backend/app/agents/safety_agent.py`
+- `src/backend/app/agents/retrieval_agent.py`
 
 ---
 
-### 2.2 Chat Orchestration (backend/app/orchestration/)
+### 2.2 Chat Orchestration (src/backend/app/orchestration/)
 
 **Purpose:** Coordinates conversation flow, manages context, and routes to appropriate agents.
 
@@ -118,14 +118,14 @@ User Message → Emergency Check → Mode Detection → Agent Selection
 ```
 
 **Key Files:**
-- `backend/app/orchestration/orchestrator.py` - Main orchestration logic
-- `backend/app/orchestration/conversation_manager.py` - Conversation state
-- `backend/app/orchestration/mode_detector.py` - Query classification
-- `backend/app/orchestration/emergency_detector.py` - Safety detection
+- `src/backend/app/orchestration/orchestrator.py` - Main orchestration logic
+- `src/backend/app/orchestration/conversation_manager.py` - Conversation state
+- `src/backend/app/orchestration/mode_detector.py` - Query classification
+- `src/backend/app/orchestration/emergency_detector.py` - Safety detection
 
 ---
 
-### 2.3 RAG Pipeline (backend/app/services/)
+### 2.3 RAG Pipeline (src/backend/app/services/)
 
 **Purpose:** Retrieve relevant content chunks to ground LLM responses.
 

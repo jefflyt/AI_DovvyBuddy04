@@ -18,12 +18,12 @@
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
     "typecheck": "tsc --noEmit",
-    "content:validate": "cd backend && python3 -m scripts.validate_content",
-    "content:ingest": "cd backend && python3 -m scripts.ingest_content",
-    "content:ingest:incremental": "cd backend && python3 -m scripts.ingest_content --incremental",
-    "content:clear": "cd backend && python3 -m scripts.clear_embeddings",
+    "content:validate": "cd src/backend && python3 -m scripts.validate_content",
+    "content:ingest": "cd src/backend && python3 -m scripts.ingest_content",
+    "content:ingest:incremental": "cd src/backend && python3 -m scripts.ingest_content --incremental",
+    "content:clear": "cd src/backend && python3 -m scripts.clear_embeddings",
     "content:review": "tsx scripts/review-content.ts",
-    "benchmark:rag": "cd backend && python3 -m scripts.benchmark_rag"
+    "benchmark:rag": "cd src/backend && python3 -m scripts.benchmark_rag"
   },
   "dependencies": {
     "@sentry/nextjs": "^8.40.0",

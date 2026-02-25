@@ -24,13 +24,13 @@ cd AI_DovvyBuddy04
 pnpm install
 
 # 3. Install backend dependencies
-cd backend
+cd src/backend
 python3 -m pip install -e .
 cd ..
 
 # 4. Set up environment
-cp backend/.env.example backend/.env
-# Edit backend/.env with your:
+cp .env.example .env.local
+# Edit .env.local with your:
 # - DATABASE_URL (PostgreSQL with pgvector)
 # - GEMINI_API_KEY
 # - Other required variables
@@ -43,13 +43,12 @@ pnpm db:push
 
 ```bash
 # Check Python imports
-cd backend && python3 -c "import scripts.common; print('✓ OK')" && cd ..
+cd src/backend && python3 -c "import scripts.common; print('✓ OK')" && cd ../..
 
 # Run tests
-cd backend && python3 -m pytest tests/unit/scripts/ -v && cd ..
-
+cd src/backend && python3 -m pytest tests/unit/scripts/ -v && cd ../..
+**Status:** Active - Refactored Structure (Backend at src/backend)
 # Test validation script
-pnpm content:validate-py
 ```
 
 ---
@@ -57,19 +56,19 @@ pnpm content:validate-py
 ## Daily Workflow
 
 ### Content Authoring
-
+cd src/backend
 1. **Create/edit content files** in `content/` directory
-   ```bash
+cd ../..
    # Add frontmatter to each .md file:
    ---
    title: "Your Title"
    description: "Your description"
    tags: ["tag1", "tag2"]
    ---
-   ```
+cd src/backend && python3 -c "import scripts.common; print('✓ OK')" && cd ../..
 
 2. **Validate content**
-   ```bash
+cd src/backend && python3 -m pytest tests/unit/scripts/ -v && cd ../..
    pnpm content:validate-py
    ```
 
@@ -99,7 +98,7 @@ pnpm content:validate-py
    pnpm test
    
    # Backend unit tests
-   cd backend
+   cd src/backend
    python3 -m pytest tests/unit/ -v
    cd ..
    ```
@@ -123,7 +122,7 @@ git checkout -b feature/your-feature-name
 
 # 2. Make changes and commit
 git add .
-git commit -m "feat: your feature description"
+cd src/backend
 
 # 3. Push and create PR
 git push origin feature/your-feature-name
@@ -135,7 +134,7 @@ git pull origin main
 
 ---
 
-## Content Management Commands
+cd ../..
 
 ### Python Scripts (Default)
 
@@ -144,7 +143,7 @@ All content processing now uses Python scripts with better UX:
 ```bash
 # Validate content
 pnpm content:validate-py
-# Output: Rich console with errors grouped by file
+cd src/backend
 
 # Ingest content (full)
 pnpm content:ingest-py
@@ -156,7 +155,7 @@ pnpm content:ingest-incremental-py
 
 # Benchmark RAG
 pnpm content:benchmark-py
-# Output: Latency metrics (P50, P95, P99), JSON file
+cd ../..
 
 # Clear embeddings
 pnpm content:clear-py
@@ -164,10 +163,10 @@ pnpm content:clear-py
 ```
 
 ### Advanced Options
-
+cd src/backend
 ```bash
-# Validation with custom fields
-cd backend
+cd ../..
+cd src/backend
 python3 -m scripts.validate_content --required-fields title description category
 
 # Ingestion dry run
@@ -175,18 +174,17 @@ python3 -m scripts.ingest_content --dry-run
 
 # Benchmark with custom queries
 python3 -m scripts.benchmark_rag --queries-file my_queries.json --iterations 3
-
+cd src/backend
 # Clear specific pattern
-python3 -m scripts.clear_embeddings --pattern "certifications/*"
+cd ../..
 
 cd ..
-```
 
 ### Legacy TypeScript Scripts (Deprecated)
 
 **Note:** These will be removed in a future release.
 
-```bash
+- **API:** `src/backend/README.md`
 # Old commands (still work but deprecated)
 pnpm content:validate
 pnpm content:ingest
@@ -197,14 +195,14 @@ pnpm benchmark:rag
 ---
 
 ## Testing
-
 ### Test Structure
 
 ```
 tests/
 ├── unit/                    # Fast, isolated tests
 │   ├── frontend/           # Frontend unit tests (Vitest)
-│   └── backend/            # Backend unit tests (pytest)
+| Import errors | `cd src/backend && python3 -m pip install -e .` |
+│   └── src/backend/            # Backend unit tests (pytest)
 │       └── scripts/        # Script unit tests
 └── integration/            # E2E tests
     └── scripts/            # Script integration tests
@@ -217,7 +215,7 @@ tests/
 pnpm test
 
 # Backend unit tests
-cd backend
+cd src/backend
 python3 -m pytest tests/unit/ -v
 
 # Backend integration tests (requires DB)
@@ -292,7 +290,7 @@ pnpm db:push --force-reset
 
 **Check database connection:**
 ```bash
-cd backend
+cd src/backend
 python3 -c "from app.db.session import SessionLocal; db = SessionLocal(); print('✓ Connected')"
 cd ..
 ```
@@ -308,7 +306,7 @@ cd ..
 export LOG_LEVEL=DEBUG
 
 # Run with verbose output
-cd backend
+cd src/backend
 python3 -m scripts.ingest_content --dry-run
 cd ..
 
@@ -331,7 +329,7 @@ pnpm build
 **Import errors:**
 ```bash
 # Reinstall backend package
-cd backend
+cd src/backend
 python3 -m pip install -e . --force-reinstall
 cd ..
 ```
@@ -351,7 +349,7 @@ psql "$DATABASE_URL" -c "SELECT 1"
 echo $GEMINI_API_KEY
 
 # Test API
-cd backend
+cd src/backend
 python3 -c "from app.services.embedding import EmbeddingService; s = EmbeddingService(); print(s.generate_embeddings(['test']))"
 cd ..
 ```
@@ -367,7 +365,7 @@ cd ..
 pnpm content:ingest-incremental-py
 
 # Adjust batch size for slower networks
-cd backend
+cd src/backend
 python3 -m scripts.ingest_content --batch-size 5
 cd ..
 ```
@@ -398,7 +396,7 @@ ls -lt benchmark-results-*.json | head -5
 pnpm typecheck
 pnpm lint
 pnpm test
-cd backend && python3 -m pytest tests/unit/ && cd ..
+cd src/backend && python3 -m pytest tests/unit/ && cd ../..
 ```
 
 ---
@@ -415,7 +413,7 @@ Automatic deployment on push to `main`:
 
 ```bash
 # Build Docker image
-cd backend
+cd src/backend
 docker build -t dovvybuddy-backend .
 
 # Deploy to Cloud Run
@@ -436,7 +434,7 @@ cd ..
 - **Setup:** `README.md`
 - **Architecture:** `docs/technical/`
 - **Plans:** `docs/plans/`
-- **API:** `backend/README.md`
+- **API:** `src/backend/README.md`
 - **Content Guide:** `content/README.md`
 
 ### Updating Documentation
@@ -454,9 +452,9 @@ cd ..
 
 | Issue | Solution |
 |-------|----------|
-| Import errors | `cd backend && python3 -m pip install -e .` |
+| Import errors | `cd src/backend && python3 -m pip install -e .` |
 | Database errors | Check `DATABASE_URL`, verify pgvector extension |
-| API key errors | Check `GEMINI_API_KEY` in `.env` |
+| API key errors | Check `GEMINI_API_KEY` in `.env.local` |
 | Test failures | `python3 -m pytest tests/unit/ -v` |
 | Build failures | `pnpm clean && pnpm install` |
 | Validation errors | Check frontmatter format in `.md` files |
@@ -476,6 +474,6 @@ After PR3.2d completion:
 ---
 
 **Questions?** Check:
-- Backend: `backend/README.md`
+- Backend: `src/backend/README.md`
 - General: `docs/NEXT_STEPS.md`
 - Implementation: `docs/project-management/PR3.2d-implementation-summary.md`

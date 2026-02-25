@@ -298,7 +298,7 @@ E2E tests will be added in PR6 (Playwright).
 ### Manual verification checklist
 
 Pre-requisites:
-- Backend running: cd backend && uvicorn app.main:app --reload
+- Backend running: cd src/backend && uvicorn app.main:app --reload
 - Frontend running: pnpm dev
 - Open browser dev tools → Application/Storage → Local Storage
 
@@ -380,7 +380,7 @@ Install (if new dependencies added - none expected):
 pnpm install
 
 Dev (start both backend and frontend):
-Terminal 1: cd backend && uvicorn app.main:app --reload
+Terminal 1: cd src/backend && uvicorn app.main:app --reload
 Terminal 2: pnpm dev
 
 Test (unit tests):
