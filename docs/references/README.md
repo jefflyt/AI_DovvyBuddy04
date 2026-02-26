@@ -19,8 +19,8 @@ This directory contains links, notes, and references to external documentation, 
 
 External service APIs used by DovvyBuddy:
 
-- **Groq API** — Development LLM provider
-- **Gemini API** — Production LLM provider
+- **Gemini API** — Primary LLM and embeddings provider
+- **Google ADK** — Orchestration runtime and agent routing
 - **Resend API** — Email delivery service
 - **Neon/Supabase** — Managed PostgreSQL hosting
 
@@ -89,7 +89,7 @@ Any additional context or gotchas.
 
 When adding new references:
 
-1. Use clear, descriptive filenames (e.g., `groq-api-reference.md`)
+1. Use clear, descriptive filenames (e.g., `gemini-api-reference.md`)
 2. Include verification date
 3. Link back to internal docs that rely on this reference
 4. Keep notes concise — this is a reference index, not a tutorial
@@ -104,4 +104,4 @@ When adding new references:
 
 ---
 
-**Last Updated:** December 30, 2025
+**Last Updated:** February 26, 2026

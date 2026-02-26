@@ -20,7 +20,7 @@
     "typecheck": "tsc --noEmit",
     "content:validate": "cd src/backend && python3 -m scripts.validate_content",
     "content:ingest": "cd src/backend && python3 -m scripts.ingest_content",
-    "content:ingest:incremental": "cd src/backend && python3 -m scripts.ingest_content --incremental",
+    "content:ingest:incremental": "cd src/backend && python3 -m scripts.ingest_content",
     "content:clear": "cd src/backend && python3 -m scripts.clear_embeddings",
     "content:review": "tsx scripts/review-content.ts",
     "benchmark:rag": "cd src/backend && python3 -m scripts.benchmark_rag"

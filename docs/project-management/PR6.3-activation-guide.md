@@ -52,25 +52,39 @@ psql $DATABASE_URL -c "\\d content_embeddings"
 ```bash
 cd /Users/jefflee/Documents/AIProjects/AI_DovvyBuddy04
 
-# First, do a dry-run to verify
-.venv/bin/python src/backend/scripts/migrate_embeddings_768.py --dry-run
+# Apply latest schema migration
+cd src/backend
+../../.venv/bin/alembic upgrade head
 
-# Then run actual migration
-.venv/bin/python src/backend/scripts/migrate_embeddings_768.py
+# Rebuild embeddings with current model/dimension
+../../.venv/bin/python -m scripts.ingest_content --full --content-dir ../../content
 ```
 
 **Expected Steps:**
-1. Schema check (validates 768 dimension)
-2. Clear existing embeddings (confirms deletion)
-3. Re-ingest content with new embeddings (takes ~5-10 minutes)
-4. Verify 768-dimensional embeddings (automatic)
+1. Schema migration at latest head
+2. Full content re-ingestion
+3. New embeddings written at 768 dimensions
 
-**Expected Output:**
+If your content directory is at project root (`content/`), run explicit ingestion path:
+```bash
+cd /Users/jefflee/Documents/AIProjects/AI_DovvyBuddy04/src/backend
+../../.venv/bin/python -m scripts.ingest_content --full --content-dir ../../content
 ```
-✅ Migration completed successfully!
-   - Cleared old 3072-dimensional embeddings
-   - Ingested new 768-dimensional embeddings
-   - Verified correct dimensions
+
+**Verification Command:**
+```bash
+cd /Users/jefflee/Documents/AIProjects/AI_DovvyBuddy04/src/backend
+../../.venv/bin/python - <<'PY'
+from sqlalchemy import text
+from app.db.session import SessionLocal
+
+db = SessionLocal()
+try:
+  dims = db.execute(text("SELECT MIN(vector_dims(embedding)), MAX(vector_dims(embedding)), COUNT(*) FROM content_embeddings WHERE embedding IS NOT NULL")).fetchone()
+  print('min_dim=', dims[0], 'max_dim=', dims[1], 'count=', dims[2])
+finally:
+  db.close()
+PY
 ```
 
 ### 5. Restart Development Servers
@@ -91,7 +105,7 @@ curl -X POST http://localhost:8000/api/chat \
   -H "Content-Type: application/json" \
   -d '{
     "message": "What are the certifications?",
-    "conversationId": "test-123"
+    "sessionId": "test-123"
   }'
 ```
 
@@ -110,7 +124,8 @@ cd /Users/jefflee/Documents/AIProjects/AI_DovvyBuddy04/src/backend
 
 Edit `.env.local` and change:
 ```bash
-EMBEDDING_MODEL=gemini-embedding-001  # Revert to old model
+EMBEDDING_MODEL=text-embedding-004
+EMBEDDING_DIMENSION=768
 ```
 
 Then restart servers with `dovvy-stop && dovvy-backend` (in background).
@@ -125,6 +140,10 @@ Then restart servers with `dovvy-stop && dovvy-backend` (in background).
 **Cause:** Old embeddings not cleared before migration  
 **Solution:** Run `clear_embeddings.py` then retry migration
 
+### Issue: "Content directory not found: .../src/content"
+**Cause:** Ingestion default path is wrong for this repo layout  
+**Solution:** Use explicit content path: `--content-dir ../../content`
+
 ### Issue: "HNSW index not created"
 **Cause:** pgvector extension issue  
 **Solution:** Verify pgvector installed: `psql $DATABASE_URL -c "SELECT * FROM pg_extension WHERE extname='vector'"`
@@ -137,7 +156,7 @@ After activation, verify:
 - [ ] Frontend starts without errors (`dovvy-status` shows port 3000)
 - [ ] Chat endpoint returns responses
 - [ ] RAG retrieval returns relevant results
-- [ ] Database has 768-dim embeddings: `psql $DATABASE_URL -c "SELECT pg_column_size(embedding) FROM content_embeddings LIMIT 1"`
+- [ ] Database has 768-dim embeddings: `psql $DATABASE_URL -c "SELECT MIN(vector_dims(embedding)), MAX(vector_dims(embedding)) FROM content_embeddings WHERE embedding IS NOT NULL"`
 - [ ] HNSW index exists: `psql $DATABASE_URL -c "\\di idx_content_embeddings_hnsw"`
 
 ## Quick Commands Reference
@@ -156,7 +175,7 @@ dovvy-backend
 dovvy-frontend
 
 # Check database
-psql $DATABASE_URL -c "SELECT COUNT(*), pg_column_size(embedding) FROM content_embeddings GROUP BY pg_column_size(embedding)"
+psql $DATABASE_URL -c "SELECT COUNT(*), MIN(vector_dims(embedding)), MAX(vector_dims(embedding)) FROM content_embeddings WHERE embedding IS NOT NULL"
 
 # View migration history
 cd src/backend && ../../.venv/bin/alembic history --verbose

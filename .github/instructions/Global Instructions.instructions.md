@@ -49,6 +49,7 @@ Provide guidance for automated workflows, LLMs, and humans working on this proje
 ## LLM Standards
 - Default model: `gemini-2.5-flash-lite` (cost-effective, standardized across backend)
 - Embeddings: `text-embedding-004` (768 dimensions, recommended by Google, supports Matryoshka truncation)
+- Orchestration: Strict Google ADK runtime for backend routing (`ENABLE_ADK=true`, `ADK_MODEL=gemini-2.5-flash-lite`)
 
 ## Documentation
 - Place docs appropriately:

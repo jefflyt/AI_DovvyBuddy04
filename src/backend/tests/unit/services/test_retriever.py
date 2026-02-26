@@ -56,14 +56,15 @@ class TestVectorRetriever:
             ),
         ]
 
-        with patch("app.db.session.get_session") as mock_get_session:
+        with patch("app.services.rag.retriever.get_session") as mock_get_session:
             mock_session = MagicMock()
             mock_result = MagicMock()
             mock_result.all.return_value = mock_rows
             mock_session.execute = AsyncMock(return_value=mock_result)
             mock_session.__aenter__.return_value = mock_session
             mock_session.__aexit__.return_value = None
-            mock_get_session.return_value.return_value = mock_session
+            mock_session_maker = MagicMock(return_value=mock_session)
+            mock_get_session.return_value = mock_session_maker
 
             results = await retriever.retrieve("test query")
 
@@ -83,14 +84,15 @@ class TestVectorRetriever:
             filters={"doc_type": "faq", "destination": "Tioman"},
         )
 
-        with patch("app.db.session.get_session") as mock_get_session:
+        with patch("app.services.rag.retriever.get_session") as mock_get_session:
             mock_session = MagicMock()
             mock_result = MagicMock()
             mock_result.all.return_value = []
             mock_session.execute = AsyncMock(return_value=mock_result)
             mock_session.__aenter__.return_value = mock_session
             mock_session.__aexit__.return_value = None
-            mock_get_session.return_value.return_value = mock_session
+            mock_session_maker = MagicMock(return_value=mock_session)
+            mock_get_session.return_value = mock_session_maker
 
             results = await retriever.retrieve("test query", options)
 
@@ -120,14 +122,15 @@ class TestVectorRetriever:
 
         options = RetrievalOptions(min_similarity=0.5)
 
-        with patch("app.db.session.get_session") as mock_get_session:
+        with patch("app.services.rag.retriever.get_session") as mock_get_session:
             mock_session = MagicMock()
             mock_result = MagicMock()
             mock_result.all.return_value = mock_rows
             mock_session.execute = AsyncMock(return_value=mock_result)
             mock_session.__aenter__.return_value = mock_session
             mock_session.__aexit__.return_value = None
-            mock_get_session.return_value.return_value = mock_session
+            mock_session_maker = MagicMock(return_value=mock_session)
+            mock_get_session.return_value = mock_session_maker
 
             results = await retriever.retrieve("test query", options)
 

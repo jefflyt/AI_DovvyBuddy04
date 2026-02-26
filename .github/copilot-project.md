@@ -36,18 +36,18 @@
 
 - **Framework:** FastAPI with async/await
 - **Multi-Agent System:** Specialized agents (certification, trip, safety, retrieval)
-- **Orchestration:** Conversation manager with mode detection & emergency handling
-- **RAG Pipeline:** Vector search with Gemini embeddings (text-embedding-004)
+- **Orchestration:** Strict Google ADK runtime routing (`ENABLE_ADK=true`, `ADK_MODEL=gemini-2.5-flash-lite`)
+- **RAG Pipeline:** Vector search with Gemini embeddings (`text-embedding-004`, 768 dimensions)
 - **Session Management:** PostgreSQL-backed conversation history
 
 ### LLM Provider Strategy (Updated)
 
 | Phase | Provider | Model | Use Case |
 |-------|----------|-------|----------|
-| **Production V1** | Gemini | `gemini-2.0-flash` | Primary production LLM (cost-effective) |
+| **Production V1** | Gemini | `gemini-2.5-flash-lite` | Primary production LLM (cost-effective) |
 | **Embeddings** | Gemini | `text-embedding-004` | 768-dimension vectors for RAG |
 
-- **Standardized:** All production traffic uses Gemini 2.0 Flash
+- **Standardized:** All production traffic uses Gemini 2.5 Flash Lite
 - **Future:** V2 may add SEA-LION for multilingual support (SEA region)
 
 ---

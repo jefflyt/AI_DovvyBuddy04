@@ -2,6 +2,8 @@
 
 Shared utilities and core logic for DovvyBuddy.
 
+> Note: Current production backend runtime is Python in `src/backend`. This folder contains frontend/shared TypeScript modules and historical abstractions retained for compatibility.
+
 ## Contents
 
 ### ✅ Completed Modules (PR1-PR3.1)
@@ -20,8 +22,8 @@ Shared utilities and core logic for DovvyBuddy.
   - `chat-orchestrator-adk.ts` — Multi-agent coordination
   
 - **model-provider/** — LLM provider interface (PR3)
-  - Groq and Gemini implementations
-  - Retained as fallback during Python migration
+  - Legacy abstraction retained for frontend compatibility
+  - Primary runtime LLM orchestration now lives in `src/backend/app/orchestration`
   
 - **embeddings/** — Embedding generation (PR2)
   - Gemini text-embedding-004 provider

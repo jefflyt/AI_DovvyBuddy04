@@ -5,19 +5,26 @@ Tests end-to-end RAG with real database and APIs (marked as slow for CI).
 """
 
 import pytest
+import pytest_asyncio
 import os
 
 from app.services.rag import RAGPipeline
+from app.db import session as db_session
 from app.db.session import init_db
 
 
 pytestmark = pytest.mark.slow
 
 
-@pytest.fixture(scope="module")
+@pytest_asyncio.fixture(scope="function")
 async def db():
     """Initialize database."""
+    if db_session._engine is not None:
+        await db_session._engine.dispose()
+        db_session._engine = None
+        db_session._async_session = None
     await init_db()
+    yield
 
 
 @pytest.fixture
@@ -29,8 +36,8 @@ def api_key():
     return key
 
 
-@pytest.fixture
-def pipeline(api_key):
+@pytest_asyncio.fixture
+async def pipeline(api_key, db):
     """Create real RAG pipeline."""
     return RAGPipeline()
 

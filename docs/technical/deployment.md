@@ -1,7 +1,7 @@
 # Cloud Run Deployment Guide
 
-**Status:** Ready for Implementation  
-**Date:** January 3, 2026  
+**Status:** Active Deployment Guide  
+**Date:** February 26, 2026  
 **Target:** Google Cloud Run (Backend) + Vercel (Frontend)
 
 ---
@@ -39,9 +39,13 @@ Prepare these values before deployment:
 **Backend (Cloud Run):**
 - `DATABASE_URL` - Neon PostgreSQL connection string
 - `GEMINI_API_KEY` - Google Gemini API key
-- `GROQ_API_KEY` - Groq API key (optional, for dev)
 - `CORS_ORIGINS` - Vercel domain(s), comma-separated
-- `DEFAULT_LLM_PROVIDER` - `groq` or `gemini`
+- `DEFAULT_LLM_MODEL` - `gemini-2.5-flash-lite`
+- `ENABLE_ADK` - `true`
+- `ENABLE_AGENT_ROUTING` - `true`
+- `ADK_MODEL` - `gemini-2.5-flash-lite`
+- `EMBEDDING_MODEL` - `text-embedding-004`
+- `EMBEDDING_DIMENSION` - `768`
 - `ENABLE_RAG` - `true`
 
 **Frontend (Vercel):**
@@ -89,8 +93,12 @@ gcloud run deploy dovvybuddy-backend \
   --timeout 300 \
   --set-env-vars DATABASE_URL="$DATABASE_URL" \
   --set-env-vars GEMINI_API_KEY="$GEMINI_API_KEY" \
-  --set-env-vars GROQ_API_KEY="$GROQ_API_KEY" \
-  --set-env-vars DEFAULT_LLM_PROVIDER="groq" \
+  --set-env-vars DEFAULT_LLM_MODEL="gemini-2.5-flash-lite" \
+  --set-env-vars ENABLE_ADK="true" \
+  --set-env-vars ENABLE_AGENT_ROUTING="true" \
+  --set-env-vars ADK_MODEL="gemini-2.5-flash-lite" \
+  --set-env-vars EMBEDDING_MODEL="text-embedding-004" \
+  --set-env-vars EMBEDDING_DIMENSION="768" \
   --set-env-vars ENABLE_RAG="true" \
   --set-env-vars CORS_ORIGINS="https://your-vercel-domain.vercel.app"
 ```
@@ -326,7 +334,6 @@ gcloud run services update-traffic dovvybuddy-backend \
 
 **API Costs:**
 - Gemini: ~$0.35 per 1M input tokens (Flash model)
-- Groq: Free tier available, then pay-as-you-go
 
 ---
 

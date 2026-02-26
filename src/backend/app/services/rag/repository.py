@@ -117,7 +117,7 @@ class RAGRepository:
         return [
             {
                 "id": emb.id,
-                "text": emb.content,
+                "text": emb.chunk_text,
                 "embedding": emb.embedding,
                 "metadata": emb.metadata_,
             }
@@ -152,7 +152,7 @@ class RAGRepository:
         return [
             {
                 "id": emb.id,
-                "text": emb.content,
+                "text": emb.chunk_text,
                 "embedding": emb.embedding,
                 "metadata": emb.metadata_,
             }
@@ -176,22 +176,23 @@ class RAGRepository:
             List of results with text, metadata, and similarity score
         """
         # Use pgvector's cosine similarity operator
+        query_embedding_str = "[" + ",".join(str(x) for x in query_embedding) + "]"
         stmt = text("""
             SELECT 
                 id,
-                content,
-                metadata_,
-                1 - (embedding <=> :query_embedding::vector) as similarity
+                chunk_text,
+                metadata,
+                1 - (embedding <=> CAST(:query_embedding AS vector)) as similarity
             FROM content_embeddings
-            WHERE 1 - (embedding <=> :query_embedding::vector) >= :threshold
-            ORDER BY embedding <=> :query_embedding::vector
+            WHERE 1 - (embedding <=> CAST(:query_embedding AS vector)) >= :threshold
+            ORDER BY embedding <=> CAST(:query_embedding AS vector)
             LIMIT :top_k
         """)
         
         result = self.db.execute(
             stmt,
             {
-                "query_embedding": query_embedding,
+                "query_embedding": query_embedding_str,
                 "threshold": similarity_threshold,
                 "top_k": top_k,
             }
@@ -200,8 +201,8 @@ class RAGRepository:
         return [
             {
                 "id": row.id,
-                "text": row.content,
-                "metadata": row.metadata_,
+                "text": row.chunk_text,
+                "metadata": row.metadata,
                 "similarity": float(row.similarity),
             }
             for row in result

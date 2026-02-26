@@ -11,13 +11,13 @@ This backend is located at **`/src/backend/`**.
 Requires Python 3.11+ (recommended: Python 3.11.14):
 
 ```bash
-cd src/backend
+cd ..
 python3.11 -m venv .venv
 source .venv/bin/activate
-pip install -e .
+pip install -e src/backend/
 # Configure environment in project root .env.local (single source of truth)
 # Edit DATABASE_URL and GEMINI_API_KEY in ../../.env.local
-uvicorn app.main:app --reload --port 8000
+.venv/bin/uvicorn app.main:app --reload --app-dir src/backend --port 8000
 ```
 
 ## APIs
@@ -85,19 +85,20 @@ pnpm content:ingest-py
 **Options:**
 - `--content-dir PATH` — Content directory to ingest (default: `../content`)
 - `--pattern GLOB` — File pattern to match (default: `**/*.md`)
-- `--incremental` — Skip unchanged files (hash-based)
+- Incremental mode is default (skips unchanged files by hash)
+- `--full` — Full re-ingestion mode (ignore file hashes)
 - `--dry-run` — Preview without database writes
 - `--clear` — Clear existing embeddings before ingestion
 - `--batch-size N` — Embedding batch size (default: 10)
 
 **Examples:**
 ```bash
-# Full ingestion
+# Incremental ingestion (default - skip unchanged files)
 python -m scripts.ingest_content
 
-# Incremental ingestion (skip unchanged files)
-python -m scripts.ingest_content --incremental
-pnpm content:ingest-incremental-py
+# Full ingestion (ignore file hashes)
+python -m scripts.ingest_content --full
+pnpm content:ingest:incremental
 
 # Dry run (preview only)
 python -m scripts.ingest_content --dry-run
@@ -218,8 +219,8 @@ python -m scripts.benchmark_rag
 #### Daily Content Updates
 
 ```bash
-# Use incremental mode to skip unchanged files
-python -m scripts.ingest_content --incremental
+# Incremental mode is default
+python -m scripts.ingest_content
 ```
 
 #### Content Re-ingestion
@@ -252,18 +253,18 @@ Content validation runs automatically on PRs that modify `content/` files. See `
 
 **"Incremental mode not skipping files"**
 - Verify embeddings have `file_hash` in metadata
-- Re-ingest once without `--incremental` to populate hashes
+- Re-ingest once with `--full` to refresh hashes and chunk metadata
 - Check database connection (hashes stored in DB)
 
 ### Testing
 
 ```bash
 # Run unit tests
-pytest tests/unit/scripts
+../../.venv/bin/python -m pytest tests/unit/scripts
 
 # Run integration tests (requires database)
-pytest tests/integration/scripts
+../../.venv/bin/python -m pytest tests/integration/scripts
 
 # Run all tests with coverage
-pytest tests/ --cov=scripts
+../../.venv/bin/python -m pytest tests/ --cov=scripts
 ```

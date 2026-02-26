@@ -65,27 +65,12 @@ Successfully implemented PR6.3 to standardize the embedding technology stack, mi
 - Simplified dimension mapping to only support text-embedding-004
 - Added SUPPORTED_TRUNCATION_DIMENSIONS constant
 
-### Step 4: Data Migration Tooling ✅
+### Step 4: Data Migration Execution ✅
 
-**New Script:**
-- `src/backend/scripts/migrate_embeddings_768.py`
-
-**Features:**
-- Pre-migration schema validation
-- Clear existing 3072-dimensional embeddings
-- Re-ingest content with new 768-dimensional embeddings
-- Post-migration verification (checks dimension correctness)
-- Dry-run mode for safe testing
-- Force mode to skip confirmations
-
-**Usage:**
-```bash
-# Dry-run (check only)
-.venv/bin/python src/backend/scripts/migrate_embeddings_768.py --dry-run
-
-# Full migration
-.venv/bin/python src/backend/scripts/migrate_embeddings_768.py
-```
+**Operational Path (current):**
+- Apply Alembic head migration
+- Rebuild embeddings via `scripts.ingest_content --full`
+- Verify dimensions directly from database
 
 ### Step 5: Testing ✅
 
@@ -154,12 +139,12 @@ embedding = Column(Vector(768))
 2. **Run database migration:**
    ```bash
    cd src/backend
-   ../../.venv/bin/alembic upgrade 004_embedding_dimension_768
+   ../../.venv/bin/alembic upgrade head
    ```
 3. **Run data migration:**
    ```bash
-   cd /path/to/project
-   .venv/bin/python src/backend/scripts/migrate_embeddings_768.py
+   cd /path/to/project/src/backend
+   ../../.venv/bin/python -m scripts.ingest_content --full --content-dir ../../content
    ```
 4. **Verify migration:**
    ```bash
@@ -212,14 +197,13 @@ cd src/backend
 3. `src/backend/app/services/embeddings/gemini.py`
 4. `src/backend/app/services/embeddings/factory.py`
 5. `src/backend/alembic/versions/004_embedding_dimension_768.py` (new)
-6. `src/backend/scripts/migrate_embeddings_768.py` (new)
-7. `src/backend/tests/unit/services/test_embeddings.py`
+6. `src/backend/tests/unit/services/test_embeddings.py`
 
 ### Configuration (2 files)
-8. `.env.local`
-9. `.github/instructions/Global Instructions.instructions.md`
+7. `.env.local`
+8. `.github/instructions/Global Instructions.instructions.md`
 
-**Total: 9 modified + 2 new = 11 files**
+**Total: 8 modified + 1 new = 9 files**
 
 ## Testing Performed
 
@@ -234,8 +218,8 @@ cd src/backend
 ### Immediate (Required for Activation)
 1. Install pytest in venv: `.venv/bin/pip install pytest pytest-asyncio`
 2. Run unit tests: `.venv/bin/pytest src/backend/tests/unit/services/test_embeddings.py -v`
-3. Run database migration: `alembic upgrade 004_embedding_dimension_768`
-4. Execute data migration: `python -m scripts.migrate_embeddings_768`
+3. Run database migration: `alembic upgrade head`
+4. Execute full ingestion: `python -m scripts.ingest_content --full --content-dir ../../content`
 5. Restart dev servers to pick up new configuration
 
 ### Short-term (Quality Assurance)
@@ -286,7 +270,7 @@ cd src/backend
 | No backend syntax errors | ✅ Verified |
 
 **Overall Status: ✅ IMPLEMENTATION COMPLETE**  
-**Activation Status: ⏳ PENDING (requires migration execution)**
+**Activation Status: ✅ COMPLETED (migration executed and verified at 768 dimensions)**
 
 ## Approval & Sign-off
 
@@ -294,9 +278,9 @@ cd src/backend
 **Date:** 2026-02-26  
 **Review Status:** Self-reviewed, ready for user validation  
 
-**Next Action Required:** User to review changes and execute migration scripts to activate PR6.3 in development environment.
+**Next Action Required:** None for migration; use normal content ingestion workflows going forward.
 
 ---
 
-*This document serves as the implementation record for PR6.3. For migration procedures, see `src/backend/scripts/migrate_embeddings_768.py`. For architectural decisions, see `.github/instructions/Global Instructions.instructions.md`.*
+*This document serves as the implementation record for PR6.3. For current migration procedures, use Alembic head + `scripts.ingest_content --full`. For architectural decisions, see `.github/instructions/Global Instructions.instructions.md`.*
 

@@ -1,99 +1,57 @@
 # Technical Debt
 
-**Last Updated:** January 31, 2026
+**Last Updated:** February 26, 2026
 
 ---
 
-## Recent Refactoring (January 31, 2026)
+## Current Runtime Snapshot
 
-### Codebase Cleanup & Architecture Improvements
-
-#### ✅ Removed Deprecated Services
-- **Deleted:** `src/backend/app/services/embedding.py` (24 lines)
-- **Deleted:** `src/backend/app/services/chunking.py` (66 lines)
-- **Reason:** Replaced by proper async providers in `src/backend/app/services/embeddings/`
-- **Impact:** Eliminated asyncio.run() anti-pattern, removed ~90 lines of dead code
-- **Updated:** Content ingestion scripts now use async/await properly
-
-#### ✅ Orchestrator Refactoring
-- **Before:** `orchestrator.py` was 397 lines with multiple responsibilities
-- **After:** Reduced to 318 lines (20% reduction)
-- **Extracted Modules:**
-  - `response_formatter.py` - Greeting detection, welcome messages, disclaimer formatting
-  - `agent_router.py` - Agent selection and mode-to-agent mapping
-- **Benefits:** Improved testability, reduced cognitive load, clearer separation of concerns
-
-#### ✅ Feature Flag Centralization
-- **Created:** `src/backend/app/core/feature_flags.py` with FeatureFlag enum and manager
-- **Created:** `src/lib/feature-flags.ts` for frontend feature flag management
-- **Migrated:** All scattered feature flag checks to centralized registry
-- **Benefits:** Single source of truth, easier A/B testing, reduced coupling
-
-#### ✅ Removed Obsolete Tests
-- **Deleted:** `src/backend/tests/comparison/` directory
-- **Reason:** All tests were skipped, TypeScript backend removed in January 2026
-- **Impact:** Cleaner test suite, no false positives from skipped tests
+- Backend runtime: Python FastAPI (`src/backend`)
+- Orchestration: strict Google ADK (`ENABLE_ADK=true`)
+- LLM model: `gemini-2.5-flash-lite`
+- Embeddings: `text-embedding-004` at 768 dimensions
+- Test status baseline: backend unit + integration suites passing
 
 ---
 
 ## Active Technical Debt
 
-### Test Suite Issues
-
-#### 1. Skipped Session Service Tests
-**Location:** `src/lib/session/__tests__/session-service.test.ts`  
-**Issue:** Mock setup doesn't properly intercept Drizzle ORM query chains  
-**Impact:** 2 tests skipped (97% pass rate)  
-**Recommendation:** Replace with integration tests using test database  
-**Priority:** Low (covered by integration tests)
-
-#### 2. Excluded Content Ingestion Test
-**Location:** `tests/integration/ingest-content.test.ts`  
-**Issue:** Module-level DB import throws before `describe.skip` takes effect  
-**Impact:** Test excluded from suite  
-**Recommendation:** Move DB import inside test functions or use lazy loading  
-**Priority:** Low (manual testing confirms functionality)
-
----
-
-## Resolved Technical Debt
-
-### Model Deprecation (January 2026)
-- ✅ **Fixed:** Migrated from `llama-3.1-70b-versatile` (deprecated Jan 1, 2026) to `llama-3.3-70b-versatile`
-- ✅ **Action:** Monitor Groq announcements for future deprecations
-
-### Database Schema Migration
-- ✅ **Fixed:** Migrated from `vector(1536)` (OpenAI) to `vector(768)` (Gemini embeddings)
-- ✅ **Lesson:** Always verify actual database schema matches TypeScript definitions
-
----
-
-## Best Practices Established
-
-### Mock Complexity vs Integration Tests
-**Lesson:** For database-heavy code with complex ORM query chains, integration tests are more maintainable than deep mocks.
-
-### Test Environment Configuration
-**Lesson:** Some SDKs (like Groq) need special configuration for test runners. Added `dangerouslyAllowBrowser: true` for Vitest context.
-
-### Centralized Configuration
-**Lesson:** Use centralized model configuration to manage provider lifecycles and prevent scattered hardcoded model names.
-
----
-
-## Future Considerations
-
-### SSE Streaming (Deferred)
-**Status:** Not implemented  
+### 1. Deprecation Warnings in Runtime and Tests
+**Scope:** Pydantic `Config` class usage and FastAPI `on_event` startup hooks  
+**Impact:** No runtime failure, but adds warning noise and future upgrade risk  
 **Priority:** Medium  
-**Trigger:** Add when responses consistently exceed 5s generation time or user feedback indicates need for real-time UX
+**Recommended Fix:**
+- Migrate Pydantic models to `ConfigDict`
+- Migrate FastAPI startup/shutdown handling to lifespan events
 
-### Multi-Agent Orchestration
-**Status:** Partially implemented (multi-agent system in place)  
-**Future:** Consider ADK/Genkit for more sophisticated agent coordination if needed
+### 2. Documentation Drift in Historical Records
+**Scope:** Legacy planning/project-management records still describe older provider and migration phases  
+**Impact:** Possible confusion for new contributors if historical docs are treated as runtime source of truth  
+**Priority:** Low  
+**Recommended Fix:**
+- Keep historical docs unchanged as records
+- Maintain current-state docs in `README*.md`, `docs/technical/`, and `src/backend/docs/`
+- Add clear “historical record” labels where needed
+
+### 3. Uvicorn Local Run Instability (Environment-Specific)
+**Scope:** Local `uvicorn` exits observed in certain terminal sessions (exit 137/1)  
+**Impact:** Intermittent local startup friction  
+**Priority:** Medium  
+**Recommended Fix:**
+- Capture stable repro steps and shell env details
+- Add a dedicated troubleshooting subsection in backend runtime docs
+
+---
+
+## Recently Resolved Debt
+
+- Circular import risk in orchestration package initialization
+- Stale backend unit tests after async API/signature changes
+- Integration drift for RAG/ingestion/session contracts
+- Repository field mismatch (`chunk_text` vs legacy `content`) and vector SQL binding issues
 
 ---
 
 ## Tracking
 
-Track new technical debt as GitHub issues with label `technical-debt` for better visibility and prioritization.
+Track new debt items as GitHub issues with label `technical-debt` and link to impacted docs/code paths.

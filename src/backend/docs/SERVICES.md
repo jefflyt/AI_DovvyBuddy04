@@ -2,7 +2,7 @@
 
 Python backend implementation for DovvyBuddy, featuring:
 - Embedding generation with Gemini
-- LLM providers (Groq, Gemini)
+- LLM generation with Gemini
 - RAG pipeline (chunking, retrieval, orchestration)
 
 ## Setup
@@ -22,7 +22,6 @@ Use project root `.env.local` (single source of truth) and set your API keys the
 # from project root
 # Edit .env.local and add your keys:
 # GEMINI_API_KEY=your_key_here
-# GROQ_API_KEY=your_key_here
 ```
 
 ### 3. Initialize Database
@@ -74,12 +73,6 @@ open htmlcov/index.html
 python -m scripts.test_embeddings "What is PADI Open Water?"
 ```
 
-### Test LLM (Groq)
-
-```bash
-python -m scripts.test_llm --provider groq "Explain buoyancy control"
-```
-
 ### Test LLM (Gemini)
 
 ```bash
@@ -126,7 +119,6 @@ src/backend/
 │   │   │   └── factory.py     # Provider factory
 │   │   ├── llm/              # LLM providers
 │   │   │   ├── base.py        # Abstract interface
-│   │   │   ├── groq.py        # Groq provider
 │   │   │   ├── gemini.py      # Gemini provider
 │   │   │   ├── factory.py     # Provider factory
 │   │   │   └── types.py       # Message/Response types
@@ -150,14 +142,20 @@ All configuration is via environment variables (see `.env.example`):
 
 ### LLM Configuration
 
-- `DEFAULT_LLM_PROVIDER`: `groq` or `gemini`
-- `DEFAULT_LLM_MODEL`: Model name (default: `gemini-2.0-flash`)
+- `DEFAULT_LLM_MODEL`: Model name (default: `gemini-2.5-flash-lite`)
 - `LLM_TEMPERATURE`: 0.0-1.0 (default: 0.7)
 - `LLM_MAX_TOKENS`: Max tokens per generation (default: 2048)
+
+### Orchestration Configuration
+
+- `ENABLE_ADK`: Enable strict Google ADK orchestration (default: `true`)
+- `ADK_MODEL`: ADK model name (default: `gemini-2.5-flash-lite`)
+- `ENABLE_AGENT_ROUTING`: Enable ADK routing (default: `true`)
 
 ### Embedding Configuration
 
 - `EMBEDDING_MODEL`: Gemini model (default: `text-embedding-004`)
+- `EMBEDDING_DIMENSION`: Target output dimension (default: `768`, supports Matryoshka)
 - `EMBEDDING_BATCH_SIZE`: Max texts per batch (default: 100)
 - `EMBEDDING_CACHE_SIZE`: Cache entries (default: 1000)
 - `EMBEDDING_CACHE_TTL`: TTL in seconds (default: 3600)
@@ -165,7 +163,7 @@ All configuration is via environment variables (see `.env.example`):
 ### RAG Configuration
 
 - `ENABLE_RAG`: Enable/disable RAG (default: `true`)
-- `RAG_TOP_K`: Number of chunks to retrieve (default: 5)
+- `RAG_TOP_K`: Number of chunks to retrieve (default: 8)
 - `RAG_MIN_SIMILARITY`: Minimum similarity threshold (default: 0.5)
 
 ## Development Workflow
@@ -201,7 +199,6 @@ Check that API keys are set:
 
 ```bash
 echo $GEMINI_API_KEY
-echo $GROQ_API_KEY
 ```
 
 ### Database Connection Errors

@@ -572,7 +572,7 @@ Target: <500ms P95 latency for RAG retrieval
 **Status:** In progress (PR3.2d)
 
 **Current State:**
-- ✅ Python RAG services implemented (PR3.2b)
+- ✅ Python RAG services are active in current backend runtime
 - ⏳ Python ingestion script (PR3.2d)
 - ✅ TypeScript ingestion working (temporary)
 

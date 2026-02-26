@@ -14,7 +14,6 @@ This migration WILL DROP existing data in the embedding column - run data cleari
 
 """
 from alembic import op
-import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '004_embedding_dimension_768'
@@ -29,9 +28,20 @@ def upgrade() -> None:
     # This model supports Matryoshka truncation for flexible dimensionality
     # DESTRUCTIVE: This will drop existing embeddings - ensure backup/clearing was done
     op.execute("""
+        ALTER TABLE content_embeddings
+        ALTER COLUMN embedding DROP NOT NULL
+    """)
+
+    op.execute("""
+        UPDATE content_embeddings
+        SET embedding = NULL
+        WHERE embedding IS NOT NULL
+    """)
+
+    op.execute("""
         ALTER TABLE content_embeddings 
         ALTER COLUMN embedding TYPE vector(768)
-        USING embedding::vector(768)
+        USING NULL::vector(768)
     """)
     
     # Now we CAN create an HNSW index since 768 < 2000 dimension limit

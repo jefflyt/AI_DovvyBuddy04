@@ -15,49 +15,66 @@ Edit `.env.local` with your credentials:
 ```bash
 # Required for integration tests
 GEMINI_API_KEY=your_actual_gemini_key
-GROQ_API_KEY=your_actual_groq_key
 DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/dovvybuddy_test
 
 # Optional for full testing
 EMBEDDING_MODEL=text-embedding-004
+EMBEDDING_DIMENSION=768
 DEFAULT_LLM_PROVIDER=gemini
-DEFAULT_LLM_MODEL=gemini-2.0-flash
+DEFAULT_LLM_MODEL=gemini-2.5-flash-lite
+ENABLE_ADK=true
+ADK_MODEL=gemini-2.5-flash-lite
 ```
 
 ### 2. Install Dependencies
 
 ```bash
 cd src/backend
-python3 -m pip install -e .
-python3 -m pip install pytest pytest-asyncio pytest-cov
+../../.venv/bin/pip install -e .
+../../.venv/bin/pip install pytest pytest-asyncio pytest-cov
 ```
 
 ### 3. Run Test Suites
 
-#### Full Test Suite (requires network)
+Use these commands from project root (verified passing on 2026-02-26):
+
 ```bash
-cd src/backend
-python3 -m pytest tests/ -v
+export PYTHONPATH="$PWD/src/backend"
 ```
 
-#### Unit Tests Only (mostly offline)
+#### Unit Tests (verified)
 ```bash
-python3 -m pytest tests/unit/ -v
+.venv/bin/python -m pytest src/backend/tests/unit -q
 ```
 
-#### Integration Tests (requires network + DB)
+#### Integration Tests (verified: network + DB)
 ```bash
-python3 -m pytest tests/integration/ -v
+.venv/bin/python -m pytest src/backend/tests/integration -q
+```
+
+#### Full Backend Validation (recommended sequence)
+
+Run unit and integration as two explicit commands:
+
+```bash
+.venv/bin/python -m pytest src/backend/tests/unit -q
+.venv/bin/python -m pytest src/backend/tests/integration -q
+```
+
+Or run a single combined command (verified):
+
+```bash
+.venv/bin/python -m pytest src/backend/tests/unit src/backend/tests/integration -q --import-mode=importlib
 ```
 
 #### Specific Test File
 ```bash
-python3 -m pytest tests/integration/api/test_lead.py -v
+.venv/bin/python -m pytest src/backend/tests/integration/api/test_lead.py -q
 ```
 
 #### With Coverage Report
 ```bash
-python3 -m pytest tests/ --cov=app --cov-report=html
+.venv/bin/python -m pytest src/backend/tests --cov=app --cov-report=html
 open htmlcov/index.html
 ```
 
@@ -133,28 +150,28 @@ python3 -m alembic upgrade 003_pgvector_embedding_column --sql
 
 #### Run Only Fast Tests
 ```bash
-python3 -m pytest -m "not slow" tests/
+.venv/bin/python -m pytest -m "not slow" src/backend/tests
 ```
 
 #### Run Only Integration Tests
 ```bash
-python3 -m pytest -m integration tests/
+.venv/bin/python -m pytest -m integration src/backend/tests
 ```
 
 #### Stop at First Failure
 ```bash
-python3 -m pytest -x tests/
+.venv/bin/python -m pytest -x src/backend/tests
 ```
 
 #### Show Full Traceback
 ```bash
-python3 -m pytest --tb=long tests/
+.venv/bin/python -m pytest --tb=long src/backend/tests
 ```
 
 #### Run Tests in Parallel (requires pytest-xdist)
 ```bash
 pip install pytest-xdist
-python3 -m pytest -n auto tests/
+.venv/bin/python -m pytest -n auto src/backend/tests
 ```
 
 ### 7. Troubleshooting
@@ -162,9 +179,11 @@ python3 -m pytest -n auto tests/
 #### Import Errors
 If you see `ModuleNotFoundError`:
 ```bash
-# Reinstall package in editable mode
-cd src/backend
-pip install -e .
+# Ensure backend package path is visible
+export PYTHONPATH="$PWD/src/backend"
+
+# Reinstall backend in editable mode
+cd src/backend && ../../.venv/bin/pip install -e .
 ```
 
 #### Database Connection Errors
@@ -186,7 +205,7 @@ cd src/backend
 python3 -c "from app.core.config import settings; print(settings.GEMINI_API_KEY[:10])"
 ```
 
-### 8. Migration 003 Deployment
+### 8. Migration Deployment (Current Head)
 
 #### Staging Deployment
 ```bash
@@ -196,15 +215,15 @@ export DATABASE_URL="postgresql://user:pass@staging.example.com:5432/dovvybuddy"
 # Verify current state
 python3 -m alembic current
 
-# Preview upgrade (once env.py fixed)
-python3 -m alembic upgrade 003_pgvector_embedding_column --sql
+# Preview upgrade SQL
+python3 -m alembic upgrade head --sql
 
 # Execute upgrade
-python3 -m alembic upgrade 003_pgvector_embedding_column
+python3 -m alembic upgrade head
 
 # Verify new state
 python3 -m alembic current
-# Expected: 003_pgvector_embedding_column (head)
+# Expected: latest head (embedding dimension 768 migration)
 
 # Verify pgvector extension
 psql $DATABASE_URL -c "SELECT * FROM pg_extension WHERE extname='vector';"

@@ -3,11 +3,14 @@ Integration tests for chat flow.
 """
 
 import pytest
+from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 from app.orchestration import ChatOrchestrator
 from app.orchestration.types import ChatRequest
+from app.agents.base import AgentResult
+from app.agents.types import AgentContext, AgentType
 
 
 @pytest.fixture
@@ -27,6 +30,8 @@ def mock_session_data():
     return SessionData(
         id=uuid4(),
         conversation_history=[],
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
         diver_profile=None,
     )
 
@@ -36,38 +41,43 @@ async def test_chat_flow_new_session(mock_db_session, mock_session_data):
     """Test complete chat flow with new session."""
     orchestrator = ChatOrchestrator(mock_db_session)
 
-    # Mock session creation
+    # Mock session creation and orchestrator flow
     orchestrator.session_manager.create_session = AsyncMock(
         return_value=mock_session_data
     )
     orchestrator.session_manager.append_message = AsyncMock()
-
-    # Mock agent execution
-    from app.agents.base import AgentResult
-    from app.agents.types import AgentType
+    orchestrator.orchestrator.route_request = AsyncMock(
+        return_value={"target_agent": "knowledge_base", "parameters": {}}
+    )
+    orchestrator.response_formatter.format_response = AsyncMock(
+        side_effect=lambda message, **kwargs: message
+    )
 
     mock_result = AgentResult(
         response="This is a test response about diving",
         agent_type=AgentType.RETRIEVAL,
         confidence=0.8,
     )
+    mock_agent = MagicMock()
+    mock_agent.name = "retrieval"
+    mock_agent.execute = AsyncMock(return_value=mock_result)
 
-    with patch.object(
-        orchestrator.agent_registry.get(AgentType.RETRIEVAL),
-        "execute",
-        return_value=mock_result,
-    ):
-        request = ChatRequest(
-            message="What is scuba diving?",
-            session_id=None,
-        )
+    orchestrator.agent_router.select_agent = MagicMock(return_value=mock_agent)
+    orchestrator.context_builder.build_context = AsyncMock(
+        return_value=AgentContext(query="What is scuba diving?", metadata={"has_rag": False})
+    )
 
-        response = await orchestrator.handle_chat(request)
+    request = ChatRequest(
+        message="What is scuba diving?",
+        session_id=None,
+    )
 
-        assert response is not None
-        assert response.message == mock_result.response
-        assert response.session_id == str(mock_session_data.id)
-        assert response.agent_type == AgentType.RETRIEVAL.value
+    response = await orchestrator.handle_chat(request)
+
+    assert response is not None
+    assert response.message == mock_result.response
+    assert response.session_id == str(mock_session_data.id)
+    assert response.agent_type == AgentType.RETRIEVAL.value
 
 
 @pytest.mark.asyncio
@@ -85,18 +95,24 @@ async def test_chat_flow_existing_session(mock_db_session, mock_session_data):
         return_value=mock_session_data
     )
     orchestrator.session_manager.append_message = AsyncMock()
-
-    # Mock agent
-    from app.agents.base import AgentResult
-    from app.agents.types import AgentType
+    orchestrator.orchestrator.route_request = AsyncMock(
+        return_value={"target_agent": "knowledge_base", "parameters": {}}
+    )
+    orchestrator.response_formatter.format_response = AsyncMock(
+        side_effect=lambda message, **kwargs: message
+    )
 
     mock_result = AgentResult(
         response="Follow-up response",
         agent_type=AgentType.RETRIEVAL,
     )
-
-    retrieval_agent = orchestrator.agent_registry.get(AgentType.RETRIEVAL)
-    retrieval_agent.execute = AsyncMock(return_value=mock_result)
+    mock_agent = MagicMock()
+    mock_agent.name = "retrieval"
+    mock_agent.execute = AsyncMock(return_value=mock_result)
+    orchestrator.agent_router.select_agent = MagicMock(return_value=mock_agent)
+    orchestrator.context_builder.build_context = AsyncMock(
+        return_value=AgentContext(query="Tell me more", metadata={"has_rag": False})
+    )
 
     request = ChatRequest(
         message="Tell me more",
@@ -121,18 +137,27 @@ async def test_chat_flow_certification_query(mock_db_session, mock_session_data)
         return_value=mock_session_data
     )
     orchestrator.session_manager.append_message = AsyncMock()
-
-    # Mock certification agent
-    from app.agents.base import AgentResult
-    from app.agents.types import AgentType
+    orchestrator.orchestrator.route_request = AsyncMock(
+        return_value={"target_agent": "knowledge_base", "parameters": {}}
+    )
+    orchestrator.response_formatter.format_response = AsyncMock(
+        side_effect=lambda message, **kwargs: message
+    )
 
     mock_result = AgentResult(
         response="PADI Open Water is...",
-        agent_type=AgentType.CERTIFICATION,
+        agent_type=AgentType.RETRIEVAL,
     )
-
-    cert_agent = orchestrator.agent_registry.get(AgentType.CERTIFICATION)
-    cert_agent.execute = AsyncMock(return_value=mock_result)
+    mock_agent = MagicMock()
+    mock_agent.name = "retrieval"
+    mock_agent.execute = AsyncMock(return_value=mock_result)
+    orchestrator.agent_router.select_agent = MagicMock(return_value=mock_agent)
+    orchestrator.context_builder.build_context = AsyncMock(
+        return_value=AgentContext(
+            query="What is PADI Open Water certification?",
+            metadata={"has_rag": False},
+        )
+    )
 
     request = ChatRequest(
         message="What is PADI Open Water certification?",
@@ -140,8 +165,8 @@ async def test_chat_flow_certification_query(mock_db_session, mock_session_data)
 
     response = await orchestrator.handle_chat(request)
 
-    assert response.agent_type == AgentType.CERTIFICATION.value
-    cert_agent.execute.assert_called_once()
+    assert response.agent_type == AgentType.RETRIEVAL.value
+    mock_agent.execute.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -153,18 +178,9 @@ async def test_chat_flow_safety_query(mock_db_session, mock_session_data):
         return_value=mock_session_data
     )
     orchestrator.session_manager.append_message = AsyncMock()
-
-    # Mock safety agent
-    from app.agents.base import AgentResult
-    from app.agents.types import AgentType
-
-    mock_result = AgentResult(
-        response="For medical questions, consult a physician",
-        agent_type=AgentType.SAFETY,
+    orchestrator.emergency_detector.detect_emergency = AsyncMock(
+        return_value=(True, "Seek emergency medical help immediately")
     )
-
-    safety_agent = orchestrator.agent_registry.get(AgentType.SAFETY)
-    safety_agent.execute = AsyncMock(return_value=mock_result)
 
     request = ChatRequest(
         message="Can I dive with asthma?",
@@ -172,7 +188,7 @@ async def test_chat_flow_safety_query(mock_db_session, mock_session_data):
 
     response = await orchestrator.handle_chat(request)
 
-    assert response.agent_type == AgentType.SAFETY.value
+    assert response.agent_type == "emergency"
     # Response should include safety disclaimer (from config)
     # Actual disclaimer adding depends on settings.include_safety_disclaimer
 

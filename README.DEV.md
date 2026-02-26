@@ -29,14 +29,14 @@ pnpm install
 # Set up Python backend (use Python 3.11+)
 python3.11 -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -e src/backend/
+.venv/bin/pip install -e src/backend/
 
 # Set up environment variables
 cp .env.example .env.local
 # Edit .env.local with your API keys and database URL
 
 # Run database migrations
-cd src/backend && alembic upgrade head && cd ../..
+cd src/backend && ../../.venv/bin/alembic upgrade head && cd ../..
 
 # Start Python backend (terminal 1)
 .venv/bin/uvicorn app.main:app --reload --app-dir src/backend
@@ -159,19 +159,21 @@ pnpm test:e2e:ui      # Run E2E tests with UI
 .venv/bin/uvicorn app.main:app --reload --app-dir src/backend
 
 # Testing
-cd src/backend && pytest                    # Run all tests
-cd src/backend && pytest -v                 # Verbose output
-cd src/backend && pytest tests/unit         # Unit tests only
-cd src/backend && pytest tests/integration  # Integration tests only
+export PYTHONPATH="$PWD/src/backend"
+.venv/bin/python -m pytest src/backend/tests/unit -q                                # Unit tests
+.venv/bin/python -m pytest src/backend/tests/integration -q                         # Integration tests
+.venv/bin/python -m pytest src/backend/tests/unit src/backend/tests/integration -q --import-mode=importlib  # Combined run
+.venv/bin/python -m pytest src/backend/tests -v                                     # Verbose output
 
 # Database migrations
-cd src/backend && alembic upgrade head                        # Apply migrations
-cd src/backend && alembic revision --autogenerate -m "msg"    # Create migration
-cd src/backend && alembic downgrade -1                        # Rollback one migration
+cd src/backend && ../../.venv/bin/alembic upgrade head                        # Apply migrations
+cd src/backend && ../../.venv/bin/alembic revision --autogenerate -m "msg"    # Create migration
+cd src/backend && ../../.venv/bin/alembic downgrade -1                        # Rollback one migration
 
 # Content management
 pnpm content:ingest            # Ingest content (incremental by default)
 pnpm content:ingest -- --full  # Full re-ingestion
+cd src/backend && ../../.venv/bin/python -m scripts.ingest_content --full --content-dir ../../content  # Explicit content path
 pnpm content:validate          # Validate markdown content
 pnpm content:clear             # Clear all embeddings
 pnpm benchmark:rag             # Benchmark RAG performance
@@ -222,7 +224,7 @@ LLM_TIMEOUT_MS=10000
 
 ### Multi-Agent System
 
-DovvyBuddy uses a **specialized agent architecture** powered by Google's ADK:
+DovvyBuddy uses a **specialized agent architecture** with strict Google ADK runtime orchestration:
 
 1. **Retrieval Agent** — RAG-based content retrieval
 2. **Certification Agent** — PADI/SSI certification guidance
@@ -234,6 +236,11 @@ DovvyBuddy uses a **specialized agent architecture** powered by Google's ADK:
 User Message → Orchestrator → Intent Detection → Agent Selection → 
 Response Generation → Conversation Management → User
 ```
+
+Runtime settings:
+- `ENABLE_ADK=true`
+- `ADK_MODEL=gemini-2.5-flash-lite`
+- `ENABLE_AGENT_ROUTING=true`
 
 ### RAG Pipeline
 
@@ -273,7 +280,8 @@ See [PR1-Database-Schema.md](./docs/plans/PR1-Database-Schema.md) for details.
 
 ```bash
 pnpm test           # Frontend unit tests
-cd src/backend && pytest tests/unit  # Backend unit tests
+export PYTHONPATH="$PWD/src/backend"
+.venv/bin/python -m pytest src/backend/tests/unit -q
 ```
 
 ### Integration Tests (pytest)
@@ -283,7 +291,8 @@ cd src/backend && pytest tests/unit  # Backend unit tests
 - RAG retrieval accuracy
 
 ```bash
-cd src/backend && pytest tests/integration
+export PYTHONPATH="$PWD/src/backend"
+.venv/bin/python -m pytest src/backend/tests/integration -q
 ```
 
 ### E2E Tests (Playwright)

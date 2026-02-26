@@ -6,6 +6,7 @@ Detects symptom keywords + first-person context to identify medical emergencies.
 """
 
 import logging
+import re
 from typing import List
 
 logger = logging.getLogger(__name__)
@@ -25,6 +26,7 @@ class EmergencyDetector:
     # Symptom keywords indicating potential medical emergency
     SYMPTOM_KEYWORDS: List[str] = [
         "chest pain",
+        "chest hurts",
         "can't breathe",
         "cannot breathe",
         "difficulty breathing",
@@ -61,10 +63,11 @@ class EmergencyDetector:
         "i'm",
         "i am",
         "my",
-        "me",
         "i've",
         "i have",
     ]
+
+    FIRST_PERSON_PATTERN = re.compile(r"\b(i|i'm|i am|my|i've|i have)\b")
 
     # Dive-related context indicators
     DIVE_CONTEXT_KEYWORDS: List[str] = [
@@ -105,10 +108,12 @@ class EmergencyDetector:
         if not has_symptom:
             return False
 
-        # Check for first-person context
-        has_first_person = any(
-            keyword in normalized for keyword in self.FIRST_PERSON_KEYWORDS
-        )
+        # Third-person references should not trigger personal emergency flow
+        if "my friend" in normalized or "the diver" in normalized:
+            return False
+
+        # Check for first-person context (word-boundary safe)
+        has_first_person = bool(self.FIRST_PERSON_PATTERN.search(normalized))
 
         # Check for dive context
         has_dive_context = any(

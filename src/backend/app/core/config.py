@@ -68,6 +68,8 @@ class Settings(BaseSettings):
     max_message_length: int = 2000
     session_expiry_hours: int = 24
     max_conversation_history: int = 20
+    enable_adk: bool = True
+    adk_model: str = "gemini-2.5-flash-lite"
     enable_agent_routing: bool = True
     default_agent: str = "retrieval"
     

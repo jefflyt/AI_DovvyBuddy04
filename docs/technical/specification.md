@@ -1,8 +1,8 @@
 # DovvyBuddy - Technical Specification Document
 
 **Version:** 1.1  
-**Last Updated:** January 31, 2026  
-**Status:** Active (Refactored)
+**Last Updated:** February 26, 2026  
+**Status:** Active (Current Runtime)
 
 ---
 
@@ -37,7 +37,7 @@ DovvyBuddy is an AI-powered conversational assistant that helps prospective and 
 │   Python Backend (Cloud Run)               │
 │   ┌──────────────────────────────────┐     │
 │   │  FastAPI Application             │     │
-│   │  Location: /src/backend/             │     │
+│   │  Location: /src/backend/         │     │
 │   │  - Multi-Agent System            │     │
 │   │  - Chat Orchestration            │     │
 │   │  - RAG Pipeline                  │     │
@@ -51,7 +51,7 @@ DovvyBuddy is an AI-powered conversational assistant that helps prospective and 
        ▼                ▼              ▼
 ┌─────────────┐  ┌────────────┐  ┌─────────┐
 │  Postgres   │  │   Gemini   │  │ Resend  │
-│  +pgvector  │  │  2.0-flash │  │  Email  │
+│  +pgvector  │  │ 2.5-flash- │  │  Email  │
 │   (Neon)    │  │    API     │  │   API   │
 └─────────────┘  └────────────┘  └─────────┘
 ```
@@ -63,7 +63,7 @@ DovvyBuddy is an AI-powered conversational assistant that helps prospective and 
 | **Frontend** | Next.js 14 (App Router), React, TypeScript | Server Components, type safety, optimized routing |
 | **Backend** | Python FastAPI, SQLAlchemy, Alembic | Async performance, robust ORM, type hints |
 | **Database** | PostgreSQL + pgvector (Neon) | Relational data + vector embeddings, managed service |
-| **LLM** | Gemini 2.0 Flash | Cost-effective, production-ready, 1M token context |
+| **LLM** | Gemini 2.5 Flash Lite | Cost-effective, low-latency production model |
 | **Embeddings** | text-embedding-004 | 768 dimensions, optimized for retrieval |
 | **Email** | Resend API | Developer-friendly, reliable delivery |
 | **Hosting** | Vercel (frontend) + Cloud Run (backend) | Edge network, serverless Python |
@@ -142,44 +142,31 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 
 **Key Decisions:**
 - Chunk size: 500-800 tokens (balance between context and precision)
-- Embedding model: Gemini `text-embedding-004` (1536 dimensions)
+- Embedding model: Gemini `text-embedding-004` (768 dimensions, Matryoshka-capable)
 - Retrieval: HNSW index for fast similarity search
 - Metadata: JSONB fields for filtering (content type, certification level)
 
 **Key Files:**
-- `src/lib/rag/ingestion.ts`
-- `src/lib/rag/retrieval.ts`
-- `src/lib/rag/types.ts`
+- `src/backend/app/services/rag/pipeline.py`
+- `src/backend/app/services/rag/retriever.py`
+- `src/backend/app/services/rag/repository.py`
+- `src/backend/scripts/ingest_content.py`
 
 ---
 
-### 2.3 Model Provider Abstraction (PR3)
+### 2.4 Google ADK Orchestration Runtime
 
-**Purpose:** Abstract LLM API calls to support multiple providers via environment configuration.
+**Purpose:** Use strict Google ADK routing for intent-to-agent orchestration.
 
-**Providers:**
-
-| Phase | Provider | Model | Use Case |
-|-------|----------|-------|----------|
-| **MVP (Dev)** | Groq | `llama-3.1-70b-versatile` | Fast iteration, low cost |
-| **Production V1** | Gemini | `gemini-2.0-flash` | English-language production |
-| **Production V2** | Gemini + SEA-LION | Gemini default, SEA-LION for non-English | Multilingual SEA audience |
-
-**Interface:**
-```typescript
-interface BaseModelProvider {
-  generateResponse(
-    messages: ModelMessage[],
-    config?: Partial<ModelConfig>
-  ): Promise<ModelResponse>;
-}
-```
+**Runtime Rules:**
+- `ENABLE_ADK=true` and `ENABLE_AGENT_ROUTING=true` are required.
+- `ADK_MODEL=gemini-2.5-flash-lite` is the default orchestration model.
+- No legacy keyword fallback is used for normal routing.
 
 **Key Files:**
-- `src/lib/model-provider/base-provider.ts`
-- `src/lib/model-provider/groq-provider.ts`
-- `src/lib/model-provider/gemini-provider.ts`
-- `src/lib/model-provider/factory.ts`
+- `src/backend/app/orchestration/gemini_orchestrator.py`
+- `src/backend/app/orchestration/orchestrator.py`
+- `src/backend/app/orchestration/agent_router.py`
 
 ---
 
@@ -390,7 +377,7 @@ CREATE TABLE content_embeddings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   content_path VARCHAR(500) NOT NULL,
   chunk_text TEXT NOT NULL,
-  embedding vector(1536),
+  embedding vector(768),
   metadata JSONB,
   created_at TIMESTAMP DEFAULT NOW()
 );
@@ -427,22 +414,16 @@ CREATE INDEX ON content_embeddings USING hnsw (embedding vector_cosine_ops);
 
 ## 6. External Integrations
 
-### 6.1 LLM Providers
+### 6.1 LLM and Orchestration
 
-**Groq (Development)**
-- Model: `llama-3.1-70b-versatile`
-- API: https://api.groq.com/v1/chat/completions
-- Auth: Bearer token (`GROQ_API_KEY`)
-
-**Gemini (Production V1)**
-- Model: `gemini-2.0-flash`
+**Gemini (Current Runtime)**
+- Generation model: `gemini-2.5-flash-lite`
 - API: Google Generative AI SDK
 - Auth: API key (`GEMINI_API_KEY`)
 
-**SEA-LION (Production V2)**
-- Model: TBD
-- Routing: Detect non-English input → route to SEA-LION
-- Fallback: Gemini if SEA-LION unavailable
+**Google ADK Orchestration**
+- Routing model: `ADK_MODEL` (default `gemini-2.5-flash-lite`)
+- Strict mode: `ENABLE_ADK=true`, `ENABLE_AGENT_ROUTING=true`
 
 ### 6.2 Email (Resend API)
 
@@ -455,7 +436,7 @@ CREATE INDEX ON content_embeddings USING hnsw (embedding vector_cosine_ops);
 
 - PostgreSQL 15+ with pgvector extension
 - Connection: `DATABASE_URL` environment variable
-- ORM: Drizzle (type-safe queries)
+- ORM: SQLAlchemy 2.x + Alembic migrations
 
 ---
 
@@ -474,9 +455,12 @@ See `.env.example` for full list. Critical variables:
 
 ```bash
 DATABASE_URL=postgresql://...
-LLM_PROVIDER=groq|gemini
-GROQ_API_KEY=...
 GEMINI_API_KEY=...
+DEFAULT_LLM_MODEL=gemini-2.5-flash-lite
+ENABLE_ADK=true
+ADK_MODEL=gemini-2.5-flash-lite
+EMBEDDING_MODEL=text-embedding-004
+EMBEDDING_DIMENSION=768
 RESEND_API_KEY=...
 LEAD_EMAIL_TO=partner@diveshop.com
 SESSION_SECRET=random_32char_string
@@ -486,17 +470,16 @@ SESSION_SECRET=random_32char_string
 
 ## 8. Testing Strategy
 
-### 8.1 Unit Tests (Vitest)
+### 8.1 Unit Tests
 
-- Model providers (mocked API responses)
-- Session service (CRUD operations)
-- RAG retrieval (mocked embeddings)
-- Lead validation and deduplication
+- Frontend: Vitest (`tests/`, `src/**/__tests__`)
+- Backend: pytest (`src/backend/tests/unit`)
 
-### 8.2 Integration Tests (Vitest)
+### 8.2 Integration Tests
 
-- `/api/chat` — End-to-end with mocked LLM
-- `/api/lead` — Email delivery with mocked Resend
+- Backend API and services: pytest (`src/backend/tests/integration`)
+- Verified combined backend run:
+  `PYTHONPATH=$PWD/src/backend .venv/bin/python -m pytest src/backend/tests/unit src/backend/tests/integration -q --import-mode=importlib`
 
 ### 8.3 E2E Tests (Playwright)
 

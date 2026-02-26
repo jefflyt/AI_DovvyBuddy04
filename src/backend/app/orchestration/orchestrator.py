@@ -13,9 +13,6 @@ from app.core.feature_flags import FeatureFlag, is_feature_enabled
 
 from .agent_router import AgentRouter
 from .context_builder import ContextBuilder
-from .agent_router import AgentRouter
-from .context_builder import ContextBuilder
-# ConversationManager replaced by GeminiOrchestrator
 from .gemini_orchestrator import GeminiOrchestrator
 from .emergency_detector_hybrid import EmergencyDetector
 from .mode_detector import ConversationMode
@@ -51,16 +48,20 @@ class ChatOrchestrator:
         self.agent_router = AgentRouter()
         self.response_formatter = ResponseFormatter()
         
-        # Pis_feature_enabled(FeatureFlag.CONVERSATION_FOLLOWUP)
-        if settings.feature_conversation_followup_enabled:
-            self.emergency_detector = EmergencyDetector()
-            # Initialize Gemini Orchestrator for routing
-            self.orchestrator = GeminiOrchestrator()
-            logger.info("Conversation continuity enabled with GeminiOrchestrator")
-        else:
-            self.emergency_detector = None
-            self.orchestrator = None
-            logger.info("Conversation continuity disabled")
+        self.emergency_detector = EmergencyDetector()
+
+        if not settings.enable_adk:
+            raise RuntimeError(
+                "Google ADK orchestration is required. Set ENABLE_ADK=true."
+            )
+
+        if not settings.enable_agent_routing:
+            raise RuntimeError(
+                "Google ADK orchestration is required. Set ENABLE_AGENT_ROUTING=true."
+            )
+
+        self.orchestrator = GeminiOrchestrator()
+        logger.info(f"Google ADK orchestration enabled with model={settings.adk_model}")
 
     @staticmethod
     def _intent_to_mode(intent: IntentType) -> ConversationMode:
@@ -161,55 +162,37 @@ class ChatOrchestrator:
         detected_intent = None
         session_state = None
         
-        if is_feature_enabled(FeatureFlag.CONVERSATION_FOLLOWUP) and self.orchestrator:
-            try:
-                # Parse session state from request
-                if request.session_state:
-                    session_state = SessionState.from_dict(request.session_state)
-                
-                # Route request using Gemini Function Calling
-                route_result = await self.orchestrator.route_request(
-                    message=request.message,
-                    history=session.conversation_history,
-                    state=session_state,
-                )
-                
-                target_agent = route_result.get("target_agent")
-                parameters = route_result.get("parameters", {})
-                
-                logger.info(f"Gemini routed to: {target_agent} with params: {parameters}")
-                
-                # Map Gemini Agent -> Conversation Mode
-                if target_agent == "trip_planner":
-                    mode = ConversationMode.TRIP
-                    detected_intent = IntentType.DIVE_PLANNING.value
-                    
-                    # Extract location state if present
-                    if "location" in parameters and parameters["location"]:
-                        state_updates["location_known"] = True
-                        
-                else: 
-                    # Default / knowledge_base
-                    mode = ConversationMode.GENERAL
-                    detected_intent = IntentType.INFO_LOOKUP.value
-                
-            except Exception:
-                logger.error("Orchestrator routing failed", exc_info=True)
-                # Fallback to GENERAL mode on error
-                mode = ConversationMode.GENERAL
+        if not self.orchestrator:
+            raise RuntimeError("Google ADK orchestrator is unavailable")
+
+        # Parse session state from request
+        if request.session_state:
+            session_state = SessionState.from_dict(request.session_state)
+
+        # Route request using Gemini Function Calling (ADK pattern)
+        route_result = await self.orchestrator.route_request(
+            message=request.message,
+            history=session.conversation_history,
+            state=session_state,
+        )
+
+        target_agent = route_result.get("target_agent")
+        parameters = route_result.get("parameters", {})
+
+        logger.info(f"Gemini routed to: {target_agent} with params: {parameters}")
+
+        # Map Gemini Agent -> Conversation Mode
+        if target_agent == "trip_planner":
+            mode = ConversationMode.TRIP
+            detected_intent = IntentType.DIVE_PLANNING.value
+
+            # Extract location state if present
+            if "location" in parameters and parameters["location"]:
+                state_updates["location_known"] = True
         else:
-            # Orchestrator disabled - use keyword-based detection as fallback
-            logger.info("Orchestrator disabled, using mode fallback logic")
-            # Simple keyword-based fallback
-            msg_lower = request.message.lower()
-            if any(word in msg_lower for word in ["cert", "certification", "padi", "ssi", "course"]):
-                mode = ConversationMode.CERTIFICATION
-            elif any(word in msg_lower for word in ["trip", "dive site", "destination", "where to dive"]):
-                mode = ConversationMode.TRIP
-            elif any(word in msg_lower for word in ["medical", "injury", "pain", "symptom", "hurt"]):
-                mode = ConversationMode.SAFETY
-            else:
-                mode = ConversationMode.GENERAL
+            # Default / knowledge_base
+            mode = ConversationMode.GENERAL
+            detected_intent = IntentType.INFO_LOOKUP.value
 
         # Select agent
         agent = self.agent_router.select_agent(mode)

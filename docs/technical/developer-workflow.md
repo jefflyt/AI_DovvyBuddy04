@@ -458,7 +458,7 @@ cd ..
 | Test failures | `python3 -m pytest tests/unit/ -v` |
 | Build failures | `pnpm clean && pnpm install` |
 | Validation errors | Check frontmatter format in `.md` files |
-| Slow ingestion | Use `--incremental` flag |
+| Slow ingestion | Incremental mode is default; run normal ingest and avoid `--full` unless needed |
 
 ---
 
