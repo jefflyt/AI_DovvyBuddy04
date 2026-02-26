@@ -3,41 +3,41 @@
  * Configures test environment before tests run
  */
 
-import { beforeAll } from 'vitest';
+import { beforeAll } from 'vitest'
 
 // Mock localStorage for jsdom environment
 beforeAll(() => {
   // jsdom doesn't implement localStorage properly in some versions
   // Create a mock implementation
   const localStorageMock = (() => {
-    let store: Record<string, string> = {};
+    let store: Record<string, string> = {}
     return {
       getItem: (key: string) => store[key] || null,
       setItem: (key: string, value: string) => {
-        store[key] = value.toString();
+        store[key] = value.toString()
       },
       removeItem: (key: string) => {
-        delete store[key];
+        delete store[key]
       },
       clear: () => {
-        store = {};
+        store = {}
       },
       get length() {
-        return Object.keys(store).length;
+        return Object.keys(store).length
       },
       key: (index: number) => {
-        const keys = Object.keys(store);
-        return keys[index] || null;
+        const keys = Object.keys(store)
+        return keys[index] || null
       },
-    };
-  })();
+    }
+  })()
 
   // Try to set localStorage, and if it fails (SecurityError), force it
   try {
     if (typeof window !== 'undefined') {
       // Test if localStorage is accessible
-      window.localStorage.setItem('test', 'test');
-      window.localStorage.removeItem('test');
+      window.localStorage.setItem('test', 'test')
+      window.localStorage.removeItem('test')
     }
   } catch (e) {
     // localStorage not available or throws SecurityError
@@ -47,7 +47,7 @@ beforeAll(() => {
         value: localStorageMock,
         writable: true,
         configurable: true,
-      });
+      })
     }
   }
-});
+})

@@ -67,38 +67,44 @@ Use the following as a descriptive guide (flexible interpretation allowed):
 
 ```markdown
 ---
-doc_type: "dive_site"
-site_id: "unique-identifier"
-title: "Site Name"
-destination: "Destination, Country"
-min_certification: "OW"
-difficulty: "beginner"
+doc_type: 'dive_site'
+site_id: 'unique-identifier'
+title: 'Site Name'
+destination: 'Destination, Country'
+min_certification: 'OW'
+difficulty: 'beginner'
 depth_range_m: [10, 30]
-tags: ["reef", "wreck", "drift", etc.]
-keywords: ["coral", "marine life", etc.]
-last_updated: "YYYY-MM-DD"
-data_quality: "compiled"
-sources: ["URL1", "URL2"]
+tags: ['reef', 'wreck', 'drift', etc.]
+keywords: ['coral', 'marine life', etc.]
+last_updated: 'YYYY-MM-DD'
+data_quality: 'compiled'
+sources: ['URL1', 'URL2']
 ---
 
 # Site Name
 
 ## Overview
+
 Brief introduction to the site (1-2 paragraphs).
 
 ## Marine Life
+
 Notable species and ecosystems.
 
 ## Dive Profile
+
 Typical depth, current conditions, visibility.
 
 ## Best For
+
 Who this site is suitable for (beginners, photographers, etc.).
 
 ## Safety Notes
+
 Important safety considerations and disclaimers.
 
 ## Access
+
 How to reach the site (boat, shore, etc.).
 ```
 

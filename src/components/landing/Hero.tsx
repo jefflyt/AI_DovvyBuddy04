@@ -1,14 +1,14 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { ArrowRight, AlertCircle } from 'lucide-react';
-import { ChatPreview } from './ChatPreview';
+import Link from 'next/link'
+import { ArrowRight, AlertCircle } from 'lucide-react'
+import { ChatPreview } from './ChatPreview'
 
 export const Hero = () => {
   const scrollToPreview = () => {
-    const preview = document.getElementById('chat-preview');
-    preview?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  };
+    const preview = document.getElementById('chat-preview')
+    preview?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
 
   return (
     <section className="pt-20 pb-16 md:pt-32 md:pb-24">
@@ -21,7 +21,8 @@ export const Hero = () => {
                 Your AI Diving Companion
               </h1>
               <p className="text-xl md:text-2xl text-gray-700 mb-8 max-w-xl leading-relaxed">
-                Get judgment-free guidance on certifications, dive sites, and trip planning—backed by official sources.
+                Get judgment-free guidance on certifications, dive sites, and
+                trip planning—backed by official sources.
               </p>
 
               {/* CTAs */}
@@ -45,7 +46,8 @@ export const Hero = () => {
               <div className="flex gap-3 items-start text-sm text-gray-600 max-w-xl">
                 <AlertCircle className="w-5 h-5 flex-shrink-0 text-gray-400 mt-0.5" />
                 <p>
-                  DovvyBuddy provides research and guidance. Always consult certified instructors and medical professionals before diving.
+                  DovvyBuddy provides research and guidance. Always consult
+                  certified instructors and medical professionals before diving.
                 </p>
               </div>
             </div>
@@ -58,5 +60,5 @@ export const Hero = () => {
         </div>
       </div>
     </section>
-  );
-};
+  )
+}

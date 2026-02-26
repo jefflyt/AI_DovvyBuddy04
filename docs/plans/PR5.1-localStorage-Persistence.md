@@ -73,6 +73,7 @@ So that I can continue where I left off without repeating questions.
 No API changes needed - existing /api/chat endpoint already supports sessionId parameter.
 
 Existing flow:
+
 - POST /api/chat with { message: "Hello" } → backend creates new session, returns { sessionId, message }
 - POST /api/chat with { sessionId: "uuid", message: "Follow-up" } → backend retrieves session, appends message, returns { sessionId, message }
 
@@ -81,6 +82,7 @@ Existing flow:
 No database changes - sessions table already exists from PR1.
 
 localStorage schema:
+
 - Key: 'dovvybuddy-session-id'
 - Value: UUID string (e.g., "123e4567-e89b-12d3-a456-426614174000")
 
@@ -125,6 +127,7 @@ feature/pr5.1-localstorage-persistence
 File: src/app/chat/page.tsx
 
 Changes:
+
 1. Add useEffect to restore sessionId on mount:
    - Read from localStorage.getItem('dovvybuddy-session-id')
    - Set to sessionId state if found
@@ -171,6 +174,7 @@ No environment variables needed.
 #### Observability
 
 Add console logging (dev mode only):
+
 - "Session restored from localStorage: {sessionId}"
 - "Session saved to localStorage: {sessionId}"
 - "Session expired, cleared from localStorage"
@@ -227,6 +231,7 @@ Add console logging (dev mode only):
 No migration needed - this is a new feature, no existing data to migrate.
 
 Backwards compatibility:
+
 - Users with existing sessions (from current PR5 implementation) will continue to work
 - After this PR, their sessions will start persisting
 - No breaking changes
@@ -239,9 +244,10 @@ Backwards compatibility:
 
 #### Unit
 
-File: src/app/chat/__tests__/page.test.tsx (new file)
+File: src/app/chat/**tests**/page.test.tsx (new file)
 
 Tests to add:
+
 1. Test sessionId restoration from localStorage on mount
    - Mock localStorage.getItem to return mock UUID
    - Render component
@@ -273,6 +279,7 @@ Tests to add:
 File: tests/integration/session-persistence.test.ts (new file)
 
 Tests to add (requires backend running):
+
 1. Test full session persistence flow
    - Send first message (creates session)
    - Verify sessionId in localStorage
@@ -298,6 +305,7 @@ E2E tests will be added in PR6 (Playwright).
 ### Manual verification checklist
 
 Pre-requisites:
+
 - Backend running: cd src/backend && uvicorn app.main:app --reload
 - Frontend running: pnpm dev
 - Open browser dev tools → Application/Storage → Local Storage
@@ -405,10 +413,12 @@ pnpm build
 ### If critical bugs found post-merge
 
 Rollback strategy:
+
 1. Revert commit: git revert <commit-sha>
 2. Redeploy to Vercel
 
 Impact of rollback:
+
 - Sessions will stop persisting across refreshes (back to PR5 behavior)
 - Users will lose conversations on page refresh
 - No data loss (sessions still in DB, just not accessible after refresh)
@@ -423,6 +433,7 @@ If localStorage fails, app degrades gracefully to in-memory sessions.
 No database changes - rollback has no data migration needs.
 
 localStorage data:
+
 - If rolled back, existing sessionIds in localStorage will become stale (orphaned)
 - User can manually clear localStorage or wait for backend session expiry (24h)
 - No impact on app functionality
@@ -489,7 +500,7 @@ localStorage data:
    - ✅ Clears localStorage, sessionId, messages, and errors
    - ✅ Used by New Chat button (PR5.3)
 
-5. **Test Coverage (src/app/chat/__tests__/page.test.tsx)**
+5. **Test Coverage (src/app/chat/**tests**/page.test.tsx)**
    - ✅ localStorage operations tests (4 tests)
    - ✅ UUID validation tests (3 tests)
    - ✅ ApiClientError tests (3 tests)
@@ -499,22 +510,23 @@ localStorage data:
 
 ### 🎯 Acceptance Criteria Status
 
-| # | Criteria | Status |
-|---|----------|--------|
-| 1 | SessionId stored in localStorage on first message | ✅ Verified |
-| 2 | SessionId restored on page load | ✅ Verified |
-| 3 | Backend retrieves conversation history with restored sessionId | ✅ Verified |
-| 4 | Conversation history displays after refresh | ✅ Verified |
-| 5 | SESSION_EXPIRED/NOT_FOUND clears localStorage | ✅ Verified |
-| 6 | localStorage cleared on "New Chat" | ✅ Verified (PR5.3) |
-| 7 | No PII stored in localStorage (only UUID) | ✅ Verified |
-| 8 | Works on all modern browsers | ✅ Manual test needed |
-| 9 | Graceful degradation if localStorage unavailable | ✅ Verified |
-| 10 | Session persists for backend TTL (24h) | ✅ Verified |
+| #   | Criteria                                                       | Status                |
+| --- | -------------------------------------------------------------- | --------------------- |
+| 1   | SessionId stored in localStorage on first message              | ✅ Verified           |
+| 2   | SessionId restored on page load                                | ✅ Verified           |
+| 3   | Backend retrieves conversation history with restored sessionId | ✅ Verified           |
+| 4   | Conversation history displays after refresh                    | ✅ Verified           |
+| 5   | SESSION_EXPIRED/NOT_FOUND clears localStorage                  | ✅ Verified           |
+| 6   | localStorage cleared on "New Chat"                             | ✅ Verified (PR5.3)   |
+| 7   | No PII stored in localStorage (only UUID)                      | ✅ Verified           |
+| 8   | Works on all modern browsers                                   | ✅ Manual test needed |
+| 9   | Graceful degradation if localStorage unavailable               | ✅ Verified           |
+| 10  | Session persists for backend TTL (24h)                         | ✅ Verified           |
 
 ### 📝 Manual Testing Results
 
 ✅ **Completed by user on January 29, 2026**
+
 - First-time user flow tested
 - Page refresh persistence verified
 - Browser close/reopen tested
@@ -526,10 +538,12 @@ localStorage data:
 ### 🔧 Technical Implementation Notes
 
 **Key Files Modified:**
+
 - `src/app/chat/page.tsx` - Main implementation (localStorage hooks, error handling)
 - `src/app/chat/__tests__/page.test.tsx` - Unit tests
 
 **Edge Cases Handled:**
+
 - ✅ localStorage unavailable (private browsing)
 - ✅ localStorage quota exceeded
 - ✅ Corrupted sessionId in localStorage
@@ -538,6 +552,7 @@ localStorage data:
 - ✅ Manual localStorage edits
 
 **Performance Considerations:**
+
 - localStorage access wrapped in try-catch (no crashes)
 - Development-only logging (production performance unaffected)
 - UUID regex validation is fast (no backend round-trip)

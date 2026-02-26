@@ -25,6 +25,7 @@ The application has both frontend (landing page, chat UI) and backend (LLM orche
 Use **Next.js 14 with App Router** as the web framework, deployed on **Vercel**.
 
 **Key Components:**
+
 - **Framework:** Next.js 14 (App Router)
 - **Language:** TypeScript (strict mode)
 - **Hosting:** Vercel (serverless functions + edge network)
@@ -73,11 +74,13 @@ Use **Next.js 14 with App Router** as the web framework, deployed on **Vercel**.
 **Description:** React SPA for frontend, Express.js API server, deployed separately
 
 **Pros:**
+
 - Full control over backend deployment
 - Well-understood architecture
 - No framework coupling
 
 **Cons:**
+
 - Two separate deployments to manage
 - Requires CORS configuration
 - More complex local development setup
@@ -92,11 +95,13 @@ Use **Next.js 14 with App Router** as the web framework, deployed on **Vercel**.
 **Description:** Full-stack React framework with nested routing and Web Fetch API
 
 **Pros:**
+
 - Excellent developer experience
 - Progressive enhancement built-in
 - Strong data loading conventions
 
 **Cons:**
+
 - Smaller ecosystem than Next.js
 - Less optimized for Vercel deployment
 - Fewer learning resources
@@ -111,11 +116,13 @@ Use **Next.js 14 with App Router** as the web framework, deployed on **Vercel**.
 **Description:** Full-stack framework based on Svelte compiler
 
 **Pros:**
+
 - Smaller bundle sizes
 - Simpler reactivity model
 - Good performance
 
 **Cons:**
+
 - Smaller ecosystem (fewer libraries)
 - Less TypeScript maturity
 - Fewer developers familiar with Svelte
@@ -130,11 +137,13 @@ Use **Next.js 14 with App Router** as the web framework, deployed on **Vercel**.
 **Description:** Static-first framework with partial hydration
 
 **Pros:**
+
 - Excellent for content-heavy sites
 - Zero JS by default
 - Framework-agnostic components
 
 **Cons:**
+
 - Primarily static site generator
 - Less suited for dynamic chat application
 - API routes less mature
@@ -156,16 +165,19 @@ Use **Next.js 14 with App Router** as the web framework, deployed on **Vercel**.
 ## Notes
 
 **Migration Path (if needed):**
+
 - Next.js provides export to static HTML if moving away from Vercel
 - API routes can be extracted to standalone Express/Fastify server
 - Frontend can be separated to pure React SPA if needed
 
 **Review Date:**
+
 - After V1 launch (3-6 months) — Evaluate if Vercel costs scale appropriately
 - If adding Telegram bot (PR7) — Consider if agent service extraction affects this decision
 
 ---
 
 **Related ADRs:**
+
 - ADR-0002: PostgreSQL + pgvector for Database
 - ADR-0003: LLM Provider Strategy (Groq/Gemini/SEA-LION)

@@ -5,9 +5,11 @@ This directory contains reusable React components for the DovvyBuddy landing pag
 ## Components
 
 ### Hero
+
 The above-the-fold hero section with headline, subheadline, and primary CTA.
 
 **Props:**
+
 - `headline` (string): Main headline text
 - `subheadline` (string): Supporting text below headline
 - `ctaText` (string): Text for the call-to-action button
@@ -15,6 +17,7 @@ The above-the-fold hero section with headline, subheadline, and primary CTA.
 - `onCtaClick` (function, optional): Callback for analytics tracking
 
 **Usage:**
+
 ```tsx
 <Hero
   headline="Your AI Diving Companion"
@@ -26,12 +29,15 @@ The above-the-fold hero section with headline, subheadline, and primary CTA.
 ```
 
 ### ValueProposition
+
 Three-column feature highlights showing key benefits.
 
 **Props:**
+
 - `features` (array): Array of feature objects with `icon`, `title`, and `description`
 
 **Usage:**
+
 ```tsx
 <ValueProposition
   features={[
@@ -46,12 +52,15 @@ Three-column feature highlights showing key benefits.
 ```
 
 ### HowItWorks
+
 Step-by-step explanation of how to use the product.
 
 **Props:**
+
 - `steps` (array): Array of step objects with `number`, `title`, and `description`
 
 **Usage:**
+
 ```tsx
 <HowItWorks
   steps={[
@@ -66,13 +75,16 @@ Step-by-step explanation of how to use the product.
 ```
 
 ### SocialProof
+
 Trust indicators and social proof section.
 
 **Props:**
+
 - `title` (string, optional): Main heading (default: "Built by Divers, for Divers")
 - `subtitle` (string, optional): Supporting text
 
 **Usage:**
+
 ```tsx
 <SocialProof />
 // or with custom text:
@@ -83,11 +95,13 @@ Trust indicators and social proof section.
 ```
 
 ### Footer
+
 Site footer with links and copyright information.
 
 **Props:** None (uses current year automatically)
 
 **Usage:**
+
 ```tsx
 <Footer />
 ```
@@ -106,6 +120,7 @@ See `tailwind.config.ts` for the complete design system.
 ## Responsive Design
 
 All components are mobile-responsive:
+
 - **Mobile (< 768px):** Single column layout, smaller text, stacked elements
 - **Tablet (768-1024px):** Two-column layout where appropriate
 - **Desktop (> 1024px):** Full multi-column layout
@@ -113,6 +128,7 @@ All components are mobile-responsive:
 ## Accessibility
 
 Components follow accessibility best practices:
+
 - Semantic HTML (header, section, footer)
 - ARIA labels for icons
 - Keyboard navigation support
@@ -122,6 +138,7 @@ Components follow accessibility best practices:
 ## Testing
 
 Landing page components are tested via:
+
 - E2E smoke test (`tests/e2e/smoke.spec.ts`)
 - Visual inspection on multiple viewports
 - Lighthouse accessibility audit
@@ -129,6 +146,7 @@ Landing page components are tested via:
 ## Future Enhancements
 
 Potential improvements for V1.1+:
+
 - Testimonials component (requires real user testimonials)
 - FAQ accordion component
 - Partners/logos section (when partnerships established)

@@ -1,13 +1,13 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { LeadFormData } from './LeadCaptureModal';
+import { useState } from 'react'
+import { LeadFormData } from './LeadCaptureModal'
 
 interface TrainingLeadFormProps {
-  onSubmit: (data: LeadFormData) => Promise<void>;
-  onCancel: () => void;
-  isSubmitting: boolean;
-  error: string | null;
+  onSubmit: (data: LeadFormData) => Promise<void>
+  onCancel: () => void
+  isSubmitting: boolean
+  error: string | null
 }
 
 export function TrainingLeadForm({
@@ -24,65 +24,74 @@ export function TrainingLeadForm({
     certificationLevel: 'None',
     location: '',
     message: '',
-  });
+  })
 
   const [validationErrors, setValidationErrors] = useState<{
-    name?: string;
-    email?: string;
-  }>({});
+    name?: string
+    email?: string
+  }>({})
 
   const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
 
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >
   ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+
     // Clear validation error when user starts typing
     if (validationErrors[name as keyof typeof validationErrors]) {
-      setValidationErrors((prev) => ({ ...prev, [name]: undefined }));
+      setValidationErrors((prev) => ({ ...prev, [name]: undefined }))
     }
-  };
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     // Client-side validation
-    const errors: { name?: string; email?: string } = {};
+    const errors: { name?: string; email?: string } = {}
 
     if (!formData.name?.trim()) {
-      errors.name = 'Name is required';
+      errors.name = 'Name is required'
     }
 
     if (!formData.email?.trim()) {
-      errors.email = 'Email is required';
+      errors.email = 'Email is required'
     } else if (!validateEmail(formData.email)) {
-      errors.email = 'Please enter a valid email address';
+      errors.email = 'Please enter a valid email address'
     }
 
     if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
-      return;
+      setValidationErrors(errors)
+      return
     }
 
     // Submit form
-    await onSubmit(formData);
-  };
+    await onSubmit(formData)
+  }
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '1.5rem' }}>
+      <h2
+        style={{
+          fontSize: '1.5rem',
+          fontWeight: '600',
+          marginBottom: '1.5rem',
+        }}
+      >
         Get Certified
       </h2>
 
-      <p style={{ fontSize: '0.875rem', color: '#666', marginBottom: '1.5rem' }}>
-        Tell us about your certification goals and we&apos;ll connect you with a qualified dive shop.
+      <p
+        style={{ fontSize: '0.875rem', color: '#666', marginBottom: '1.5rem' }}
+      >
+        Tell us about your certification goals and we&apos;ll connect you with a
+        qualified dive shop.
       </p>
 
       {/* Error message */}
@@ -132,7 +141,13 @@ export function TrainingLeadForm({
           }}
         />
         {validationErrors.name && (
-          <p style={{ fontSize: '0.75rem', color: '#cc0000', marginTop: '0.25rem' }}>
+          <p
+            style={{
+              fontSize: '0.75rem',
+              color: '#cc0000',
+              marginTop: '0.25rem',
+            }}
+          >
             {validationErrors.name}
           </p>
         )}
@@ -168,7 +183,13 @@ export function TrainingLeadForm({
           }}
         />
         {validationErrors.email && (
-          <p style={{ fontSize: '0.75rem', color: '#cc0000', marginTop: '0.25rem' }}>
+          <p
+            style={{
+              fontSize: '0.75rem',
+              color: '#cc0000',
+              marginTop: '0.25rem',
+            }}
+          >
             {validationErrors.email}
           </p>
         )}
@@ -343,7 +364,9 @@ export function TrainingLeadForm({
       </div>
 
       {/* Action buttons */}
-      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+      <div
+        style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}
+      >
         <button
           type="button"
           onClick={onCancel}
@@ -408,5 +431,5 @@ export function TrainingLeadForm({
         }
       `}</style>
     </form>
-  );
+  )
 }

@@ -19,9 +19,11 @@ source_doc: advanced-open-water.md
 ---
 
 # AOW_Overview_and_Privileges
+
 **PADI Advanced Open Water Diver Certification**
 
 ## Certification Overview
+
 The PADI Advanced Open Water Diver course builds on the foundational skills from the Open Water certification. It focuses on practical diving experience rather than extensive theory and expands diving capabilities through adventure-based learning.
 
 Successful completion of the course increases the maximum recommended depth from 18 meters (60 feet) to 30 meters (100 feet) and provides access to more challenging dive sites and continuing education opportunities.
@@ -29,7 +31,9 @@ Successful completion of the course increases the maximum recommended depth from
 ---
 
 ## Who This Certification Is For
+
 The Advanced Open Water Diver certification is designed for:
+
 - Certified Open Water Divers seeking to expand their diving experience
 - Divers who want to increase depth limits and confidence underwater
 - Divers interested in exploring different types of diving through supervised adventure dives
@@ -39,6 +43,7 @@ A minimum Open Water Diver certification (or equivalent) is required.
 ---
 
 ## Certification Status and Validity
+
 - The Advanced Open Water Diver certification is **lifetime valid**
 - No renewal or recertification is required
 - The certification is **globally recognized** by dive operators, resorts, and liveaboards
@@ -49,7 +54,9 @@ Dive operators may require a refresher or checkout dive if a diver has not been 
 ---
 
 ## Diving Privileges After Certification
+
 After certification, an Advanced Open Water Diver may:
+
 - Dive with a certified buddy to increased depth limits
 - Access dive sites that require an advanced-level certification
 - Participate in liveaboard diving trips where AOW is a minimum requirement
@@ -59,7 +66,9 @@ After certification, an Advanced Open Water Diver may:
 ---
 
 ## Maximum Depth Limits
+
 Certified Advanced Open Water Divers are trained to the following maximum depths:
+
 - **Adults (15+)**: 30 meters / 100 feet
 - **Junior Advanced Open Water Diver (ages 12–14)**: 21 meters / 70 feet with a certified adult
 
@@ -68,7 +77,9 @@ To dive deeper than 30 meters, additional training such as the Deep Diver specia
 ---
 
 ## Junior Advanced Open Water Diver Restrictions
+
 Junior Advanced Open Water Diver certifications apply to divers aged **12–14** and include:
+
 - Reduced maximum depth limits
 - Requirement to dive with a certified adult
 - Automatic upgrade to full Advanced Open Water Diver certification at age 15
@@ -76,7 +87,9 @@ Junior Advanced Open Water Diver certifications apply to divers aged **12–14**
 ---
 
 ## Recognition and Progression
+
 The Advanced Open Water Diver certification:
+
 - Is recognized worldwide by dive operators
 - Serves as a prerequisite for Rescue Diver training
 - Allows credit of adventure dives toward corresponding specialty certifications
@@ -85,6 +98,7 @@ The Advanced Open Water Diver certification:
 ---
 
 ## Common Clarifications
+
 - The certification emphasizes experience-building rather than academic theory
 - Depth limits are based on training and experience gained during the course
 - Additional training is required for technical, overhead, or professional diving activities
@@ -92,4 +106,5 @@ The Advanced Open Water Diver certification:
 ---
 
 ## Summary
+
 The PADI Advanced Open Water Diver certification is an intermediate recreational scuba certification that expands depth limits, builds confidence through adventure dives, and opens access to advanced dive sites and continuing education. It is globally recognized, lifetime valid, and a key step in recreational and professional diver progression.

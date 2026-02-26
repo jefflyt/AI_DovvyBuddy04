@@ -140,15 +140,18 @@ AGENT_TIMEOUT_MS=5000
 ```
 
 **Removed environment variables:**
+
 - `LLM_PROVIDER` (replaced by ADK)
 - `GROQ_API_KEY` (replaced by GCP credentials)
 - `GROQ_MODEL` (replaced by ADK_MODEL)
 
 **CI/CD:**
+
 - Add GCP service account credentials to Vercel environment variables
 - Existing `pnpm typecheck && pnpm lint && pnpm test && pnpm build` covers new code
 
 **Dependencies to add:**
+
 - `@google-cloud/genkit`
 - `@google-cloud/genkit-ai-googleai`
 - `@genkit-ai/ai` (core)
@@ -166,6 +169,7 @@ Install Google ADK SDK, configure GCP authentication, create base agent abstract
 **Scope**
 
 **In scope:**
+
 - Install ADK SDK packages
 - Configure GCP project and service account
 - Create `src/lib/agent/` module with base types
@@ -173,6 +177,7 @@ Install Google ADK SDK, configure GCP authentication, create base agent abstract
 - Update `.env.example`
 
 **Out of scope:**
+
 - Agent implementations (Step 2)
 - Orchestration changes (Step 4)
 - Removing old providers (Step 5)
@@ -180,6 +185,7 @@ Install Google ADK SDK, configure GCP authentication, create base agent abstract
 **Backend Changes**
 
 1. **Dependencies** (`package.json`):
+
    ```json
    "@google-cloud/genkit": "^0.5.0",
    "@google-cloud/genkit-ai-googleai": "^0.5.0"
@@ -187,77 +193,80 @@ Install Google ADK SDK, configure GCP authentication, create base agent abstract
 
 2. **New files:**
    - `src/lib/agent/types.ts`:
+
      ```typescript
      export interface Agent {
-       name: string;
-       description: string;
-       tools?: Tool[];
-       generate(input: AgentInput): Promise<AgentOutput>;
+       name: string
+       description: string
+       tools?: Tool[]
+       generate(input: AgentInput): Promise<AgentOutput>
      }
 
      export interface Tool {
-       name: string;
-       description: string;
-       parameters: Record<string, any>;
-       execute(params: any): Promise<any>;
+       name: string
+       description: string
+       parameters: Record<string, any>
+       execute(params: any): Promise<any>
      }
 
      export interface AgentInput {
-       messages: Array<{ role: string; content: string }>;
-       context?: string;
-       sessionId?: string;
+       messages: Array<{ role: string; content: string }>
+       context?: string
+       sessionId?: string
      }
 
      export interface AgentOutput {
-       content: string;
-       toolCalls?: Array<{ tool: string; params: any; result: any }>;
-       metadata?: { tokensUsed?: number; model?: string };
+       content: string
+       toolCalls?: Array<{ tool: string; params: any; result: any }>
+       metadata?: { tokensUsed?: number; model?: string }
      }
      ```
 
    - `src/lib/agent/base-agent.ts`:
+
      ```typescript
-     import { Agent, AgentInput, AgentOutput } from './types';
-     
+     import { Agent, AgentInput, AgentOutput } from './types'
+
      export abstract class BaseAgent implements Agent {
        constructor(
          public name: string,
          public description: string,
          public tools: Tool[] = []
        ) {}
-       
-       abstract generate(input: AgentInput): Promise<AgentOutput>;
+
+       abstract generate(input: AgentInput): Promise<AgentOutput>
      }
      ```
 
    - `src/lib/agent/config.ts`:
+
      ```typescript
-     import { genkit } from '@google-cloud/genkit';
-     import { googleAI } from '@genkit-ai/googleai';
-     
-     let genkitInstance: any = null;
-     
+     import { genkit } from '@google-cloud/genkit'
+     import { googleAI } from '@genkit-ai/googleai'
+
+     let genkitInstance: any = null
+
      export function getGenkit() {
        if (!genkitInstance) {
          if (!process.env.GOOGLE_CLOUD_PROJECT) {
-           console.warn('GOOGLE_CLOUD_PROJECT not set; ADK disabled');
-           return null;
+           console.warn('GOOGLE_CLOUD_PROJECT not set; ADK disabled')
+           return null
          }
-         
+
          genkitInstance = genkit({
            plugins: [googleAI()],
            model: process.env.ADK_MODEL || 'gemini-2.0-flash',
-         });
+         })
        }
-       return genkitInstance;
+       return genkitInstance
      }
      ```
 
    - `src/lib/agent/index.ts`:
      ```typescript
-     export * from './types';
-     export * from './base-agent';
-     export * from './config';
+     export * from './types'
+     export * from './base-agent'
+     export * from './config'
      ```
 
 3. **Configuration:**
@@ -268,6 +277,7 @@ Install Google ADK SDK, configure GCP authentication, create base agent abstract
 **Data Changes:** None
 
 **Verification:**
+
 - `pnpm install` succeeds
 - `pnpm typecheck` passes
 - `pnpm build` succeeds
@@ -286,6 +296,7 @@ Create domain-specific agents (Retrieval, Certification, Trip, Safety) with tool
 **Scope**
 
 **In scope:**
+
 - Retrieval agent (vector search)
 - Certification agent (cert queries)
 - Trip agent (destination queries)
@@ -294,203 +305,222 @@ Create domain-specific agents (Retrieval, Certification, Trip, Safety) with tool
 - Agent registry
 
 **Out of scope:**
+
 - Real tool implementations (Step 3)
 - Orchestration integration (Step 4)
 
 **Backend Changes**
 
-1. **Tool stubs** (`src/lib/agent/tools/`):
+1.  **Tool stubs** (`src/lib/agent/tools/`):
+    - `vector-search-tool.ts`:
 
-   - `vector-search-tool.ts`:
-     ```typescript
-     import { Tool } from '../types';
-     
-     export const vectorSearchTool: Tool = {
-       name: 'search_knowledge_base',
-       description: 'Search the diving knowledge base for relevant information',
-       parameters: {
-         query: { type: 'string', description: 'Search query' },
-         top_k: { type: 'number', description: 'Number of results', default: 5 },
-       },
-       async execute(params: { query: string; top_k?: number }) {
-         // Mock implementation for Step 2
-         console.log('Mock vector search:', params);
-         return { chunks: [] };
-       },
-     };
-     ```
+      ```typescript
+      import { Tool } from '../types'
 
-   - `session-lookup-tool.ts`:
-     ```typescript
-     export const sessionLookupTool: Tool = {
-       name: 'get_conversation_history',
-       description: 'Retrieve recent conversation history',
-       parameters: {
-         sessionId: { type: 'string' },
-         last_n: { type: 'number', default: 10 },
-       },
-       async execute(params: { sessionId: string; last_n?: number }) {
-         console.log('Mock session lookup:', params);
-         return { history: [] };
-       },
-     };
-     ```
+      export const vectorSearchTool: Tool = {
+        name: 'search_knowledge_base',
+        description:
+          'Search the diving knowledge base for relevant information',
+        parameters: {
+          query: { type: 'string', description: 'Search query' },
+          top_k: {
+            type: 'number',
+            description: 'Number of results',
+            default: 5,
+          },
+        },
+        async execute(params: { query: string; top_k?: number }) {
+          // Mock implementation for Step 2
+          console.log('Mock vector search:', params)
+          return { chunks: [] }
+        },
+      }
+      ```
 
-   - `safety-check-tool.ts`:
-     ```typescript
-     export const safetyCheckTool: Tool = {
-       name: 'validate_safety',
-       description: 'Check response for required safety disclaimers',
-       parameters: {
-         response: { type: 'string' },
-         query: { type: 'string' },
-       },
-       async execute(params: { response: string; query: string }) {
-         console.log('Mock safety check:', params);
-         return { safe: true, warnings: [] };
-       },
-     };
-     ```
+    - `session-lookup-tool.ts`:
 
-2. **Agent implementations:**
+      ```typescript
+      export const sessionLookupTool: Tool = {
+        name: 'get_conversation_history',
+        description: 'Retrieve recent conversation history',
+        parameters: {
+          sessionId: { type: 'string' },
+          last_n: { type: 'number', default: 10 },
+        },
+        async execute(params: { sessionId: string; last_n?: number }) {
+          console.log('Mock session lookup:', params)
+          return { history: [] }
+        },
+      }
+      ```
 
-   - `src/lib/agent/retrieval-agent.ts`:
-     ```typescript
-     import { BaseAgent } from './base-agent';
-     import { vectorSearchTool } from './tools/vector-search-tool';
-     import { getGenkit } from './config';
-     
-     export class RetrievalAgent extends BaseAgent {
-       constructor() {
-         super(
-           'retrieval',
-           'Retrieval specialist for knowledge base search',
-           [vectorSearchTool]
-         );
-       }
-       
-       async generate(input: AgentInput): Promise<AgentOutput> {
-         const genkit = getGenkit();
-         if (!genkit) throw new Error('ADK not initialized');
-         
-         // ADK agent call with tool
-         const prompt = `Find relevant information for: ${input.messages[input.messages.length - 1].content}`;
-         const result = await genkit.generate({
-           model: process.env.ADK_RETRIEVAL_MODEL || 'gemini-1.5-flash',
-           prompt,
-           tools: this.tools,
-         });
-         
-         return {
-           content: result.text,
-           toolCalls: result.toolCalls,
-           metadata: { tokensUsed: result.usage?.totalTokens },
-         };
-       }
-     }
-     ```
+    - `safety-check-tool.ts`:
+      ```typescript
+      export const safetyCheckTool: Tool = {
+        name: 'validate_safety',
+        description: 'Check response for required safety disclaimers',
+        parameters: {
+          response: { type: 'string' },
+          query: { type: 'string' },
+        },
+        async execute(params: { response: string; query: string }) {
+          console.log('Mock safety check:', params)
+          return { safe: true, warnings: [] }
+        },
+      }
+      ```
 
-   - `src/lib/agent/certification-agent.ts`:
-     ```typescript
-     import { BaseAgent } from './base-agent';
-     import { vectorSearchTool, sessionLookupTool } from './tools';
-     
-     export class CertificationAgent extends BaseAgent {
-       constructor() {
-         super(
-           'certification',
-           'Specialist in diving certification queries',
-           [vectorSearchTool, sessionLookupTool]
-         );
-       }
-       
-       async generate(input: AgentInput): Promise<AgentOutput> {
-         const genkit = getGenkit();
-         if (!genkit) throw new Error('ADK not initialized');
-         
-         const systemPrompt = `You are a diving certification expert. 
-Focus on PADI/SSI equivalency, prerequisites, course duration, and safety requirements.
-Include disclaimers for medical/depth topics. Use tools to retrieve context.`;
-         
-         const result = await genkit.generate({
-           model: process.env.ADK_SPECIALIST_MODEL || 'gemini-2.0-flash',
-           prompt: systemPrompt + '\n\n' + input.messages.map(m => `${m.role}: ${m.content}`).join('\n'),
-           tools: this.tools,
-         });
-         
-         return {
-           content: result.text,
-           toolCalls: result.toolCalls,
-           metadata: { tokensUsed: result.usage?.totalTokens },
-         };
-       }
-     }
-     ```
+2.  **Agent implementations:**
+    - `src/lib/agent/retrieval-agent.ts`:
 
-   - `src/lib/agent/trip-agent.ts`:
-     ```typescript
-     export class TripAgent extends BaseAgent {
-       constructor() {
-         super(
-           'trip',
-           'Specialist in dive trip planning and destinations',
-           [vectorSearchTool, sessionLookupTool]
-         );
-       }
-       
-       async generate(input: AgentInput): Promise<AgentOutput> {
-         const systemPrompt = `You are a dive trip planning expert.
-Recommend sites based on certification level, experience, and preferences.
-Include safety considerations (currents, depth, conditions).`;
-         
-         // Similar to CertificationAgent implementation
-         // ...
-       }
-     }
-     ```
+      ```typescript
+      import { BaseAgent } from './base-agent'
+      import { vectorSearchTool } from './tools/vector-search-tool'
+      import { getGenkit } from './config'
 
-   - `src/lib/agent/safety-agent.ts`:
-     ```typescript
-     export class SafetyAgent extends BaseAgent {
-       constructor() {
-         super(
-           'safety',
-           'Validates responses for safety disclaimers',
-           [safetyCheckTool]
-         );
-       }
-       
-       async generate(input: AgentInput): Promise<AgentOutput> {
-         // Lightweight validation agent
-         const systemPrompt = `Check if the response includes appropriate disclaimers for:
+      export class RetrievalAgent extends BaseAgent {
+        constructor() {
+          super('retrieval', 'Retrieval specialist for knowledge base search', [
+            vectorSearchTool,
+          ])
+        }
+
+        async generate(input: AgentInput): Promise<AgentOutput> {
+          const genkit = getGenkit()
+          if (!genkit) throw new Error('ADK not initialized')
+
+          // ADK agent call with tool
+          const prompt = `Find relevant information for: ${input.messages[input.messages.length - 1].content}`
+          const result = await genkit.generate({
+            model: process.env.ADK_RETRIEVAL_MODEL || 'gemini-1.5-flash',
+            prompt,
+            tools: this.tools,
+          })
+
+          return {
+            content: result.text,
+            toolCalls: result.toolCalls,
+            metadata: { tokensUsed: result.usage?.totalTokens },
+          }
+        }
+      }
+      ```
+
+    - `src/lib/agent/certification-agent.ts`:
+
+      ````typescript
+      import { BaseAgent } from './base-agent';
+      import { vectorSearchTool, sessionLookupTool } from './tools';
+
+           export class CertificationAgent extends BaseAgent {
+             constructor() {
+               super(
+                 'certification',
+                 'Specialist in diving certification queries',
+                 [vectorSearchTool, sessionLookupTool]
+               );
+             }
+
+             async generate(input: AgentInput): Promise<AgentOutput> {
+               const genkit = getGenkit();
+               if (!genkit) throw new Error('ADK not initialized');
+
+               const systemPrompt = `You are a diving certification expert.
+
+      Focus on PADI/SSI equivalency, prerequisites, course duration, and safety requirements.
+      Include disclaimers for medical/depth topics. Use tools to retrieve context.`;
+
+               const result = await genkit.generate({
+                 model: process.env.ADK_SPECIALIST_MODEL || 'gemini-2.0-flash',
+                 prompt: systemPrompt + '\n\n' + input.messages.map(m => `${m.role}: ${m.content}`).join('\n'),
+                 tools: this.tools,
+               });
+
+               return {
+                 content: result.text,
+                 toolCalls: result.toolCalls,
+                 metadata: { tokensUsed: result.usage?.totalTokens },
+               };
+             }
+           }
+           ```
+
+      ````
+
+    - `src/lib/agent/trip-agent.ts`:
+
+      ````typescript
+      export class TripAgent extends BaseAgent {
+      constructor() {
+      super(
+      'trip',
+      'Specialist in dive trip planning and destinations',
+      [vectorSearchTool, sessionLookupTool]
+      );
+      }
+
+             async generate(input: AgentInput): Promise<AgentOutput> {
+               const systemPrompt = `You are a dive trip planning expert.
+
+      Recommend sites based on certification level, experience, and preferences.
+      Include safety considerations (currents, depth, conditions).`;
+
+               // Similar to CertificationAgent implementation
+               // ...
+             }
+           }
+           ```
+
+      ````
+
+    - `src/lib/agent/safety-agent.ts`:
+
+      ```typescript
+      export class SafetyAgent extends BaseAgent {
+        constructor() {
+          super(
+            'safety',
+            'Validates responses for safety disclaimers',
+            [safetyCheckTool]
+          );
+        }
+
+        async generate(input: AgentInput): Promise<AgentOutput> {
+          // Lightweight validation agent
+          const systemPrompt = `Check if the response includes appropriate disclaimers for:
+      ```
+
 - Medical topics: "Consult dive medical professional"
 - Depth limits: State certification max depth
 - Legal topics: "Not legal advice"`;
-         
-         // ...
-       }
-     }
-     ```
+  // ...
+  }
+  }
+
+  ```
+
+  ```
 
 3. **Agent registry** (`src/lib/agent/agent-registry.ts`):
+
    ```typescript
-   import { RetrievalAgent } from './retrieval-agent';
-   import { CertificationAgent } from './certification-agent';
-   import { TripAgent } from './trip-agent';
-   import { SafetyAgent } from './safety-agent';
-   
+   import { RetrievalAgent } from './retrieval-agent'
+   import { CertificationAgent } from './certification-agent'
+   import { TripAgent } from './trip-agent'
+   import { SafetyAgent } from './safety-agent'
+
    const agents = {
      retrieval: new RetrievalAgent(),
      certification: new CertificationAgent(),
      trip: new TripAgent(),
      safety: new SafetyAgent(),
-   };
-   
-   export function getAgent(name: string) {
-     return agents[name];
    }
-   
-   export { agents };
+
+   export function getAgent(name: string) {
+     return agents[name]
+   }
+
+   export { agents }
    ```
 
 **Frontend Changes:** None
@@ -498,6 +528,7 @@ Include safety considerations (currents, depth, conditions).`;
 **Data Changes:** None
 
 **Verification:**
+
 - All agents instantiate without errors
 - Mock tool calls logged correctly
 - `pnpm typecheck && pnpm build` succeeds
@@ -515,121 +546,150 @@ Wire real implementations for vector search, session lookup, and safety validati
 **Scope**
 
 **In scope:**
+
 - Connect vector-search-tool to PR2 (if ready) or keep mock
 - Implement session-lookup-tool using session service
 - Implement safety-check-tool with rule-based validation
 
 **Out of scope:**
+
 - Orchestration changes (Step 4)
 - Agent instruction tuning (iterative post-launch)
 
 **Backend Changes**
 
 1. **Vector search tool** (`src/lib/agent/tools/vector-search-tool.ts`):
+
    ```typescript
-   import { retrieveContext } from '../../../lib/rag/retrieval';
-   
+   import { retrieveContext } from '../../../lib/rag/retrieval'
+
    export const vectorSearchTool: Tool = {
      // ... (same interface)
      async execute(params: { query: string; top_k?: number }) {
        try {
          if (process.env.ENABLE_RAG !== 'true') {
-           console.log('RAG disabled, returning empty chunks');
-           return { chunks: [] };
+           console.log('RAG disabled, returning empty chunks')
+           return { chunks: [] }
          }
-         
-         const chunks = await retrieveContext(params.query, params.top_k || 5);
+
+         const chunks = await retrieveContext(params.query, params.top_k || 5)
          return {
-           chunks: chunks.map(c => ({
+           chunks: chunks.map((c) => ({
              text: c.content,
              metadata: { source: c.metadata?.source, similarity: c.similarity },
            })),
-         };
+         }
        } catch (error) {
-         console.error('Vector search failed:', error);
-         return { chunks: [], error: 'Search unavailable' };
+         console.error('Vector search failed:', error)
+         return { chunks: [], error: 'Search unavailable' }
        }
      },
-   };
+   }
    ```
 
 2. **Session lookup tool** (`src/lib/agent/tools/session-lookup-tool.ts`):
+
    ```typescript
-   import { getSession } from '../../../lib/session/session-service';
-   
+   import { getSession } from '../../../lib/session/session-service'
+
    export const sessionLookupTool: Tool = {
      // ... (same interface)
      async execute(params: { sessionId: string; last_n?: number }) {
        try {
-         const session = await getSession(params.sessionId);
+         const session = await getSession(params.sessionId)
          if (!session) {
-           return { history: [] };
+           return { history: [] }
          }
-         
-         const lastN = params.last_n || 10;
-         const history = session.conversationHistory.slice(-lastN);
-         
+
+         const lastN = params.last_n || 10
+         const history = session.conversationHistory.slice(-lastN)
+
          return {
-           history: history.map(m => ({
+           history: history.map((m) => ({
              role: m.role,
              content: m.content,
              timestamp: m.timestamp,
            })),
-         };
+         }
        } catch (error) {
-         console.error('Session lookup failed:', error);
-         return { history: [], error: 'Session unavailable' };
+         console.error('Session lookup failed:', error)
+         return { history: [], error: 'Session unavailable' }
        }
      },
-   };
+   }
    ```
 
 3. **Safety check tool** (`src/lib/agent/tools/safety-check-tool.ts`):
+
    ```typescript
    export const safetyCheckTool: Tool = {
      // ... (same interface)
      async execute(params: { response: string; query: string }) {
-       const warnings: string[] = [];
-       const response = params.response.toLowerCase();
-       const query = params.query.toLowerCase();
-       
+       const warnings: string[] = []
+       const response = params.response.toLowerCase()
+       const query = params.query.toLowerCase()
+
        // Medical terms check
-       const medicalTerms = ['medical', 'doctor', 'prescription', 'diagnosis', 'health condition'];
-       if (medicalTerms.some(term => response.includes(term) || query.includes(term))) {
-         if (!response.includes('consult') && !response.includes('medical professional')) {
-           warnings.push('Add medical disclaimer');
+       const medicalTerms = [
+         'medical',
+         'doctor',
+         'prescription',
+         'diagnosis',
+         'health condition',
+       ]
+       if (
+         medicalTerms.some(
+           (term) => response.includes(term) || query.includes(term)
+         )
+       ) {
+         if (
+           !response.includes('consult') &&
+           !response.includes('medical professional')
+         ) {
+           warnings.push('Add medical disclaimer')
          }
        }
-       
+
        // Depth limits check
-       const depthMention = /(\d+)\s*(m|meter|metre|ft|feet)/i.exec(response);
+       const depthMention = /(\d+)\s*(m|meter|metre|ft|feet)/i.exec(response)
        if (depthMention) {
-         const depth = parseInt(depthMention[1]);
-         if (depth > 18 && !response.includes('certification') && !response.includes('advanced')) {
-           warnings.push('Mention certification requirements for depth');
+         const depth = parseInt(depthMention[1])
+         if (
+           depth > 18 &&
+           !response.includes('certification') &&
+           !response.includes('advanced')
+         ) {
+           warnings.push('Mention certification requirements for depth')
          }
        }
-       
+
        // Legal terms check
-       const legalTerms = ['lawsuit', 'liability', 'insurance', 'legal'];
-       if (legalTerms.some(term => response.includes(term) || query.includes(term))) {
+       const legalTerms = ['lawsuit', 'liability', 'insurance', 'legal']
+       if (
+         legalTerms.some(
+           (term) => response.includes(term) || query.includes(term)
+         )
+       ) {
          if (!response.includes('not legal advice')) {
-           warnings.push('Add legal disclaimer');
+           warnings.push('Add legal disclaimer')
          }
        }
-       
+
        return {
          safe: warnings.length === 0,
          warnings,
-         suggestions: warnings.map(w => {
-           if (w.includes('medical')) return 'Consult a dive medical professional (DAN) for health-related concerns.';
-           if (w.includes('legal')) return 'This is not legal advice. Consult appropriate professionals.';
-           if (w.includes('certification')) return 'Ensure dive plan matches certification level and experience.';
-           return '';
+         suggestions: warnings.map((w) => {
+           if (w.includes('medical'))
+             return 'Consult a dive medical professional (DAN) for health-related concerns.'
+           if (w.includes('legal'))
+             return 'This is not legal advice. Consult appropriate professionals.'
+           if (w.includes('certification'))
+             return 'Ensure dive plan matches certification level and experience.'
+           return ''
          }),
-       };
+       }
      },
-   };
+   }
    ```
 
 **Frontend Changes:** None
@@ -637,6 +697,7 @@ Wire real implementations for vector search, session lookup, and safety validati
 **Data Changes:** None
 
 **Verification:**
+
 - Unit tests for each tool with real implementations
 - Integration test: create session, call session-lookup-tool, verify history
 - Integration test: call vector-search-tool (if PR2 ready), verify chunks
@@ -655,172 +716,216 @@ Upgrade `chat-orchestrator.ts` to coordinate multiple agents using ADK patterns.
 **Scope**
 
 **In scope:**
+
 - Replace linear orchestration with multi-agent graph
 - Implement query routing (certification vs trip vs general)
 - Coordinate: routing → retrieval → specialist → safety
 - Preserve API contract
 
 **Out of scope:**
+
 - API route changes (Step 5)
 - Removing old providers (Step 5)
 
 **Backend Changes**
 
 1. **Orchestration types** (`src/lib/orchestration/types.ts`):
+
    ```typescript
    // Add agent-specific types
    export interface AgentGraphResult {
-     response: string;
-     agentsUsed: string[];
-     toolCalls: Array<{ agent: string; tool: string; duration: number }>;
+     response: string
+     agentsUsed: string[]
+     toolCalls: Array<{ agent: string; tool: string; duration: number }>
      metadata: {
-       totalDuration: number;
-       tokensUsed: number;
-       queryType: string;
-     };
+       totalDuration: number
+       tokensUsed: number
+       queryType: string
+     }
    }
    ```
 
 2. **Orchestrator** (`src/lib/orchestration/chat-orchestrator.ts`):
+
    ```typescript
-   import { getAgent } from '../agent/agent-registry';
-   import { getSession, createSession, updateSessionHistory } from '../session';
-   
+   import { getAgent } from '../agent/agent-registry'
+   import { getSession, createSession, updateSessionHistory } from '../session'
+
    // Query routing logic
-   function detectQueryType(message: string, history: any[]): 'certification' | 'trip' | 'general' {
-     const m = message.toLowerCase();
-     
+   function detectQueryType(
+     message: string,
+     history: any[]
+   ): 'certification' | 'trip' | 'general' {
+     const m = message.toLowerCase()
+
      // Certification keywords
-     if (m.match(/certif|padi|ssi|open water|advanced|rescue|divemaster|course|training/)) {
-       return 'certification';
+     if (
+       m.match(
+         /certif|padi|ssi|open water|advanced|rescue|divemaster|course|training/
+       )
+     ) {
+       return 'certification'
      }
-     
+
      // Trip keywords
-     if (m.match(/trip|destination|where to dive|dive site|travel|vacation|recommend|visit/)) {
-       return 'trip';
+     if (
+       m.match(
+         /trip|destination|where to dive|dive site|travel|vacation|recommend|visit/
+       )
+     ) {
+       return 'trip'
      }
-     
+
      // Check history for context
-     const recentMessages = history.slice(-4).map(h => h.content.toLowerCase()).join(' ');
-     if (recentMessages.includes('certif') || recentMessages.includes('course')) {
-       return 'certification';
+     const recentMessages = history
+       .slice(-4)
+       .map((h) => h.content.toLowerCase())
+       .join(' ')
+     if (
+       recentMessages.includes('certif') ||
+       recentMessages.includes('course')
+     ) {
+       return 'certification'
      }
-     if (recentMessages.includes('trip') || recentMessages.includes('destination')) {
-       return 'trip';
+     if (
+       recentMessages.includes('trip') ||
+       recentMessages.includes('destination')
+     ) {
+       return 'trip'
      }
-     
-     return 'general';
+
+     return 'general'
    }
-   
-   export async function orchestrateChat(req: ChatRequest): Promise<ChatResponse> {
-     const startTime = Date.now();
-     const agentsUsed: string[] = [];
-     const toolCalls: any[] = [];
-     
+
+   export async function orchestrateChat(
+     req: ChatRequest
+   ): Promise<ChatResponse> {
+     const startTime = Date.now()
+     const agentsUsed: string[] = []
+     const toolCalls: any[] = []
+
      // Validation (from PR3)
      if (!req?.message || req.message.length > MAX_MESSAGE_LENGTH) {
-       throw new Error('Invalid message');
+       throw new Error('Invalid message')
      }
-     
+
      // Session management (from PR3)
-     let sessionId = req.sessionId;
-     let session = sessionId ? await getSession(sessionId) : null;
+     let sessionId = req.sessionId
+     let session = sessionId ? await getSession(sessionId) : null
      if (!session) {
-       session = await createSession();
-       sessionId = session.id;
+       session = await createSession()
+       sessionId = session.id
      }
-     
+
      // Build message context
      const messages = [
-       ...session.conversationHistory.map(m => ({ role: m.role, content: m.content })),
+       ...session.conversationHistory.map((m) => ({
+         role: m.role,
+         content: m.content,
+       })),
        { role: 'user', content: req.message },
-     ];
-     
+     ]
+
      // Step 1: Query routing
-     const queryType = detectQueryType(req.message, session.conversationHistory);
-     console.log('Query routed to:', queryType);
-     
+     const queryType = detectQueryType(req.message, session.conversationHistory)
+     console.log('Query routed to:', queryType)
+
      // Step 2: Retrieval (parallel with routing)
-     const retrievalAgent = getAgent('retrieval');
-     let context = '';
+     const retrievalAgent = getAgent('retrieval')
+     let context = ''
      try {
        const retrievalResult = await Promise.race([
          retrievalAgent.generate({ messages, sessionId }),
-         new Promise((_, reject) => setTimeout(() => reject(new Error('Retrieval timeout')), 2000)),
-       ]);
-       
+         new Promise((_, reject) =>
+           setTimeout(() => reject(new Error('Retrieval timeout')), 2000)
+         ),
+       ])
+
        if (retrievalResult && retrievalResult.toolCalls) {
-         const searchResults = retrievalResult.toolCalls.find(tc => tc.tool === 'search_knowledge_base');
+         const searchResults = retrievalResult.toolCalls.find(
+           (tc) => tc.tool === 'search_knowledge_base'
+         )
          if (searchResults?.result?.chunks) {
-           context = searchResults.result.chunks.map(c => c.text).join('\n\n');
+           context = searchResults.result.chunks.map((c) => c.text).join('\n\n')
          }
        }
-       agentsUsed.push('retrieval');
+       agentsUsed.push('retrieval')
      } catch (error) {
-       console.warn('Retrieval failed, proceeding without context:', error);
+       console.warn('Retrieval failed, proceeding without context:', error)
      }
-     
+
      // Step 3: Specialist response
-     const specialistName = queryType === 'certification' ? 'certification' : 
-                           queryType === 'trip' ? 'trip' : 'certification'; // default to cert
-     const specialist = getAgent(specialistName);
-     
-     let response: string;
+     const specialistName =
+       queryType === 'certification'
+         ? 'certification'
+         : queryType === 'trip'
+           ? 'trip'
+           : 'certification' // default to cert
+     const specialist = getAgent(specialistName)
+
+     let response: string
      try {
        const specialistResult = await Promise.race([
          specialist.generate({ messages, context, sessionId }),
-         new Promise((_, reject) => setTimeout(() => reject(new Error('Specialist timeout')), 5000)),
-       ]);
-       
-       response = specialistResult.content;
-       agentsUsed.push(specialistName);
-       
+         new Promise((_, reject) =>
+           setTimeout(() => reject(new Error('Specialist timeout')), 5000)
+         ),
+       ])
+
+       response = specialistResult.content
+       agentsUsed.push(specialistName)
+
        if (specialistResult.toolCalls) {
-         toolCalls.push(...specialistResult.toolCalls.map(tc => ({
-           agent: specialistName,
-           tool: tc.tool,
-           duration: 0, // TODO: track
-         })));
+         toolCalls.push(
+           ...specialistResult.toolCalls.map((tc) => ({
+             agent: specialistName,
+             tool: tc.tool,
+             duration: 0, // TODO: track
+           }))
+         )
        }
      } catch (error) {
-       console.error('Specialist failed:', error);
+       console.error('Specialist failed:', error)
        // Fallback: simple response
-       response = "I'm having trouble processing that request. Please try rephrasing or ask something simpler.";
+       response =
+         "I'm having trouble processing that request. Please try rephrasing or ask something simpler."
      }
-     
+
      // Step 4: Safety validation
-     const safetyAgent = getAgent('safety');
+     const safetyAgent = getAgent('safety')
      try {
        const safetyResult = await safetyAgent.generate({
          messages: [
            { role: 'user', content: req.message },
            { role: 'assistant', content: response },
          ],
-       });
-       
+       })
+
        if (safetyResult.toolCalls) {
-         const safetyCheck = safetyResult.toolCalls.find(tc => tc.tool === 'validate_safety');
+         const safetyCheck = safetyResult.toolCalls.find(
+           (tc) => tc.tool === 'validate_safety'
+         )
          if (safetyCheck?.result?.warnings?.length > 0) {
            // Append disclaimers
-           const suggestions = safetyCheck.result.suggestions || [];
+           const suggestions = safetyCheck.result.suggestions || []
            if (suggestions.length > 0) {
-             response += '\n\n' + suggestions.join(' ');
+             response += '\n\n' + suggestions.join(' ')
            }
          }
        }
-       agentsUsed.push('safety');
+       agentsUsed.push('safety')
      } catch (error) {
-       console.warn('Safety validation failed:', error);
+       console.warn('Safety validation failed:', error)
      }
-     
+
      // Update session history
      await updateSessionHistory(sessionId, {
        userMessage: req.message,
        assistantMessage: response,
-     });
-     
-     const totalDuration = Date.now() - startTime;
-     
+     })
+
+     const totalDuration = Date.now() - startTime
+
      return {
        sessionId,
        response,
@@ -831,7 +936,7 @@ Upgrade `chat-orchestrator.ts` to coordinate multiple agents using ADK patterns.
          totalDuration,
          contextChunks: context ? context.split('\n\n').length : 0,
        },
-     };
+     }
    }
    ```
 
@@ -840,6 +945,7 @@ Upgrade `chat-orchestrator.ts` to coordinate multiple agents using ADK patterns.
 **Data Changes:** None
 
 **Verification:**
+
 - Unit tests: Query routing with sample messages
 - Integration tests: Full orchestration flow with mocked agents
 - Manual tests:
@@ -860,6 +966,7 @@ Ensure `/api/chat` behavior unchanged, remove deprecated model-provider code, ad
 **Scope**
 
 **In scope:**
+
 - Verify API contract unchanged
 - Update error mapping for ADK errors
 - Remove `src/lib/model-provider/` module
@@ -867,64 +974,67 @@ Ensure `/api/chat` behavior unchanged, remove deprecated model-provider code, ad
 - Update `.env.example`
 
 **Out of scope:**
+
 - Further agent tuning (iterative)
 
 **Backend Changes**
 
 1. **API route** (`src/app/api/chat/route.ts`):
+
    ```typescript
    // Update error handling
-   import { orchestrateChat } from '../../../lib/orchestration/chat-orchestrator';
-   
+   import { orchestrateChat } from '../../../lib/orchestration/chat-orchestrator'
+
    export async function POST(request: Request) {
      try {
-       const json = await request.json();
-       const parsed = bodySchema.parse(json);
-       
-       const result = await orchestrateChat(parsed);
-       
+       const json = await request.json()
+       const parsed = bodySchema.parse(json)
+
+       const result = await orchestrateChat(parsed)
+
        // Log ADK telemetry
        console.log('ADK telemetry:', {
          agentsUsed: result.metadata?.agentsUsed,
          duration: result.metadata?.totalDuration,
          queryType: result.metadata?.queryType,
-       });
-       
-       return NextResponse.json(result, { status: 200 });
+       })
+
+       return NextResponse.json(result, { status: 200 })
      } catch (err: any) {
        // ADK-specific error mapping
        if (err?.message?.includes('ADK not initialized')) {
          return NextResponse.json(
            { error: 'Service unavailable', code: 'ADK_UNAVAILABLE' },
            { status: 503 }
-         );
+         )
        }
-       
+
        if (err?.message?.includes('timeout')) {
          return NextResponse.json(
            { error: 'Request timeout', code: 'TIMEOUT' },
            { status: 503 }
-         );
+         )
        }
-       
+
        // Existing error handling from PR3
        if (err?.code === 'VALIDATION' || err?.name === 'ZodError') {
          return NextResponse.json(
            { error: 'Invalid input', code: 'INVALID_INPUT' },
            { status: 400 }
-         );
+         )
        }
-       
-       console.error('Chat error:', err);
+
+       console.error('Chat error:', err)
        return NextResponse.json(
          { error: 'Internal server error', code: 'INTERNAL_ERROR' },
          { status: 500 }
-       );
+       )
      }
    }
    ```
 
 2. **Delete old provider code:**
+
    ```bash
    rm -rf src/lib/model-provider/
    ```
@@ -945,7 +1055,7 @@ Ensure `/api/chat` behavior unchanged, remove deprecated model-provider code, ad
        telemetry: {
          instrumentation: 'googleCloudTrace',
        },
-     });
+     })
    }
    ```
 
@@ -954,6 +1064,7 @@ Ensure `/api/chat` behavior unchanged, remove deprecated model-provider code, ad
 **Data Changes:** None
 
 **Verification:**
+
 - All PR3 curl tests pass with identical response format
 - Error scenarios return correct status codes
 - `pnpm typecheck && pnpm build` succeeds
@@ -973,16 +1084,19 @@ If PR2 complete, wire real vector search to retrieval agent. Otherwise, document
 **Scope**
 
 **In scope:**
+
 - Connect vector-search-tool to PR2's `retrieveContext`
 - Test with real vector DB
 - Tune retrieval parameters
 
 **Out of scope:**
+
 - PR2 implementation (assumed ready or deferred)
 
 **Backend Changes**
 
 1. **Enable RAG** (`.env.local`):
+
    ```bash
    ENABLE_RAG=true
    ```
@@ -1002,6 +1116,7 @@ If PR2 complete, wire real vector search to retrieval agent. Otherwise, document
 **Data Changes:** None (uses PR2 schema)
 
 **Verification:**
+
 - Query "Open Water certification" → verify relevant chunks retrieved
 - Query "Tioman dive sites" → verify destination content retrieved
 - Compare response quality with/without RAG
@@ -1023,13 +1138,14 @@ If PR2 complete, wire real vector search to retrieval agent. Otherwise, document
 ### Logging
 
 - **Structured logging** (pino from PR3):
+
   ```typescript
   logger.info({
     agent: 'certification',
     duration: 1234,
     toolCalls: ['search_knowledge_base'],
     tokensUsed: 450,
-  });
+  })
   ```
 
 - **Privacy**: Log message length/type, not full content

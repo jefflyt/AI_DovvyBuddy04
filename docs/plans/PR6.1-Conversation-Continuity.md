@@ -13,6 +13,7 @@
 All PR6.1 objectives successfully implemented:
 
 ### ✅ Backend Implementation (100% Complete)
+
 - ✅ `src/backend/app/orchestration/conversation_manager.py` - LLM-based intent classification, state extraction, follow-up generation (339 lines)
 - ✅ `src/backend/app/orchestration/emergency_detector.py` - Keyword-based safety detection (157 lines)
 - ✅ `src/backend/app/orchestration/orchestrator.py` - Integrated conversation manager with feature flag
@@ -21,12 +22,14 @@ All PR6.1 objectives successfully implemented:
 - ✅ `src/backend/app/orchestration/types.py` - SessionState type definitions
 
 ### ✅ Frontend Implementation (100% Complete)
+
 - ✅ `src/lib/hooks/useSessionState.ts` - localStorage session state management (148 lines)
 - ✅ `src/app/chat/page.tsx` - Session state integration, feature flag checks
 - ✅ State sync: Backend → Frontend (stateUpdates in API response)
 - ✅ Feature flag integration: `FeatureFlag.CONVERSATION_FOLLOWUP`
 
 ### ✅ Testing (100% Complete)
+
 - ✅ `src/backend/tests/unit/orchestration/test_conversation_manager.py` - 474 lines, LLM mocking
 - ✅ `src/backend/tests/unit/orchestration/test_emergency_detector.py` - 136 lines, keyword detection
 - ✅ Intent classification tests (DIVE_PLANNING, INFO_LOOKUP, etc.)
@@ -34,11 +37,13 @@ All PR6.1 objectives successfully implemented:
 - ✅ State extraction tests with mocked LLM responses
 
 ### ✅ Configuration (100% Complete)
+
 - ✅ `.env.example` - `NEXT_PUBLIC_FEATURE_CONVERSATION_FOLLOWUP_ENABLED=false`
 - ✅ `src/backend/.env.example` - `FEATURE_CONVERSATION_FOLLOWUP_ENABLED=false`
 - ✅ Feature flag documented in both environments
 
 ### 🎯 Acceptance Criteria Met
+
 1. ✅ Every non-emergency response includes follow-up question
 2. ✅ Follow-ups are contextual (8 intent types with specific questions)
 3. ✅ No new factual claims in follow-ups (structured LLM templates)
@@ -51,6 +56,7 @@ All PR6.1 objectives successfully implemented:
 10. ✅ No regression in safety behavior (emergency detector tested)
 
 ### 📊 Implementation Quality
+
 - **Code Coverage:** Comprehensive unit tests for both managers
 - **Feature Flag:** Properly gated behind `FEATURE_CONVERSATION_FOLLOWUP_ENABLED`
 - **Safety-First:** Emergency detection runs BEFORE LLM (keyword-based, deterministic)
@@ -114,16 +120,19 @@ Transform DovvyBuddy from a one-shot Q&A assistant into a more conversational di
 ### Proposed UX (high-level)
 
 **Before (current):**
+
 - User: "What is a DSMB?"
 - Assistant: "A DSMB is a surface marker buoy used to signal your position to the dive boat."
 
 **After (PR6.1):**
+
 - User: "What is a DSMB?"
 - Assistant: "A DSMB is a surface marker buoy used to signal your position to the dive boat. **Are you learning about this for training, planning a dive, or just curious?**"
 
 **Visual change:** Same chat interface. Assistant message bubble now includes a follow-up question in **bold** or as a new line. No new UI components needed.
 
 **Emergency bypass:**
+
 - User: "I have chest pain after diving"
 - Assistant: "⚠️ Seek immediate medical attention. Contact DAN or local emergency services. Do not delay." (No follow-up question)
 
@@ -150,6 +159,7 @@ Transform DovvyBuddy from a one-shot Q&A assistant into a more conversational di
    - Skips append if emergency detected or bypass_followup=true
 
 **Modified backend flow:**
+
 ```
 User Message → Emergency Detector → [if emergency: bypass] → Conversation Manager (LLM) → Agent Selection → RAG Retrieval → Main LLM Response → Append Follow-up → Final Response
 ```
@@ -174,6 +184,7 @@ User Message → Emergency Detector → [if emergency: bypass] → Conversation 
 **No database schema changes** for V1. Session state stored in localStorage only.
 
 **localStorage schema:**
+
 ```json
 {
   "dovvybuddy-session-state": {
@@ -207,28 +218,33 @@ pr6.1-conversation-continuity
 ### Scope (in)
 
 **Backend:**
+
 - Implement Conversation Manager with structured LLM call (intent + state extraction + follow-up generation).
 - Implement Emergency Detector with keyword-based safety check (runs before LLM).
 - Integrate conversation management into `ChatOrchestrator`.
 - Add feature flag: `FEATURE_CONVERSATION_FOLLOWUP_ENABLED` (default: false).
 
 **Frontend:**
+
 - Add `useSessionState` hook to read/write session state from localStorage.
 - Update chat page to send session state with each message (optional payload).
 - Receive and apply state updates from backend API response (LLM-extracted).
 - Read feature flag from env and conditionally enable/disable feature.
 
 **Testing:**
+
 - Unit tests for Conversation Manager (with LLM mocking via fixtures).
 - Unit tests for Emergency Detector (keyword matching, no LLM).
 - Unit tests for state extraction (mock LLM responses with state_updates).
 - Integration test for full flow: user message → conversation manager → response with follow-up.
 
 **Observability:**
+
 - Add telemetry counters: `conversation.turns_with_followup`, `conversation.total_turns`, `conversation.sessions_started`, `conversation.llm_call_latency_ms`.
 - Log intent distribution, LLM call duration, and emergency bypasses to backend logs.
 
 **Documentation:**
+
 - Update README with feature flag instructions.
 - Add comments explaining intent rules and follow-up templates.
 
@@ -246,6 +262,7 @@ pr6.1-conversation-continuity
 #### Frontend
 
 **File: `src/lib/hooks/useSessionState.ts` (new file)**
+
 - Export `useSessionState()` hook.
 - Reads/writes `dovvybuddy-session-state` from localStorage.
 - Provides `{ sessionState, updateSessionState, clearSessionState }`.
@@ -253,6 +270,7 @@ pr6.1-conversation-continuity
 - Graceful degradation if localStorage unavailable (SecurityError, private browsing).
 
 **File: `src/app/chat/page.tsx` (modifications)**
+
 - Import `useSessionState` hook.
 - Send `sessionState` in API request payload (optional field).
 - Receive `state_updates` from API response (LLM-extracted).
@@ -260,15 +278,18 @@ pr6.1-conversation-continuity
 - Read `NEXT_PUBLIC_FEATURE_CONVERSATION_FOLLOWUP` env var. If false, skip sending sessionState.
 
 **File: `src/lib/api-client.ts` (modifications)**
+
 - Update `chat()` method signature to accept optional `sessionState` parameter.
 - Include in POST body if provided.
 
 **File: `.env.example` (modifications)**
+
 - Add `NEXT_PUBLIC_FEATURE_CONVERSATION_FOLLOWUP_ENABLED=false` with comment.
 
 #### Backend
 
 **File: `src/backend/app/orchestration/emergency_detector.py` (new file)**
+
 - Define **symptom-based** emergency patterns (first-person, present-tense):
   - Symptom keywords: ["chest pain", "can't breathe", "difficulty breathing", "dizzy", "numb", "paralyzed", "bleeding", "unconscious", "confused", "tingling"]
   - Context filters (must include one of): ["I", "I'm", "I am", "my", "me", "after dive", "after diving", "during dive"]
@@ -287,6 +308,7 @@ pr6.1-conversation-continuity
 - Log all emergency detections for monitoring false positive/negative rates.
 
 **File: `src/backend/app/orchestration/conversation_manager.py` (new file)**
+
 - Define `IntentType` enum: INFO_LOOKUP, DIVE_PLANNING, CONDITIONS, SKILL_EXPLANATION, MARINE_LIFE, GEAR, AGENCY_CERT, EMERGENCY_MEDICAL.
 - Define `SessionState` dataclass: cert_level, context_mode, location_known, conditions_known, last_intent.
 - Define `ConversationAnalysis` dataclass: intent, state_updates, follow_up, bypass_followup, confidence.
@@ -319,11 +341,13 @@ pr6.1-conversation-continuity
 - Error handling: if LLM call fails entirely, return fallback (intent=INFO_LOOKUP, no state updates, template follow-up).
 
 **File: `src/backend/app/orchestration/types.py` (modifications)**
+
 - Add `session_state: Optional[Dict[str, Any]]` to `ChatRequest` dataclass.
 - Add `follow_up_question: Optional[str]` to `ChatResponse` dataclass.
 - Add `state_updates: Optional[Dict[str, Any]]` to `ChatResponse` metadata (for syncing to frontend).
 
 **File: `src/backend/app/orchestration/orchestrator.py` (modifications)**
+
 - Import `ConversationManager` and `EmergencyDetector`.
 - Instantiate in `__init__`.
 - **Before mode detection:** Check for emergency: `emergency_detector.is_emergency(request.message)`.
@@ -336,15 +360,18 @@ pr6.1-conversation-continuity
 - Add logging: "Intent: {intent}, State updates: {state_updates}, Follow-up: {yes/no}, LLM latency: {ms}".
 
 **File: `src/backend/app/api/routes/chat.py` (modifications)**
+
 - Update `ChatRequestPayload` to include optional `session_state: Optional[dict]` field.
 - Pass `session_state` to `ChatRequest` when calling orchestrator.
 - Return `follow_up_question` and `state_updates` in `ChatResponsePayload` metadata.
 
 **File: `src/backend/app/core/config.py` (modifications)**
+
 - Add `feature_conversation_followup_enabled: bool = Field(default=False)` setting.
 - Load from `FEATURE_CONVERSATION_FOLLOWUP_ENABLED` env var.
 
 **File: `src/backend/pyproject.toml` (dependencies)**
+
 - No new dependencies required (uses existing LLM provider from PR3.2c).
 
 #### Data
@@ -352,6 +379,7 @@ pr6.1-conversation-continuity
 No database migrations for V1. Session state stored in localStorage only.
 
 Optional V2 migration:
+
 ```sql
 ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
 ```
@@ -364,6 +392,7 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
 - **Frontend:** `NEXT_PUBLIC_FEATURE_CONVERSATION_FOLLOWUP_ENABLED=false` (must match backend).
 
 **Deployment:**
+
 - Deploy backend first with feature flag OFF.
 - Verify no regressions in production.
 - Enable feature flag via env var (no code deploy needed).
@@ -373,6 +402,7 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
 #### Observability
 
 **Backend Logging (structured):**
+
 - Log detected intent for each message: `logger.info(f"Intent: {intent}, confidence: {confidence:.2f}")`.
 - Log follow-up generation: `logger.info(f"Follow-up: {follow_up}, validation: {passed/failed}, fallback: {yes/no}")`.
 - Log emergency detection: `logger.warning(f"Emergency detected: symptom={symptom}, context={first_person}, bypassing conversation manager")`.
@@ -380,6 +410,7 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
 - Log field-level fallbacks: `logger.warning(f"LLM field missing/invalid: {field_name}, using fallback")`.
 
 **Telemetry Counters (Sentry/custom):**
+
 - `conversation.turns_with_followup`: Increment when follow-up is appended.
 - `conversation.followup_validation_failures`: Increment when LLM follow-up fails validation.
 - `conversation.followup_template_fallbacks`: Increment when falling back to template.
@@ -393,6 +424,7 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
   - `% low confidence = low_confidence_intents / total_turns`
 
 **Analytics Events (Vercel/PostHog/GA4):**
+
 - `conversation_intent_detected` with properties: `{ intent, confidence }`.
 - `conversation_followup_shown` with properties: `{ intent, state_known_fields }`.
 
@@ -440,22 +472,26 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
    - Log error for monitoring.
 
 10. **LLM generates unsafe follow-up:**
-   - Validation catches: contains numbers, site names, depth references, or multiple questions.
-   - Falls back to intent-based template.
-   - Log validation failure for prompt tuning.
+
+- Validation catches: contains numbers, site names, depth references, or multiple questions.
+- Falls back to intent-based template.
+- Log validation failure for prompt tuning.
 
 11. **Low confidence classification:**
-   - If confidence < 0.4: force intent to INFO_LOOKUP, skip state updates, use clarifying follow-up.
-   - Prevents incorrect state pollution from ambiguous messages.
+
+- If confidence < 0.4: force intent to INFO_LOOKUP, skip state updates, use clarifying follow-up.
+- Prevents incorrect state pollution from ambiguous messages.
 
 ### Migration/compatibility notes (if applicable)
 
 **No breaking changes.** All changes are additive:
+
 - Backend: New optional `session_state` field in request (backward compatible).
 - Frontend: New localStorage key (doesn't affect existing sessions).
 - Feature flag defaults to OFF (existing behavior unchanged).
 
 **Rollout strategy:**
+
 1. Deploy backend + frontend with flag OFF.
 2. Test in staging with flag ON.
 3. Enable flag for 10% of production traffic (A/B test group).
@@ -472,6 +508,7 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
 #### Unit Tests
 
 **File: `src/backend/tests/unit/orchestration/test_emergency_detector.py` (new)**
+
 - Test symptom + context detection (keyword-based, no LLM):
   - **True (emergency):**
     - "I have chest pain after diving" → True (symptom + first-person)
@@ -490,6 +527,7 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
   - "I think my friend has chest pain" → False (third-person, not first-person emergency)
 
 **File: `src/backend/tests/unit/orchestration/test_conversation_manager.py` (new)**
+
 - Mock LLM provider to return fixed JSON responses.
 - Test intent classification with mocked responses:
   - DIVE_PLANNING: mock LLM returns `{"intent": "DIVE_PLANNING", ...}`
@@ -520,6 +558,7 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
   - Mock LLM returns missing follow_up → verify uses template fallback.
 
 **File: `src/backend/tests/unit/orchestration/test_orchestrator.py` (update existing)**
+
 - Test emergency detector called before conversation manager.
 - Test emergency bypass (no conversation manager call, no follow-up).
 - Test conversation manager called when no emergency.
@@ -529,6 +568,7 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
 - Test feature flag disables conversation manager.
 
 **File: `src/app/chat/__tests__/useSessionState.test.tsx` (new)**
+
 - Test `useSessionState` hook reads/writes localStorage.
 - Test graceful degradation when localStorage unavailable.
 - Test `clearSessionState` removes localStorage key.
@@ -539,6 +579,7 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
 #### Integration Tests
 
 **File: `src/backend/tests/integration/test_chat_with_followup.py` (new)**
+
 - Test full chat flow with follow-up:
   - Send user message → verify response includes follow-up.
   - Send follow-up answer → verify next response has new follow-up.
@@ -549,6 +590,7 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
 #### E2E Tests (optional, can defer to manual)
 
 **File: `tests/e2e/conversation-continuity.spec.ts` (optional)**
+
 - Navigate to chat page.
 - Send message: "What is Open Water certification?"
 - Assert assistant response ends with follow-up question.
@@ -558,6 +600,7 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
 ### Manual verification checklist
 
 **Pre-requisites:**
+
 - Backend running: `cd src/backend && uvicorn app.main:app --reload`
 - Frontend running: `pnpm dev`
 - Feature flag ON: `FEATURE_CONVERSATION_FOLLOWUP_ENABLED=true` in backend and `NEXT_PUBLIC_FEATURE_CONVERSATION_FOLLOWUP_ENABLED=true` in frontend.
@@ -619,23 +662,27 @@ ALTER TABLE sessions ADD COLUMN session_state JSONB DEFAULT '{}'::jsonb;
 ### Commands to run
 
 **Install dependencies:**
+
 ```bash
 pnpm install
 cd src/backend && pip install -e .
 ```
 
 **Run frontend dev server:**
+
 ```bash
 pnpm dev
 ```
 
 **Run backend dev server:**
+
 ```bash
 cd src/backend
 uvicorn app.main:app --reload
 ```
 
 **Run unit tests:**
+
 ```bash
 # Frontend
 pnpm test
@@ -646,27 +693,32 @@ pytest tests/unit/orchestration/
 ```
 
 **Run integration tests:**
+
 ```bash
 cd src/backend
 pytest tests/integration/test_chat_with_followup.py
 ```
 
 **Run E2E tests (optional):**
+
 ```bash
 pnpm test:e2e
 ```
 
 **Lint:**
+
 ```bash
 pnpm lint
 ```
 
 **Typecheck:**
+
 ```bash
 pnpm typecheck
 ```
 
 **Build:**
+
 ```bash
 pnpm build
 ```
@@ -699,21 +751,22 @@ pnpm build
 
 ### Risks and mitigation
 
-| Risk | Impact | Mitigation |
-|------|--------|-----------|
-| Intent misclassification causes irrelevant follow-ups | Low | LLM uses conversation context. Fallback to INFO_LOOKUP on errors. Monitor user feedback. |
-| Follow-ups feel interrogative/annoying | Medium | Limit to one question per turn. LLM prompt instructs friendly/conversational tone. A/B test sentiment. |
-| localStorage quota exceeded | Low | Session state is tiny (~200 bytes). Catch QuotaExceededError, log warning, continue. |
-| Emergency intent bypass fails (safety risk) | High | Keyword-based detection (NOT LLM). Multiple emergency keywords. Unit tests enforce bypass. Logging alerts on emergency detection. |
-| LLM latency increases response time | Medium | Use lightweight model (Gemini Flash ~100ms). Set 2s timeout. Fallback on timeout. |
-| LLM costs increase per message | Low | Gemini Flash: ~$0.0001/message. Budget impact: $1 per 10k messages. |
-| LLM returns invalid/unsafe follow-ups | Low | Multi-layer validation: ends with ?, ≤100 chars, no numbers/sites/advice. Template fallback if validation fails. |
-| Emergency false positives (educational queries) | Medium | Symptom + first-person context required. "What is DCS?" will NOT trigger emergency. Log all detections for monitoring. |
-| Low confidence causes incorrect state updates | Low | Confidence < 0.4 forces INFO_LOOKUP, skips state updates. Prevents pollution from ambiguous messages. |
+| Risk                                                  | Impact | Mitigation                                                                                                                        |
+| ----------------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| Intent misclassification causes irrelevant follow-ups | Low    | LLM uses conversation context. Fallback to INFO_LOOKUP on errors. Monitor user feedback.                                          |
+| Follow-ups feel interrogative/annoying                | Medium | Limit to one question per turn. LLM prompt instructs friendly/conversational tone. A/B test sentiment.                            |
+| localStorage quota exceeded                           | Low    | Session state is tiny (~200 bytes). Catch QuotaExceededError, log warning, continue.                                              |
+| Emergency intent bypass fails (safety risk)           | High   | Keyword-based detection (NOT LLM). Multiple emergency keywords. Unit tests enforce bypass. Logging alerts on emergency detection. |
+| LLM latency increases response time                   | Medium | Use lightweight model (Gemini Flash ~100ms). Set 2s timeout. Fallback on timeout.                                                 |
+| LLM costs increase per message                        | Low    | Gemini Flash: ~$0.0001/message. Budget impact: $1 per 10k messages.                                                               |
+| LLM returns invalid/unsafe follow-ups                 | Low    | Multi-layer validation: ends with ?, ≤100 chars, no numbers/sites/advice. Template fallback if validation fails.                  |
+| Emergency false positives (educational queries)       | Medium | Symptom + first-person context required. "What is DCS?" will NOT trigger emergency. Log all detections for monitoring.            |
+| Low confidence causes incorrect state updates         | Low    | Confidence < 0.4 forces INFO_LOOKUP, skips state updates. Prevents pollution from ambiguous messages.                             |
 
 ### Monitoring for success
 
 **Metrics to watch (first 48 hours):**
+
 - `conversation.turns_with_followup / conversation.total_turns` → target: >80%.
 - `conversation.followup_validation_failures / conversation.total_turns` → target: <5% (LLM prompt quality indicator).
 - `conversation.low_confidence_intents / conversation.total_turns` → target: <10%.
@@ -725,6 +778,7 @@ pnpm build
 - Emergency detection false negative rate → target: 0% (safety-critical).
 
 **User feedback:**
+
 - Monitor support channels for complaints about "too many questions".
 - Track lead conversion rate (should remain stable or improve).
 

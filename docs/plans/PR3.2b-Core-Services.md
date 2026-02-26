@@ -15,13 +15,14 @@
 ✅ **Dependencies:** Installed and compatible (Pydantic 2.0, Python 3.9 fixes applied)  
 ✅ **Unit Tests:** 48/55 PASSED (87% success rate)  
 ✅ **Code Quality:** All ruff checks passed  
-✅ **Integration Tests:** 11/11 PASSED (100% when run individually)  
-  - Embeddings: 3/3 passed (100%)  
-  - LLM Services: 4/4 passed (100%)  
-  - RAG Pipeline: 4/4 passed individually (connection pooling issue in batch mode)  
-✅ **Manual Scripts:** All 3 working (embeddings, Groq LLM, Gemini LLM)  
-✅ **TypeScript Backend:** Fully removed - Python is now the sole backend implementation  
-⏳ **Type Checking:** Deferred (mypy configuration)
+✅ **Integration Tests:** 11/11 PASSED (100% when run individually)
+
+- Embeddings: 3/3 passed (100%)
+- LLM Services: 4/4 passed (100%)
+- RAG Pipeline: 4/4 passed individually (connection pooling issue in batch mode)  
+  ✅ **Manual Scripts:** All 3 working (embeddings, Groq LLM, Gemini LLM)  
+  ✅ **TypeScript Backend:** Fully removed - Python is now the sole backend implementation  
+  ⏳ **Type Checking:** Deferred (mypy configuration)
 
 **Note:** TypeScript comparison tests (originally planned) are no longer applicable as TS backend has been deprecated and removed.
 
@@ -64,6 +65,7 @@ Implement embedding generation, LLM provider abstraction, and RAG pipeline (chun
 ### New Modules
 
 **Services Structure:**
+
 ```
 src/backend/app/services/
 ├── __init__.py
@@ -251,6 +253,7 @@ EMBEDDING_RETRY_DELAY=1.0              # Initial retry delay (seconds)
    - Empty results handling
 
 **Mocking Strategy:**
+
 - Mock external API calls (Gemini, Groq)
 - Mock database queries (use in-memory test data)
 - Use pytest fixtures for common test data
@@ -281,6 +284,7 @@ EMBEDDING_RETRY_DELAY=1.0              # Initial retry delay (seconds)
    - Test with various query types
 
 **API Rate Limiting:**
+
 - Limit integration test runs (use `pytest -m "not slow"` for CI)
 - Cache API responses for repeated tests (VCR.py or similar)
 - Use test API keys with lower rate limits
@@ -308,6 +312,7 @@ EMBEDDING_RETRY_DELAY=1.0              # Initial retry delay (seconds)
    - Acceptance: ≥80% overlap in top-5 results
 
 **Test Data:**
+
 - Use actual content files from `content/` directory
 - Use hand-crafted test queries covering all domains (cert, trip, safety)
 - Document any expected differences
@@ -358,23 +363,26 @@ python -m scripts.test_rag "test query"
 ### Manual Verification Checklist
 
 **Embedding Provider:**
+
 - [x] Embedding generation returns 768-dimensional vectors (✅ Integration test passed)
 - [x] Batch embedding processes multiple texts correctly (✅ Integration test passed)
 - [x] Cache reduces API calls (verify logs) (✅ Integration test passed)
-- [x] All 5 embedding service files present: base.py, gemini.py, cache.py, factory.py, __init__.py (✅ Verified January 8, 2026)
+- [x] All 5 embedding service files present: base.py, gemini.py, cache.py, factory.py, **init**.py (✅ Verified January 8, 2026)
 - [x] ~~Comparison test infrastructure~~ (❌ N/A - TypeScript backend removed)
 - [ ] Retry logic manually tested (⚠️ Deferred - requires simulating API failures)
 
 **LLM Provider:**
+
 - [x] Groq provider returns coherent responses (✅ Integration test + manual script passed)
 - [x] Gemini provider returns coherent responses (using gemini-2.0-flash per standards) (✅ Integration test + manual script passed)
 - [x] Provider factory implemented correctly (✅ Manual test passed)
-- [x] All 6 LLM service files present: base.py, groq.py, gemini.py, factory.py, types.py, __init__.py (✅ Verified January 8, 2026)
+- [x] All 6 LLM service files present: base.py, groq.py, gemini.py, factory.py, types.py, **init**.py (✅ Verified January 8, 2026)
 - [ ] Error handling with invalid API keys (⚠️ Deferred - requires manual simulation)
 - [ ] Token counting accuracy validated (⚠️ Deferred - requires manual testing)
 
 **RAG Pipeline:**
-- [x] All 6 RAG service files present: chunker.py, retriever.py, pipeline.py, repository.py, types.py, __init__.py (✅ Verified January 8, 2026)
+
+- [x] All 6 RAG service files present: chunker.py, retriever.py, pipeline.py, repository.py, types.py, **init**.py (✅ Verified January 8, 2026)
 - [x] Vector retrieval returns relevant chunks for test queries (✅ Integration tests passed)
 - [x] Pipeline handles empty results gracefully (✅ Integration tests passed)
 - [x] Benchmark script implemented: benchmark_rag.py (345 lines, fully functional) (✅ Verified January 8, 2026)
@@ -383,6 +391,7 @@ python -m scripts.test_rag "test query"
 - [ ] Latency benchmarks executed (⚠️ Can run anytime with benchmark_rag.py)
 
 **Code Quality:**
+
 - [x] All unit tests implemented (✅ 5 test files created with comprehensive coverage)
 - [x] All unit tests pass (✅ 48/55 passed - 87% success rate)
 - [x] All integration tests implemented (✅ 3 test files created)
@@ -433,6 +442,7 @@ python -m scripts.test_rag "test query"
 **Impact:** High (RAG quality degradation if embeddings incompatible)
 
 **Mitigation:**
+
 - Extensive comparison tests with 20+ sample texts
 - Calculate cosine similarity for same inputs (expect ≥0.98)
 - Use same Gemini model and parameters as TypeScript
@@ -440,6 +450,7 @@ python -m scripts.test_rag "test query"
 - If similarity <0.98, investigate API version differences
 
 **Acceptance Criteria:**
+
 - Cosine similarity ≥0.98 for same text input
 - Embedding dimensions match (768)
 - Batch vs single embedding produce same results
@@ -450,12 +461,14 @@ python -m scripts.test_rag "test query"
 **Impact:** Medium (different RAG results, but not necessarily worse)
 
 **Mitigation:**
+
 - Detailed comparison tests with 10 sample markdown files
 - Manual review of chunk boundaries for edge cases
 - Document intentional differences (if any optimization made)
 - Accept minor differences if RAG quality maintained
 
 **Acceptance Criteria:**
+
 - ≥90% chunk boundary match with TypeScript
 - Token counts within 5% tolerance
 - Markdown structure preserved (headers, code blocks)
@@ -466,6 +479,7 @@ python -m scripts.test_rag "test query"
 **Impact:** High (user experience degradation)
 
 **Mitigation:**
+
 - Extensive comparison tests (50+ queries)
 - Measure result overlap (expect ≥80%)
 - Benchmark latency (should be equal or better)
@@ -473,6 +487,7 @@ python -m scripts.test_rag "test query"
 - A/B test with TypeScript implementation if needed
 
 **Acceptance Criteria:**
+
 - ≥80% overlap in top-5 results for same query
 - Latency ≤ TypeScript implementation (target: <500ms P95)
 - No obvious quality regressions in manual review
@@ -483,12 +498,14 @@ python -m scripts.test_rag "test query"
 **Impact:** Low (test execution delays)
 
 **Mitigation:**
+
 - Limit integration test runs (use markers: `@pytest.mark.slow`)
 - Cache API responses for repeated tests (VCR.py)
 - Use separate test API keys with lower quotas
 - Run full integration tests manually, not in every CI run
 
 **Acceptance Criteria:**
+
 - CI completes in <10 minutes (skip slow tests)
 - Manual integration tests can be run on-demand
 - No production API key usage in tests
@@ -499,12 +516,14 @@ python -m scripts.test_rag "test query"
 **Impact:** Medium (difficult to switch providers)
 
 **Mitigation:**
+
 - Design clean provider interface (base class)
 - Test both Groq and Gemini providers
 - Ensure factory pattern works correctly
 - Document provider-specific quirks
 
 **Acceptance Criteria:**
+
 - Switching providers requires only env var change
 - Both providers return compatible response format
 - No provider-specific code outside provider classes
@@ -518,12 +537,14 @@ python -m scripts.test_rag "test query"
 **Chosen:** Custom RAG pipeline
 
 **Rationale:**
+
 - More control over chunking and retrieval logic
 - Simpler dependencies (no LangChain)
 - Easier to optimize and debug
 - Proven pattern from TypeScript implementation
 
 **Trade-off:**
+
 - More code to maintain
 - Missing LangChain ecosystem features (document loaders, advanced retrievers)
 
@@ -534,11 +555,13 @@ python -m scripts.test_rag "test query"
 **Chosen:** In-memory cache for V1
 
 **Rationale:**
+
 - Simpler setup (no Redis dependency)
 - Sufficient for single-instance deployment
 - Faster for local development
 
 **Trade-off:**
+
 - Cache doesn't persist across restarts
 - Not shared across multiple instances (future scaling)
 
@@ -549,11 +572,13 @@ python -m scripts.test_rag "test query"
 **Chosen:** 80% result overlap threshold
 
 **Rationale:**
+
 - Allows for minor differences in vector search (floating point, sorting)
 - Embeddings may differ slightly between API versions
 - Focus on "no quality regression" vs "exact match"
 
 **Trade-off:**
+
 - May miss subtle quality issues
 - Requires manual review to confirm 80% is acceptable
 
@@ -568,6 +593,7 @@ python -m scripts.test_rag "test query"
 **Context:** Batching improves performance but adds complexity
 
 **Options:**
+
 - A) Always batch (even single texts)
 - B) Single calls for 1 text, batch for ≥2 texts
 - C) Configurable (caller decides)
@@ -581,6 +607,7 @@ python -m scripts.test_rag "test query"
 **Context:** Balance freshness vs API cost
 
 **Options:**
+
 - A) 1 hour (frequent refresh)
 - B) 24 hours (daily refresh)
 - C) No expiry (until restart)
@@ -594,6 +621,7 @@ python -m scripts.test_rag "test query"
 **Context:** Existing embeddings from TypeScript, new embeddings from Python may differ
 
 **Options:**
+
 - A) Keep existing embeddings (faster)
 - B) Re-ingest with Python (cleaner)
 - C) Dual embeddings (comparison)
@@ -607,6 +635,7 @@ python -m scripts.test_rag "test query"
 **Context:** Affects how agents consume RAG results
 
 **Options:**
+
 - A) Raw chunks (agents format)
 - B) Formatted text (pipeline formats)
 - C) Both (configurable)
@@ -644,11 +673,13 @@ python -m scripts.test_rag "test query"
 ### Comparison Success
 
 **Status:** ❌ **Not Applicable** - TypeScript backend has been fully removed (January 2026). Python is now the sole backend implementation. Original comparison criteria were:
+
 - ~~50+ test queries run through both implementations~~
 - ~~Result overlap ≥80% achieved~~
 - ~~Manual review of differences~~
 
 **Alternative Validation:**
+
 - [x] Python RAG pipeline functional and tested (✅ Integration tests pass)
 - [x] Content successfully ingested with Python embeddings (✅ 118 Tioman embeddings)
 - [ ] Performance benchmarking can be executed with benchmark_rag.py (⚠️ Optional)
@@ -680,6 +711,7 @@ After PR3.2b is merged:
 ## Implementation Summary
 
 **What was completed:**
+
 - ✅ All 27 Python service modules implemented (~3,500 lines)
 - ✅ All 10 test files created (unit, integration, comparison)
 - ✅ All 4 manual test scripts created
@@ -691,6 +723,7 @@ After PR3.2b is merged:
 - ✅ Added repository TDD snapshot: `docs/tdd/TDD_Project_Status.md` (project status and verification checklist).
 
 **What requires manual verification:**
+
 - ⚠️ Install dependencies: `cd src/backend && pip install -e .`
 - ⚠️ Run unit tests: `pytest tests/unit/services -v`
 - ⚠️ Run integration tests with API keys: `pytest tests/integration/services -v`
@@ -702,11 +735,13 @@ After PR3.2b is merged:
 - ⚠️ Performance benchmarking
 
 **Known limitations:**
+
 - ~~Comparison tests~~ (Obsolete - TypeScript backend removed, no longer applicable)
 - Benchmark script exists (345 lines, fully implemented) but hasn't been executed in production
 - RAG_CHUNK_SIZE and RAG_CHUNK_OVERLAP config defined but not used in chunker
 
 **Migration Notes:**
+
 - TypeScript backend fully removed as of January 2026
 - Python is now the sole backend implementation
 - All comparison test infrastructure preserved for historical reference but not executed
@@ -715,11 +750,11 @@ After PR3.2b is merged:
 
 ## Revision History
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 0.3 | 2026-01-08 | AI Assistant | Re-verified all components against codebase, updated verification status, confirmed all service modules operational |
-| 0.2 | 2026-01-01 | AI Assistant | Implementation complete, status updated to Implemented (Pending Verification) |
-| 0.1 | 2026-01-01 | AI Assistant | Initial draft |
+| Version | Date       | Author       | Changes                                                                                                             |
+| ------- | ---------- | ------------ | ------------------------------------------------------------------------------------------------------------------- |
+| 0.3     | 2026-01-08 | AI Assistant | Re-verified all components against codebase, updated verification status, confirmed all service modules operational |
+| 0.2     | 2026-01-01 | AI Assistant | Implementation complete, status updated to Implemented (Pending Verification)                                       |
+| 0.1     | 2026-01-01 | AI Assistant | Initial draft                                                                                                       |
 
 ---
 
@@ -742,6 +777,7 @@ After PR3.2b is merged:
 6. **Proceed to PR3.2c (Agent Orchestration)** - READY
 
 ### Optional Enhancements (Post-PR3.2c)
+
 - Run full comparison tests against TypeScript implementation
 - Implement benchmark script for performance analysis
 - Configure mypy for type checking

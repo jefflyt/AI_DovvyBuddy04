@@ -17,11 +17,13 @@ This guide explains how to ingest **markdown content** for RAG (Retrieval-Augmen
 ### ⚠️ Scope of This Guide
 
 **This guide covers:**
+
 - ✅ Generating embeddings from markdown files
 - ✅ Updating `content_embeddings` table
 - ✅ RAG pipeline for semantic search
 
 **This guide does NOT cover:**
+
 - ❌ Updating structured metadata (dive sites, destinations, certifications)
 - ❌ Updating `dive_sites`, `destinations`, or other data tables
 - ❌ Schema migrations or JSON metadata
@@ -66,6 +68,7 @@ psql "$DATABASE_URL" -c "\d content_embeddings"
 ```
 
 Expected table structure:
+
 - `id` (UUID, primary key)
 - `content_path` (TEXT, path to source file)
 - `chunk_text` (TEXT, content chunk)
@@ -125,6 +128,7 @@ Content for section 2...
 ```
 
 **Best Practices:**
+
 - Use clear, descriptive headings (H1, H2, H3)
 - Keep paragraphs focused and concise
 - Use bullet points for lists
@@ -132,10 +136,10 @@ Content for section 2...
 - Add metadata at the top (optional):
   ```yaml
   ---
-  title: "PADI Open Water Certification"
-  type: "certification"
-  provider: "PADI"
-  level: "beginner"
+  title: 'PADI Open Water Certification'
+  type: 'certification'
+  provider: 'PADI'
+  level: 'beginner'
   ---
   ```
 
@@ -146,6 +150,7 @@ Content for section 2...
 ### Step 1: Create or Update Content Files
 
 1. **Create new content file:**
+
    ```bash
    cd content/destinations/
    mkdir New-Destination
@@ -154,6 +159,7 @@ Content for section 2...
    ```
 
 2. **Edit the file with your content:**
+
    ```bash
    # Use your preferred editor
    vim overview.md
@@ -192,6 +198,7 @@ pnpm tsx scripts/ingest-content.ts
 ```
 
 **TypeScript Script Behavior:**
+
 - Reads all markdown files from `content/` directory
 - Chunks content using markdown-aware splitting
 - Generates embeddings via Gemini API (text-embedding-004)
@@ -298,6 +305,7 @@ EMBEDDING_BATCH_SIZE = 100              # Max texts per API call
 **To customize:**
 
 Set in root `.env.local`:
+
 ```bash
 EMBEDDING_MODEL=text-embedding-004
 EMBEDDING_BATCH_SIZE=50  # Reduce if hitting rate limits
@@ -310,6 +318,7 @@ EMBEDDING_BATCH_SIZE=50  # Reduce if hitting rate limits
 ### Workflow 1: Add New Destination (Complete)
 
 **Note:** Adding a new destination requires TWO operations:
+
 1. **Structured data** (metadata) → See [Neon Database Update Guide](./neon-database-update-guide.md)
 2. **Content embeddings** (RAG) → This guide
 
@@ -415,6 +424,7 @@ pytest tests/integration/services/test_rag_integration.py -v
 **Symptoms:** Ingestion script fails with 429 errors
 
 **Solutions:**
+
 1. Reduce batch size:
    ```bash
    export EMBEDDING_BATCH_SIZE=50
@@ -425,18 +435,21 @@ pytest tests/integration/services/test_rag_integration.py -v
 ### Issue: "No embeddings found after ingestion"
 
 **Diagnosis:**
+
 ```bash
 # Check if content was processed
 psql "$DATABASE_URL" -c "SELECT COUNT(*) FROM content_embeddings WHERE created_at > NOW() - INTERVAL '1 hour';"
 ```
 
 **Possible Causes:**
+
 1. Database connection issue (check `DATABASE_URL`)
 2. Content files not in correct directory
 3. Empty or invalid markdown files
 4. API key not set (`GEMINI_API_KEY`)
 
 **Solutions:**
+
 1. Verify environment variables
 2. Check file paths and content
 3. Run with `--verbose` flag (Python) or check logs (TypeScript)
@@ -446,6 +459,7 @@ psql "$DATABASE_URL" -c "SELECT COUNT(*) FROM content_embeddings WHERE created_a
 **Symptoms:** Vector search fails with dimension error
 
 **Diagnosis:**
+
 ```bash
 # Check embedding dimensions
 psql "$DATABASE_URL" -c "SELECT array_length(embedding::text::float[], 1) as dims, COUNT(*) FROM content_embeddings GROUP BY dims;"
@@ -454,6 +468,7 @@ psql "$DATABASE_URL" -c "SELECT array_length(embedding::text::float[], 1) as dim
 **Expected:** All embeddings should be 768 dimensions (for text-embedding-004)
 
 **Solution:**
+
 1. Verify `EMBEDDING_MODEL=text-embedding-004` in `.env.local`
 2. Clear and re-ingest all content:
    ```bash
@@ -466,6 +481,7 @@ psql "$DATABASE_URL" -c "SELECT array_length(embedding::text::float[], 1) as dim
 **Symptoms:** Cannot connect to database
 
 **Solutions:**
+
 1. Verify `DATABASE_URL` format:
    ```bash
    # Correct format
@@ -505,11 +521,13 @@ pnpm tsx scripts/ingest-content.ts
 ### API Costs
 
 **Gemini Embedding API:**
+
 - Model: text-embedding-004
 - Free tier: Up to 1,500 requests/day
 - Cost estimate: ~$0.00025 per 1,000 characters
 
 **Optimization Tips:**
+
 1. Cache embeddings (avoid re-generating for unchanged content)
 2. Use batch processing (100 texts per request)
 3. Run ingestion during off-peak hours
@@ -517,16 +535,19 @@ pnpm tsx scripts/ingest-content.ts
 ### Database Performance
 
 **Indexes:**
+
 - HNSW index on `embedding` column (for vector similarity search)
 - B-tree index on `content_path` (for filtering)
 - B-tree index on `created_at` (for temporal queries)
 
 **Verify indexes:**
+
 ```bash
 psql "$DATABASE_URL" -c "SELECT indexname, indexdef FROM pg_indexes WHERE tablename = 'content_embeddings';"
 ```
 
 **Query performance:**
+
 ```bash
 # Test retrieval speed
 cd src/backend
@@ -572,15 +593,18 @@ Target: <500ms P95 latency for RAG retrieval
 **Status:** In progress (PR3.2d)
 
 **Current State:**
+
 - ✅ Python RAG services are active in current backend runtime
 - ⏳ Python ingestion script (PR3.2d)
 - ✅ TypeScript ingestion working (temporary)
 
 **Timeline:**
+
 - PR3.2d expected: January 2026
 - Full migration: Q1 2026
 
 **Impact:**
+
 - Ingestion workflow will change to Python CLI
 - Same data format and embeddings
 - No re-ingestion required after migration

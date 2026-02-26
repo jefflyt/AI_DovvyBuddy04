@@ -7,11 +7,13 @@
 ## Problems Identified
 
 ### 1. Path Resolution Issues
+
 - **src/backend/app/db/session.py**: Was looking for `src/backend/.env` instead of root `.env.local`
 - **src/backend/alembic/env.py**: Path calculation was incorrect
 - **Solution**: Updated to use `Path(__file__).resolve()` with correct parent levels
 
 ### 2. Database Driver Compatibility
+
 - **Issue**: Async operations need `postgresql+asyncpg://` but .env.local has `postgresql://`
 - **Issue**: asyncpg uses `ssl` parameter, not `sslmode`
 - **Issue**: asyncpg doesn't support `channel_binding` parameter
@@ -20,6 +22,7 @@
 ## Files Fixed
 
 ### 1. src/backend/app/db/session.py
+
 ```python
 # Load .env file from project root (4 levels up from src/backend/app/db/session.py)
 env_path = Path(__file__).resolve().parent.parent.parent.parent / ".env.local"
@@ -53,6 +56,7 @@ def get_sync_database_url() -> str:
 **Path levels:** `src/backend/app/db/session.py` → 4 parents → `root/.env.local`
 
 ### 2. src/backend/alembic/env.py
+
 ```python
 # Calculate project root (3 levels up from src/backend/alembic/env.py)
 project_root = Path(__file__).resolve().parent.parent.parent
@@ -65,6 +69,7 @@ load_dotenv(dotenv_path=env_path)
 ## Verification Results
 
 ### ✅ 1. Content Ingestion (Sync Operations)
+
 ```bash
 $ python scripts/ingest_content.py
 ✓ Ingestion completed in 67.26s
@@ -74,6 +79,7 @@ $ python scripts/ingest_content.py
 ```
 
 ### ✅ 2. RAG Retrieval (Async Operations)
+
 ```bash
 $ python scripts/test_rag_retrieval.py
 Query: What is the emergency number in Malaysia for diving accidents?
@@ -87,6 +93,7 @@ Result 3: Similarity 0.7569 - safety/diving-emergency-contacts-malaysia.md
 ```
 
 ### ✅ 3. Database Connection
+
 ```bash
 $ python scripts/verify_env_config.py
 Async URL: postgresql+asyncpg://neondb_owner:npg_1ovLCsZQxqJ7@...
@@ -96,6 +103,7 @@ Sync URL: postgresql://neondb_owner:npg_1ovLCsZQxqJ7@...
 ```
 
 ### ✅ 4. Backend Server Initialization
+
 - FastAPI app calls `init_db()` on startup
 - Database initialized with correct async URL
 - RAG services use `get_session()` which loads from corrected session.py
@@ -104,21 +112,25 @@ Sync URL: postgresql://neondb_owner:npg_1ovLCsZQxqJ7@...
 ## Database URL Conversion Logic
 
 ### Original URL (from .env.local):
+
 ```
 postgresql://neondb_owner:npg_xxx@ep-jolly-hall-a1bialaz-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
 ```
 
 ### Async URL (FastAPI, RAG retrieval):
+
 ```
 postgresql+asyncpg://neondb_owner:npg_xxx@ep-jolly-hall-a1bialaz-pooler.ap-southeast-1.aws.neon.tech/neondb?ssl=require
 ```
 
 **Changes:**
+
 - `postgresql://` → `postgresql+asyncpg://`
 - `sslmode=require` → `ssl=require`
 - `channel_binding=require` removed (not supported by asyncpg)
 
 ### Sync URL (Scripts, migrations):
+
 ```
 postgresql://neondb_owner:npg_xxx@ep-jolly-hall-a1bialaz-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
 ```
@@ -128,6 +140,7 @@ postgresql://neondb_owner:npg_xxx@ep-jolly-hall-a1bialaz-pooler.ap-southeast-1.a
 ## Production Readiness
 
 ### ✅ Resolved Issues
+
 1. All .env.local loading paths corrected with `Path(__file__).resolve()`
 2. Database URL automatic conversion for async/sync compatibility
 3. SSL parameter conversion for asyncpg driver
@@ -136,10 +149,12 @@ postgresql://neondb_owner:npg_xxx@ep-jolly-hall-a1bialaz-pooler.ap-southeast-1.a
 6. RAG retrieval tested and working (0.87 similarity score)
 
 ### ⚠️ Additional Configuration Needed
+
 1. **GROQ_API_KEY** - Required for chat endpoint (currently missing from .env.local)
 2. Backend server restart after .env.local changes
 
 ### 📋 Summary
+
 - **Database:** Neon PostgreSQL correctly configured
 - **Environment:** Single .env.local at project root
 - **Async Operations:** FastAPI, RAG retrieval - ✅ Working
@@ -154,6 +169,7 @@ postgresql://neondb_owner:npg_xxx@ep-jolly-hall-a1bialaz-pooler.ap-southeast-1.a
 3. All scripts inherit from session.py via imports
 
 ## No Other .env Files
+
 - No `src/backend/.env` file exists
 - No `src/backend/.env.local` file exists
 - **Single source of truth:** `/Users/jefflee/Documents/AIProjects/AI_DovvyBuddy04/.env.local`

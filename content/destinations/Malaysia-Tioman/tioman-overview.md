@@ -1,15 +1,24 @@
 ---
-doc_type: "destination"
-title: "Tioman Island Diving Destination"
-destination: "Tioman Island, Malaysia"
-tags: ["destination", "malaysia", "tioman", "tropical", "island-diving"]
-keywords: ["Tioman", "Malaysia", "diving", "East Coast", "Marine Park", "seasonal", "dive sites"]
-last_updated: "2025-12-23"
-data_quality: "compiled"
+doc_type: 'destination'
+title: 'Tioman Island Diving Destination'
+destination: 'Tioman Island, Malaysia'
+tags: ['destination', 'malaysia', 'tioman', 'tropical', 'island-diving']
+keywords:
+  [
+    'Tioman',
+    'Malaysia',
+    'diving',
+    'East Coast',
+    'Marine Park',
+    'seasonal',
+    'dive sites',
+  ]
+last_updated: '2025-12-23'
+data_quality: 'compiled'
 sources:
-  - "https://www.tourism.gov.my/destinations/tioman-island"
-  - "https://www.diversaloon.com/tioman-diving"
-  - "Local dive operator knowledge and reports"
+  - 'https://www.tourism.gov.my/destinations/tioman-island'
+  - 'https://www.diversaloon.com/tioman-diving'
+  - 'Local dive operator knowledge and reports'
 ---
 
 # Tioman Island: Diving Destination Overview
@@ -39,7 +48,6 @@ Tioman's diving is highly seasonal due to the Northeast Monsoon, which affects t
   - Calmest seas and most stable weather
   - Highest probability of encountering pelagic fish
   - Most dive sites accessible
-  
 - **Shoulder Season (June-August)**:
   - Good visibility (10-20 meters)
   - Occasional afternoon storms
@@ -166,6 +174,7 @@ Tioman Island is part of the Pulau Tioman Marine Park, established to protect co
 ## Safety Considerations
 
 **Diving Emergency Resources**:
+
 - Nearest recompression chamber: Mersing Hospital (mainland, 2-4 hours by ferry + ambulance)
 - Emergency evacuation: Helicopter or fast boat to mainland (weather permitting)
 - DAN Asia-Pacific emergency hotline: +61-3-9886-9166
@@ -173,6 +182,7 @@ Tioman Island is part of the Pulau Tioman Marine Park, established to protect co
 **Medical Fitness**: Tioman's remoteness means medical facilities are limited. Ensure you are medically fit for diving and disclose any health conditions to your dive operator. Carry travel and dive insurance that covers hyperbaric treatment and evacuation.
 
 **Environmental Hazards**:
+
 - Jellyfish (occasional, usually during calm periods)
 - Stonefish and scorpionfish (camouflaged on reef and seabed; avoid touching anything)
 - Fire coral (causes skin irritation; avoid contact)
@@ -194,6 +204,7 @@ Tioman Island is part of the Pulau Tioman Marine Park, established to protect co
 Tioman Island is an excellent choice for divers seeking tropical reef diving in a relatively undeveloped island setting. Its seasonal nature requires planning around the monsoon, but during the March-October diving season, Tioman delivers vibrant coral reefs, diverse marine life, and accessible dive sites suitable for all experience levels.
 
 **Key Takeaways**:
+
 - Best diving season: March-October (peak: March-May, September-October)
 - Minimum certification: Open Water Diver (Advanced recommended for some sites)
 - Water temperature: 26-30°C (wetsuit recommended)

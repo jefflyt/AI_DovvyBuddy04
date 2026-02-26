@@ -1,33 +1,41 @@
 ---
-doc_type: "dive_site"
-site_id: "tioman-renggis-island"
-title: "Renggis Island"
-destination: "Tioman Island, Malaysia"
-min_certification: "OW"
-difficulty: "beginner"
+doc_type: 'dive_site'
+site_id: 'tioman-renggis-island'
+title: 'Renggis Island'
+destination: 'Tioman Island, Malaysia'
+min_certification: 'OW'
+difficulty: 'beginner'
 depth_range_m: [4, 116]
-tags: ["shallow", "coral garden", "beginner-friendly", "training", "snorkeling"]
-keywords: ["Renggis Island", "Tioman", "beginner dive", "shallow reef", "coral garden", "training site"]
-last_updated: "2026-01-01"
-data_quality: "compiled"
+tags: ['shallow', 'coral garden', 'beginner-friendly', 'training', 'snorkeling']
+keywords:
+  [
+    'Renggis Island',
+    'Tioman',
+    'beginner dive',
+    'shallow reef',
+    'coral garden',
+    'training site',
+  ]
+last_updated: '2026-01-01'
+data_quality: 'compiled'
 sources:
-  - "https://www.diversaloon.com/tioman-diving"
-  - "Local dive operator reports and site surveys"
+  - 'https://www.diversaloon.com/tioman-diving'
+  - 'Local dive operator reports and site surveys'
 ---
 
 # Dive Site Documentation: Renggis Island, Tioman Island, Malaysia
 
 ## 1. Quick Facts
 
-| Feature | Details |
-| :--- | :--- |
-| **Depth Range** | 4–16 m |
-| **Visibility** | 10–30 m (10–12 m in low season; 15–30 m in high season) |
-| **Current** | Mild; generally gentle |
-| **Water Temp** | 27–29 °C (year-round) |
-| **Season** | Best: March–May, September–October; Diveable: March–October |
+| Feature         | Details                                                     |
+| :-------------- | :---------------------------------------------------------- |
+| **Depth Range** | 4–16 m                                                      |
+| **Visibility**  | 10–30 m (10–12 m in low season; 15–30 m in high season)     |
+| **Current**     | Mild; generally gentle                                      |
+| **Water Temp**  | 27–29 °C (year-round)                                       |
+| **Season**      | Best: March–May, September–October; Diveable: March–October |
 
-***
+---
 
 ## 2. Site Overview
 
@@ -37,7 +45,7 @@ Renggis Island is a small, uninhabited island approximately 1 km offshore from t
 - **Atmosphere:** Relaxed, exploratory, and non-threatening. The shallow depths and gentle current create a low-stress environment with plenty of time and air to observe behaviour and photography opportunities.
 - **Why dive here:** It offers a perfect balance of accessibility and visual interest. New divers gain confidence in shallow, clear water with ample structure to explore; experienced divers enjoy spotting macro subjects and marine behaviour; instructors use it regularly for training and advanced skills practice.
 
-***
+---
 
 ## 3. Underwater Topography
 
@@ -52,7 +60,7 @@ Renggis Island is a small, uninhabited island approximately 1 km offshore from t
   - **Nearby Wrecks (Optional):** Two Thai fishing wrecks lie nearby at approximately 20 m depth; these are separate from the main reef and optional for advanced divers.
 - **Key structures:** The island is surrounded by reef; the deepest useful depth (12–14 m) occurs on the western and southern flanks. The sand-to-reef transition on the eastern side is the standard entry/exit zone.
 
-***
+---
 
 ## 4. Typical Dive Profile
 
@@ -64,7 +72,7 @@ Renggis Island is a small, uninhabited island approximately 1 km offshore from t
 - **Duration:** 40–50 minutes typical; easily extended to 60 minutes on shallow air.
 - **Turnaround:** Shallow water (5–7 m) at the end of bottom time; ascend to safety stop in the 3–5 m band near the reef or sand.
 
-***
+---
 
 ## 5. Marine Life
 
@@ -92,7 +100,7 @@ Renggis Island is a small, uninhabited island approximately 1 km offshore from t
   - March–May and September–November: Best overall marine life visibility and behaviour; water clarity favours spotting and photography.
   - June–August (low season): Water clarity reduced due to monsoonal runoff; marine life present but harder to spot; still productive for macro.
 
-***
+---
 
 ## 6. Conditions
 
@@ -121,7 +129,7 @@ Renggis Island is a small, uninhabited island approximately 1 km offshore from t
   - Tidal flow influences current direction but rarely makes the site undiveable.
   - Lunar cycles and seasonal upwelling do not severely impact local conditions.
 
-***
+---
 
 ## 7. Difficulty Assessment
 
@@ -145,7 +153,7 @@ Renggis Island is a small, uninhabited island approximately 1 km offshore from t
   - Ideal training site for instructors: controlled environment, reliable conditions, predictable marine life.
   - Experienced divers appreciate the richness of behaviour and macro subjects but do not consider it "challenging."
 
-***
+---
 
 ## 8. Recommended Diver Profile
 
@@ -157,7 +165,7 @@ Renggis Island is a small, uninhabited island approximately 1 km offshore from t
   - Relaxed attitude toward marine life and willingness to observe rather than chase subjects.
   - Macro-interested divers (photographers, naturalists) will extract maximum value.
 
-***
+---
 
 ## 9. Hazards & Safety Notes
 
@@ -186,7 +194,7 @@ Renggis Island is a small, uninhabited island approximately 1 km offshore from t
   - No major incident history documented in provided sources.
   - The site's beginner-friendly reputation and consistent use by training operators suggest a strong safety record.
 
-***
+---
 
 ## 10. Photography Notes
 
@@ -217,7 +225,7 @@ Renggis Island is a small, uninhabited island approximately 1 km offshore from t
   - Skittish sharks; expect distant shots only.
   - Depth limitation (max 16 m) means no extreme blue-water backgrounds; composition relies on reef features and critter subjects.
 
-***
+---
 
 ## 11. Best Time to Dive
 
@@ -249,7 +257,7 @@ Renggis Island is a small, uninhabited island approximately 1 km offshore from t
   - **September–November:** Recovery to excellent; best of both worlds (clarity and fewer crowds).
   - **December–February:** Sporadic; some dive operators reduce frequency; occasional rough seas.
 
-***
+---
 
 ## 12. Practical Tips
 
@@ -277,4 +285,4 @@ Renggis Island is a small, uninhabited island approximately 1 km offshore from t
   - 5 mm recommended for divers sensitive to cold or planning multiple consecutive days.
   - Rash guard alone acceptable in shallow water during high season.
 
-***
+---

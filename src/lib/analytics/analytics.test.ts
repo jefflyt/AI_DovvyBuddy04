@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { initAnalytics, trackPageView, trackEvent, identifyUser, __resetAnalyticsForTesting } from './analytics'
+import {
+  initAnalytics,
+  trackPageView,
+  trackEvent,
+  identifyUser,
+  __resetAnalyticsForTesting,
+} from './analytics'
 
 describe('Analytics', () => {
   let originalEnv: NodeJS.ProcessEnv

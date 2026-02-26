@@ -1,124 +1,137 @@
-'use client';
+'use client'
 
-import { Suspense, useState, useRef, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { apiClient, type ChatResponse, ApiClientError } from '@/lib/api-client';
-import { LeadCaptureModal, type LeadFormData } from '@/components/chat/LeadCaptureModal';
-import { useSessionState } from '@/lib/hooks/useSessionState'; // PR6.1
-import { FeatureFlag, isFeatureEnabled } from '@/lib/feature-flags'; // Centralized feature flags
-import { WatercolorBackground } from '@/components/ui/WatercolorBackground';
-import { ChatMessage } from '@/components/chat/ChatMessage';
-import { Send, Plus, MapPin, GraduationCap } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import Image from 'next/image';
+import { Suspense, useState, useRef, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { apiClient, type ChatResponse, ApiClientError } from '@/lib/api-client'
+import {
+  LeadCaptureModal,
+  type LeadFormData,
+} from '@/components/chat/LeadCaptureModal'
+import { useSessionState } from '@/lib/hooks/useSessionState' // PR6.1
+import { FeatureFlag, isFeatureEnabled } from '@/lib/feature-flags' // Centralized feature flags
+import { WatercolorBackground } from '@/components/ui/WatercolorBackground'
+import { ChatMessage } from '@/components/chat/ChatMessage'
+import { Send, Plus, MapPin, GraduationCap } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import Image from 'next/image'
 
 interface Message {
-  id: string;
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  timestamp: Date;
+  id: string
+  role: 'user' | 'assistant' | 'system'
+  content: string
+  timestamp: Date
 }
 
-const STORAGE_KEY = 'dovvybuddy-session-id';
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const STORAGE_KEY = 'dovvybuddy-session-id'
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 function ChatContent() {
-  const searchParams = useSearchParams();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [sessionId, setSessionId] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const searchParams = useSearchParams()
+  const [messages, setMessages] = useState<Message[]>([])
+  const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   // PR6.1: Session state hook (only if feature enabled)
-  const { sessionState, updateSessionState, clearSessionState } = useSessionState();
+  const { sessionState, updateSessionState, clearSessionState } =
+    useSessionState()
 
   // Lead form state
-  const [showLeadForm, setShowLeadForm] = useState(false);
-  const [leadType, setLeadType] = useState<'training' | 'trip' | null>(null);
-  const [leadSubmitting, setLeadSubmitting] = useState(false);
-  const [leadError, setLeadError] = useState<string | null>(null);
+  const [showLeadForm, setShowLeadForm] = useState(false)
+  const [leadType, setLeadType] = useState<'training' | 'trip' | null>(null)
+  const [leadSubmitting, setLeadSubmitting] = useState(false)
+  const [leadError, setLeadError] = useState<string | null>(null)
 
   // Restore sessionId from localStorage on mount
   useEffect(() => {
     try {
-      const storedSessionId = localStorage.getItem(STORAGE_KEY);
+      const storedSessionId = localStorage.getItem(STORAGE_KEY)
       if (storedSessionId && UUID_REGEX.test(storedSessionId)) {
-        setSessionId(storedSessionId);
+        setSessionId(storedSessionId)
         if (process.env.NODE_ENV === 'development') {
-          console.log('Session restored from localStorage:', storedSessionId);
+          console.log('Session restored from localStorage:', storedSessionId)
         }
       } else if (storedSessionId) {
-        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(STORAGE_KEY)
       }
     } catch (error) {
-      console.warn('localStorage unavailable:', error);
+      console.warn('localStorage unavailable:', error)
     }
-  }, []);
+  }, [])
 
   // Save sessionId to localStorage when it changes
   useEffect(() => {
     if (sessionId) {
       try {
-        localStorage.setItem(STORAGE_KEY, sessionId);
+        localStorage.setItem(STORAGE_KEY, sessionId)
       } catch (error) {
-        console.warn('Failed to save sessionId:', error);
+        console.warn('Failed to save sessionId:', error)
       }
     }
-  }, [sessionId]);
+  }, [sessionId])
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
 
   // Handle URL query parameter (e.g., from "Try this" suggestions)
   useEffect(() => {
-    const query = searchParams.get('prompt');
+    const query = searchParams.get('prompt')
     if (query && messages.length === 0 && !isLoading) {
-      setInput(query);
+      setInput(query)
       setTimeout(() => {
         const userMessage: Message = {
           id: crypto.randomUUID(),
           role: 'user',
           content: query,
           timestamp: new Date(),
-        };
+        }
 
-        setMessages([userMessage]);
-        setInput('');
-        setIsLoading(true);
-        setError(null);
-
-        (async () => {
+        setMessages([userMessage])
+        setInput('')
+        setIsLoading(true)
+        setError(null)
+        ;(async () => {
           try {
             const requestPayload: {
-              sessionId?: string;
-              message: string;
-              sessionState?: Record<string, unknown>;
+              sessionId?: string
+              message: string
+              sessionState?: Record<string, unknown>
             } = {
               sessionId: sessionId || undefined,
               message: query,
-            };
+            }
 
             if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)) {
-              requestPayload.sessionState = sessionState as Record<string, unknown>;
+              requestPayload.sessionState = sessionState as Record<
+                string,
+                unknown
+              >
             }
 
-            const response: ChatResponse = await apiClient.chat(requestPayload);
+            const response: ChatResponse = await apiClient.chat(requestPayload)
 
             if (!sessionId && response.sessionId) {
-              setSessionId(response.sessionId);
+              setSessionId(response.sessionId)
             }
 
-            if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) && response.metadata?.stateUpdates) {
-              updateSessionState(response.metadata.stateUpdates);
+            if (
+              isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) &&
+              response.metadata?.stateUpdates
+            ) {
+              updateSessionState(response.metadata.stateUpdates)
             }
 
-            let messageContent = response.message;
-            if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) && response.followUpQuestion) {
-              messageContent = `${response.message}\n\n─────\n💬 ${response.followUpQuestion}`;
+            let messageContent = response.message
+            if (
+              isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) &&
+              response.followUpQuestion
+            ) {
+              messageContent = `${response.message}\n\n─────\n💬 ${response.followUpQuestion}`
             }
 
             const assistantMessage: Message = {
@@ -126,106 +139,126 @@ function ChatContent() {
               role: 'assistant',
               content: messageContent,
               timestamp: new Date(),
-            };
+            }
 
-            setMessages((prev) => [...prev, assistantMessage]);
+            setMessages((prev) => [...prev, assistantMessage])
           } catch (err) {
-            let errorMessage = 'An unexpected error occurred. Please try again.';
+            let errorMessage = 'An unexpected error occurred. Please try again.'
             if (err instanceof ApiClientError) {
-              errorMessage = err.userMessage;
-              if (err.code === 'SESSION_EXPIRED' || err.code === 'SESSION_NOT_FOUND') {
-                clearSession();
-                errorMessage = 'Your session has expired. Starting a new chat...';
+              errorMessage = err.userMessage
+              if (
+                err.code === 'SESSION_EXPIRED' ||
+                err.code === 'SESSION_NOT_FOUND'
+              ) {
+                clearSession()
+                errorMessage =
+                  'Your session has expired. Starting a new chat...'
               }
             }
-            setError(errorMessage);
-            setMessages((prev) => prev.filter((msg) => msg.id !== userMessage.id));
+            setError(errorMessage)
+            setMessages((prev) =>
+              prev.filter((msg) => msg.id !== userMessage.id)
+            )
           } finally {
-            setIsLoading(false);
+            setIsLoading(false)
           }
-        })();
-      }, 100);
+        })()
+      }, 100)
     }
-  }, [searchParams]);
+  }, [searchParams])
 
   const clearSession = () => {
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_KEY)
     } catch (error) {
-      console.warn('Failed to clear localStorage:', error);
+      console.warn('Failed to clear localStorage:', error)
     }
-    setSessionId(null);
-    setMessages([]);
-    setError(null);
+    setSessionId(null)
+    setMessages([])
+    setError(null)
     if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)) {
-      clearSessionState();
+      clearSessionState()
     }
-  };
+  }
 
   const handleNewChat = () => {
     if (messages.length >= 2) {
       const confirmed = window.confirm(
         'Start a new chat? Your current conversation will be cleared.'
-      );
-      if (!confirmed) return;
+      )
+      if (!confirmed) return
     }
-    clearSession();
-  };
+    clearSession()
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading) return
 
     const userMessage: Message = {
       id: crypto.randomUUID(),
       role: 'user',
       content: input.trim(),
       timestamp: new Date(),
-    };
+    }
 
-    setMessages((prev) => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
-    setError(null);
+    setMessages((prev) => [...prev, userMessage])
+    setInput('')
+    setIsLoading(true)
+    setError(null)
 
     try {
       const requestPayload: {
-        sessionId?: string;
-        message: string;
-        sessionState?: Record<string, unknown>;
+        sessionId?: string
+        message: string
+        sessionState?: Record<string, unknown>
       } = {
         sessionId: sessionId || undefined,
         message: userMessage.content,
-      };
+      }
 
       if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)) {
-        requestPayload.sessionState = sessionState as Record<string, unknown>;
+        requestPayload.sessionState = sessionState as Record<string, unknown>
       }
 
-      const response: ChatResponse = await apiClient.chat(requestPayload);
+      const response: ChatResponse = await apiClient.chat(requestPayload)
 
       if (!sessionId && response.sessionId) {
-        setSessionId(response.sessionId);
+        setSessionId(response.sessionId)
       }
 
-      if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) && response.metadata?.stateUpdates) {
-        updateSessionState(response.metadata.stateUpdates);
+      if (
+        isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) &&
+        response.metadata?.stateUpdates
+      ) {
+        updateSessionState(response.metadata.stateUpdates)
       }
 
       // Check for lead capture triggers
-      if (response.message.toLowerCase().includes('connect you') ||
-        response.message.toLowerCase().includes('recommend a shop')) {
-        if (response.message.toLowerCase().includes('course') || response.message.toLowerCase().includes('certification')) {
-          setLeadType('training');
-        } else if (response.message.toLowerCase().includes('trip') || response.message.toLowerCase().includes('liveaboard')) {
-          setLeadType('trip');
+      if (
+        response.message.toLowerCase().includes('connect you') ||
+        response.message.toLowerCase().includes('recommend a shop')
+      ) {
+        if (
+          response.message.toLowerCase().includes('course') ||
+          response.message.toLowerCase().includes('certification')
+        ) {
+          setLeadType('training')
+        } else if (
+          response.message.toLowerCase().includes('trip') ||
+          response.message.toLowerCase().includes('liveaboard')
+        ) {
+          setLeadType('trip')
         }
       }
 
-      let messageContent = response.message;
-      if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) && response.followUpQuestion) {
-        messageContent = `${response.message}\n\n─────\n💬 ${response.followUpQuestion}`;
+      let messageContent = response.message
+      if (
+        isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) &&
+        response.followUpQuestion
+      ) {
+        messageContent = `${response.message}\n\n─────\n💬 ${response.followUpQuestion}`
       }
 
       const assistantMessage: Message = {
@@ -233,59 +266,62 @@ function ChatContent() {
         role: 'assistant',
         content: messageContent,
         timestamp: new Date(),
-      };
+      }
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      setMessages((prev) => [...prev, assistantMessage])
     } catch (err) {
-      let errorMessage = 'An unexpected error occurred. Please try again.';
+      let errorMessage = 'An unexpected error occurred. Please try again.'
 
       if (err instanceof ApiClientError) {
-        errorMessage = err.userMessage;
-        if (err.code === 'SESSION_EXPIRED' || err.code === 'SESSION_NOT_FOUND') {
-          clearSession();
-          errorMessage = 'Your session has expired. Starting a new chat...';
+        errorMessage = err.userMessage
+        if (
+          err.code === 'SESSION_EXPIRED' ||
+          err.code === 'SESSION_NOT_FOUND'
+        ) {
+          clearSession()
+          errorMessage = 'Your session has expired. Starting a new chat...'
         }
       }
 
-      setError(errorMessage);
-      setMessages((prev) => prev.filter((msg) => msg.id !== userMessage.id));
+      setError(errorMessage)
+      setMessages((prev) => prev.filter((msg) => msg.id !== userMessage.id))
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(e);
+      e.preventDefault()
+      handleSubmit(e)
     }
-  };
+  }
 
   const handleOpenLeadForm = (type: 'training' | 'trip') => {
-    setLeadType(type);
-    setShowLeadForm(true);
-    setLeadError(null);
-  };
+    setLeadType(type)
+    setShowLeadForm(true)
+    setLeadError(null)
+  }
 
   const handleCloseLeadForm = () => {
     if (!leadSubmitting) {
-      setShowLeadForm(false);
-      setLeadType(null);
-      setLeadError(null);
+      setShowLeadForm(false)
+      setLeadType(null)
+      setLeadError(null)
     }
-  };
+  }
 
   const handleLeadSubmit = async (data: LeadFormData) => {
     if (!sessionId) {
-      setLeadError('Please start a conversation before submitting a lead.');
-      return;
+      setLeadError('Please start a conversation before submitting a lead.')
+      return
     }
 
-    setLeadSubmitting(true);
-    setLeadError(null);
+    setLeadSubmitting(true)
+    setLeadError(null)
 
     try {
-      let payload: Record<string, unknown> = {};
+      let payload: Record<string, unknown> = {}
 
       if (leadType === 'training') {
         payload = {
@@ -298,8 +334,9 @@ function ChatContent() {
             preferred_location: data.location || undefined,
             message: data.message || undefined,
           },
-        };
-        if (sessionId && UUID_REGEX.test(sessionId)) payload.session_id = sessionId;
+        }
+        if (sessionId && UUID_REGEX.test(sessionId))
+          payload.session_id = sessionId
       } else if (leadType === 'trip') {
         payload = {
           type: 'trip',
@@ -311,40 +348,41 @@ function ChatContent() {
             travel_dates: data.dates || undefined,
             message: data.message || undefined,
           },
-        };
-        if (sessionId && UUID_REGEX.test(sessionId)) payload.session_id = sessionId;
+        }
+        if (sessionId && UUID_REGEX.test(sessionId))
+          payload.session_id = sessionId
       }
 
       const response = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-      });
+      })
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to submit lead');
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || 'Failed to submit lead')
       }
 
-      setShowLeadForm(false);
-      setLeadType(null);
-      setLeadError(null);
+      setShowLeadForm(false)
+      setLeadType(null)
+      setLeadError(null)
 
       const confirmationMessage: Message = {
         id: crypto.randomUUID(),
         role: 'system',
         content: `✅ Thanks, ${data.name}! We'll contact you at ${data.email} soon. Feel free to keep asking questions.`,
         timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, confirmationMessage]);
+      }
+      setMessages((prev) => [...prev, confirmationMessage])
     } catch (err) {
-      let errorMessage = 'Failed to submit. Please try again.';
-      if (err instanceof Error) errorMessage = err.message;
-      setLeadError(errorMessage);
+      let errorMessage = 'Failed to submit. Please try again.'
+      if (err instanceof Error) errorMessage = err.message
+      setLeadError(errorMessage)
     } finally {
-      setLeadSubmitting(false);
+      setLeadSubmitting(false)
     }
-  };
+  }
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-transparent">
@@ -376,10 +414,10 @@ function ChatContent() {
           onClick={() => handleOpenLeadForm('training')}
           disabled={!sessionId}
           className={cn(
-            "px-3 py-1.5 text-xs font-medium rounded-full border transition-all flex items-center gap-1.5",
+            'px-3 py-1.5 text-xs font-medium rounded-full border transition-all flex items-center gap-1.5',
             !sessionId
-              ? "border-border text-muted-foreground cursor-not-allowed opacity-50"
-              : "border-accent-200 bg-accent-50 text-accent-700 hover:bg-accent-100 hover:border-accent-300"
+              ? 'border-border text-muted-foreground cursor-not-allowed opacity-50'
+              : 'border-accent-200 bg-accent-50 text-accent-700 hover:bg-accent-100 hover:border-accent-300'
           )}
         >
           <GraduationCap size={14} />
@@ -389,10 +427,10 @@ function ChatContent() {
           onClick={() => handleOpenLeadForm('trip')}
           disabled={!sessionId}
           className={cn(
-            "px-3 py-1.5 text-xs font-medium rounded-full border transition-all flex items-center gap-1.5",
+            'px-3 py-1.5 text-xs font-medium rounded-full border transition-all flex items-center gap-1.5',
             !sessionId
-              ? "border-border text-muted-foreground cursor-not-allowed opacity-50"
-              : "border-primary-200 bg-primary-50 text-primary-700 hover:bg-primary-100 hover:border-primary-300"
+              ? 'border-border text-muted-foreground cursor-not-allowed opacity-50'
+              : 'border-primary-200 bg-primary-50 text-primary-700 hover:bg-primary-100 hover:border-primary-300'
           )}
         >
           <MapPin size={14} />
@@ -413,7 +451,9 @@ function ChatContent() {
                 priority
               />
             </div>
-            <h2 className="text-lg font-medium text-primary-900 mb-2">How can I help you dive today?</h2>
+            <h2 className="text-lg font-medium text-primary-900 mb-2">
+              How can I help you dive today?
+            </h2>
             <p className="text-sm text-muted-foreground max-w-md">
               Ask about PADI/SSI courses, dive sites, or safety tips.
             </p>
@@ -465,10 +505,10 @@ function ChatContent() {
             type="submit"
             disabled={!input.trim() || isLoading}
             className={cn(
-              "p-3 rounded-xl transition-all shadow-sm flex items-center justify-center",
+              'p-3 rounded-xl transition-all shadow-sm flex items-center justify-center',
               !input.trim() || isLoading
-                ? "bg-muted text-muted-foreground cursor-not-allowed"
-                : "bg-primary text-white hover:bg-primary-600 hover:shadow-md active:scale-95"
+                ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                : 'bg-primary text-white hover:bg-primary-600 hover:shadow-md active:scale-95'
             )}
           >
             <Send size={18} />
@@ -490,7 +530,7 @@ function ChatContent() {
         error={leadError}
       />
     </div>
-  );
+  )
 }
 
 export default function ChatPage() {
@@ -498,14 +538,16 @@ export default function ChatPage() {
     <main className="relative min-h-screen">
       <WatercolorBackground />
       <div className="w-full max-w-4xl h-[calc(100vh-2rem)] my-4 mx-4 md:mx-auto glass-panel rounded-2xl overflow-hidden relative z-10">
-        <Suspense fallback={
-          <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-          </div>
-        }>
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center h-full">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          }
+        >
           <ChatContent />
         </Suspense>
       </div>
     </main>
-  );
+  )
 }

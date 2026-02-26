@@ -263,10 +263,7 @@ export function trackEvent(event: string, properties?: EventProperties): void {
 /**
  * Identify a user
  */
-export function identifyUser(
-  userId: string,
-  traits?: EventProperties
-): void {
+export function identifyUser(userId: string, traits?: EventProperties): void {
   if (!analyticsInstance) {
     console.warn('[Analytics] Not initialized, call initAnalytics() first')
     return

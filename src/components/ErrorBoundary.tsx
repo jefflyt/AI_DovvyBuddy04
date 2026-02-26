@@ -50,7 +50,8 @@ export default class ErrorBoundary extends Component<
               Something went wrong
             </h1>
             <p className="text-neutral-600 mb-6">
-              We encountered an unexpected error. Please try refreshing the page.
+              We encountered an unexpected error. Please try refreshing the
+              page.
             </p>
             <button
               onClick={() => window.location.reload()}

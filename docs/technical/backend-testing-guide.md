@@ -12,6 +12,7 @@ cp .env.example .env.local
 ```
 
 Edit `.env.local` with your credentials:
+
 ```bash
 # Required for integration tests
 GEMINI_API_KEY=your_actual_gemini_key
@@ -43,11 +44,13 @@ export PYTHONPATH="$PWD/src/backend"
 ```
 
 #### Unit Tests (verified)
+
 ```bash
 .venv/bin/python -m pytest src/backend/tests/unit -q
 ```
 
 #### Integration Tests (verified: network + DB)
+
 ```bash
 .venv/bin/python -m pytest src/backend/tests/integration -q
 ```
@@ -68,11 +71,13 @@ Or run a single combined command (verified):
 ```
 
 #### Specific Test File
+
 ```bash
 .venv/bin/python -m pytest src/backend/tests/integration/api/test_lead.py -q
 ```
 
 #### With Coverage Report
+
 ```bash
 .venv/bin/python -m pytest src/backend/tests --cov=app --cov-report=html
 open htmlcov/index.html
@@ -81,6 +86,7 @@ open htmlcov/index.html
 ### 4. Database Setup for Integration Tests
 
 #### Option A: Local PostgreSQL with pgvector
+
 ```bash
 # Install PostgreSQL and pgvector
 brew install postgresql pgvector
@@ -97,6 +103,7 @@ python3 -m alembic upgrade head
 ```
 
 #### Option B: Docker PostgreSQL
+
 ```bash
 # Run PostgreSQL with pgvector
 docker run -d \
@@ -116,32 +123,38 @@ python3 -m alembic upgrade head
 ### 5. Alembic Migration Testing
 
 #### Check Current Migration State
+
 ```bash
 cd src/backend
 python3 -m alembic current
 ```
 
 #### View Migration History
+
 ```bash
 python3 -m alembic history
 ```
 
 #### Upgrade to Latest
+
 ```bash
 python3 -m alembic upgrade head
 ```
 
 #### Upgrade to Specific Revision
+
 ```bash
 python3 -m alembic upgrade 003_pgvector_embedding_column
 ```
 
 #### Downgrade One Step
+
 ```bash
 python3 -m alembic downgrade -1
 ```
 
 #### Generate SQL (offline mode - needs env.py fix)
+
 ```bash
 python3 -m alembic upgrade 003_pgvector_embedding_column --sql
 ```
@@ -149,26 +162,31 @@ python3 -m alembic upgrade 003_pgvector_embedding_column --sql
 ### 6. Common Test Patterns
 
 #### Run Only Fast Tests
+
 ```bash
 .venv/bin/python -m pytest -m "not slow" src/backend/tests
 ```
 
 #### Run Only Integration Tests
+
 ```bash
 .venv/bin/python -m pytest -m integration src/backend/tests
 ```
 
 #### Stop at First Failure
+
 ```bash
 .venv/bin/python -m pytest -x src/backend/tests
 ```
 
 #### Show Full Traceback
+
 ```bash
 .venv/bin/python -m pytest --tb=long src/backend/tests
 ```
 
 #### Run Tests in Parallel (requires pytest-xdist)
+
 ```bash
 pip install pytest-xdist
 .venv/bin/python -m pytest -n auto src/backend/tests
@@ -177,7 +195,9 @@ pip install pytest-xdist
 ### 7. Troubleshooting
 
 #### Import Errors
+
 If you see `ModuleNotFoundError`:
+
 ```bash
 # Ensure backend package path is visible
 export PYTHONPATH="$PWD/src/backend"
@@ -187,6 +207,7 @@ cd src/backend && ../../.venv/bin/pip install -e .
 ```
 
 #### Database Connection Errors
+
 ```bash
 # Verify database is running
 pg_isready -h localhost -p 5432
@@ -199,6 +220,7 @@ psql $DATABASE_URL
 ```
 
 #### Missing API Keys
+
 ```bash
 # Check if environment variables are loaded
 cd src/backend
@@ -208,6 +230,7 @@ python3 -c "from app.core.config import settings; print(settings.GEMINI_API_KEY[
 ### 8. Migration Deployment (Current Head)
 
 #### Staging Deployment
+
 ```bash
 # Set staging database URL
 export DATABASE_URL="postgresql://user:pass@staging.example.com:5432/dovvybuddy"

@@ -2,19 +2,22 @@ const steps = [
   {
     number: 1,
     title: 'Ask your question',
-    description: 'Type anything about certifications, dive sites, or trip planning. No signup required.',
+    description:
+      'Type anything about certifications, dive sites, or trip planning. No signup required.',
   },
   {
     number: 2,
     title: 'Get grounded answers',
-    description: 'Receive accurate information with citations from official certification guides and dive site data.',
+    description:
+      'Receive accurate information with citations from official certification guides and dive site data.',
   },
   {
     number: 3,
     title: 'Make informed decisions',
-    description: 'Use the guidance to plan your next dive trip or certification with confidence.',
+    description:
+      'Use the guidance to plan your next dive trip or certification with confidence.',
   },
-];
+]
 
 export const HowItWorks = () => {
   return (
@@ -46,8 +49,12 @@ export const HowItWorks = () => {
                       </div>
                     </div>
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">{step.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">{step.description}</p>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    {step.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    {step.description}
+                  </p>
                 </div>
               ))}
             </div>
@@ -69,8 +76,12 @@ export const HowItWorks = () => {
                   )}
                 </div>
                 <div className="flex-1 pb-8">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{step.title}</h3>
-                  <p className="text-gray-600 leading-relaxed">{step.description}</p>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    {step.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    {step.description}
+                  </p>
                 </div>
               </div>
             ))}
@@ -78,5 +89,5 @@ export const HowItWorks = () => {
         </div>
       </div>
     </section>
-  );
-};
+  )
+}

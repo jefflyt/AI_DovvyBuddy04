@@ -46,11 +46,13 @@ For production use with custom sender email:
 6. Verify the domain in Resend dashboard
 
 **Without domain verification:**
+
 - You can only send from `onboarding@resend.dev`
 - Emails may be more likely to land in spam
 - Recommended for testing only
 
 **With domain verification:**
+
 - Send from `leads@dovvybuddy.com` or any address on your domain
 - Better deliverability and trust
 - Professional appearance
@@ -72,10 +74,12 @@ LEAD_WEBHOOK_URL=                        # Optional: future webhook integration
 ```
 
 **Required:**
+
 - `RESEND_API_KEY` - API key from step 1
 - `LEAD_EMAIL_TO` - Email address where partner will receive lead notifications
 
 **Optional:**
+
 - `LEAD_EMAIL_FROM` - Custom sender email (defaults to `leads@dovvybuddy.com`)
   - Requires domain verification (see step 1)
   - Without verification, Resend will use `onboarding@resend.dev`
@@ -128,6 +132,7 @@ alembic upgrade head
 ```
 
 This applies migration `002_update_leads` which updates the `leads` table structure:
+
 - Adds `type` field (training/trip)
 - Adds `request_details` JSONB field
 - Adds `diver_profile` JSONB field
@@ -181,6 +186,7 @@ curl -X POST http://localhost:8000/api/leads \
 ```
 
 **Expected Response (201):**
+
 ```json
 {
   "success": true,
@@ -218,6 +224,7 @@ curl -X POST http://localhost:8000/api/leads \
 **Cause:** `RESEND_API_KEY` not set in environment
 
 **Solution:**
+
 1. Verify root `.env.local` exists
 2. Check `RESEND_API_KEY` is set and not empty
 3. Restart backend server to pick up new environment variables
@@ -228,6 +235,7 @@ curl -X POST http://localhost:8000/api/leads \
 **Cause:** `LEAD_EMAIL_TO` not set
 
 **Solution:**
+
 1. Set `LEAD_EMAIL_TO` in `.env.local`
 2. Restart backend server
 3. Must be a valid email address
@@ -235,6 +243,7 @@ curl -X POST http://localhost:8000/api/leads \
 ### Issue: Email not received
 
 **Possible causes:**
+
 1. **Spam folder** - Check spam/junk folder
 2. **Invalid email** - Verify `LEAD_EMAIL_TO` is correct
 3. **Domain not verified** - Use `onboarding@resend.dev` or verify your domain
@@ -242,6 +251,7 @@ curl -X POST http://localhost:8000/api/leads \
 5. **Bounced** - Check Resend dashboard for bounce notification
 
 **Debug steps:**
+
 1. Check Resend dashboard (https://resend.com/emails)
 2. Look for email in sent list
 3. Check delivery status and logs
@@ -251,6 +261,7 @@ curl -X POST http://localhost:8000/api/leads \
 ### Issue: Email goes to spam
 
 **Solutions:**
+
 1. **Verify domain** - Add SPF/DKIM records (see step 1)
 2. **Use custom domain** - Don't use `@resend.dev` sender
 3. **Professional content** - Email templates are already optimized
@@ -262,6 +273,7 @@ curl -X POST http://localhost:8000/api/leads \
 **Symptoms:** 401 Unauthorized from Resend
 
 **Solutions:**
+
 1. Verify API key is correct (no extra spaces)
 2. Check API key hasn't been revoked in Resend dashboard
 3. Regenerate API key if necessary
@@ -273,6 +285,7 @@ curl -X POST http://localhost:8000/api/leads \
 **Symptoms:** 429 Too Many Requests
 
 **Solutions:**
+
 1. **Free tier limit:** 100 emails/day, 3,000/month
 2. **Upgrade plan:** Go to https://resend.com/pricing
 3. **Implement queue:** Add Redis queue for high volume (future enhancement)
@@ -361,15 +374,18 @@ LEAD_EMAIL_FROM=leads@dovvybuddy.com
 ### Resend Pricing (as of January 2026)
 
 **Free Tier:**
+
 - 100 emails/day
 - 3,000 emails/month
 - Good for: Testing, small volume
 
 **Pro Plan ($20/month):**
+
 - 50,000 emails/month
 - Good for: Small to medium businesses
 
 **Enterprise:**
+
 - Custom volume
 - Dedicated IP
 - SLA guarantees
@@ -377,14 +393,17 @@ LEAD_EMAIL_FROM=leads@dovvybuddy.com
 ### Expected Usage
 
 **Conservative estimate (10 leads/day):**
+
 - 300 leads/month
 - Fits in free tier
 
 **Growth scenario (100 leads/day):**
+
 - 3,000 leads/month
 - Still fits in free tier!
 
 **High volume (200 leads/day):**
+
 - 6,000 leads/month
 - Need Pro plan ($20/month)
 

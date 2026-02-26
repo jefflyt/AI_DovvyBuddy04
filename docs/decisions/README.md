@@ -26,6 +26,7 @@ Create an ADR when making decisions about:
 - **Significant trade-offs** (performance vs simplicity, cost vs features)
 
 **Don't create ADRs for:**
+
 - Small implementation details
 - Easily reversible decisions
 - Standard best practices
@@ -36,6 +37,7 @@ Create an ADR when making decisions about:
 ## How to Create an ADR
 
 1. **Copy the template:**
+
    ```bash
    cp template.md XXXX-your-decision-title.md
    ```
@@ -56,26 +58,26 @@ Create an ADR when making decisions about:
 
 ## ADR Status Lifecycle
 
-| Status | Meaning |
-|--------|---------|
-| **Proposed** | Under discussion, not yet decided |
-| **Accepted** | Decision made and currently in effect |
+| Status         | Meaning                                |
+| -------------- | -------------------------------------- |
+| **Proposed**   | Under discussion, not yet decided      |
+| **Accepted**   | Decision made and currently in effect  |
 | **Deprecated** | No longer recommended but still in use |
-| **Superseded** | Replaced by a newer ADR (link to it) |
+| **Superseded** | Replaced by a newer ADR (link to it)   |
 
 ---
 
 ## Current ADRs
 
-| Number | Title | Status | Date |
-|--------|-------|--------|------|
-| [Template](./template.md) | ADR Template | N/A | 2025-12-30 |
-| [0001](./0001-nextjs-vercel.md) | Use Next.js + Vercel for Web App | Accepted | 2025-12-20 |
-| [0002](./0002-postgres-pgvector.md) | Use PostgreSQL + pgvector for Database | Accepted | 2025-12-20 |
-| [0003](./0003-groq-gemini-strategy.md) | Historical LLM Provider Strategy (Groq/Gemini/SEA-LION) | Superseded | 2025-12-30 |
-| [0004](./0004-google-adk-multi-agent.md) | Google ADK Multi-Agent Architecture | Accepted | 2026-01-01 |
-| [0005](./0005-gemini-flash-standardization.md) | Gemini Flash-Lite Model Standardization | Accepted | 2026-01-01 |
-| [0006](./0006-python-backend-migration.md) | Python-First Backend Migration Strategy | Accepted | 2026-01-01 |
+| Number                                         | Title                                                   | Status     | Date       |
+| ---------------------------------------------- | ------------------------------------------------------- | ---------- | ---------- |
+| [Template](./template.md)                      | ADR Template                                            | N/A        | 2025-12-30 |
+| [0001](./0001-nextjs-vercel.md)                | Use Next.js + Vercel for Web App                        | Accepted   | 2025-12-20 |
+| [0002](./0002-postgres-pgvector.md)            | Use PostgreSQL + pgvector for Database                  | Accepted   | 2025-12-20 |
+| [0003](./0003-groq-gemini-strategy.md)         | Historical LLM Provider Strategy (Groq/Gemini/SEA-LION) | Superseded | 2025-12-30 |
+| [0004](./0004-google-adk-multi-agent.md)       | Google ADK Multi-Agent Architecture                     | Accepted   | 2026-01-01 |
+| [0005](./0005-gemini-flash-standardization.md) | Gemini Flash-Lite Model Standardization                 | Accepted   | 2026-01-01 |
+| [0006](./0006-python-backend-migration.md)     | Python-First Backend Migration Strategy                 | Accepted   | 2026-01-01 |
 
 ---
 

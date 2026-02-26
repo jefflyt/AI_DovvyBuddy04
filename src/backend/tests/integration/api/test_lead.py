@@ -93,7 +93,7 @@ class TestLeadEndpoint:
             
             response = await client.post("/api/leads", json=payload)
         
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
         data = response.json()
         assert "detail" in data
 
@@ -111,7 +111,7 @@ class TestLeadEndpoint:
             
             response = await client.post("/api/leads", json=payload)
         
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     @pytest.mark.asyncio
     async def test_missing_type_returns_400(self):
@@ -126,7 +126,7 @@ class TestLeadEndpoint:
             
             response = await client.post("/api/leads", json=payload)
         
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     @pytest.mark.asyncio
     async def test_invalid_json_returns_422(self):
@@ -138,7 +138,7 @@ class TestLeadEndpoint:
                 headers={"Content-Type": "application/json"},
             )
         
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     @pytest.mark.asyncio
     async def test_message_too_long_returns_400(self):
@@ -155,7 +155,7 @@ class TestLeadEndpoint:
             
             response = await client.post("/api/leads", json=payload)
         
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     @pytest.mark.asyncio
     async def test_trip_group_size_validation(self):
@@ -172,7 +172,7 @@ class TestLeadEndpoint:
             
             response = await client.post("/api/leads", json=payload)
         
-        assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+        assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     @pytest.mark.asyncio
     async def test_lead_with_session_id(self, mock_resend):

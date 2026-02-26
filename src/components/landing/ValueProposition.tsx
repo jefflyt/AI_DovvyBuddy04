@@ -1,4 +1,4 @@
-import Image from 'next/image';
+import Image from 'next/image'
 
 interface Feature {
   icon?: string
@@ -21,8 +21,8 @@ export default function ValueProposition({ features }: ValuePropositionProps) {
               Your Diving Journey, Simplified
             </h2>
             <p className="text-lg text-gray-700 max-w-2xl mx-auto">
-              Whether you&apos;re exploring certifications or planning your next dive trip,
-              DovvyBuddy provides grounded, judgment-free guidance.
+              Whether you&apos;re exploring certifications or planning your next
+              dive trip, DovvyBuddy provides grounded, judgment-free guidance.
             </p>
           </div>
 
@@ -44,7 +44,11 @@ export default function ValueProposition({ features }: ValuePropositionProps) {
                       />
                     </div>
                   ) : (
-                    <div className="text-6xl" role="img" aria-label={feature.title}>
+                    <div
+                      className="text-6xl"
+                      role="img"
+                      aria-label={feature.title}
+                    >
                       {feature.icon}
                     </div>
                   )}

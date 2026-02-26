@@ -1,10 +1,11 @@
 ---
-doc_type: "safety"
-title: "Decompression Safety"
-tags: ["safety", "decompression", "DCS", "nitrogen", "diving-physics"]
-keywords: ["decompression sickness", "the bends", "nitrogen", "NDL", "safety stops"]
-last_updated: "2025-12-23"
-data_quality: "verified"
+doc_type: 'safety'
+title: 'Decompression Safety'
+tags: ['safety', 'decompression', 'DCS', 'nitrogen', 'diving-physics']
+keywords:
+  ['decompression sickness', 'the bends', 'nitrogen', 'NDL', 'safety stops']
+last_updated: '2025-12-23'
+data_quality: 'verified'
 ---
 
 # Decompression Safety
@@ -16,12 +17,14 @@ Decompression is the process of safely releasing nitrogen absorbed by your body 
 ### What Happens During a Dive
 
 **Nitrogen Absorption:**
+
 1. At depth, you breathe compressed air (79% nitrogen)
 2. Higher pressure forces nitrogen into your bloodstream
 3. Nitrogen dissolves into body tissues over time
 4. Deeper and longer dives = more nitrogen absorption
 
 **During Ascent:**
+
 1. Pressure decreases as you ascend
 2. Nitrogen comes out of solution (like opening a soda bottle)
 3. If ascent is too fast, nitrogen forms bubbles in tissues/blood
@@ -35,15 +38,16 @@ No-decompression diving means you can ascend directly to the surface (with safet
 
 ### Standard Recreational NDLs (PADI RDP Example)
 
-| Depth | NDL Time | Pressure Groups |
-|-------|----------|-----------------|
-| 12m (40ft) | 140+ min | Very safe |
-| 18m (60ft) | 56 min | Typical reef depth |
-| 24m (80ft) | 29 min | Deeper wrecks |
-| 30m (100ft) | 20 min | Recreational limit |
-| 40m (130ft) | 9 min | Advanced only |
+| Depth       | NDL Time | Pressure Groups    |
+| ----------- | -------- | ------------------ |
+| 12m (40ft)  | 140+ min | Very safe          |
+| 18m (60ft)  | 56 min   | Typical reef depth |
+| 24m (80ft)  | 29 min   | Deeper wrecks      |
+| 30m (100ft) | 20 min   | Recreational limit |
+| 40m (130ft) | 9 min    | Advanced only      |
 
 **Important Notes:**
+
 - These are MAXIMUM limits, not targets
 - Conservative diving adds safety margin
 - Computer algorithms vary (always follow your computer)
@@ -52,6 +56,7 @@ No-decompression diving means you can ascend directly to the surface (with safet
 ### Dive Computer Essentials
 
 **What your computer tracks:**
+
 - Current depth and time
 - Nitrogen loading in tissue compartments
 - Remaining no-decompression time
@@ -60,6 +65,7 @@ No-decompression diving means you can ascend directly to the surface (with safet
 - Surface interval tracking
 
 **Critical Computer Skills:**
+
 1. **Monitor NDL constantly** - Check every few minutes
 2. **Plan turnaround time** - Leave with plenty of NDL remaining
 3. **Heed warnings** - If it beeps or flashes, respond immediately
@@ -71,17 +77,20 @@ No-decompression diving means you can ascend directly to the surface (with safet
 ### Ascent Rate: 18m/60ft Per Minute
 
 **This is MAXIMUM, not target:**
+
 - Slower is always better (9-12m/min is ideal)
 - Watch your computer's ascent rate indicator
 - If warning sounds, SLOW DOWN immediately
 - Use your dive computer or watch and depth gauge
 
 **Visual Reference:**
+
 - Your smallest exhaled bubbles rise at ~18m/min
 - Stay slower than or equal to your bubbles
 - Use a guideline/anchor line when possible
 
 **Why slow ascents matter:**
+
 - Gives nitrogen time to diffuse safely
 - Reduces bubble formation
 - Allows body to compensate gradually
@@ -90,18 +99,21 @@ No-decompression diving means you can ascend directly to the surface (with safet
 ### The Safety Stop: 5m for 3 Minutes
 
 **Standard procedure:**
+
 - Stop at 5m (15ft) depth
 - Remain for 3 minutes minimum
 - Maintain neutral buoyancy
 - Monitor computer and remaining air
 
 **Why it's critical:**
+
 - Allows additional nitrogen off-gassing
 - Reduces DCS risk by ~50%
 - Provides buffer for depth gauge errors
 - Time to check for boat traffic above
 
 **When it's MANDATORY:**
+
 - All dives deeper than 18m (60ft)
 - Any dive approaching NDL limits
 - Repetitive dives
@@ -109,6 +121,7 @@ No-decompression diving means you can ascend directly to the surface (with safet
 - If computer or instructor requires it
 
 **Extended safety stops:**
+
 - 5 minutes at 5m after deep dives (30m+)
 - 8 minutes after aggressive profiles
 - Per computer recommendation
@@ -116,11 +129,13 @@ No-decompression diving means you can ascend directly to the surface (with safet
 ### Deep Stops (Controversial)
 
 **What they are:**
+
 - Brief stops during ascent from deep dives
 - Example: 1 minute at half your max depth
 - Theory: Reduces bubble formation
 
 **Current Consensus:**
+
 - Not universally recommended anymore
 - May increase overall nitrogen load
 - Follow YOUR computer's algorithm
@@ -133,17 +148,20 @@ Multiple dives in one day require extra caution:
 ### Surface Intervals
 
 **Purpose:**
+
 - Allow nitrogen to off-gas between dives
 - Body slowly returns to equilibrium
 - Longer intervals = safer second dive
 
 **Minimum surface intervals:**
+
 - 1 hour minimum between dives
 - 2+ hours is better
 - Follow dive computer's recommendations
 - Never "round down" on surface interval
 
 **Surface Interval Activities:**
+
 - Rest in shade (avoid overheating)
 - Hydrate well (water, not alcohol)
 - Light snack (avoid heavy meals)
@@ -155,16 +173,19 @@ Multiple dives in one day require extra caution:
 **Golden Rule: Deepest Dive First**
 
 **Correct profile:**
+
 1. **Dive 1:** 25m (82ft) - wreck dive
 2. **Surface interval:** 90 minutes
 3. **Dive 2:** 15m (49ft) - reef dive
 
 **Wrong profile (reverse):**
+
 1. **Dive 1:** 15m - shallow reef
 2. **Dive 2:** 25m - deeper wreck
 3. Result: Higher DCS risk due to pressure increase
 
 **Why deepest-first is safer:**
+
 - Second dive is shallower (lower pressure)
 - Reduces nitrogen loading on second dive
 - Allows continued off-gassing during shallow dive
@@ -172,11 +193,13 @@ Multiple dives in one day require extra caution:
 ### Multiple Days of Diving
 
 **Considerations:**
+
 - Residual nitrogen accumulates over days
 - Risk increases with each day
 - More conservative on day 3-7 than day 1
 
 **Best practices:**
+
 - Take a day off after 5-6 consecutive dive days
 - Use computer's conservative/repetitive settings
 - Limit number of dives per day (3-4 maximum)
@@ -188,12 +211,14 @@ Multiple dives in one day require extra caution:
 ### Types of DCS
 
 **Type I (Musculoskeletal):**
+
 - Joint pain ("the bends") - elbows, shoulders, knees
 - Skin rash, itching
 - Fatigue, malaise
 - Generally less severe but still requires treatment
 
 **Type II (Serious):**
+
 - Neurological symptoms (weakness, numbness, paralysis)
 - Inner ear (vertigo, nausea, hearing loss)
 - Pulmonary (chest pain, difficulty breathing)
@@ -203,6 +228,7 @@ Multiple dives in one day require extra caution:
 ### DCS Symptoms
 
 **Common signs (can appear anytime 1-24 hours after diving):**
+
 - Unusual fatigue (beyond normal post-dive tiredness)
 - Joint pain, especially in large joints
 - Skin rash, marbling, or itching
@@ -215,6 +241,7 @@ Multiple dives in one day require extra caution:
 - Loss of coordination
 
 **RED FLAGS (immediate emergency):**
+
 - Paralysis
 - Loss of consciousness
 - Severe chest pain
@@ -224,6 +251,7 @@ Multiple dives in one day require extra caution:
 ### DCS Risk Factors
 
 **Dive-related:**
+
 - Exceeding NDLs
 - Fast ascents
 - Skipping safety stops
@@ -233,6 +261,7 @@ Multiple dives in one day require extra caution:
 - Strenuous diving
 
 **Personal factors:**
+
 - Dehydration (major risk factor)
 - Fatigue or lack of sleep
 - Obesity (nitrogen dissolves in fat)
@@ -330,10 +359,12 @@ Multiple dives in one day require extra caution:
 ### Benefits of Enriched Air (Nitrox)
 
 **What it is:**
+
 - Air with higher oxygen % (typically 32% or 36%)
 - Lower nitrogen % than regular air (79% nitrogen)
 
 **Advantages:**
+
 - Reduced nitrogen loading at same depth
 - Longer no-decompression limits
 - Shorter required surface intervals
@@ -341,24 +372,28 @@ Multiple dives in one day require extra caution:
 - Safer for repetitive/multi-day diving
 
 **Example NDL comparison (32% nitrox):**
+
 - 18m (60ft): 95 min vs 56 min on air
 - 24m (80ft): 45 min vs 29 min on air
 
 ### Nitrox Precautions
 
 **Oxygen toxicity limits:**
+
 - Maximum depth based on oxygen %
 - EAN32: 40m (130ft) maximum
 - EAN36: 34m (110ft) maximum
 - Exceeding = risk of convulsions underwater
 
 **Required:**
+
 - Nitrox certification before use
 - Analyze tank contents before EVERY dive
 - Set computer to correct nitrox mix
 - Label tank clearly
 
 **Not a substitute for:**
+
 - Proper ascent procedures
 - Safety stops
 - Conservative diving
@@ -369,12 +404,14 @@ Multiple dives in one day require extra caution:
 ### Altitude Diving
 
 **Why it's different:**
+
 - Lower atmospheric pressure at altitude
 - Body saturated with nitrogen at higher "sea level"
 - Computer must be set to altitude mode
 - NDLs significantly reduced
 
 **Adjustments needed:**
+
 - Special tables or altitude-capable computer
 - More conservative profiles
 - Longer surface intervals
@@ -383,12 +420,14 @@ Multiple dives in one day require extra caution:
 ### Cold Water Diving
 
 **Effects on decompression:**
+
 - Reduces circulation (slows off-gassing)
 - Increases work of breathing
 - Higher gas consumption
 - Many computers adjust automatically
 
 **Recommendations:**
+
 - Add conservatism to computer
 - Shorter NDLs than warm water equivalent
 - Longer safety stops
@@ -399,25 +438,30 @@ Multiple dives in one day require extra caution:
 **Absolute Rules:**
 
 **After single no-decompression dive:**
+
 - Wait minimum 12 hours before flying
 - 18 hours is more conservative
 
 **After multiple dives or multiple days:**
+
 - Wait minimum 18 hours
 - 24 hours is recommended
 - Some agencies say 24-48 hours
 
 **After decompression diving:**
+
 - Wait minimum 24-48 hours
 - Consult with dive computer manual
 
 **Why this matters:**
+
 - Cabin pressure = ~2,400m (8,000ft) altitude
 - Reduced pressure can cause DCS even after safe dive
 - Symptoms can appear during flight
 - Medical help limited at 30,000 feet
 
 **Applies to:**
+
 - Commercial flights
 - Private aircraft
 - Skydiving
@@ -427,6 +471,7 @@ Multiple dives in one day require extra caution:
 ## Key Takeaways
 
 ✅ **DO:**
+
 - Stay well within no-decompression limits
 - Ascend slowly (max 18m/min, slower is better)
 - Always perform 3-5 minute safety stop at 5m
@@ -436,6 +481,7 @@ Multiple dives in one day require extra caution:
 - Wait 12-24 hours before flying
 
 ❌ **DON'T:**
+
 - Exceed NDLs (even by 1 minute)
 - Skip safety stops (EVER)
 - Ascend faster than 18m/min
@@ -447,5 +493,6 @@ Multiple dives in one day require extra caution:
 **Remember:** Decompression sickness is preventable through conservative diving practices. When in doubt, dive more conservatively. The most important rule: Better to waste a dive than waste a diver.
 
 **Emergency Contact:**
+
 - **DAN Emergency Hotline**: +1-919-684-9111 (24/7)
 - Have this number saved in your phone before every dive trip

@@ -58,17 +58,17 @@ DovvyBuddy is an AI-powered conversational assistant that helps prospective and 
 
 ### Technology Stack
 
-| Layer | Technology | Justification |
-|-------|------------|---------------|
-| **Frontend** | Next.js 14 (App Router), React, TypeScript | Server Components, type safety, optimized routing |
-| **Backend** | Python FastAPI, SQLAlchemy, Alembic | Async performance, robust ORM, type hints |
-| **Database** | PostgreSQL + pgvector (Neon) | Relational data + vector embeddings, managed service |
-| **LLM** | Gemini 2.5 Flash Lite | Cost-effective, low-latency production model |
-| **Embeddings** | text-embedding-004 | 768 dimensions, optimized for retrieval |
-| **Email** | Resend API | Developer-friendly, reliable delivery |
-| **Hosting** | Vercel (frontend) + Cloud Run (backend) | Edge network, serverless Python |
-| **Testing** | Vitest (frontend), pytest (backend), Playwright (E2E) | Comprehensive test coverage |
-| **Monitoring** | Sentry + Vercel Analytics | Error tracking, performance insights |
+| Layer          | Technology                                            | Justification                                        |
+| -------------- | ----------------------------------------------------- | ---------------------------------------------------- |
+| **Frontend**   | Next.js 14 (App Router), React, TypeScript            | Server Components, type safety, optimized routing    |
+| **Backend**    | Python FastAPI, SQLAlchemy, Alembic                   | Async performance, robust ORM, type hints            |
+| **Database**   | PostgreSQL + pgvector (Neon)                          | Relational data + vector embeddings, managed service |
+| **LLM**        | Gemini 2.5 Flash Lite                                 | Cost-effective, low-latency production model         |
+| **Embeddings** | text-embedding-004                                    | 768 dimensions, optimized for retrieval              |
+| **Email**      | Resend API                                            | Developer-friendly, reliable delivery                |
+| **Hosting**    | Vercel (frontend) + Cloud Run (backend)               | Edge network, serverless Python                      |
+| **Testing**    | Vitest (frontend), pytest (backend), Playwright (E2E) | Comprehensive test coverage                          |
+| **Monitoring** | Sentry + Vercel Analytics                             | Error tracking, performance insights                 |
 
 ---
 
@@ -79,17 +79,20 @@ DovvyBuddy is an AI-powered conversational assistant that helps prospective and 
 **Purpose:** Specialized agents handle different types of diving queries with domain expertise.
 
 **Agent Types:**
+
 - **Certification Agent** - PADI/SSI certification guidance, prerequisites, progression paths
 - **Trip Planning Agent** - Dive site recommendations, difficulty assessment, logistics
 - **Safety Agent** - Emergency procedures, medical contraindications, risk management
 - **Retrieval Agent** - RAG-powered content retrieval and context building
 
 **Architecture:**
+
 ```
 User Query → Mode Detection → Agent Selection → Agent Execution → Response
 ```
 
 **Key Files:**
+
 - `src/backend/app/agents/base.py` - Base agent interface
 - `src/backend/app/agents/registry.py` - Agent registration & discovery
 - `src/backend/app/agents/certification_agent.py`
@@ -104,6 +107,7 @@ User Query → Mode Detection → Agent Selection → Agent Execution → Respon
 **Purpose:** Coordinates conversation flow, manages context, and routes to appropriate agents.
 
 **Responsibilities:**
+
 - Session lifecycle management (create, retrieve, update)
 - Conversation context building (history + RAG context)
 - Emergency detection (safety-critical queries)
@@ -112,12 +116,14 @@ User Query → Mode Detection → Agent Selection → Agent Execution → Respon
 - Response formatting and metadata
 
 **Flow:**
+
 ```
-User Message → Emergency Check → Mode Detection → Agent Selection 
+User Message → Emergency Check → Mode Detection → Agent Selection
 → Context Building → Agent Execute → History Update → Response
 ```
 
 **Key Files:**
+
 - `src/backend/app/orchestration/orchestrator.py` - Main orchestration logic
 - `src/backend/app/orchestration/conversation_manager.py` - Conversation state
 - `src/backend/app/orchestration/mode_detector.py` - Query classification
@@ -130,23 +136,27 @@ User Message → Emergency Check → Mode Detection → Agent Selection
 **Purpose:** Retrieve relevant content chunks to ground LLM responses.
 
 **Components:**
+
 1. **Content Ingestion:** Markdown files → chunks → embeddings → database
 2. **Retrieval Service:** Query → vector search → ranked chunks
 3. **Context Builder:** Chunks → formatted context string
 
 **Data Flow:**
+
 ```
-Content Files → Chunking (500-800 tokens) → Gemini Embeddings 
+Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 → Store in pgvector → Query → Retrieve Top-K → Return Context
 ```
 
 **Key Decisions:**
+
 - Chunk size: 500-800 tokens (balance between context and precision)
 - Embedding model: Gemini `text-embedding-004` (768 dimensions, Matryoshka-capable)
 - Retrieval: HNSW index for fast similarity search
 - Metadata: JSONB fields for filtering (content type, certification level)
 
 **Key Files:**
+
 - `src/backend/app/services/rag/pipeline.py`
 - `src/backend/app/services/rag/retriever.py`
 - `src/backend/app/services/rag/repository.py`
@@ -159,11 +169,13 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 **Purpose:** Use strict Google ADK routing for intent-to-agent orchestration.
 
 **Runtime Rules:**
+
 - `ENABLE_ADK=true` and `ENABLE_AGENT_ROUTING=true` are required.
 - `ADK_MODEL=gemini-2.5-flash-lite` is the default orchestration model.
 - No legacy keyword fallback is used for normal routing.
 
 **Key Files:**
+
 - `src/backend/app/orchestration/gemini_orchestrator.py`
 - `src/backend/app/orchestration/orchestrator.py`
 - `src/backend/app/orchestration/agent_router.py`
@@ -175,6 +187,7 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 **Purpose:** Maintain conversation state for 24-hour sessions without user authentication.
 
 **Session Data Structure:**
+
 ```typescript
 {
   id: string;                    // UUID
@@ -195,12 +208,14 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 ```
 
 **Operations:**
+
 - `createSession()` — Generate UUID, set expiry
 - `getSession(id)` — Retrieve session, return null if expired
 - `updateSessionHistory(id, messages)` — Append user + assistant messages
 - `expireSession(id)` — Mark session as expired
 
 **Key Files:**
+
 - `src/lib/session/session-service.ts`
 - `src/lib/session/types.ts`
 
@@ -211,10 +226,12 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 **Purpose:** Collect qualified leads and deliver to partner dive shops via email.
 
 **Lead Types:**
+
 1. **Training Leads:** Certification requests, course inquiries
 2. **Trip Leads:** Destination research, booking interest
 
 **Lead Data Structure:**
+
 ```typescript
 {
   id: string;
@@ -238,13 +255,16 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 ```
 
 **Delivery:**
+
 - **Email:** Resend API → `LEAD_EMAIL_TO` address
 - **Webhook (optional):** HTTP POST to `LEAD_WEBHOOK_URL`
 
 **Deduplication:**
+
 - Same `email + type` within 5 minutes → reject as duplicate
 
 **Key Files:**
+
 - `src/lib/lead/lead-service.ts`
 - `src/app/api/lead/route.ts`
 
@@ -255,6 +275,7 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 ### 3.1 POST /api/chat
 
 **Request:**
+
 ```typescript
 {
   sessionId?: string;  // Optional, creates new if omitted
@@ -263,6 +284,7 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 ```
 
 **Response (200):**
+
 ```typescript
 {
   sessionId: string;
@@ -275,6 +297,7 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 ```
 
 **Errors:**
+
 - `400` — Invalid input (message too long, invalid format)
 - `500` — Internal server error
 - `503` — LLM provider unavailable
@@ -284,6 +307,7 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 ### 3.2 POST /api/lead
 
 **Request:**
+
 ```typescript
 {
   type: 'training' | 'trip';
@@ -303,14 +327,16 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 ```
 
 **Response (200):**
+
 ```typescript
 {
-  success: true;
-  leadId: string;
+  success: true
+  leadId: string
 }
 ```
 
 **Errors:**
+
 - `400` — Validation error (missing required fields)
 - `409` — Duplicate lead (same email + type within 5 minutes)
 - `500` — Internal server error
@@ -323,6 +349,7 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 ### 4.1 Database Schema
 
 **destinations**
+
 ```sql
 CREATE TABLE destinations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -334,6 +361,7 @@ CREATE TABLE destinations (
 ```
 
 **dive_sites**
+
 ```sql
 CREATE TABLE dive_sites (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -349,6 +377,7 @@ CREATE TABLE dive_sites (
 ```
 
 **sessions**
+
 ```sql
 CREATE TABLE sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -360,6 +389,7 @@ CREATE TABLE sessions (
 ```
 
 **leads**
+
 ```sql
 CREATE TABLE leads (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -372,6 +402,7 @@ CREATE TABLE leads (
 ```
 
 **content_embeddings**
+
 ```sql
 CREATE TABLE content_embeddings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -391,24 +422,24 @@ CREATE INDEX ON content_embeddings USING hnsw (embedding vector_cosine_ops);
 
 ### 5.1 Security Considerations
 
-| Area | Mitigation |
-|------|------------|
-| **Session Hijacking** | UUID v4 (cryptographically random), no guessable patterns |
-| **XSS Prevention** | React auto-escaping, Content Security Policy headers |
-| **Input Validation** | Zod schemas, max length checks, sanitization |
-| **Rate Limiting** | Vercel edge middleware (future), 10s LLM timeout |
-| **API Key Exposure** | Environment variables, never in client code |
-| **PII Protection** | Minimal data collection, 24h session expiry, no persistent user data |
+| Area                  | Mitigation                                                           |
+| --------------------- | -------------------------------------------------------------------- |
+| **Session Hijacking** | UUID v4 (cryptographically random), no guessable patterns            |
+| **XSS Prevention**    | React auto-escaping, Content Security Policy headers                 |
+| **Input Validation**  | Zod schemas, max length checks, sanitization                         |
+| **Rate Limiting**     | Vercel edge middleware (future), 10s LLM timeout                     |
+| **API Key Exposure**  | Environment variables, never in client code                          |
+| **PII Protection**    | Minimal data collection, 24h session expiry, no persistent user data |
 
 ### 5.2 Performance
 
-| Component | Strategy | Target |
-|-----------|----------|--------|
-| **LLM Calls** | 10s timeout, retry once on transient failure | <5s p95 response time |
-| **Vector Search** | HNSW index, Top-5 chunks | <100ms query time |
-| **Session Retrieval** | Indexed by UUID, check expiry in query | <10ms |
-| **Cold Starts** | Minimize dependencies, optimize imports | <2s first request |
-| **Caching** | Static assets via Vercel CDN | Edge delivery |
+| Component             | Strategy                                     | Target                |
+| --------------------- | -------------------------------------------- | --------------------- |
+| **LLM Calls**         | 10s timeout, retry once on transient failure | <5s p95 response time |
+| **Vector Search**     | HNSW index, Top-5 chunks                     | <100ms query time     |
+| **Session Retrieval** | Indexed by UUID, check expiry in query       | <10ms                 |
+| **Cold Starts**       | Minimize dependencies, optimize imports      | <2s first request     |
+| **Caching**           | Static assets via Vercel CDN                 | Edge delivery         |
 
 ---
 
@@ -417,11 +448,13 @@ CREATE INDEX ON content_embeddings USING hnsw (embedding vector_cosine_ops);
 ### 6.1 LLM and Orchestration
 
 **Gemini (Current Runtime)**
+
 - Generation model: `gemini-2.5-flash-lite`
 - API: Google Generative AI SDK
 - Auth: API key (`GEMINI_API_KEY`)
 
 **Google ADK Orchestration**
+
 - Routing model: `ADK_MODEL` (default `gemini-2.5-flash-lite`)
 - Strict mode: `ENABLE_ADK=true`, `ENABLE_AGENT_ROUTING=true`
 

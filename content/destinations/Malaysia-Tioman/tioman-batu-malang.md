@@ -1,33 +1,53 @@
 ---
-doc_type: "dive_site"
-site_id: "tioman-batu-malang"
-title: "Batu Malang (Malang Rock)"
-destination: "Tioman Island, Malaysia"
-min_certification: "OW"
-difficulty: "beginner"
+doc_type: 'dive_site'
+site_id: 'tioman-batu-malang'
+title: 'Batu Malang (Malang Rock)'
+destination: 'Tioman Island, Malaysia'
+min_certification: 'OW'
+difficulty: 'beginner'
 depth_range_m: [5, 14]
-tags: ["shallow", "boulder", "swim-throughs", "hard-coral", "macro", "beginner-friendly", "photography"]
-keywords: ["Batu Malang", "Malang Rock", "Tioman", "Pulau Tulai", "boulder formation", "swim-throughs", "table coral", "macro", "shallow dive"]
-last_updated: "2026-01-01"
-data_quality: "compiled"
+tags:
+  [
+    'shallow',
+    'boulder',
+    'swim-throughs',
+    'hard-coral',
+    'macro',
+    'beginner-friendly',
+    'photography',
+  ]
+keywords:
+  [
+    'Batu Malang',
+    'Malang Rock',
+    'Tioman',
+    'Pulau Tulai',
+    'boulder formation',
+    'swim-throughs',
+    'table coral',
+    'macro',
+    'shallow dive',
+  ]
+last_updated: '2026-01-01'
+data_quality: 'compiled'
 sources:
-  - "https://www.diversaloon.com/tioman-diving"
-  - "Local dive operator reports and site surveys"
+  - 'https://www.diversaloon.com/tioman-diving'
+  - 'Local dive operator reports and site surveys'
 ---
 
 # Dive Site Documentation: Batu Malang, Tioman Island, Malaysia
 
 ## 1. Quick Facts
 
-| Feature | Details |
-| :--- | :--- |
-| **Depth Range** | 5-14 m |
-| **Visibility** | 10–30 m (8–12 m in low season; 20–30 m in high season) |
-| **Current** | Variable; gentle to moderate/strong |
-| **Water Temp** | 28 °C (year-round) |
-| **Season** | Best: March–May, September–October; Diveable: March–October |
+| Feature         | Details                                                     |
+| :-------------- | :---------------------------------------------------------- |
+| **Depth Range** | 5-14 m                                                      |
+| **Visibility**  | 10–30 m (8–12 m in low season; 20–30 m in high season)      |
+| **Current**     | Variable; gentle to moderate/strong                         |
+| **Water Temp**  | 28 °C (year-round)                                          |
+| **Season**      | Best: March–May, September–October; Diveable: March–October |
 
-***
+---
 
 ## 2. Site Overview
 
@@ -37,7 +57,7 @@ Batu Malang (meaning "Unlucky Rock" in Malay) is a submerged boulder formation l
 - **Atmosphere:** Adventurous yet accessible. The shallow depth allows for long, relaxed dives, while the rock formations provide a sense of exploration and discovery.
 - **Why dive here:** It offers a unique structural dive experience compared to typical reef slopes. The swim-throughs are safe and photogenic, and the site is a haven for macro photographers and beginners alike.
 
-***
+---
 
 ## 3. Underwater Topography
 
@@ -50,7 +70,7 @@ Batu Malang (meaning "Unlucky Rock" in Malay) is a submerged boulder formation l
   - **Crevices and Caverns:** Numerous hiding spots for eels, lobsters, and sleeping fish.
 - **Key structures:** The central rock formation is the main focus, surrounded by sandy areas and satellite coral patches.
 
-***
+---
 
 ## 4. Typical Dive Profile
 
@@ -62,7 +82,7 @@ Batu Malang (meaning "Unlucky Rock" in Malay) is a submerged boulder formation l
 - **Duration:** 45–60 minutes typical; shallow depth allows for extended bottom times.
 - **Turnaround:** Based on air consumption or time; usually end the dive by ascending near the boat mooring or drifting to a pickup point.
 
-***
+---
 
 ## 5. Marine Life
 
@@ -89,7 +109,7 @@ Batu Malang (meaning "Unlucky Rock" in Malay) is a submerged boulder formation l
 - **Seasonal highlights:**
   - **March–May & September–November:** Peak visibility enhances the schooling fish action and coral colors.
 
-***
+---
 
 ## 6. Conditions
 
@@ -113,7 +133,7 @@ Batu Malang (meaning "Unlucky Rock" in Malay) is a submerged boulder formation l
   - Tidal changes can strengthen currents.
   - Monsoon winds (Nov–Feb) make the site inaccessible due to rough seas.
 
-***
+---
 
 ## 7. Difficulty Assessment
 
@@ -134,7 +154,7 @@ Batu Malang (meaning "Unlucky Rock" in Malay) is a submerged boulder formation l
   - While depth is not challenging, the site is perfect for slow, methodical macro hunting.
   - Good for testing equipment or weighting in a low-stress environment.
 
-***
+---
 
 ## 8. Recommended Diver Profile
 
@@ -145,7 +165,7 @@ Batu Malang (meaning "Unlucky Rock" in Malay) is a submerged boulder formation l
   - Willing to explore small crevices and look for macro life.
   - Comfortable with boat entries.
 
-***
+---
 
 ## 9. Hazards & Safety Notes
 
@@ -170,7 +190,7 @@ Batu Malang (meaning "Unlucky Rock" in Malay) is a submerged boulder formation l
 - **Incidents:**
   - No specific major incidents documented. Standard recreational diving safety applies.
 
-***
+---
 
 ## 10. Photography Notes
 
@@ -196,7 +216,7 @@ Batu Malang (meaning "Unlucky Rock" in Malay) is a submerged boulder formation l
   - Backscatter can be an issue in lower visibility months (June–Aug).
   - Protecting dome ports from rock contact in tight spaces.
 
-***
+---
 
 ## 11. Best Time to Dive
 
@@ -213,7 +233,7 @@ Batu Malang (meaning "Unlucky Rock" in Malay) is a submerged boulder formation l
 - **Monsoon (Mid-November–February):**
   - Site typically closed or inaccessible due to rough sea conditions.
 
-***
+---
 
 ## 12. Practical Tips
 
@@ -236,9 +256,7 @@ Batu Malang (meaning "Unlucky Rock" in Malay) is a submerged boulder formation l
   - Rash guard or 3 mm shorty is usually sufficient.
   - Full suit recommended if planning to get close to rocks/hydroids (protection from abrasion/stings).
 
-***
-
-
+---
 
 ## 13. Keywords & Tags
 
@@ -263,4 +281,4 @@ Batu Malang (meaning "Unlucky Rock" in Malay) is a submerged boulder formation l
   - **Marine life focus:** Macro, Reef fish, Hard coral
   - **Activity:** Recreational diving, Photography, Snorkeling
 
-***
+---

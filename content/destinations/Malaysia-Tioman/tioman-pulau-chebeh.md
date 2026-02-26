@@ -1,33 +1,50 @@
 ---
-doc_type: "dive_site"
-site_id: "tioman-pulau-chebeh"
-title: "Pulau Chebeh (Chebeh Island)"
-destination: "Tioman Island, Malaysia"
-min_certification: "AOW"
-difficulty: "intermediate"
+doc_type: 'dive_site'
+site_id: 'tioman-pulau-chebeh'
+title: 'Pulau Chebeh (Chebeh Island)'
+destination: 'Tioman Island, Malaysia'
+min_certification: 'AOW'
+difficulty: 'intermediate'
 depth_range_m: [10, 28]
-tags: ["boulder", "reef", "current", "schooling-fish", "macro", "wide-angle", "intermediate-advanced"]
-keywords: ["Pulau Chebeh", "Chebeh Island", "Tioman", "coral garden", "nudibranchs", "reef fish"]
-last_updated: "2026-01-01"
-data_quality: "compiled"
+tags:
+  [
+    'boulder',
+    'reef',
+    'current',
+    'schooling-fish',
+    'macro',
+    'wide-angle',
+    'intermediate-advanced',
+  ]
+keywords:
+  [
+    'Pulau Chebeh',
+    'Chebeh Island',
+    'Tioman',
+    'coral garden',
+    'nudibranchs',
+    'reef fish',
+  ]
+last_updated: '2026-01-01'
+data_quality: 'compiled'
 sources:
-  - "https://www.diversaloon.com/tioman-diving"
-  - "Local dive operator reports and site surveys"
+  - 'https://www.diversaloon.com/tioman-diving'
+  - 'Local dive operator reports and site surveys'
 ---
 
 # Dive Site Documentation: Pulau Chebeh (Chebeh Island), Tioman Island, Malaysia
 
 ## 1. Quick Facts
 
-| Feature | Details |
-| :--- | :--- |
-| **Depth Range** | 10–28 m |
-| **Visibility** | 15–30 m (best March–June; 8–15 m low season) |
-| **Current** | Moderate to strong; directionally dependent |
-| **Water Temp** | 27–30 °C (year-round) |
-| **Season** | Best: March–May, September–October; Diveable: March–October |
+| Feature         | Details                                                     |
+| :-------------- | :---------------------------------------------------------- |
+| **Depth Range** | 10–28 m                                                     |
+| **Visibility**  | 15–30 m (best March–June; 8–15 m low season)                |
+| **Current**     | Moderate to strong; directionally dependent                 |
+| **Water Temp**  | 27–30 °C (year-round)                                       |
+| **Season**      | Best: March–May, September–October; Diveable: March–October |
 
-***
+---
 
 ## 2. Site Overview
 
@@ -37,7 +54,7 @@ Pulau Chebeh is a steep, sloping offshore island northeast of Tioman's main hub,
 - **Atmosphere:** Exploratory and visually rewarding; a "wild" reef setting that rewards careful observation and navigation; strong sense of scale and structure; energetic due to consistent current and fish activity.
 - **Why dive here:** Advanced recreational and intermediate-plus divers appreciate the structural complexity and current experience; macro and wide-angle photographers find abundant subjects and dynamic lighting; the site is reliable for both fish life and geological drama; considered among the best offshore dives in Tioman.
 
-***
+---
 
 ## 3. Underwater Topography
 
@@ -53,7 +70,7 @@ Pulau Chebeh is a steep, sloping offshore island northeast of Tioman's main hub,
   - Two distinct operational dive zones: "Chebeh North" and "Chebeh South," chosen based on current direction on the day.
 - **Key structures:** Massive boulder pinnacle/formation is the primary feature; divers explore around, through, and under boulders rather than following a linear slope. Depths shift significantly within a few metres of movement. Notable overhangs and ledges at 15–22 m range.
 
-***
+---
 
 ## 4. Typical Dive Profile
 
@@ -65,7 +82,7 @@ Pulau Chebeh is a steep, sloping offshore island northeast of Tioman's main hub,
 - **Duration:** 40–50 minutes typical bottom time; can extend to 60+ minutes depending on depth choice and diver air consumption.
 - **Turnaround:** Ascent to shallower water (10–12 m) over final 5 minutes; safety stop (3–5 m) performed on shallow boulder feature or in open water with dependent buddy technique if current present.
 
-***
+---
 
 ## 5. Marine Life
 
@@ -89,7 +106,7 @@ Pulau Chebeh is a steep, sloping offshore island northeast of Tioman's main hub,
   - **June–August:** Summer season; visibility drops to 8–15 m but diving remains productive; fish life remains robust.
   - **April & October:** Documented whale shark migration periods; extremely rare opportunistic sightings possible.
 
-***
+---
 
 ## 6. Conditions
 
@@ -112,7 +129,7 @@ Pulau Chebeh is a steep, sloping offshore island northeast of Tioman's main hub,
   - **Monsoon phase:** Northeast Monsoon (November–February) weakens visibility and increases surface chop; Southwest Monsoon (June–August) is milder.
   - **Seasonal upwelling:** May–October can bring nutrient-rich cooler water, enhancing visibility and fish activity.
 
-***
+---
 
 ## 7. Difficulty Assessment
 
@@ -132,7 +149,7 @@ Pulau Chebeh is a steep, sloping offshore island northeast of Tioman's main hub,
 - **Not suitable for:** Open Water–only divers or divers without experience in moderate current and depths beyond 18 m.
 - **Advanced notes:** Advanced divers (AOWD+) can exploit full depth range and current dynamics for efficient exploration; macro photographers find excellent lighting and diverse critters; current dive is rewarding for those comfortable in blue-water drift.
 
-***
+---
 
 ## 8. Recommended Diver Profile
 
@@ -145,7 +162,7 @@ Pulau Chebeh is a steep, sloping offshore island northeast of Tioman's main hub,
   - Able to make calm gas-management decisions at 20+ m depth.
   - Comfortable with open-water surface swims and entry/exit procedures.
 
-***
+---
 
 ## 9. Hazards & Safety Notes
 
@@ -169,7 +186,7 @@ Pulau Chebeh is a steep, sloping offshore island northeast of Tioman's main hub,
   - **Sharks:** Blacktip/Whitetip reef sharks are skittish and non-aggressive; no incident history; normal behavior is avoidance.
 - **Incidents:** No documented serious incidents. Site has excellent safety record when dived by trained operators and appropriate certification levels.
 
-***
+---
 
 ## 10. Photography Notes
 
@@ -196,7 +213,7 @@ Pulau Chebeh is a steep, sloping offshore island northeast of Tioman's main hub,
   - **Current:** Can make static composition difficult for wide-angle; use rock-parking technique to stabilize position.
   - **Depth:** Deeper zones (20+ m) lose color rapidly; strobes essential for color correction on deep boulder/fan coral shots.
 
-***
+---
 
 ## 11. Best Time to Dive
 
@@ -229,7 +246,7 @@ Pulau Chebeh is a steep, sloping offshore island northeast of Tioman's main hub,
 - **November:** Monsoon onset; frequent cancellations.
 - **December:** Peak monsoon; most operators closed.
 
-***
+---
 
 ## 12. Practical Tips
 
@@ -258,13 +275,11 @@ Pulau Chebeh is a steep, sloping offshore island northeast of Tioman's main hub,
   - Ascent from drift dive requires careful buoyancy control and reference to formation or line (boat-assisted ascent if strong current and open-water ascent required).
   - Discuss current management plan with guide/operator pre-dive.
 
-***
-
-
+---
 
 ## 13. Keywords & Tags
 
 - **Keywords:** Chebeh Island, Tioman, boulder formations, swim-throughs, gorgonian sea fans, strong current, schooling fish, intermediate diving, offshore reef, Malaysia dive site.
 - **Categories:** Offshore reef dive; boat-access only; mixed-depth site; current-dependent; suitable for intermediate-to-advanced recreational divers; macro and wide-angle photography opportunities.
 
-***
+---

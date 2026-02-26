@@ -34,11 +34,13 @@ cd /Users/jefflee/Documents/AIProjects/AI_DovvyBuddy04/src/backend
 ```
 
 **Expected Output:**
+
 ```
 INFO  [alembic.runtime.migration] Running upgrade 003_pgvector_embedding_column -> 004_embedding_dimension_768
 ```
 
 **Verify Migration:**
+
 ```bash
 # Check the embedding column dimension
 psql $DATABASE_URL -c "SELECT COUNT(*) FROM content_embeddings"
@@ -61,17 +63,20 @@ cd src/backend
 ```
 
 **Expected Steps:**
+
 1. Schema migration at latest head
 2. Full content re-ingestion
 3. New embeddings written at 768 dimensions
 
 If your content directory is at project root (`content/`), run explicit ingestion path:
+
 ```bash
 cd /Users/jefflee/Documents/AIProjects/AI_DovvyBuddy04/src/backend
 ../../.venv/bin/python -m scripts.ingest_content --full --content-dir ../../content
 ```
 
 **Verification Command:**
+
 ```bash
 cd /Users/jefflee/Documents/AIProjects/AI_DovvyBuddy04/src/backend
 ../../.venv/bin/python - <<'PY'
@@ -100,6 +105,7 @@ dovvy-frontend
 ### 6. Verify RAG Pipeline Works
 
 **Test Query:**
+
 ```bash
 curl -X POST http://localhost:8000/api/chat \
   -H "Content-Type: application/json" \
@@ -123,6 +129,7 @@ cd /Users/jefflee/Documents/AIProjects/AI_DovvyBuddy04/src/backend
 ### Configuration Rollback
 
 Edit `.env.local` and change:
+
 ```bash
 EMBEDDING_MODEL=text-embedding-004
 EMBEDDING_DIMENSION=768
@@ -133,18 +140,22 @@ Then restart servers with `dovvy-stop && dovvy-backend` (in background).
 ## Troubleshooting
 
 ### Issue: "No embeddings found after migration"
+
 **Cause:** Content ingestion failed  
 **Solution:** Check ingestion logs, ensure GEMINI_API_KEY is valid
 
 ### Issue: "Expected embedding dimension 768, got 3072"
+
 **Cause:** Old embeddings not cleared before migration  
 **Solution:** Run `clear_embeddings.py` then retry migration
 
 ### Issue: "Content directory not found: .../src/content"
+
 **Cause:** Ingestion default path is wrong for this repo layout  
 **Solution:** Use explicit content path: `--content-dir ../../content`
 
 ### Issue: "HNSW index not created"
+
 **Cause:** pgvector extension issue  
 **Solution:** Verify pgvector installed: `psql $DATABASE_URL -c "SELECT * FROM pg_extension WHERE extname='vector'"`
 
@@ -186,13 +197,12 @@ cd src/backend && ../../.venv/bin/alembic history --verbose
 ✅ **Backend logs:** "Initialized GeminiEmbeddingProvider with model=text-embedding-004, dimension=768"  
 ✅ **Database check:** All embeddings are 768 dimensions (check with pg_column_size)  
 ✅ **Search works:** RAG queries return relevant results  
-✅ **HNSW index:** Index queries shown in EXPLAIN output  
+✅ **HNSW index:** Index queries shown in EXPLAIN output
 
 ---
 
 **Estimated Total Time:** 15-20 minutes  
 **Critical Path:** Database migration → Data migration → Server restart  
-**Rollback Time:** < 5 minutes (if needed)  
+**Rollback Time:** < 5 minutes (if needed)
 
 **Questions?** See [PR6.3-implementation-summary.md](./PR6.3-implementation-summary.md) for full details.
-

@@ -42,11 +42,13 @@ Establish the persistent data layer for DovvyBuddy, including database schema, m
 ### What Was Built
 
 **Database Foundation:**
+
 - ✅ Installed Drizzle ORM (v0.45.1), Drizzle Kit (v0.31.8), postgres (v3.4.7), tsx (v4.21.0), dotenv (v17.2.3)
 - ✅ Configured Drizzle Kit for migrations (`drizzle.config.ts`)
 - ✅ Created database connection utility (`src/db/client.ts`)
 
 **Database Schema (5 Tables):**
+
 - ✅ `destinations` — Dive destinations metadata
 - ✅ `dive_sites` — Dive sites with certifications & difficulty requirements
 - ✅ `leads` — Lead capture submissions (training/trip)
@@ -54,6 +56,7 @@ Establish the persistent data layer for DovvyBuddy, including database schema, m
 - ✅ `content_embeddings` — RAG vector embeddings (1536 dimensions)
 
 **Database Tooling:**
+
 - ✅ Migration generation (`pnpm db:generate`)
 - ✅ Migration application (`pnpm db:migrate`)
 - ✅ Schema push for development (`pnpm db:push`)
@@ -63,6 +66,7 @@ Establish the persistent data layer for DovvyBuddy, including database schema, m
 - ✅ Verification script (`src/db/verify.ts`)
 
 **Documentation:**
+
 - ✅ Comprehensive database README (`src/db/README.md`) with table schemas, usage examples, scripts, and troubleshooting
 - ✅ Updated `.env.example` with DATABASE_URL
 - ✅ All schema files documented with TypeScript types
@@ -72,6 +76,7 @@ Establish the persistent data layer for DovvyBuddy, including database schema, m
 **Destination:** Tioman Island, Malaysia
 
 **Dive Sites (5):**
+
 1. **Tiger Reef** — Intermediate (AOW, 20+ dives)
 2. **Batu Malang** — Beginner (OW, 0 dives)
 3. **Pulau Chebeh** — Intermediate (AOW, 10+ dives)
@@ -81,6 +86,7 @@ Establish the persistent data layer for DovvyBuddy, including database schema, m
 ### Verification Results
 
 **✅ All Checks Passed:**
+
 - **TypeScript:** No type errors
 - **ESLint:** No linting errors (TypeScript version warning is informational only)
 - **Build:** Next.js production build successful
@@ -565,17 +571,17 @@ SESSION_SECRET=your_random_32_char_string_here
 
 ### Design Decisions
 
-| Topic | Decision | Rationale |
-|-------|----------|--------|
-| **Postgres Provider** | Neon | Better cold start performance, excellent pgvector support |
-| **ORM** | Drizzle | Lighter bundle size than Prisma, better serverless performance |
-| **Vector Dimensions** | 1536 dimensions | Gemini `text-embedding-004` standard; column: `VECTOR(1536)` |
-| **Vector Index** | HNSW | Better recall and query performance than IVFFlat |
-| **Primary Keys** | UUID v4 | Distributed-friendly, merge-safe, better for future sharding |
-| **Schema Design** | Normalized | Separate tables for destinations/sites; easier to maintain and extend |
-| **Session Storage** | JSONB columns | Flexible for conversation history and diver profile data |
-| **Seed Data Source** | Reference `content/destinations/` files | Real Tioman Island data from content files; keeps seed data consistent with RAG content |
-| **Data Quality Criteria** | `verified` = official sources (PADI, dive shops); `compiled` = aggregated from multiple reviews/forums; `anecdotal` = single source or personal experience | Clear criteria for content trust levels |
+| Topic                     | Decision                                                                                                                                                   | Rationale                                                                               |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| **Postgres Provider**     | Neon                                                                                                                                                       | Better cold start performance, excellent pgvector support                               |
+| **ORM**                   | Drizzle                                                                                                                                                    | Lighter bundle size than Prisma, better serverless performance                          |
+| **Vector Dimensions**     | 1536 dimensions                                                                                                                                            | Gemini `text-embedding-004` standard; column: `VECTOR(1536)`                            |
+| **Vector Index**          | HNSW                                                                                                                                                       | Better recall and query performance than IVFFlat                                        |
+| **Primary Keys**          | UUID v4                                                                                                                                                    | Distributed-friendly, merge-safe, better for future sharding                            |
+| **Schema Design**         | Normalized                                                                                                                                                 | Separate tables for destinations/sites; easier to maintain and extend                   |
+| **Session Storage**       | JSONB columns                                                                                                                                              | Flexible for conversation history and diver profile data                                |
+| **Seed Data Source**      | Reference `content/destinations/` files                                                                                                                    | Real Tioman Island data from content files; keeps seed data consistent with RAG content |
+| **Data Quality Criteria** | `verified` = official sources (PADI, dive shops); `compiled` = aggregated from multiple reviews/forums; `anecdotal` = single source or personal experience | Clear criteria for content trust levels                                                 |
 
 ### Future Enhancements
 

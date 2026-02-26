@@ -13,12 +13,14 @@ This PR implements the complete multi-agent chat orchestration system, migrating
 ### 1. Agent System (`app/agents/`)
 
 **Base Infrastructure:**
+
 - `types.py` - Agent type definitions and context
 - `base.py` - Abstract `Agent` class with common functionality
 - `config.py` - Agent configuration
 - `registry.py` - Agent registry and factory pattern
 
 **Specialized Agents:**
+
 - `certification.py` - **CertificationAgent** for PADI/SSI guidance
 - `trip.py` - **TripAgent** for destination recommendations
 - `safety.py` - **SafetyAgent** for medical queries and disclaimers
@@ -27,6 +29,7 @@ This PR implements the complete multi-agent chat orchestration system, migrating
 ### 2. Orchestration System (`app/orchestration/`)
 
 **Core Components:**
+
 - `types.py` - Request/response and session data types
 - `orchestrator.py` - **ChatOrchestrator** (main controller)
 - `session_manager.py` - **SessionManager** for persistence
@@ -36,6 +39,7 @@ This PR implements the complete multi-agent chat orchestration system, migrating
 ### 3. Prompt Templates (`app/prompts/`)
 
 **System Prompts:**
+
 - `system.py` - Base DovvyBuddy persona
 - `certification.py` - Certification expert prompts
 - `trip.py` - Trip planning expert prompts
@@ -45,12 +49,14 @@ This PR implements the complete multi-agent chat orchestration system, migrating
 ### 4. API Endpoints
 
 **Updated Endpoints:**
+
 - `POST /api/chat` - Full chat orchestration (replaced placeholder)
 - `GET /api/sessions/{id}` - Retrieve session with history
 
 ### 5. Configuration
 
 **Added Settings:**
+
 - `max_message_length`: 2000
 - `session_expiry_hours`: 24
 - `max_conversation_history`: 20
@@ -60,20 +66,24 @@ This PR implements the complete multi-agent chat orchestration system, migrating
 - `include_safety_disclaimer`: true
 
 **New Dependency:**
+
 - `jinja2>=3.1.3` - Template rendering
 
 ### 6. Tests
 
 **Unit Tests:**
+
 - `tests/unit/agents/test_base_agent.py` - Base agent functionality
 - `tests/unit/agents/test_agent_registry.py` - Registry and factory
 - `tests/unit/orchestration/test_mode_detector.py` - Mode detection
 - `tests/unit/orchestration/test_context_builder.py` - Context building
 
 **Integration Tests:**
+
 - `tests/integration/test_chat_flow.py` - Complete chat flows
 
 **Comparison Tests:**
+
 - `tests/comparison/orchestration/test_agent_routing.py` - 40+ labeled queries
 - `tests/comparison/orchestration/test_conversation_quality.py` - Quality placeholders
 
@@ -84,6 +94,7 @@ This PR implements the complete multi-agent chat orchestration system, migrating
 ### Intelligent Agent Routing
 
 Mode detection uses keyword matching to route queries:
+
 - **Certification** - PADI, SSI, course, training, etc.
 - **Trip** - destination, dive site, location, etc.
 - **Safety** - medical, health, emergency, etc. (highest priority)
@@ -212,6 +223,7 @@ curl -X POST http://localhost:8000/api/chat \
 ```
 
 Expected:
+
 - `agentType: "certification"`
 - Response about PADI certification pathway
 
@@ -227,6 +239,7 @@ curl -X POST http://localhost:8000/api/chat \
 ```
 
 Expected:
+
 - `agentType: "trip"`
 - Response with destination recommendations
 
@@ -239,6 +252,7 @@ curl -X POST http://localhost:8000/api/chat \
 ```
 
 Expected:
+
 - `agentType: "safety"`
 - Safety disclaimer present
 - Referral to medical professionals
@@ -250,6 +264,7 @@ curl http://localhost:8000/api/session/SESSION_ID
 ```
 
 Expected:
+
 - Session with conversation history
 - Persisted messages (user + assistant)
 

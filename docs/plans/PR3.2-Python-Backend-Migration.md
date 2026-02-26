@@ -54,6 +54,7 @@ Migrate DovvyBuddy from a TypeScript full-stack monolith (Next.js API routes) to
 This is a substantial refactor that touches every layer of the stack (database access, business logic, API, deployment). The 8-step incremental approach with clear checkpoints is necessary to manage risk and allow continuous validation.
 
 **Recommended approach:** Complete in 3 sprints:
+
 - **Sprint 1** (Steps 1-4): Foundation — API contract, database, embeddings, RAG
 - **Sprint 2** (Steps 5-6): Business logic — Agents, orchestration, content scripts
 - **Sprint 3** (Steps 7-8): Integration — Frontend connection, deployment
@@ -251,28 +252,33 @@ This is a substantial refactor that touches every layer of the stack (database a
 ### Unit Tests
 
 **Python (backend):**
+
 - Pytest for all modules (services, agents, orchestration, repositories)
 - Mock external dependencies (LLM API, embedding API, database)
 - Test coverage target: ≥80%
 - Fast execution: <30 seconds for full suite
 
 **TypeScript (frontend):**
+
 - Vitest for API client and utilities (existing tests maintained)
 - Mock Python backend API responses
 
 ### Integration Tests
 
 **Backend → Database:**
+
 - Test SQLAlchemy repositories with Docker Postgres (test database)
 - Verify vector search returns correct results
 - Test session CRUD operations
 
 **Backend → External APIs:**
+
 - Test embedding generation with real Gemini API (limited runs)
 - Test LLM calls with real Groq/Gemini API (limited runs)
 - Use VCR-style mocking (record/replay) for CI
 
 **Frontend → Backend:**
+
 - Test API client can call Python backend endpoints
 - Verify request/response serialization
 - Test error handling and retries
@@ -290,6 +296,7 @@ This is a substantial refactor that touches every layer of the stack (database a
 ### E2E Tests
 
 **Staged rollout validation:**
+
 - Deploy to staging environment (both services)
 - Run full E2E test suite (chat flow, lead capture, session persistence)
 - Manual testing: 10+ real user scenarios
@@ -298,11 +305,13 @@ This is a substantial refactor that touches every layer of the stack (database a
 ### Performance Tests
 
 **Benchmarking:**
+
 - RAG retrieval latency: Compare TS vs Python
 - Embedding generation: Compare TS vs Python (batch vs single)
 - Chat response latency: End-to-end timing
 
 **Load testing:**
+
 - Use `locust` or `k6` to simulate 50+ concurrent users
 - Verify Cloud Run auto-scaling works correctly
 - Monitor database connection pool usage
@@ -314,16 +323,19 @@ This is a substantial refactor that touches every layer of the stack (database a
 ### API Security
 
 **CORS configuration:**
+
 - Python backend allows only frontend origin (Vercel domain)
 - No wildcard `*` origins in production
 - Credentials (cookies) allowed for session management
 
 **Rate limiting:**
+
 - Implement rate limiting on Python backend (per IP or session)
 - Prevent abuse of LLM API (costly)
 - Use `slowapi` or similar library
 
 **Input validation:**
+
 - Pydantic models validate all request payloads
 - Prevent injection attacks (SQL, NoSQL, prompt injection)
 - Sanitize user messages before logging
@@ -331,11 +343,13 @@ This is a substantial refactor that touches every layer of the stack (database a
 ### Secrets Management
 
 **Environment variables:**
+
 - Use Cloud Secret Manager (GCP) or Vercel encrypted env vars
 - Never commit `.env` files to Git
 - Rotate API keys regularly
 
 **Database credentials:**
+
 - Use IAM authentication for Cloud SQL (if applicable)
 - Connection strings stored in secret manager
 - No credentials in logs or error messages
@@ -343,11 +357,13 @@ This is a substantial refactor that touches every layer of the stack (database a
 ### Session Security
 
 **Guest sessions (V1):**
+
 - Session ID in HTTP-only cookie (prevents XSS)
 - `SameSite=Lax` or `SameSite=None` with `Secure` flag
 - 24-hour expiry enforced server-side
 
 **Future auth (PR8):**
+
 - Python backend must support JWT or session-based auth
 - Follow OWASP best practices
 
@@ -358,12 +374,14 @@ This is a substantial refactor that touches every layer of the stack (database a
 ### Pre-Rollout
 
 **Week -2: Development & Testing**
+
 - Complete Steps 1-6 (foundation, business logic, scripts)
 - Run full test suite (unit, integration, comparison)
 - Deploy to local dev environment
 - Code review and documentation
 
 **Week -1: Staging Deployment**
+
 - Deploy Python backend to staging Cloud Run
 - Deploy Next.js frontend to Vercel preview
 - Run E2E tests on staging
@@ -373,6 +391,7 @@ This is a substantial refactor that touches every layer of the stack (database a
 ### Rollout Phases
 
 **Phase 1: Canary Deployment (Day 1)**
+
 - Deploy Python backend to production Cloud Run
 - Configure traffic splitting: 10% → Python, 90% → TypeScript (if dual deployment possible)
 - Monitor metrics for 24 hours:
@@ -382,18 +401,21 @@ This is a substantial refactor that touches every layer of the stack (database a
 - **Rollback trigger:** Error rate >5% or latency >10s
 
 **Phase 2: Gradual Rollout (Day 2-3)**
+
 - Increase Python traffic: 25% → 50% → 75%
 - Continue monitoring
 - Collect user feedback (if available)
 - **Rollback trigger:** Same as Phase 1
 
 **Phase 3: Full Rollout (Day 4)**
+
 - Route 100% traffic to Python backend
 - Deprecate TypeScript backend (keep code for rollback)
 - Update documentation
 - Announce migration complete
 
 **Phase 4: Cleanup (Week 2)**
+
 - Remove TypeScript backend code (after 1 week stability)
 - Archive Drizzle migrations (historical reference)
 - Update CI/CD to remove TypeScript backend jobs
@@ -402,17 +424,20 @@ This is a substantial refactor that touches every layer of the stack (database a
 ### Monitoring During Rollout
 
 **Real-time dashboards:**
+
 - Cloud Run metrics (requests/sec, latency, errors)
 - Sentry error tracking (both backend and frontend)
 - Database connection pool usage
 - API response times (chat endpoint)
 
 **Alerts:**
+
 - Error rate >5% → page on-call (solo founder = you!)
 - Latency P95 >10s → investigate immediately
 - Database connection exhaustion → scale up or optimize
 
 **Manual checks:**
+
 - Test 10+ user scenarios every 4 hours during rollout
 - Check Sentry for new error types
 - Monitor user feedback channels (email, Discord, etc.)
@@ -424,15 +449,18 @@ This is a substantial refactor that touches every layer of the stack (database a
 ### Automatic Rollback
 
 **Cloud Run revision rollback:**
+
 ```bash
 gcloud run services update-traffic dovvybuddy-backend \
   --to-revisions=PREVIOUS_REVISION=100
 ```
+
 - Execution time: <1 minute
 - Restores previous Python backend version
 - No data loss (database unchanged)
 
 **Vercel deployment rollback:**
+
 - Revert to previous deployment in Vercel dashboard
 - Or redeploy from Git commit
 - Execution time: ~2 minutes
@@ -440,23 +468,27 @@ gcloud run services update-traffic dovvybuddy-backend \
 ### Manual Rollback
 
 **Revert to TypeScript backend:**
+
 1. Update frontend `BACKEND_URL` to point to Next.js API routes (internal)
 2. Redeploy frontend with old API client
 3. Stop Python backend (or set traffic to 0%)
 4. Execution time: ~10 minutes
 
 **Database rollback:**
+
 - **Not needed** — schema unchanged, data compatible with both backends
 
 ### Rollback Testing
 
 **Pre-rollout:**
+
 - Practice rollback procedure in staging
 - Document exact commands and steps
 - Time each rollback scenario
 - Verify data integrity after rollback
 
 **During rollout:**
+
 - Keep rollback commands ready (tmux/screen session)
 - Monitor error dashboards continuously
 - Set conservative rollback thresholds (err on side of caution)
@@ -472,6 +504,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 **Goal:** Establish OpenAPI specification and scaffold Python FastAPI project.
 
 **Tasks:**
+
 1. Design OpenAPI 3.0 spec for all backend endpoints (chat, session, lead)
 2. Create `src/backend/` directory with FastAPI project structure
 3. Setup Python tooling (poetry, pytest, mypy, ruff, black)
@@ -480,6 +513,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 6. Test: Python backend returns valid mock responses, TS client compiles
 
 **Deliverables:**
+
 - `src/backend/openapi.yaml` — API specification
 - `src/backend/app/main.py` — FastAPI app with placeholder routes
 - `src/lib/api-client/` — Generated TypeScript client
@@ -496,6 +530,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 **Goal:** Replace Drizzle ORM with SQLAlchemy, preserve all database operations.
 
 **Tasks:**
+
 1. Create SQLAlchemy ORM models matching Drizzle schema (sessions, embeddings, leads, etc.)
 2. Setup async database session management (asyncpg)
 3. Implement repository pattern for data access (session_repo, embedding_repo, lead_repo)
@@ -504,6 +539,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 6. Test: All database operations work in Python, vector search matches TS results
 
 **Deliverables:**
+
 - `src/backend/app/db/models/` — SQLAlchemy models
 - `src/backend/app/db/repositories/` — Repository classes
 - `src/backend/app/db/session.py` — Async session factory
@@ -521,6 +557,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 **Goal:** Move embedding generation and LLM provider abstractions to Python.
 
 **Tasks:**
+
 1. Implement embedding provider abstraction (base class + Gemini provider)
 2. Add batching and caching for embeddings
 3. Implement LLM provider abstraction (base class + Groq/Gemini providers)
@@ -529,6 +566,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 6. Test: Embeddings match TS output (cosine similarity ≈ 1.0), LLM responses equivalent
 
 **Deliverables:**
+
 - `src/backend/app/services/embeddings/` — Embedding providers
 - `src/backend/app/services/llm/` — LLM providers
 - Unit tests with mocked APIs
@@ -545,6 +583,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 **Goal:** Move content chunking and retrieval logic to Python, leveraging LangChain or similar libraries.
 
 **Tasks:**
+
 1. Implement text chunking in Python (translate `chunkText` from TS)
 2. Maintain markdown-aware splitting and token counting (tiktoken)
 3. Implement vector retrieval service (translate `retrieveRelevantChunks`)
@@ -553,6 +592,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 6. Test: RAG pipeline returns equivalent results, chunk boundaries consistent
 
 **Deliverables:**
+
 - `src/backend/app/services/rag/` — RAG pipeline (chunker, retriever, pipeline)
 - Comparison tests with 50+ test queries
 - Benchmark results (latency, accuracy)
@@ -568,6 +608,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 **Goal:** Move multi-agent orchestration and specialized agents to Python.
 
 **Tasks:**
+
 1. Migrate agent abstractions (base agent, certification, trip, safety, retrieval agents)
 2. Migrate orchestration logic (chat orchestrator, session manager)
 3. Migrate prompt management (system prompts, mode detection, prompt builders)
@@ -576,6 +617,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 6. Test: All agents respond appropriately, orchestration flow matches TS, session history preserved
 
 **Deliverables:**
+
 - `src/backend/app/agents/` — Agent implementations
 - `src/backend/app/orchestration/` — Chat orchestrator
 - `src/backend/app/prompts/` — System prompts
@@ -593,6 +635,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 **Goal:** Migrate offline content processing scripts from TypeScript to Python.
 
 **Tasks:**
+
 1. Migrate content validation script (markdown parsing, frontmatter validation)
 2. Migrate content ingestion script (chunking, embedding, database insert)
 3. Add incremental ingestion (skip unchanged files)
@@ -601,6 +644,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 6. Test: Scripts run successfully, embeddings generated correctly, validation catches errors
 
 **Deliverables:**
+
 - `src/backend/scripts/` — Python scripts (ingest, validate, benchmark)
 - Updated `package.json` scripts to call Python equivalents
 - CI/CD workflows updated
@@ -616,6 +660,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 **Goal:** Connect TypeScript frontend to Python backend, remove Next.js API route proxies.
 
 **Tasks:**
+
 1. Configure API client wrapper (generated TypeScript client)
 2. Update Next.js API routes to proxy to Python backend (or remove if direct calls)
 3. Implement CORS in Python backend (allow frontend origin)
@@ -623,6 +668,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 5. Test: Frontend calls Python backend successfully, session persistence works, errors handled gracefully
 
 **Deliverables:**
+
 - `src/lib/api-client/client.ts` — Configured API client
 - `src/app/api/chat/route.ts` — Updated to proxy (or removed)
 - CORS middleware in `src/backend/app/main.py`
@@ -639,6 +685,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 **Goal:** Deploy Python backend and TypeScript frontend to production with monitoring and rollback capability.
 
 **Tasks:**
+
 1. Containerize Python backend (Dockerfile)
 2. Deploy Python backend to Cloud Run (staging first)
 3. Configure DNS and CORS (api.dovvybuddy.com → Cloud Run)
@@ -649,6 +696,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 8. Test: Production deployment successful, monitoring active, rollback tested
 
 **Deliverables:**
+
 - `src/backend/Dockerfile` — Container image
 - `.github/workflows/deploy-backend.yml` — CI/CD for backend
 - `docs/deployment.md` — Deployment documentation
@@ -670,21 +718,21 @@ gcloud run services update-traffic dovvybuddy-backend \
 ✅ **Performance maintained or improved** — latency ≤5s (P95), RAG retrieval ≤500ms  
 ✅ **Comparison tests pass** — RAG results, embeddings, orchestration equivalent to TS  
 ✅ **Production deployment stable** — error rate <1%, no critical bugs  
-✅ **Rollback tested** — can revert to TS backend in <10 minutes  
+✅ **Rollback tested** — can revert to TS backend in <10 minutes
 
 ### User Success
 
 ✅ **Zero user-facing disruptions** during migration  
 ✅ **Response quality maintained or improved** (manual spot checks)  
 ✅ **Chat latency within acceptable range** (<5s for 95% of requests)  
-✅ **No data loss** — all sessions and leads preserved  
+✅ **No data loss** — all sessions and leads preserved
 
 ### Business Success
 
 ✅ **Python backend enables Telegram bot** (PR8b can proceed)  
 ✅ **Foundation for advanced ML features** (LangChain, custom models, etc.)  
 ✅ **Operational complexity manageable** — monitoring, CI/CD, deployment documented  
-✅ **Technical debt reduced** — cleaner separation of concerns, better testability  
+✅ **Technical debt reduced** — cleaner separation of concerns, better testability
 
 ---
 
@@ -695,6 +743,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 **Question:** Use custom orchestration, LangChain, or LangGraph for agent coordination?
 
 **Options:**
+
 - **A) Custom orchestration** — Simple, explicit, no external dependencies
 - **B) LangChain agents/chains** — Mature ecosystem, built-in tools, memory
 - **C) LangGraph** — Advanced multi-agent workflows, better observability
@@ -710,6 +759,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 **Question:** Deploy Python backend to Cloud Run, Railway, or Render?
 
 **Options:**
+
 - **A) Cloud Run** — Google-native, auto-scales, serverless, but has cold starts
 - **B) Railway** — Simpler setup, fixed pricing, always-on, but less scalable
 - **C) Render** — Similar to Railway, good DX, free tier for testing
@@ -725,6 +775,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 **Question:** Should frontend call Python backend directly (client-side) or proxy through Next.js API routes?
 
 **Options:**
+
 - **A) Direct calls** — Lower latency, simpler, but exposes backend URL
 - **B) Next.js proxy** — Enables SSR, hides backend, but adds hop
 
@@ -739,6 +790,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 **Question:** If chunking parameters need tuning, should we re-ingest all content?
 
 **Options:**
+
 - **A) Keep current chunking** — No re-ingestion, faster migration
 - **B) Optimize chunking** — Better RAG quality, but requires full re-ingestion
 
@@ -755,6 +807,7 @@ gcloud run services update-traffic dovvybuddy-backend \
 **Risk:** Migration workload may delay other features. Alternatively, pausing other PRs may slow product development.
 
 **Recommendation:**
+
 - **Sprint 1 (Steps 1-4):** Focus 80% time on migration, 20% on PR5 frontend planning
 - **Sprint 2 (Steps 5-6):** 100% focus on migration (most complex steps)
 - **Sprint 3 (Steps 7-8):** 60% migration, 40% PR5 frontend work (can parallelize)
@@ -788,9 +841,9 @@ gcloud run services update-traffic dovvybuddy-backend \
 
 ## 14. Revision History
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 0.1 | 2026-01-01 | AI Assistant | Initial draft based on refactor plan |
+| Version | Date       | Author       | Changes                              |
+| ------- | ---------- | ------------ | ------------------------------------ |
+| 0.1     | 2026-01-01 | AI Assistant | Initial draft based on refactor plan |
 
 ---
 

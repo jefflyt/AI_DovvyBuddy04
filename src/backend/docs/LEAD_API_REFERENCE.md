@@ -119,13 +119,13 @@ const response = await fetch('http://localhost:8000/api/leads', {
       destination: 'Maldives',
       travel_dates: 'June 2026',
       group_size: 4,
-      message: 'Interested in liveaboard diving'
-    }
-  })
-});
+      message: 'Interested in liveaboard diving',
+    },
+  }),
+})
 
-const result = await response.json();
-console.log(result.lead_id);
+const result = await response.json()
+console.log(result.lead_id)
 ```
 
 ### Python (httpx)
@@ -153,17 +153,20 @@ async with httpx.AsyncClient() as client:
 ## Validation Rules
 
 ### Common Fields (Both Lead Types)
+
 - `name`: Required, 1-100 characters, trimmed
 - `email`: Required, valid email format (RFC 5322)
 - `phone`: Optional, max 20 characters (flexible format for international)
 - `message`: Optional, max 2000 characters, trimmed
 
 ### Training-Specific Fields
+
 - `certification_level`: Optional, max 50 characters
 - `interested_certification`: Optional, max 50 characters
 - `preferred_location`: Optional, max 100 characters
 
 ### Trip-Specific Fields
+
 - `destination`: Optional, max 100 characters
 - `travel_dates`: Optional, max 100 characters (flexible format)
 - `group_size`: Optional, integer between 1 and 50
@@ -195,6 +198,7 @@ If `session_id` is provided, the lead will be enriched with diver profile data f
 ```
 
 Diver profile may include:
+
 - Certification level
 - Experience (number of dives)
 - Interests (e.g., wreck diving, photography)
@@ -204,12 +208,12 @@ This context appears in a separate section in the email notification.
 
 ## Error Codes
 
-| Code | HTTP Status | Description |
-|------|-------------|-------------|
-| `VALIDATION_ERROR` | 400 | Request validation failed (see `details` field) |
-| `CONFIG_ERROR` | 500 | Email service not configured (missing env vars) |
-| `DB_ERROR` | 500 | Database operation failed |
-| `UNKNOWN` | 500 | Unexpected server error |
+| Code               | HTTP Status | Description                                     |
+| ------------------ | ----------- | ----------------------------------------------- |
+| `VALIDATION_ERROR` | 400         | Request validation failed (see `details` field) |
+| `CONFIG_ERROR`     | 500         | Email service not configured (missing env vars) |
+| `DB_ERROR`         | 500         | Database operation failed                       |
+| `UNKNOWN`          | 500         | Unexpected server error                         |
 
 ## Notes
 

@@ -19,12 +19,14 @@ Implement user authentication and persistent profiles as the foundation for V2 f
 ### User Impact
 
 **Primary Users (Divers):**
+
 - **Returning users** can create accounts and access conversation history across devices (web and Telegram).
 - **Privacy-conscious users** can still use guest mode (no account required).
 - **Registered users** build a persistent diver profile (certification, experience, preferences) that improves recommendations over time.
 - **Multi-device users** seamlessly continue conversations from phone to desktop.
 
 **Secondary Impact:**
+
 - **Partner Shops:** Richer lead context from authenticated users (verified email, consistent profile).
 - **Product Team:** User retention metrics, cohort analysis, and personalization foundation.
 - **Future Features:** Unlocks dive log storage, trip planning history, species ID history, personalized recommendations.
@@ -32,10 +34,12 @@ Implement user authentication and persistent profiles as the foundation for V2 f
 ### Dependencies
 
 **Upstream (Must be complete):**
+
 - **PR1-7:** Full web V1 functionality (database, RAG, sessions, lead capture, landing page, E2E testing).
 - **PR8a-8c:** Telegram integration (optional but recommended to ensure auth works cross-channel).
 
 **External Dependencies:**
+
 - **Auth Provider:** NextAuth.js (self-hosted, migrate to Clerk if needed for scaling).
 - **Email Service:** Resend API (already integrated for leads) for verification emails.
 - **Database:** Postgres instance (existing) for user/profile tables.
@@ -64,6 +68,7 @@ Implement user authentication and persistent profiles as the foundation for V2 f
 ### Rationale
 
 **Why Multi-PR:**
+
 - **Multiple system layers affected:** Auth provider integration, database schema changes, API middleware, UI updates, session migration logic, Telegram linking.
 - **Risk of breaking existing functionality:** Guest sessions, lead capture, chat flow must continue to work.
 - **Migration complexity:** Existing guest sessions need safe handling (discard vs. optional account creation with history import).
@@ -71,6 +76,7 @@ Implement user authentication and persistent profiles as the foundation for V2 f
 - **Deployment strategy:** Feature flags required to toggle authenticated features during rollout.
 
 **Recommended PR Count:** 3 PRs
+
 1. **PR9a:** Auth infrastructure + User/Profile schema (backend-only, no UI changes).
 2. **PR9b:** Web UI integration (signup, login, profile pages, session migration).
 3. **PR9c:** Telegram account linking + cross-channel session sync.
@@ -78,6 +84,7 @@ Implement user authentication and persistent profiles as the foundation for V2 f
 Alternative: If Telegram is not yet live, defer PR9c and combine PR9a+9b into a single larger PR (acceptable if solo founder can handle larger testing surface).
 
 **Estimated Complexity:**
+
 - Backend: Medium-High (auth middleware, session migration, profile CRUD).
 - Frontend: Medium (auth UI, protected routes, profile management).
 - Data: Medium (user/profile tables, session linking, migration logic).
@@ -90,6 +97,7 @@ Alternative: If Telegram is not yet live, defer PR9c and combine PR9a+9b into a 
 ### Frontend
 
 **Pages/Components Impacted:**
+
 - **New Pages:**
   - `/app/auth/signin/page.tsx` — Sign-in page (email/password or magic link).
   - `/app/auth/signup/page.tsx` — Sign-up page with email verification.
@@ -102,6 +110,7 @@ Alternative: If Telegram is not yet live, defer PR9c and combine PR9a+9b into a 
   - `/app/layout.tsx` — Add auth context provider; show/hide nav based on auth state.
 
 **Components to Add:**
+
 - `src/components/auth/SignInForm.tsx` — Email/password or magic link form.
 - `src/components/auth/SignUpForm.tsx` — Registration form with email, password, optional profile fields.
 - `src/components/auth/UserMenu.tsx` — Dropdown with "Profile," "Settings," "Sign Out."
@@ -109,11 +118,13 @@ Alternative: If Telegram is not yet live, defer PR9c and combine PR9a+9b into a 
 - `src/components/profile/ConversationHistoryList.tsx` — List past conversations with load/resume buttons.
 
 **New UI States:**
+
 - **Guest mode vs. Logged-in mode:** Header shows different CTAs; chat UI shows/hides history button.
 - **Profile completion prompt:** After signup, prompt user to complete diver profile (optional, dismissible).
 - **Session migration prompt:** When guest user signs up, offer to import current conversation history.
 
 **Navigation/Entry Points:**
+
 - Header: "Sign In" / "Sign Up" buttons (guest) → User avatar + dropdown (authenticated).
 - Profile page: Access via user menu.
 - Chat page: "View History" button (authenticated only).
@@ -121,6 +132,7 @@ Alternative: If Telegram is not yet live, defer PR9c and combine PR9a+9b into a 
 ### Backend
 
 **APIs to Add:**
+
 - **POST /api/auth/signup** — Create user account, send verification email.
 - **POST /api/auth/signin** — Authenticate user, return session token (or handled by Clerk).
 - **POST /api/auth/verify-email** — Confirm email verification token.
@@ -134,11 +146,13 @@ Alternative: If Telegram is not yet live, defer PR9c and combine PR9a+9b into a 
 - **POST /api/conversations/:id/resume** — Resume conversation (load into active session).
 
 **APIs to Modify:**
+
 - **POST /api/chat** — Accept optional `userId` (from auth token); link session to user; persist messages to DB.
 - **POST /api/session/new** — Support both guest and authenticated session creation.
 - **POST /api/lead** — Include `userId` if authenticated (richer lead context).
 
 **Services/Modules to Add:**
+
 - `src/lib/auth/clerk-client.ts` — Clerk SDK initialization and helpers.
 - `src/lib/auth/middleware.ts` — Auth middleware to protect routes; extract user from token.
 - `src/lib/auth/session-migration.ts` — Logic to migrate guest session to user account.
@@ -146,6 +160,7 @@ Alternative: If Telegram is not yet live, defer PR9c and combine PR9a+9b into a 
 - `src/lib/conversation/conversation-service.ts` — CRUD for conversation history (list, get, resume, archive).
 
 **Auth/Validation/Error Handling:**
+
 - **Middleware:** Protect `/api/profile`, `/api/conversations`, and other user-specific endpoints with auth middleware.
 - **Validation:** Email format, password strength (min 8 chars, uppercase, number), required profile fields.
 - **Error Handling:** 401 Unauthorized for missing/invalid token; 403 Forbidden for accessing other users' data.
@@ -197,6 +212,7 @@ Alternative: If Telegram is not yet live, defer PR9c and combine PR9a+9b into a 
    - Add `user_id` (UUID, foreign key → users.id, nullable) — Link lead to user if authenticated.
 
 **Migrations:**
+
 - **Migration 1:** Create `users` table.
 - **Migration 2:** Create `diver_profiles` table.
 - **Migration 3:** Create `conversations` table.
@@ -204,16 +220,19 @@ Alternative: If Telegram is not yet live, defer PR9c and combine PR9a+9b into a 
 - **Migration 5:** Add `user_id` column to `leads` table (nullable, indexed).
 
 **Data Migration/Backfill:**
+
 - **Guest sessions:** No migration required (remain guest sessions; expire after 24h as designed).
 - **Existing leads:** `user_id` remains NULL (no retroactive linking).
 
 **Backward Compatibility:**
+
 - **Guest sessions:** Sessions with `user_id = NULL` continue to work as before (24h expiry).
 - **Authenticated sessions:** Sessions with `user_id` set do not expire (or have extended expiry, e.g., 30 days of inactivity).
 
 ### Infra / Config
 
 **Environment Variables:**
+
 - `NEXTAUTH_SECRET` — Random 32+ char string for JWT signing.
 - `NEXTAUTH_URL` — Full URL of the app (e.g., `http://localhost:3000` or `https://dovvybuddy.com`).
 - `AUTH_PROVIDER` — "nextauth" (for future flexibility if migrating to Clerk).
@@ -222,10 +241,12 @@ Alternative: If Telegram is not yet live, defer PR9c and combine PR9a+9b into a 
 - `REQUIRE_EMAIL_VERIFICATION` — Boolean flag (default: true).
 
 **Feature Flags:**
+
 - `FEATURE_USER_AUTH_ENABLED` — Toggle authentication features on/off (default: false until ready).
 - `FEATURE_GUEST_SESSION_MIGRATION` — Toggle guest-to-user session import (default: true).
 
 **CI/CD Considerations:**
+
 - Add Clerk API keys to CI secrets for integration tests.
 - Update E2E tests to handle both guest and authenticated flows.
 - Add database migration step to deployment pipeline.
@@ -243,6 +264,7 @@ Establish the foundational authentication system and database schema for users a
 **Scope**
 
 **In Scope:**
+
 - Install and configure NextAuth.js with Credentials provider (email/password).
 - Create database migrations for `users`, `diver_profiles`, `conversations` tables.
 - Add `user_id` columns to `sessions` and `leads` tables.
@@ -256,6 +278,7 @@ Establish the foundational authentication system and database schema for users a
 - Unit and integration tests for auth services and endpoints.
 
 **Out of Scope:**
+
 - Any UI changes (landing, chat, profile pages).
 - Telegram account linking.
 - Guest session migration UI (defer to PR9b).
@@ -264,6 +287,7 @@ Establish the foundational authentication system and database schema for users a
 **Backend Changes**
 
 **New Modules:**
+
 - `src/lib/auth/nextauth-config.ts` — NextAuth.js configuration with Credentials provider.
   - Configure email/password authentication.
   - Configure JWT session strategy.
@@ -291,6 +315,7 @@ Establish the foundational authentication system and database schema for users a
   - `deleteConversation(conversationId: string, userId: string)` — Hard delete.
 
 **New API Endpoints:**
+
 - **POST /api/auth/signup**
   - Body: `{ email, password }`
   - Actions: Hash password with bcrypt, create user record in DB, send verification email via Resend.
@@ -331,6 +356,7 @@ Establish the foundational authentication system and database schema for users a
   - Response: `{ sessionId, conversation: { ... } }`
 
 **Modified API Endpoints:**
+
 - **POST /api/chat**
   - Before: Only accepts `{ sessionId?, message }`.
   - After: Optionally extract `userId` from auth token (via `optionalAuth` middleware); if present, link session to user.
@@ -348,6 +374,7 @@ Establish the foundational authentication system and database schema for users a
 **Data Changes**
 
 **Migrations:**
+
 - **001_create_users_table.sql**
   - Create `users` table with `id`, `email`, `email_verified`, `password_hash`, `created_at`, `updated_at`.
   - Add unique constraint on `email`.
@@ -365,12 +392,14 @@ Establish the foundational authentication system and database schema for users a
   - Add index on `user_id`.
 
 **Backward Compatibility:**
+
 - All new columns are nullable (existing rows unaffected).
 - Guest sessions continue to work (`user_id = NULL`).
 
 **Infra / Config**
 
 **Environment Variables:**
+
 - `NEXTAUTH_SECRET` — Required (32+ char random string).
 - `NEXTAUTH_URL` — Required (app URL).
 - `FEATURE_USER_AUTH_ENABLED` — Boolean (default: false).
@@ -378,6 +407,7 @@ Establish the foundational authentication system and database schema for users a
 **Testing**
 
 **Unit Tests:**
+
 - `src/lib/auth/nextauth-config.test.ts` — Test NextAuth.js configuration and Credentials provider.
 - `src/lib/user/user-service.test.ts` — Test user CRUD (create, get, delete).
 - `src/lib/user/profile-service.test.ts` — Test profile CRUD.
@@ -385,6 +415,7 @@ Establish the foundational authentication system and database schema for users a
 - `src/lib/auth/middleware.test.ts` — Test `requireAuth` and `optionalAuth` middleware.
 
 **Integration Tests:**
+
 - **POST /api/auth/signup** — Create user, verify password hashed in DB, verify verification email sent (mock Resend).
 - **POST /api/auth/[...nextauth]** — Authenticate with valid credentials via NextAuth.js, verify JWT session created.
 - **GET /api/auth/me** — Verify user and profile returned for authenticated request.
@@ -398,6 +429,7 @@ Establish the foundational authentication system and database schema for users a
 **Verification**
 
 **Commands:**
+
 - Install: `pnpm install`
 - DB Migrate: `pnpm db:migrate` (run new migrations)
 - Dev: `pnpm dev`
@@ -407,6 +439,7 @@ Establish the foundational authentication system and database schema for users a
 - Build: `pnpm build`
 
 **Manual Verification:**
+
 1. Set `FEATURE_USER_AUTH_ENABLED=false` in `.env`.
 2. Start dev server: `pnpm dev`.
 3. Verify existing guest chat flow still works (no UI changes, no breakage).
@@ -422,31 +455,35 @@ Establish the foundational authentication system and database schema for users a
 **Rollback Plan**
 
 **Feature Flag:**
+
 - Set `FEATURE_USER_AUTH_ENABLED=false` to disable all new endpoints and auth logic.
 - Guest sessions continue to work unchanged.
 
 **Revert Strategy:**
+
 - Revert PR: Drop new tables (`users`, `diver_profiles`, `conversations`) and new columns (`user_id` in `sessions`, `leads`).
 - No data loss for guest sessions or existing leads.
 
 **Dependencies**
 
 **Upstream:**
+
 - PR1-6 complete (database, RAG, sessions, lead capture, landing page, E2E testing).
 
 **External:**
+
 - NextAuth.js configuration (no external account needed).
 - Resend API for email verification (already integrated).
 
 **Risks & Mitigations**
 
-| Risk                                      | Impact                                     | Mitigation                                                                                                 |
-|-------------------------------------------|--------------------------------------------|------------------------------------------------------------------------------------------------------------|
-| Email delivery failure                    | Users cannot verify email                 | 1. Implement retry logic for Resend API<br>2. Provide "resend verification" button<br>3. Log failures for monitoring |
-| Database migration failure                | New tables not created, deploy fails       | 1. Test migrations thoroughly in staging<br>2. Implement rollback script<br>3. Use feature flag to disable features if migration incomplete |
-| Guest session breakage                    | Existing users lose functionality          | 1. Comprehensive regression testing of guest flows<br>2. Feature flag to disable auth features<br>3. Maintain parallel guest code paths |
-| Data privacy / GDPR compliance            | Legal risk if user data not deletable      | 1. Implement cascade delete for user account deletion<br>2. Add data export endpoint (future)<br>3. Clear privacy policy |
-| Auth middleware performance               | Increased latency on API routes            | 1. Cache user lookups (in-memory or Redis)<br>2. Monitor P95 latency<br>3. Optimize DB queries (indexes on `user_id`) |
+| Risk                           | Impact                                | Mitigation                                                                                                                                  |
+| ------------------------------ | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Email delivery failure         | Users cannot verify email             | 1. Implement retry logic for Resend API<br>2. Provide "resend verification" button<br>3. Log failures for monitoring                        |
+| Database migration failure     | New tables not created, deploy fails  | 1. Test migrations thoroughly in staging<br>2. Implement rollback script<br>3. Use feature flag to disable features if migration incomplete |
+| Guest session breakage         | Existing users lose functionality     | 1. Comprehensive regression testing of guest flows<br>2. Feature flag to disable auth features<br>3. Maintain parallel guest code paths     |
+| Data privacy / GDPR compliance | Legal risk if user data not deletable | 1. Implement cascade delete for user account deletion<br>2. Add data export endpoint (future)<br>3. Clear privacy policy                    |
+| Auth middleware performance    | Increased latency on API routes       | 1. Cache user lookups (in-memory or Redis)<br>2. Monitor P95 latency<br>3. Optimize DB queries (indexes on `user_id`)                       |
 
 ---
 
@@ -459,6 +496,7 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
 **Scope**
 
 **In Scope:**
+
 - Build authentication UI pages (sign-in, sign-up, email verification, profile, settings).
 - Update landing page header with auth buttons (Sign In / Sign Up) for guests, user menu for authenticated users.
 - Update chat page to detect auth state and show history button for authenticated users.
@@ -472,6 +510,7 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
 - E2E smoke test for signup → signin → profile update → chat → history.
 
 **Out of Scope:**
+
 - Telegram account linking (defer to PR9c).
 - Password reset flow (use Clerk's built-in flow or defer to V2.1).
 - Social login (Google, Facebook) — defer to V2.1.
@@ -481,6 +520,7 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
 **Frontend Changes**
 
 **New Pages:**
+
 - `/app/auth/signin/page.tsx` — Sign-in page with email/password (NextAuth.js Credentials provider).
 - `/app/auth/signup/page.tsx` — Sign-up page with email, password, optional profile fields (name, agency, level).
 - `/app/auth/verify/page.tsx` — Email verification confirmation (show success message, redirect to chat).
@@ -489,6 +529,7 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
 - `/app/history/page.tsx` — Conversation history list with load/resume/archive/delete buttons.
 
 **Modified Pages:**
+
 - `/app/page.tsx` (Landing)
   - Add "Sign In" / "Sign Up" buttons to header for guests.
   - Show user avatar + dropdown menu for authenticated users (Profile, History, Settings, Sign Out).
@@ -502,6 +543,7 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
   - Show navigation based on auth state (header buttons change).
 
 **New Components:**
+
 - `src/components/auth/SignInForm.tsx` — Email/password form or magic link (use Clerk's `<SignIn />` component or custom form).
 - `src/components/auth/SignUpForm.tsx` — Registration form (use Clerk's `<SignUp />` component or custom).
 - `src/components/auth/UserMenu.tsx` — Dropdown menu with avatar, username, Profile/History/Settings/Sign Out links.
@@ -512,6 +554,7 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
 - `src/components/chat/GuestSessionMigrationPrompt.tsx` — Banner offering to import current conversation on signup (show after signup if guest session active).
 
 **UI States:**
+
 - **Guest mode:** Header shows "Sign In" / "Sign Up"; chat has no history button.
 - **Authenticated mode:** Header shows user avatar + menu; chat has "View History" button.
 - **Profile incomplete:** After signup, show profile completion prompt (optional, dismissible).
@@ -523,6 +566,7 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
 **No new endpoints** (all implemented in PR9a).
 
 **Modified Behavior:**
+
 - `/api/chat` now receives auth token from client (sent in `Authorization` header).
 
 **Data Changes**
@@ -530,6 +574,7 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
 **No new migrations** (all schema in PR9a).
 
 **Session Migration Logic:**
+
 - When user signs up and has active guest session:
   - Call `/api/auth/migrate-session` (new endpoint to add in PR9b) with `sessionId` and `userId`.
   - Backend links session to user (`sessions.user_id = userId`), removes `expires_at` (or extends to 30 days).
@@ -538,20 +583,24 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
 **Infra / Config**
 
 **Environment Variables:**
+
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` — Required for client-side Clerk SDK.
 
 **Feature Flag:**
+
 - `FEATURE_USER_AUTH_ENABLED` — Set to `true` to enable UI.
 
 **Testing**
 
 **Unit Tests:**
+
 - `src/components/auth/SignInForm.test.tsx` — Test form validation, submission.
 - `src/components/auth/SignUpForm.test.tsx` — Test validation, submission, error handling.
 - `src/components/profile/DiverProfileForm.test.tsx` — Test profile field updates.
 - `src/components/profile/ConversationHistoryList.test.tsx` — Test list rendering, resume/archive/delete actions.
 
 **Integration Tests:**
+
 - **Sign-up flow:** Fill form → Submit → Verify email sent → Confirm email → Redirect to chat.
 - **Sign-in flow:** Fill form → Submit → Redirect to chat → Verify user state.
 - **Profile update:** Edit profile fields → Save → Verify updated in DB.
@@ -559,6 +608,7 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
 - **Conversation history:** Create multiple conversations → View history → Resume conversation → Verify loaded into chat.
 
 **E2E Tests:**
+
 - **Smoke test (authenticated flow):**
   1. Navigate to landing page.
   2. Click "Sign Up".
@@ -579,6 +629,7 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
 **Verification**
 
 **Commands:**
+
 - Install: `pnpm install`
 - Dev: `pnpm dev`
 - Test: `pnpm test`
@@ -588,6 +639,7 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
 - Build: `pnpm build`
 
 **Manual Verification:**
+
 1. Set `FEATURE_USER_AUTH_ENABLED=true` in `.env`.
 2. Start dev server: `pnpm dev`.
 3. Navigate to `http://localhost:3000`.
@@ -612,6 +664,7 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
 22. Verify cascade delete (user, profile, sessions, conversations deleted).
 
 **Guest Regression Testing:**
+
 1. Open incognito window.
 2. Navigate to `http://localhost:3000`.
 3. Click "Start Chatting" (or equivalent guest CTA).
@@ -625,11 +678,13 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
 **Rollback Plan**
 
 **Feature Flag:**
+
 - Set `FEATURE_USER_AUTH_ENABLED=false` to hide all auth UI.
 - Landing page shows original guest-only CTAs.
 - Chat page works in guest mode only.
 
 **Revert Strategy:**
+
 - Revert PR: Remove auth UI pages and components.
 - Guest sessions continue to work.
 - Database schema from PR9a remains (no rollback needed unless dropping feature entirely).
@@ -637,20 +692,22 @@ Integrate authentication UI into the web interface, allow users to sign up/sign 
 **Dependencies**
 
 **Upstream:**
+
 - PR9a complete (auth backend, user/profile schema).
 
 **External:**
+
 - Clerk account and publishable key.
 
 **Risks & Mitigations**
 
-| Risk                                      | Impact                                     | Mitigation                                                                                                 |
-|-------------------------------------------|--------------------------------------------|------------------------------------------------------------------------------------------------------------|
-| Email verification not received           | Users cannot complete signup               | 1. Resend verification email button<br>2. Check spam folder prompt<br>3. Support email for manual verification |
-| Guest session migration fails             | User loses current conversation            | 1. Test migration logic thoroughly<br>2. Provide "Skip" option (start fresh)<br>3. Log migration failures for debugging |
-| Profile form UX confusing                 | Users abandon profile completion           | 1. Make profile fields optional<br>2. Clear help text and examples<br>3. Progress indicator if multi-step |
-| History page performance (many conversations) | Slow load, poor UX                   | 1. Paginate conversation list (20 per page)<br>2. Add loading state<br>3. Optimize DB query (index on `user_id`, `last_message_at`) |
-| Auth token expiry mid-conversation        | User kicked out unexpectedly               | 1. Implement token refresh logic (Clerk handles automatically)<br>2. Graceful error handling (prompt re-login)<br>3. Save draft message locally |
+| Risk                                          | Impact                           | Mitigation                                                                                                                                      |
+| --------------------------------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Email verification not received               | Users cannot complete signup     | 1. Resend verification email button<br>2. Check spam folder prompt<br>3. Support email for manual verification                                  |
+| Guest session migration fails                 | User loses current conversation  | 1. Test migration logic thoroughly<br>2. Provide "Skip" option (start fresh)<br>3. Log migration failures for debugging                         |
+| Profile form UX confusing                     | Users abandon profile completion | 1. Make profile fields optional<br>2. Clear help text and examples<br>3. Progress indicator if multi-step                                       |
+| History page performance (many conversations) | Slow load, poor UX               | 1. Paginate conversation list (20 per page)<br>2. Add loading state<br>3. Optimize DB query (index on `user_id`, `last_message_at`)             |
+| Auth token expiry mid-conversation            | User kicked out unexpectedly     | 1. Implement token refresh logic (Clerk handles automatically)<br>2. Graceful error handling (prompt re-login)<br>3. Save draft message locally |
 
 ---
 
@@ -663,6 +720,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 **Scope**
 
 **In Scope:**
+
 - Implement Telegram account linking flow (magic link sent via Telegram bot).
 - Add `telegram_user_id` field to `users` table.
 - Modify Telegram bot to detect linked vs. unlinked users.
@@ -673,6 +731,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 - Support unlinking Telegram account from web settings.
 
 **Out of Scope:**
+
 - WhatsApp or other messaging platforms (defer to V2.2+).
 - Telegram group chat support (1-on-1 chats only, as in PR8b).
 - Telegram-specific features (voice messages, location sharing) — defer to V2.2+.
@@ -681,6 +740,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 **Backend Changes**
 
 **New Endpoints:**
+
 - **POST /api/auth/link-telegram** (protected)
   - Body: `{ telegramUserId, telegramUsername }`
   - Actions: Link `telegram_user_id` to authenticated user; verify uniqueness (one Telegram account per user).
@@ -692,11 +752,13 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
   - Response: `{ isLinked: true/false, telegramUsername: "..." }`
 
 **Modified Endpoints:**
+
 - **POST /api/telegram/webhook** (from PR8b)
   - Before: Creates guest session for each Telegram user.
   - After: Check if `telegram_user_id` is linked to a user account; if yes, use user's session and profile.
 
 **New Modules:**
+
 - `src/lib/auth/telegram-link-service.ts`
   - `generateTelegramLinkToken(userId: string)` — Generate one-time token for linking.
   - `verifyTelegramLinkToken(token: string)` — Verify token, return user ID.
@@ -705,6 +767,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
   - `getUserByTelegramId(telegramUserId: string)` — Look up user by Telegram ID.
 
 **Telegram Bot Changes:**
+
 - **New Commands:**
   - `/link` — Initiates account linking flow.
     - Bot sends magic link: "Click here to link your Telegram account: https://dovvybuddy.com/auth/link-telegram?token=..."
@@ -713,6 +776,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
   - `/profile` — Shows current diver profile (if linked); prompts to link if unlinked.
 
 **Linking Flow:**
+
 1. User types `/link` in Telegram bot.
 2. Bot generates one-time link token, sends magic link to user.
 3. User clicks link, opens web browser.
@@ -725,9 +789,11 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 **Frontend Changes**
 
 **New Pages:**
+
 - `/app/auth/link-telegram/page.tsx` — Landing page for Telegram link token; prompts sign-in, shows confirmation UI.
 
 **Modified Pages:**
+
 - `/app/settings/page.tsx` — Add "Linked Accounts" section.
   - If Telegram linked: Show username, "Unlink" button.
   - If Telegram not linked: Show "Link Telegram Account" instructions (direct user to Telegram bot to type `/link`).
@@ -735,25 +801,30 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 **Data Changes**
 
 **Migration:**
+
 - **006_add_telegram_user_id_to_users.sql**
   - Add `telegram_user_id` (VARCHAR, nullable, unique) to `users` table.
   - Add `telegram_username` (VARCHAR, nullable) to `users` table.
 
 **Backward Compatibility:**
+
 - Existing users have `telegram_user_id = NULL` (not linked).
 - Telegram users without linked accounts continue to use guest sessions (PR8b behavior).
 
 **Infra / Config**
 
 **Environment Variables:**
+
 - No new env vars (uses existing Telegram bot token from PR8b).
 
 **Testing**
 
 **Unit Tests:**
+
 - `src/lib/auth/telegram-link-service.test.ts` — Test token generation, verification, linking, unlinking.
 
 **Integration Tests:**
+
 - **Telegram linking flow:**
   1. User types `/link` in Telegram bot.
   2. Bot generates token, sends magic link.
@@ -771,6 +842,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
   7. Verify Telegram message appears in conversation thread.
 
 **E2E Tests:**
+
 - **Telegram linking smoke test:**
   1. User signs in on web.
   2. Navigate to settings page.
@@ -786,6 +858,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 **Verification**
 
 **Commands:**
+
 - Install: `pnpm install`
 - Dev: `pnpm dev`
 - Test: `pnpm test`
@@ -794,6 +867,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 - Build: `pnpm build`
 
 **Manual Verification:**
+
 1. Deploy Telegram bot (from PR8b) and web app (with PR9a+9b).
 2. Sign in to web app as test user.
 3. Navigate to settings page.
@@ -818,32 +892,36 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 **Rollback Plan**
 
 **Feature Flag:**
+
 - Add `FEATURE_TELEGRAM_LINKING_ENABLED` (default: false until stable).
 - If disabled, Telegram bot continues to use guest sessions (PR8b behavior).
 
 **Revert Strategy:**
+
 - Revert PR: Remove linking logic, drop `telegram_user_id` column.
 - Telegram users continue to work in guest mode.
 
 **Dependencies**
 
 **Upstream:**
+
 - PR9a complete (auth backend).
 - PR9b complete (web UI).
 - PR8b complete (Telegram bot with guest sessions).
 
 **External:**
+
 - Telegram bot deployed and accessible.
 
 **Risks & Mitigations**
 
-| Risk                                      | Impact                                     | Mitigation                                                                                                 |
-|-------------------------------------------|--------------------------------------------|------------------------------------------------------------------------------------------------------------|
-| User links multiple Telegram accounts     | Confusion, data integrity issues           | 1. Enforce unique constraint on `telegram_user_id`<br>2. Allow one Telegram account per user<br>3. Show clear error if already linked |
-| Telegram user forgets they linked         | Unexpected behavior (profile pre-filled)   | 1. Show linking status in `/profile` command<br>2. Clear unlink instructions<br>3. Privacy-first messaging |
-| Magic link token expires                  | User cannot complete linking               | 1. Set short expiry (10 minutes)<br>2. Regenerate token on retry (`/link` again)<br>3. Clear error message |
-| Cross-channel session race condition      | Message order inconsistency                | 1. Use timestamps to order messages<br>2. Add optimistic locking on session updates<br>3. Accept eventual consistency (rare edge case) |
-| Telegram bot downtime                     | Web users cannot link                      | 1. Graceful error handling in web UI<br>2. Allow retry<br>3. Monitor bot uptime |
+| Risk                                  | Impact                                   | Mitigation                                                                                                                             |
+| ------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| User links multiple Telegram accounts | Confusion, data integrity issues         | 1. Enforce unique constraint on `telegram_user_id`<br>2. Allow one Telegram account per user<br>3. Show clear error if already linked  |
+| Telegram user forgets they linked     | Unexpected behavior (profile pre-filled) | 1. Show linking status in `/profile` command<br>2. Clear unlink instructions<br>3. Privacy-first messaging                             |
+| Magic link token expires              | User cannot complete linking             | 1. Set short expiry (10 minutes)<br>2. Regenerate token on retry (`/link` again)<br>3. Clear error message                             |
+| Cross-channel session race condition  | Message order inconsistency              | 1. Use timestamps to order messages<br>2. Add optimistic locking on session updates<br>3. Accept eventual consistency (rare edge case) |
+| Telegram bot downtime                 | Web users cannot link                    | 1. Graceful error handling in web UI<br>2. Allow retry<br>3. Monitor bot uptime                                                        |
 
 ---
 
@@ -854,14 +932,17 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 **Goal:** Backend authentication infrastructure ready, no UI changes, feature-flagged off.
 
 **Unlocks:**
+
 - User account creation and management (backend-only).
 - Profile data model established.
 - Conversation history persistence ready.
 
 **PRs Included:**
+
 - PR8a
 
 **Definition of Done:**
+
 - All PR8a tests pass (unit + integration).
 - Migrations run successfully on staging DB.
 - Feature flag `FEATURE_USER_AUTH_ENABLED=false` allows guest sessions to work unchanged.
@@ -874,14 +955,17 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 **Goal:** Web users can sign up, sign in, manage profiles, and access conversation history.
 
 **Unlocks:**
+
 - Cross-device conversation continuity for web users.
 - Persistent diver profiles for better recommendations.
 - Foundation for personalization and dive logs (V2.1+).
 
 **PRs Included:**
+
 - PR8b
 
 **Definition of Done:**
+
 - All PR8b tests pass (unit + integration + E2E smoke test).
 - Feature flag `FEATURE_USER_AUTH_ENABLED=true` enables full auth UI.
 - Guest sessions still work (regression tests pass).
@@ -894,14 +978,17 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 **Goal:** Telegram users can link accounts and access same profile/history across web and Telegram.
 
 **Unlocks:**
+
 - Seamless multi-channel experience.
 - Single source of truth for diver profile.
 - Foundation for future channels (WhatsApp, SMS, etc.).
 
 **PRs Included:**
+
 - PR8c
 
 **Definition of Done:**
+
 - All PR8c tests pass.
 - Telegram linking flow verified end-to-end (manual testing with live bot).
 - Cross-channel session sync verified (message sent on web appears in Telegram conversation, and vice versa).
@@ -914,6 +1001,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 ### Major Risks
 
 **Risk 1: Auth Provider Lock-In (Clerk)**
+
 - **Impact:** If Clerk changes pricing or features, migration to another provider is costly.
 - **Mitigation:**
   - Abstract auth logic behind `ModelProvider`-style interface (e.g., `AuthProvider`).
@@ -921,6 +1009,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
   - Evaluate NextAuth.js as fallback (more complex but self-hosted).
 
 **Risk 2: Guest Session Migration Complexity**
+
 - **Impact:** Users lose conversation history if migration fails.
 - **Mitigation:**
   - Make migration optional (offer "Skip" button).
@@ -928,6 +1017,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
   - Log migration failures for debugging.
 
 **Risk 3: Email Deliverability**
+
 - **Impact:** Verification emails not received, users cannot complete signup.
 - **Mitigation:**
   - Use Resend with proper domain authentication (SPF, DKIM, DMARC).
@@ -935,6 +1025,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
   - Provide fallback (support email for manual verification).
 
 **Risk 4: Cross-Channel Session Sync Race Conditions**
+
 - **Impact:** Message order inconsistency if user sends messages on web and Telegram simultaneously.
 - **Mitigation:**
   - Use message timestamps to order messages.
@@ -942,6 +1033,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
   - Add optimistic locking on session updates if issue occurs frequently.
 
 **Risk 5: Telegram Linking Security**
+
 - **Impact:** Attacker could link victim's Telegram account if they intercept magic link token.
 - **Mitigation:**
   - Use short-lived tokens (10 minutes expiry).
@@ -950,6 +1042,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
   - Show clear confirmation UI ("Link @username to your account?").
 
 **Risk 6: Database Migration Failure**
+
 - **Impact:** Deployment fails, users cannot access app.
 - **Mitigation:**
   - Test migrations in staging environment.
@@ -960,31 +1053,37 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 ### Trade-offs
 
 **Trade-off 1: Clerk vs. NextAuth.js**
+
 - **Decision:** Use Clerk for V2.0.
 - **Rationale:** Clerk reduces auth infrastructure work (email verification, token management, session handling) for solo founder. NextAuth.js is more flexible but requires more setup and maintenance.
 - **Deferred:** Evaluate self-hosted auth (NextAuth.js or custom) in V2.2+ if Clerk pricing becomes issue.
 
 **Trade-off 2: Persistent Sessions for Authenticated Users vs. Fixed Expiry**
+
 - **Decision:** Authenticated sessions expire after 30 days of inactivity (vs. 24h for guests).
 - **Rationale:** Balances convenience (users stay logged in) with security (inactive sessions expire).
 - **Alternative:** Never expire authenticated sessions (requires explicit sign-out) — rejected due to security concerns (shared devices).
 
 **Trade-off 3: Optional vs. Required Profile Completion**
+
 - **Decision:** Profile completion is optional (dismissible prompt after signup).
 - **Rationale:** Reduces signup friction; users can complete profile later when needed (e.g., before submitting trip lead).
 - **Alternative:** Require profile completion before using chat — rejected due to high friction (users may abandon signup).
 
 **Trade-off 4: Email Verification Required vs. Optional**
+
 - **Decision:** Email verification required for registration.
 - **Rationale:** Prevents spam accounts and ensures lead emails are deliverable.
 - **Alternative:** Allow unverified accounts with limited features (e.g., no lead submission) — deferred to V2.1 if signup friction is high.
 
 **Trade-off 5: Single PR vs. Multi-PR**
+
 - **Decision:** Split into 3 PRs (PR9a, PR9b, PR9c).
 - **Rationale:** Reduces risk; allows incremental testing and deployment; backend can be merged and tested independently before exposing UI.
 - **Alternative:** Single large PR — rejected due to high risk of breaking changes and large testing surface.
 
 **Trade-off 6: Guest Session Persistence After Signup**
+
 - **Decision:** Offer optional migration (import current conversation).
 - **Rationale:** Balances user convenience (don't lose active conversation) with simplicity (migration can fail, adds complexity).
 - **Alternative:** Always discard guest session on signup — rejected due to poor UX (user loses active conversation).
@@ -992,31 +1091,37 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 ### Open Questions
 
 **Q1: Should we support password reset in PR8b, or rely on Clerk's built-in flow?**
+
 - **Context:** Clerk provides password reset via email automatically.
 - **Decision:** Use Clerk's built-in flow for V2.0; consider custom UI in V2.1 if branding consistency is critical.
 - **Impact:** If Clerk flow is used, users are redirected to Clerk-hosted page (different branding).
 
 **Q2: Should authenticated sessions have a maximum lifetime (e.g., 90 days absolute expiry), or only inactivity-based expiry?**
+
 - **Context:** Inactivity-based expiry (30 days) means active users stay logged in indefinitely.
 - **Decision:** Start with inactivity-based only; add absolute expiry in V2.1 if security review recommends it.
 - **Impact:** Long-lived sessions may pose security risk on shared devices; can be mitigated by explicit sign-out.
 
 **Q3: Should we allow users to have multiple active sessions (e.g., phone + desktop)?**
+
 - **Context:** Clerk supports multiple sessions by default.
 - **Decision:** Allow multiple sessions for V2.0 (better UX); add "Active Sessions" management in settings page in V2.1 if needed.
 - **Impact:** Users can sign out from specific devices; requires session management UI.
 
 **Q4: Should Telegram users be required to link accounts to use advanced features (e.g., lead capture), or can they remain unlinked?**
+
 - **Context:** Unlinked Telegram users use guest sessions (24h expiry, no history).
 - **Decision:** Allow unlinked usage for V2.0 (same as PR8b); prompt to link when submitting lead (optional).
 - **Impact:** Some Telegram users may never link (acceptable; reduces friction).
 
 **Q5: Should we implement account deletion as soft delete (mark inactive) or hard delete (remove from DB)?**
+
 - **Context:** GDPR requires user data deletion on request; soft delete allows rollback.
 - **Decision:** Hard delete for V2.0 (GDPR compliance); cascade delete to profiles, sessions, conversations, leads (anonymize leads if associated with deleted user).
 - **Impact:** No rollback after deletion; users must re-register if they change their mind.
 
 **Q6: Should we track user analytics events (signup, signin, profile update) in this PR, or defer to separate analytics PR?**
+
 - **Context:** Analytics already integrated in PR6 (landing page, lead capture).
 - **Decision:** Add key auth events (signup, signin, signout, profile_update) in PR8b; use existing analytics service.
 - **Impact:** No additional complexity; enables user funnel analysis.
@@ -1028,11 +1133,13 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 PR8 establishes the foundation for DovvyBuddy V2 by implementing user authentication and persistent profiles. This multi-PR effort transitions the platform from guest-only sessions to authenticated users with cross-device conversation history, saved preferences, and richer lead context.
 
 **Key Deliverables:**
+
 - **PR9a:** Backend auth infrastructure (Clerk integration, user/profile schema, API endpoints).
 - **PR9b:** Web UI for signup, signin, profile management, conversation history, and guest session migration.
 - **PR9c:** Telegram account linking and cross-channel session sync.
 
 **Success Criteria:**
+
 - Users can create accounts and access conversation history across devices.
 - Guest sessions continue to work unchanged (backward compatibility).
 - Telegram users can link accounts and access same profile/history across web and Telegram.
@@ -1040,6 +1147,7 @@ PR8 establishes the foundation for DovvyBuddy V2 by implementing user authentica
 - Feature-flagged for safe incremental rollout.
 
 **Next Steps After PR8:**
+
 - **PR9:** Dive log storage and management (V2 core feature).
 - **PR10:** Trip planning history and itinerary generation.
 - **PR11:** Personalized recommendations based on dive history.

@@ -27,7 +27,7 @@
 - **Package Manager:** pnpm (frontend), pip (backend)
 - **Hosting:** Vercel (frontend), Cloud Run (backend planned)
 - **Database:** PostgreSQL with pgvector (Neon)
-- **Testing:** 
+- **Testing:**
   - Frontend: Vitest (unit), Playwright (E2E)
   - Backend: pytest (unit & integration)
 - **Linting/Formatting:** ESLint + Prettier (frontend), ruff (backend)
@@ -42,10 +42,10 @@
 
 ### LLM Provider Strategy (Updated)
 
-| Phase | Provider | Model | Use Case |
-|-------|----------|-------|----------|
-| **Production V1** | Gemini | `gemini-2.5-flash-lite` | Primary production LLM (cost-effective) |
-| **Embeddings** | Gemini | `text-embedding-004` | 768-dimension vectors for RAG |
+| Phase             | Provider | Model                   | Use Case                                |
+| ----------------- | -------- | ----------------------- | --------------------------------------- |
+| **Production V1** | Gemini   | `gemini-2.5-flash-lite` | Primary production LLM (cost-effective) |
+| **Embeddings**    | Gemini   | `text-embedding-004`    | 768-dimension vectors for RAG           |
 
 - **Standardized:** All production traffic uses Gemini 2.5 Flash Lite
 - **Future:** V2 may add SEA-LION for multilingual support (SEA region)
@@ -53,7 +53,8 @@
 ---
 
 ## Repository Structure
- (Current)
+
+(Current)
 
 ```
 AI_DovvyBuddy04/
@@ -146,24 +147,26 @@ AI_DovvyBuddy04/
 ├── tsconfig.json                 # TypeScript configuration
 └── README.md                     # Project documentation
 ```
-│   │   ├── model-provider/       # LLM abstraction (PR3)
-│   │   ├── rag/                  # RAG pipeline (PR2)
-│   │   └── session/              # Session management (PR4)
-│   ├── db/                       # Database (PR1)
-│   │   ├── schema.sql            # Initial schema (future)
-│   │   ├── migrations/           # Migration scripts (future)
-│   │   └── queries/              # Typed query functions (future)
-│   └── types/                    # TypeScript types
-├── tests/                        # Test files (Vitest)
-├── public/                       # Static assets
+
+│ │ ├── model-provider/ # LLM abstraction (PR3)
+│ │ ├── rag/ # RAG pipeline (PR2)
+│ │ └── session/ # Session management (PR4)
+│ ├── db/ # Database (PR1)
+│ │ ├── schema.sql # Initial schema (future)
+│ │ ├── migrations/ # Migration scripts (future)
+│ │ └── queries/ # Typed query functions (future)
+│ └── types/ # TypeScript types
+├── tests/ # Test files (Vitest)
+├── public/ # Static assets
 ├── package.json
 ├── tsconfig.json
 ├── next.config.js
 ├── vitest.config.ts
 ├── .eslintrc.json
 ├── .prettierrc
-├── .env.example                  # Environment variable template
-└── README.md                     # Setup and command reference
+├── .env.example # Environment variable template
+└── README.md # Setup and command reference
+
 ```
 
 ---
@@ -226,32 +229,42 @@ Defer dedicated vector DB (Pinecone, Weaviate) until scaling requires it.
 ### Destinations
 
 ```
+
 id, name, country, is_active, created_at
+
 ```
 
 ### DiveSites
 
 ```
+
 id, destination_id, name, min_certification_level, min_logged_dives,
 difficulty_band, access_type, is_active, created_at
+
 ```
 
 ### Leads
 
 ```
+
 id, type (training|trip), diver_profile (JSONB), request_details (JSONB), created_at
+
 ```
 
 ### Sessions
 
 ```
+
 id, diver_profile (JSONB), conversation_history (JSONB), created_at, expires_at
+
 ```
 
 ### ContentEmbeddings (if using pgvector)
 
 ```
+
 id, content_path, chunk_text, embedding (vector), metadata (JSONB), created_at
+
 ```
 
 ---
@@ -420,3 +433,4 @@ When working on this project:
 ---
 
 **End of Project Context**
+```

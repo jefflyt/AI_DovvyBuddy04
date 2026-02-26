@@ -46,6 +46,7 @@ Deploy the Python FastAPI backend to Google Cloud Run with production monitoring
 ### Existing Files (Already Complete ✅)
 
 The Python backend is fully implemented with:
+
 - ✅ **Dockerfile** — Production-ready (Python 3.11, non-root user, health check)
 - ✅ **FastAPI application** — All endpoints functional
 - ✅ **Database migrations** — Alembic ready
@@ -55,6 +56,7 @@ The Python backend is fully implemented with:
 ### New Modules (Production Enhancements)
 
 **Deployment Configuration:**
+
 ```
 .github/workflows/
 ├── deploy-production.yml          # Deploy backend to Cloud Run
@@ -65,6 +67,7 @@ docs/
 ```
 
 **Optional Enhancements (if time permits):**
+
 ```
 src/backend/app/
 ├── middleware/
@@ -96,11 +99,12 @@ src/backend/app/
    - Production backend URL: `https://api.dovvybuddy.com`
 
 2. **.env.production** — Production environment variables
+
    ```bash
    # Backend API
    BACKEND_URL=https://api.dovvybuddy.com
    NEXT_PUBLIC_API_URL=/api
-   
+
    # Database (same as backend)
    DATABASE_URL=<neon-production-url>
    ```
@@ -122,6 +126,7 @@ src/backend/app/
 ### Docker Configuration (Already Complete ✅)
 
 The existing `src/backend/Dockerfile` is production-ready:
+
 - Python 3.11 slim base image
 - System dependencies (gcc, postgresql-client)
 - Editable pip install (`pip install -e .`)
@@ -131,6 +136,7 @@ The existing `src/backend/Dockerfile` is production-ready:
 - Uvicorn with 1 worker
 
 **Minor optimization (optional):**
+
 ```dockerfile
 # Consider adding if image size is a concern
 # Multi-stage build to reduce final image size
@@ -143,23 +149,24 @@ COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/pytho
 ### Cloud Run Configuration
 
 **Production Service Configuration:**
+
 ```yaml
 # Applied via gcloud CLI or YAML
 service: dovvybuddy-backend
-region: us-central1  # or us-west1 for lower latency if West Coast focused
+region: us-central1 # or us-west1 for lower latency if West Coast focused
 
 container:
   port: 8080
   resources:
     limits:
-      cpu: "1"      # 1 vCPU
+      cpu: '1' # 1 vCPU
       memory: 512Mi # 512 MB RAM (adjust based on monitoring)
-  
+
 scaling:
-  minInstances: 0   # Serverless (cold starts acceptable for MVP)
-  maxInstances: 10  # Cap for cost control
-  
-timeout: 300s       # 5 minutes max request time
+  minInstances: 0 # Serverless (cold starts acceptable for MVP)
+  maxInstances: 10 # Cap for cost control
+
+timeout: 300s # 5 minutes max request time
 
 env:
   - name: ENVIRONMENT
@@ -179,6 +186,7 @@ env:
 
 **Secret Management:**
 Use Google Secret Manager (not environment variables in YAML):
+
 ```bash
 # Create secrets
 gcloud secrets create database-url --data-file=-
@@ -196,6 +204,7 @@ gcloud secrets add-iam-policy-binding database-url \
 **Single Workflow for Production Deployment:**
 
 `.github/workflows/deploy-production.yml`
+
 ```yaml
 name: Deploy Backend to Production
 
@@ -210,36 +219,36 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.tag || 'main' }}
-      
+
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
-      
+
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
-      
+
       - name: Configure Docker for GCR
         run: gcloud auth configure-docker
-      
+
       - name: Build Docker image
         run: |
           cd src/backend
           docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/dovvybuddy-backend:${{ github.sha }} .
           docker tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/dovvybuddy-backend:${{ github.sha }} \
                      gcr.io/${{ secrets.GCP_PROJECT_ID }}/dovvybuddy-backend:latest
-      
+
       - name: Push to Container Registry
         run: |
           docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/dovvybuddy-backend:${{ github.sha }}
           docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/dovvybuddy-backend:latest
-      
+
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy dovvybuddy-backend \
@@ -253,7 +262,7 @@ jobs:
             --timeout=300 \
             --memory=512Mi \
             --cpu=1
-      
+
       - name: Get service URL
         id: get-url
         run: |
@@ -261,13 +270,13 @@ jobs:
             --region us-central1 \
             --format 'value(status.url)')
           echo "service_url=$URL" >> $GITHUB_OUTPUT
-      
+
       - name: Run smoke tests
         run: |
           sleep 10  # Wait for deployment to stabilize
           curl -f ${{ steps.get-url.outputs.service_url }}/health || exit 1
           echo "✅ Health check passed"
-      
+
       - name: Summary
         run: |
           echo "🚀 Deployment complete!"
@@ -276,12 +285,14 @@ jobs:
 ```
 
 **Required GitHub Secrets:**
+
 - `GCP_SA_KEY` — Service account JSON key with Cloud Run Admin + Secret Manager Accessor roles
 - `GCP_PROJECT_ID` — Google Cloud project ID
 
 ### Environment Variables (Production)
 
 **Backend (Cloud Run via Secret Manager):**
+
 ```bash
 # Database
 DATABASE_URL=<neon-production-postgres-url>
@@ -303,6 +314,7 @@ CORS_ORIGINS=https://dovvybuddy.com,https://www.dovvybuddy.com
 ```
 
 **Frontend (Vercel Environment Variables):**
+
 ```bash
 # Backend API endpoint
 BACKEND_URL=https://api.dovvybuddy.com
@@ -316,6 +328,7 @@ DATABASE_URL=<same-as-backend>
 **Manual Setup Steps:**
 
 1. **Deploy Cloud Run service** (get auto-generated URL)
+
    ```bash
    gcloud run deploy dovvybuddy-backend ...
    # Output: Service URL: https://dovvybuddy-backend-xxxxx-uc.a.run.app
@@ -328,7 +341,6 @@ DATABASE_URL=<same-as-backend>
      --domain api.dovvybuddy.com \
      --region us-central1
    ```
-   
 3. **Add DNS records** (in domain registrar or Cloud DNS)
    - Cloud Run will provide specific DNS records to add
    - Typically: CNAME or A/AAAA records pointing to ghs.googlehosted.com
@@ -343,6 +355,7 @@ DATABASE_URL=<same-as-backend>
 ### Monitoring & Observability
 
 **Built-in Cloud Run Metrics (Free):**
+
 - Request count & latency (p50, p95, p99)
 - Error rate (4xx, 5xx responses)
 - CPU & memory utilization
@@ -350,15 +363,18 @@ DATABASE_URL=<same-as-backend>
 - Cold start frequency
 
 **Access metrics:**
+
 - Cloud Console → Cloud Run → dovvybuddy-backend → Metrics tab
 - Or use `gcloud run services describe`
 
 **Structured Logging:**
+
 - Python backend already logs JSON to stdout
 - View logs: Cloud Console → Logs Explorer
 - Filter by severity, request ID, session ID
 
 **Basic Alerts (Optional for MVP):**
+
 ```bash
 # Create alert for error rate >5%
 gcloud alpha monitoring policies create \
@@ -375,6 +391,7 @@ gcloud alpha monitoring policies create \
 ### Pre-Deployment Testing
 
 **Local Docker Testing:**
+
 ```bash
 # Build and test locally
 cd src/backend
@@ -412,6 +429,7 @@ After deployment, verify:
 - [ ] Logs visible: Check Cloud Run logs for requests
 
 **Automated Smoke Test Script:**
+
 ```bash
 #!/bin/bash
 # smoke-test.sh
@@ -531,10 +549,11 @@ curl $SERVICE_URL/health
 **Steps:**
 
 1. **Rollback to previous revision**
+
    ```bash
    # Find previous revision
    gcloud run revisions list --service=dovvybuddy-backend --region=us-central1
-   
+
    # Rollback (use previous revision name)
    gcloud run services update-traffic dovvybuddy-backend \
      --region us-central1 \
@@ -542,10 +561,11 @@ curl $SERVICE_URL/health
    ```
 
 2. **Verify rollback**
+
    ```bash
    # Check traffic routing
    gcloud run services describe dovvybuddy-backend --region us-central1
-   
+
    # Test endpoints
    curl https://api.dovvybuddy.com/health
    ```
@@ -563,12 +583,14 @@ curl $SERVICE_URL/health
 ### Rollback Triggers
 
 **Immediate Rollback If:**
+
 - Error rate >10% sustained for 5+ minutes
 - Complete service outage (health check failing)
 - Data corruption or loss detected
 - Security vulnerability exposed
 
 **Consider Rollback If:**
+
 - Error rate >5% sustained for 15+ minutes
 - P95 latency >15s sustained for 15+ minutes
 - Critical user-reported bugs affecting core flows
@@ -581,7 +603,7 @@ curl $SERVICE_URL/health
 ### PRs that must be merged
 
 - ✅ **PR1** (Database Schema) - Complete
-- ✅ **PR2** (RAG Pipeline) - Complete  
+- ✅ **PR2** (RAG Pipeline) - Complete
 - ✅ **PR3** (Model Provider & Session) - Complete
 - ✅ **PR3.1** (ADK Multi-Agent) - Complete
 - ✅ **PR3.2a-d** (Python Backend Migration) - Complete
@@ -615,12 +637,14 @@ curl $SERVICE_URL/health
 **Impact:** Medium (first request slow, poor UX)
 
 **Mitigation:**
+
 - Accept for MVP (cost savings prioritized)
 - Monitor cold start frequency and duration
 - If problematic: Set minInstances=1 (~$10-15/month)
 - Optimize Docker image size (<500MB)
 
 **Acceptance Criteria:**
+
 - Cold starts <5 seconds
 - Occur <10% of requests
 - Users informed via UI ("Waking up...")
@@ -631,12 +655,14 @@ curl $SERVICE_URL/health
 **Impact:** High (service unavailable)
 
 **Mitigation:**
+
 - SQLAlchemy connection pool configured (10-20 connections)
 - Cloud Run maxInstances=10 caps total connections
 - Monitor active connections in logs
 - Neon has built-in connection pooling
 
 **Acceptance Criteria:**
+
 - No connection errors in first week
 - Pool utilization <70% under normal load
 
@@ -646,12 +672,14 @@ curl $SERVICE_URL/health
 **Impact:** Medium (unexpected billing)
 
 **Mitigation:**
+
 - Set maxInstances=10 (hard cap)
 - Set up billing alerts ($50, $100 thresholds)
 - Monitor costs daily in first week
 - Cloud Run free tier covers initial traffic
 
 **Acceptance Criteria:**
+
 - Monthly cost <$50 for first month
 - No surprise charges
 
@@ -661,12 +689,14 @@ curl $SERVICE_URL/health
 **Impact:** Low (users can't access api.dovvybuddy.com)
 
 **Mitigation:**
+
 - Configure DNS 24-48 hours before announcement
 - Test with curl/dig before launch
 - Have direct Cloud Run URL as backup
 - Use low TTL (300s) for quick updates
 
 **Acceptance Criteria:**
+
 - DNS resolves correctly before launch
 - SSL certificate valid
 - No certificate warnings
@@ -677,12 +707,14 @@ curl $SERVICE_URL/health
 **Impact:** High (service fails to start)
 
 **Mitigation:**
+
 - Use Secret Manager (not inline env vars)
 - Test locally with .env file first
 - Deployment script validates required secrets exist
 - Health check fails if configuration wrong
 
 **Acceptance Criteria:**
+
 - All secrets present in Secret Manager
 - Service starts successfully
 - Health check passes on first try
@@ -696,12 +728,14 @@ curl $SERVICE_URL/health
 **Chosen:** Serverless (minInstances=0)
 
 **Rationale:**
+
 - MVP traffic expected to be low (<100 sessions/day)
 - Cost savings: $0 vs ~$15/month for always-on
 - Cold starts acceptable for MVP (users tolerant during early phase)
 - Can easily change to minInstances=1 later if needed
 
 **Trade-off:**
+
 - Cold starts (2-5s) on first request after idle period
 - May frustrate impatient users
 
@@ -712,12 +746,14 @@ curl $SERVICE_URL/health
 **Chosen:** Basic Cloud Run metrics only
 
 **Rationale:**
+
 - Cloud Run provides sufficient observability for MVP
 - Sentry adds complexity and cost (~$26/month minimum)
 - Focus on launching, not perfect monitoring
 - Can add Sentry post-launch if error tracking needed
 
 **Trade-off:**
+
 - No automatic error grouping/alerting
 - Less detailed performance tracking
 - Manual log searching for debugging
@@ -729,12 +765,14 @@ curl $SERVICE_URL/health
 **Chosen:** Single region (us-central1)
 
 **Rationale:**
+
 - MVP serves single market initially
 - Multi-region adds complexity (database replication, etc.)
 - Cost increase for low traffic doesn't justify HA benefits
 - Can migrate to multi-region when scaling globally
 
 **Trade-off:**
+
 - Higher latency for users far from us-central1
 - No automatic failover if region has outage
 
@@ -745,11 +783,13 @@ curl $SERVICE_URL/health
 **Chosen:** Manual deployment trigger (workflow_dispatch)
 
 **Rationale:**
+
 - MVP: Manual control prevents accidental production deployments
 - Can verify staging/testing before production push
 - Simple to understand and execute
 
 **Trade-off:**
+
 - Not automated on every merge to main
 - Requires human intervention to deploy
 
@@ -764,6 +804,7 @@ curl $SERVICE_URL/health
 **Context:** Second generation has faster cold starts but may have different pricing
 
 **Options:**
+
 - A) First generation (default, proven)
 - B) Second generation (faster cold starts, newer)
 
@@ -776,6 +817,7 @@ curl $SERVICE_URL/health
 **Context:** Balance between cost and cold start avoidance
 
 **Options:**
+
 - A) 0 (serverless, cold starts)
 - B) 1 (always warm, ~$15/month)
 
@@ -788,6 +830,7 @@ curl $SERVICE_URL/health
 **Context:** Could test deployments in staging before production
 
 **Options:**
+
 - A) No staging (deploy directly to production)
 - B) Staging environment (separate Cloud Run service)
 
@@ -895,12 +938,12 @@ After PR7 is complete (MVP deployed to production):
 
 ## Revision History
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 0.1 | 2026-01-01 | AI Assistant | Initial draft (migration-focused as PR3.2f) |
-| 0.2 | 2026-01-05 | AI Assistant | Revised for MVP deployment (post-migration) |
-| 0.3 | 2026-01-05 | AI Assistant | Renamed from PR3.2f to PR6.1 |
-| 0.4 | 2026-01-31 | AI Assistant | Renamed from PR6.1 to PR7 |
+| Version | Date       | Author       | Changes                                     |
+| ------- | ---------- | ------------ | ------------------------------------------- |
+| 0.1     | 2026-01-01 | AI Assistant | Initial draft (migration-focused as PR3.2f) |
+| 0.2     | 2026-01-05 | AI Assistant | Revised for MVP deployment (post-migration) |
+| 0.3     | 2026-01-05 | AI Assistant | Renamed from PR3.2f to PR6.1                |
+| 0.4     | 2026-01-31 | AI Assistant | Renamed from PR6.1 to PR7                   |
 
 ---
 

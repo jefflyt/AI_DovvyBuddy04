@@ -56,29 +56,40 @@ cd src/backend && python3 -m pytest tests/unit/scripts/ -v && cd ../..
 ## Daily Workflow
 
 ### Content Authoring
+
 cd src/backend
+
 1. **Create/edit content files** in `content/` directory
-cd ../..
+   cd ../..
+
    # Add frontmatter to each .md file:
-   ---
+
+   ***
+
    title: "Your Title"
    description: "Your description"
    tags: ["tag1", "tag2"]
-   ---
-cd src/backend && python3 -c "import scripts.common; print('✓ OK')" && cd ../..
+
+   ***
+
+   cd src/backend && python3 -c "import scripts.common; print('✓ OK')" && cd ../..
 
 2. **Validate content**
-cd src/backend && python3 -m pytest tests/unit/scripts/ -v && cd ../..
+   cd src/backend && python3 -m pytest tests/unit/scripts/ -v && cd ../..
    pnpm content:validate-py
+
+   ```
+
    ```
 
 3. **Fix any validation errors** reported
 
 4. **Ingest content** (full or incremental)
+
    ```bash
    # Incremental (recommended for daily work)
    pnpm content:ingest-incremental-py
-   
+
    # Full re-ingestion (if chunking logic changed)
    pnpm content:ingest-py
    ```
@@ -86,6 +97,7 @@ cd src/backend && python3 -m pytest tests/unit/scripts/ -v && cd ../..
 ### Code Development
 
 1. **Start development server**
+
    ```bash
    pnpm dev
    ```
@@ -93,10 +105,11 @@ cd src/backend && python3 -m pytest tests/unit/scripts/ -v && cd ../..
 2. **Make code changes**
 
 3. **Run tests**
+
    ```bash
    # Frontend/integration tests
    pnpm test
-   
+
    # Backend unit tests
    cd src/backend
    python3 -m pytest tests/unit/ -v
@@ -104,6 +117,7 @@ cd src/backend && python3 -m pytest tests/unit/scripts/ -v && cd ../..
    ```
 
 4. **Type check**
+
    ```bash
    pnpm typecheck
    ```
@@ -163,7 +177,9 @@ pnpm content:clear-py
 ```
 
 ### Advanced Options
+
 cd src/backend
+
 ```bash
 cd ../..
 cd src/backend
@@ -195,6 +211,7 @@ pnpm benchmark:rag
 ---
 
 ## Testing
+
 ### Test Structure
 
 ```
@@ -233,17 +250,19 @@ cd ..
 ### Writing Tests
 
 **Frontend (Vitest):**
+
 ```typescript
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest'
 
 describe('MyComponent', () => {
   it('should render correctly', () => {
     // Test code
-  });
-});
+  })
+})
 ```
 
 **Backend (pytest):**
+
 ```python
 import pytest
 
@@ -279,16 +298,19 @@ psql "$DATABASE_URL" -c "SELECT * FROM pg_extension WHERE extname='vector'"
 ### Troubleshooting
 
 **Clear all embeddings:**
+
 ```bash
 pnpm content:clear-py
 ```
 
 **Reset database schema:**
+
 ```bash
 pnpm db:push --force-reset
 ```
 
 **Check database connection:**
+
 ```bash
 cd src/backend
 python3 -c "from app.db.session import SessionLocal; db = SessionLocal(); print('✓ Connected')"
@@ -327,6 +349,7 @@ pnpm build
 ### Common Issues
 
 **Import errors:**
+
 ```bash
 # Reinstall backend package
 cd src/backend
@@ -335,6 +358,7 @@ cd ..
 ```
 
 **Database connection failures:**
+
 ```bash
 # Check DATABASE_URL
 echo $DATABASE_URL
@@ -344,6 +368,7 @@ psql "$DATABASE_URL" -c "SELECT 1"
 ```
 
 **Embedding generation failures:**
+
 ```bash
 # Check API key
 echo $GEMINI_API_KEY
@@ -406,6 +431,7 @@ cd src/backend && python3 -m pytest tests/unit/ && cd ../..
 ### Vercel (Frontend)
 
 Automatic deployment on push to `main`:
+
 - Build: `pnpm build`
 - Environment variables set in Vercel dashboard
 
@@ -450,21 +476,22 @@ cd ..
 
 ## Quick Troubleshooting
 
-| Issue | Solution |
-|-------|----------|
-| Import errors | `cd src/backend && python3 -m pip install -e .` |
-| Database errors | Check `DATABASE_URL`, verify pgvector extension |
-| API key errors | Check `GEMINI_API_KEY` in `.env.local` |
-| Test failures | `python3 -m pytest tests/unit/ -v` |
-| Build failures | `pnpm clean && pnpm install` |
-| Validation errors | Check frontmatter format in `.md` files |
-| Slow ingestion | Incremental mode is default; run normal ingest and avoid `--full` unless needed |
+| Issue             | Solution                                                                        |
+| ----------------- | ------------------------------------------------------------------------------- |
+| Import errors     | `cd src/backend && python3 -m pip install -e .`                                 |
+| Database errors   | Check `DATABASE_URL`, verify pgvector extension                                 |
+| API key errors    | Check `GEMINI_API_KEY` in `.env.local`                                          |
+| Test failures     | `python3 -m pytest tests/unit/ -v`                                              |
+| Build failures    | `pnpm clean && pnpm install`                                                    |
+| Validation errors | Check frontmatter format in `.md` files                                         |
+| Slow ingestion    | Incremental mode is default; run normal ingest and avoid `--full` unless needed |
 
 ---
 
 ## Next Steps
 
 After PR3.2d completion:
+
 1. ✅ Validate all content passes validation
 2. ✅ Ingest content with Python scripts
 3. ⏳ Set up integration tests with test DB
@@ -474,6 +501,7 @@ After PR3.2d completion:
 ---
 
 **Questions?** Check:
+
 - Backend: `src/backend/README.md`
 - General: `docs/NEXT_STEPS.md`
 - Implementation: `docs/project-management/PR3.2d-implementation-summary.md`

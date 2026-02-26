@@ -1,1 +1,6 @@
-export { initAnalytics, trackPageView, trackEvent, identifyUser } from './analytics'
+export {
+  initAnalytics,
+  trackPageView,
+  trackEvent,
+  identifyUser,
+} from './analytics'

@@ -28,7 +28,9 @@ class ErrorHandler {
 
     if (!sentryDsn) {
       if (this.debug) {
-        console.log('[ErrorHandler] Sentry DSN not found, error monitoring disabled')
+        console.log(
+          '[ErrorHandler] Sentry DSN not found, error monitoring disabled'
+        )
       }
       this.initialized = true
       return
@@ -71,7 +73,11 @@ class ErrorHandler {
   /**
    * Capture a message
    */
-  captureMessage(message: string, level: ErrorLevel = 'info', context?: ErrorContext): void {
+  captureMessage(
+    message: string,
+    level: ErrorLevel = 'info',
+    context?: ErrorContext
+  ): void {
     if (this.debug) {
       console.log(`[ErrorHandler] Message [${level}]:`, message, context)
     }
@@ -89,8 +95,13 @@ class ErrorHandler {
       }
     } else {
       // Fallback: log to console
-      const logMethod = level === 'error' || level === 'fatal' ? console.error : console.log
-      logMethod(`[ErrorHandler] Message [${level}] (no Sentry):`, message, context)
+      const logMethod =
+        level === 'error' || level === 'fatal' ? console.error : console.log
+      logMethod(
+        `[ErrorHandler] Message [${level}] (no Sentry):`,
+        message,
+        context
+      )
     }
   }
 
@@ -162,7 +173,9 @@ export function initErrorMonitoring(): void {
  */
 export function captureException(error: Error, context?: ErrorContext): void {
   if (!errorHandlerInstance) {
-    console.warn('[ErrorHandler] Not initialized, call initErrorMonitoring() first')
+    console.warn(
+      '[ErrorHandler] Not initialized, call initErrorMonitoring() first'
+    )
     console.error(error, context)
     return
   }
@@ -178,7 +191,9 @@ export function captureMessage(
   context?: ErrorContext
 ): void {
   if (!errorHandlerInstance) {
-    console.warn('[ErrorHandler] Not initialized, call initErrorMonitoring() first')
+    console.warn(
+      '[ErrorHandler] Not initialized, call initErrorMonitoring() first'
+    )
     console.log(message, level, context)
     return
   }
@@ -190,7 +205,9 @@ export function captureMessage(
  */
 export function setUserContext(userId?: string, email?: string): void {
   if (!errorHandlerInstance) {
-    console.warn('[ErrorHandler] Not initialized, call initErrorMonitoring() first')
+    console.warn(
+      '[ErrorHandler] Not initialized, call initErrorMonitoring() first'
+    )
     return
   }
   errorHandlerInstance.setUserContext(userId, email)

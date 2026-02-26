@@ -3,7 +3,7 @@
  * HTTP client wrapper for backend API communication
  */
 
-import { API_CONFIG, API_ENDPOINTS } from './config';
+import { API_CONFIG, API_ENDPOINTS } from './config'
 import {
   ChatRequest,
   ChatResponse,
@@ -11,31 +11,31 @@ import {
   LeadRequest,
   LeadResponse,
   RequestOptions,
-} from './types';
+} from './types'
 import {
   parseApiError,
   createNetworkError,
   createTimeoutError,
-} from './error-handler';
-import { withRetry } from './retry';
+} from './error-handler'
+import { withRetry } from './retry'
 
 /**
  * API Client class
  * Provides methods for all backend API endpoints
  */
 export class ApiClient {
-  private baseURL: string;
-  private timeout: number;
-  private retryAttempts: number;
-  private retryDelay: number;
-  private credentials: RequestCredentials;
+  private baseURL: string
+  private timeout: number
+  private retryAttempts: number
+  private retryDelay: number
+  private credentials: RequestCredentials
 
   constructor(config = API_CONFIG) {
-    this.baseURL = config.baseURL;
-    this.timeout = config.timeout;
-    this.retryAttempts = config.retryAttempts;
-    this.retryDelay = config.retryDelay;
-    this.credentials = config.credentials;
+    this.baseURL = config.baseURL
+    this.timeout = config.timeout
+    this.retryAttempts = config.retryAttempts
+    this.retryDelay = config.retryDelay
+    this.credentials = config.credentials
   }
 
   /**
@@ -51,23 +51,23 @@ export class ApiClient {
       retryDelay = this.retryDelay,
       signal,
       ...fetchOptions
-    } = options;
+    } = options
 
     // Create abort controller for timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeout)
 
     // Combine signals if provided
     const abortSignal = signal
       ? this.combineSignals([signal, controller.signal])
-      : controller.signal;
+      : controller.signal
 
     try {
       // Wrap fetch in retry logic
       const response = await withRetry(
         async () => {
           try {
-            const url = `${this.baseURL}${endpoint}`;
+            const url = `${this.baseURL}${endpoint}`
             const response = await fetch(url, {
               ...fetchOptions,
               credentials: this.credentials,
@@ -76,20 +76,20 @@ export class ApiClient {
                 'Content-Type': 'application/json',
                 ...fetchOptions.headers,
               },
-            });
+            })
 
             // Check for HTTP errors
             if (!response.ok) {
-              throw await parseApiError(response);
+              throw await parseApiError(response)
             }
 
-            return response;
+            return response
           } catch (error) {
             // Handle network errors
             if (error instanceof TypeError && error.message.includes('fetch')) {
-              throw createNetworkError(error);
+              throw createNetworkError(error)
             }
-            throw error;
+            throw error
           }
         },
         {
@@ -97,19 +97,19 @@ export class ApiClient {
           baseDelay: retryDelay,
           signal: abortSignal,
         }
-      );
+      )
 
       // Parse response
-      const data = await response.json();
-      return data as T;
+      const data = await response.json()
+      return data as T
     } catch (error) {
       // Handle timeout
       if (error instanceof Error && error.name === 'AbortError') {
-        throw createTimeoutError();
+        throw createTimeoutError()
       }
-      throw error;
+      throw error
     } finally {
-      clearTimeout(timeoutId);
+      clearTimeout(timeoutId)
     }
   }
 
@@ -117,22 +117,22 @@ export class ApiClient {
    * Combine multiple abort signals
    */
   private combineSignals(signals: AbortSignal[]): AbortSignal {
-    const controller = new AbortController();
+    const controller = new AbortController()
 
     for (const signal of signals) {
       if (signal.aborted) {
-        controller.abort();
-        break;
+        controller.abort()
+        break
       }
-      signal.addEventListener('abort', () => controller.abort());
+      signal.addEventListener('abort', () => controller.abort())
     }
 
-    return controller.signal;
+    return controller.signal
   }
 
   /**
    * Send chat message
-   * 
+   *
    * @param request Chat request
    * @param options Request options
    * @returns Chat response with session ID and message
@@ -145,12 +145,12 @@ export class ApiClient {
       method: 'POST',
       body: JSON.stringify(request),
       ...options,
-    });
+    })
   }
 
   /**
    * Get session information
-   * 
+   *
    * @param sessionId Session ID
    * @param options Request options
    * @returns Session information
@@ -159,18 +159,15 @@ export class ApiClient {
     sessionId: string,
     options?: RequestOptions
   ): Promise<SessionResponse> {
-    return this.request<SessionResponse>(
-      API_ENDPOINTS.session(sessionId),
-      {
-        method: 'GET',
-        ...options,
-      }
-    );
+    return this.request<SessionResponse>(API_ENDPOINTS.session(sessionId), {
+      method: 'GET',
+      ...options,
+    })
   }
 
   /**
    * Create lead (contact form submission)
-   * 
+   *
    * @param request Lead request
    * @param options Request options
    * @returns Lead response
@@ -183,11 +180,11 @@ export class ApiClient {
       method: 'POST',
       body: JSON.stringify(request),
       ...options,
-    });
+    })
   }
 }
 
 /**
  * Default API client instance
  */
-export const apiClient = new ApiClient();
+export const apiClient = new ApiClient()

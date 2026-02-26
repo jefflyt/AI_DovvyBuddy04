@@ -15,6 +15,7 @@
 ### ✅ Fully Completed
 
 **Core Infrastructure:**
+
 - ✅ Backend directory structure created and organized
 - ✅ FastAPI application scaffold (`app/main.py`) with CORS and health endpoint
 - ✅ Core configuration module (`app/core/config.py`) with Pydantic settings
@@ -25,6 +26,7 @@
 - ✅ Alembic initial migration (001_initial_schema.py)
 
 **Database Layer:**
+
 - ✅ **All 5 SQLAlchemy models created and functional:**
   - `Session` - User session management
   - `ContentEmbedding` - RAG content storage
@@ -38,6 +40,7 @@
 - ✅ Database dependency injection (`get_db()` in routes)
 
 **API Layer:**
+
 - ✅ Functional API routes with dependency injection:
   - `/api/chat` - Chat orchestration endpoint (fully functional)
   - `/api/session` - Session management endpoints
@@ -47,6 +50,7 @@
 - ✅ Proper request/response models with Pydantic
 
 **Testing & Quality:**
+
 - ✅ pytest configuration and test structure
 - ✅ Unit tests for models, repositories, agents, scripts (34+ test files)
 - ✅ Integration tests (chat flow, services)
@@ -56,6 +60,7 @@
 - ✅ FastAPI app starts successfully
 
 **Documentation:**
+
 - ✅ `README.md` with quick start instructions
 - ✅ `README_SERVICES.md` with service documentation
 - ✅ `.env.example` with all environment variables
@@ -64,12 +69,14 @@
 ### 🚀 Beyond Original Scope (Completed in Later PRs)
 
 The backend has evolved significantly beyond PR3.2a's original scope:
+
 - ✅ **PR3.2b** - Full LLM, embedding, and RAG services implemented
 - ✅ **PR3.2c** - Complete multi-agent orchestration system
 - ✅ **PR3.2d** - Content processing scripts (validate, ingest, benchmark)
 - ✅ **PR3.2e** - Frontend integration completed
 
 **Additional Features:**
+
 - ✅ Full ChatOrchestrator with context building and mode detection
 - ✅ Multi-agent system (Certification, Trip, Safety, Retrieval agents)
 - ✅ Complete RAG pipeline with chunking and retrieval
@@ -149,6 +156,7 @@ Establish Python backend project structure, OpenAPI specification, and SQLAlchem
 ### New Modules
 
 **Project Structure:**
+
 ```
 src/backend/
 ├── app/
@@ -212,8 +220,8 @@ src/backend/
 3. **src/backend/app/main.py** — FastAPI application with CORS, health check, placeholder routes
 4. **src/backend/app/core/config.py** — Pydantic settings for configuration management
 5. **src/backend/app/db/session.py** — Async database session factory
-6. **src/backend/app/db/models/*.py** — 5 SQLAlchemy models mirroring Drizzle schema
-7. **src/backend/app/db/repositories/*.py** — 3 repository classes for data access
+6. **src/backend/app/db/models/\*.py** — 5 SQLAlchemy models mirroring Drizzle schema
+7. **src/backend/app/db/repositories/\*.py** — 3 repository classes for data access
 8. **src/backend/alembic/versions/001_initial_schema.py** — No-op migration reflecting current schema
 
 ### Modified Modules
@@ -240,6 +248,7 @@ None (frontend not connected yet)
 ### Migrations
 
 **Migration:** `src/backend/alembic/versions/001_initial_schema.py`
+
 - **Type:** No-op (schema already exists via Drizzle)
 - **Purpose:** Establish baseline for Alembic
 - **Changes:** None (Alembic detects existing schema, creates empty migration)
@@ -332,7 +341,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     services:
       postgres:
         image: pgvector/pgvector:pg16
@@ -346,42 +355,42 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      
+
       - name: Install dependencies
         run: |
           cd src/backend
           pip install -e ".[dev]"
-      
+
       - name: Lint
         run: |
           cd src/backend
           ruff check .
-      
+
       - name: Format check
         run: |
           cd src/backend
           ruff format --check .
-      
+
       - name: Type check
         run: |
           cd src/backend
           mypy app
-      
+
       - name: Run tests
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/dovvybuddy_test
         run: |
           cd src/backend
           pytest --cov=app --cov-report=xml
-      
+
       - name: Upload coverage
         uses: codecov/codecov-action@v3
         with:
@@ -414,6 +423,7 @@ jobs:
    - Type checking
 
 **Mocking Strategy:**
+
 - Mock SQLAlchemy session for unit tests
 - No real database connections in unit tests
 - Use pytest fixtures for common test data
@@ -431,6 +441,7 @@ jobs:
    - Connection pooling behavior
 
 **Test Database:**
+
 - Use Docker Postgres with pgvector extension
 - Create/drop test database for each test run
 - Use pytest fixtures for database setup/teardown
@@ -572,12 +583,14 @@ None (first PR in migration epic)
 **Impact:** High (data corruption or query failures)
 
 **Mitigation:**
+
 - Write comparison tests that query same data with both ORMs
 - Manual schema inspection: `\d+ table_name` in psql for both schemas
 - Create test data with TypeScript, read with Python, verify correctness
 - Document any intentional differences
 
 **Acceptance Criteria:**
+
 - All fields map correctly (names, types, constraints)
 - Vector column works identically (768 dimensions)
 - JSONB columns handle same data structures
@@ -589,12 +602,14 @@ None (first PR in migration epic)
 **Impact:** High (RAG quality degradation)
 
 **Mitigation:**
+
 - Comparison tests with known embeddings and expected results
 - Insert test embeddings, query from both implementations, compare top-5 results
 - Benchmark cosine similarity calculations (pgvector should be identical)
 - Test edge cases (zero vectors, very similar/dissimilar vectors)
 
 **Acceptance Criteria:**
+
 - Same query returns same top-5 results (order may vary for equal similarity)
 - Cosine similarity values within 0.001 tolerance
 - Performance comparable or better than TypeScript
@@ -605,12 +620,14 @@ None (first PR in migration epic)
 **Impact:** Medium (development friction)
 
 **Mitigation:**
+
 - Comprehensive README with troubleshooting section
 - Lock dependency versions in pyproject.toml
 - Test setup on fresh Python environment
 - Document common issues (Apple Silicon, M1/M2 Macs, etc.)
 
 **Acceptance Criteria:**
+
 - Setup works on macOS, Linux, Windows
 - Dependencies install without conflicts
 - All tools (ruff, mypy, pytest) work correctly
@@ -621,12 +638,14 @@ None (first PR in migration epic)
 **Impact:** High (production crashes or data loss)
 
 **Mitigation:**
+
 - Extensive integration tests with concurrent operations
 - Test connection pool behavior (exhaustion, recovery)
 - Test transaction rollback scenarios
 - Use proven patterns (async context managers, proper exception handling)
 
 **Acceptance Criteria:**
+
 - Connection pool doesn't leak connections
 - Transactions commit/rollback correctly
 - Concurrent operations don't cause deadlocks
@@ -641,12 +660,14 @@ None (first PR in migration epic)
 **Chosen:** Repository pattern
 
 **Rationale:**
+
 - Better testability (easy to mock repositories)
 - Cleaner separation of concerns
 - Easier to optimize queries later (centralized)
 - Consistent API for data access
 
 **Trade-off:**
+
 - Slightly more code (extra abstraction layer)
 - Potential over-engineering for simple CRUD
 
@@ -657,11 +678,13 @@ None (first PR in migration epic)
 **Chosen:** Manual TypeScript types for PR3.2a
 
 **Rationale:**
+
 - Simpler setup (no additional tooling)
 - Faster iteration during development
 - Can add codegen later if needed
 
 **Trade-off:**
+
 - Manual updates needed if API changes
 - Risk of type drift between OpenAPI and TypeScript
 
@@ -672,11 +695,13 @@ None (first PR in migration epic)
 **Chosen:** Alembic for future migrations
 
 **Rationale:**
+
 - Python-native (better DX for Python backend)
 - Necessary for Python-only deployment
 - Drizzle migrations already applied (frozen)
 
 **Trade-off:**
+
 - Dual migration tools during transition
 - Team must learn Alembic commands
 
@@ -691,6 +716,7 @@ None (first PR in migration epic)
 **Context:** SQLAlchemy 2.0 has new async patterns and type hints
 
 **Options:**
+
 - A) SQLAlchemy 1.4 (stable, more examples)
 - B) SQLAlchemy 2.0 (modern, better async support)
 
@@ -703,6 +729,7 @@ None (first PR in migration epic)
 **Context:** Embedding cache could be in repository or service layer
 
 **Options:**
+
 - A) Implement in repository (PR3.2a)
 - B) Implement in embedding service (PR3.2b)
 
@@ -715,6 +742,7 @@ None (first PR in migration epic)
 **Context:** Auto-generation convenient but can miss edge cases
 
 **Options:**
+
 - A) Auto-generate with `alembic revision --autogenerate`
 - B) Hand-write all migrations
 
@@ -762,6 +790,7 @@ None (first PR in migration epic)
 ### What Was Delivered
 
 **Core Foundation (100% Complete):**
+
 - ✅ Fully functional FastAPI backend with async database access
 - ✅ Complete database layer (5 models, 3 repositories)
 - ✅ Working API endpoints with dependency injection
@@ -769,12 +798,14 @@ None (first PR in migration epic)
 - ✅ Production-ready configuration and tooling
 
 **Beyond Original Scope:**
+
 - ✅ Integrated into complete application (PR3.2b-e completed)
 - ✅ Multi-agent orchestration system operational
 - ✅ RAG pipeline with content processing
 - ✅ Docker containerization ready
 
 **Deferred (Non-Critical):**
+
 - ⏸️ Dedicated backend CI workflow (existing CI sufficient)
 - ⏸️ Separate logging module (using Python built-in)
 - ⏸️ Native pgvector type (ARRAY(Float) working correctly)
@@ -789,6 +820,7 @@ None (first PR in migration epic)
 ### Impact on Project
 
 This PR established the foundation that enabled:
+
 - **PR3.2b** - RAG services built on repository layer
 - **PR3.2c** - Agent orchestration using database models
 - **PR3.2d** - Content scripts leveraging database access
@@ -811,13 +843,13 @@ This PR established the foundation that enabled:
 
 ## Revision History
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 0.1 | 2026-01-01 | AI Assistant | Initial draft |
-| 0.2 | 2026-01-01 | AI Assistant | Updated with implementation status, identified gaps, added immediate action items |
-| 0.3 | 2026-01-01 | AI Assistant | Critical gaps resolved: Added alembic.ini, destination/dive_site models, centralized Base, config files |
-| 0.4 | 2026-01-01 | AI Assistant | Dependencies installed & verified: Created venv, installed all deps, fixed Python 3.9 compat, fixed metadata conflicts, tests passing |
-| 1.0 | 2026-01-08 | AI Assistant | **FINAL REVIEW**: Verified complete implementation. All core deliverables met. PR3.2a-e completed successfully. Marked as complete. |
+| Version | Date       | Author       | Changes                                                                                                                               |
+| ------- | ---------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1     | 2026-01-01 | AI Assistant | Initial draft                                                                                                                         |
+| 0.2     | 2026-01-01 | AI Assistant | Updated with implementation status, identified gaps, added immediate action items                                                     |
+| 0.3     | 2026-01-01 | AI Assistant | Critical gaps resolved: Added alembic.ini, destination/dive_site models, centralized Base, config files                               |
+| 0.4     | 2026-01-01 | AI Assistant | Dependencies installed & verified: Created venv, installed all deps, fixed Python 3.9 compat, fixed metadata conflicts, tests passing |
+| 1.0     | 2026-01-08 | AI Assistant | **FINAL REVIEW**: Verified complete implementation. All core deliverables met. PR3.2a-e completed successfully. Marked as complete.   |
 
 ---
 

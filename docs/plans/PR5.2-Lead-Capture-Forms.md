@@ -72,6 +72,7 @@ So that a dive shop can follow up with me via email/phone.
 ### Proposed UX (high-level)
 
 Desktop (>768px):
+
 1. Chat interface shows two buttons in header or below input: "Get Certified" | "Plan a Trip"
 2. User clicks "Get Certified" → semi-transparent overlay appears with centered modal (max-width 600px)
 3. Modal contains training form with 6-7 fields
@@ -80,6 +81,7 @@ Desktop (>768px):
 6. User continues chatting
 
 Mobile (<768px):
+
 1. Same buttons, smaller size or icon-only
 2. Modal expands to full-screen (100vw x 100vh, with scroll if needed)
 3. Close button (X) in top-right corner
@@ -91,29 +93,29 @@ Endpoint: POST /api/leads (already implemented in PR4)
 
 Training lead payload:
 {
-  sessionId: "uuid",
-  email: "user@example.com",
-  name: "John Doe",
-  phone: "+1234567890", // optional
-  preferredContact: "email", // or "phone" or "whatsapp"
-  message: "Agency: PADI, Level: Open Water, Location: Singapore, Notes: ..."
+sessionId: "uuid",
+email: "user@example.com",
+name: "John Doe",
+phone: "+1234567890", // optional
+preferredContact: "email", // or "phone" or "whatsapp"
+message: "Agency: PADI, Level: Open Water, Location: Singapore, Notes: ..."
 }
 
 Trip lead payload:
 {
-  sessionId: "uuid",
-  email: "user@example.com",
-  name: "Jane Smith",
-  phone: "+1234567890",
-  preferredContact: "email",
-  message: "Destination: Tioman, Dates: June 2026, Certification: AOW, Dive Count: 25, Interests: Wrecks, Reefs, Notes: ..."
+sessionId: "uuid",
+email: "user@example.com",
+name: "Jane Smith",
+phone: "+1234567890",
+preferredContact: "email",
+message: "Destination: Tioman, Dates: June 2026, Certification: AOW, Dive Count: 25, Interests: Wrecks, Reefs, Notes: ..."
 }
 
 Backend response:
 {
-  success: true,
-  leadId: "uuid",
-  message: "Thank you! We'll be in touch soon."
+success: true,
+leadId: "uuid",
+message: "Thank you! We'll be in touch soon."
 }
 
 ### Proposed data changes (high-level)
@@ -121,6 +123,7 @@ Backend response:
 No database changes - leads table exists from PR1, /api/leads endpoint exists from PR4.
 
 Component state additions (src/app/chat/page.tsx):
+
 - showLeadForm: boolean (controls modal visibility)
 - leadType: 'training' | 'trip' | null (which form to show)
 - leadSubmitting: boolean (submission loading state)
@@ -131,6 +134,7 @@ Component state additions (src/app/chat/page.tsx):
 None - V1 is guest-only, no authentication required to submit leads.
 
 Backend validation (from PR4):
+
 - Email format validation
 - Required field validation (email)
 - Rate limiting (10 submissions per session ID)
@@ -216,6 +220,7 @@ Updated files:
    - Add error handling for ApiClientError in handleLeadSubmit
 
 Button placement options (choose one):
+
 - Option A: Fixed buttons below chat input (always visible)
 - Option B: Floating action buttons (bottom-right corner, stacked)
 - Option C: Header buttons (next to "DovvyBuddy Chat" title)
@@ -230,6 +235,7 @@ No changes - /api/leads endpoint already implemented in PR4.
 No schema changes - leads table exists.
 
 Expected DB writes:
+
 - INSERT INTO leads (session_id, type, diver_profile, created_at)
 - Type is inferred from lead content (training vs trip) or added as explicit column (PR4 implementation detail)
 
@@ -240,11 +246,13 @@ No environment variables needed (RESEND_API_KEY, LEAD_EMAIL_TO already configure
 #### Observability
 
 Console logging (dev mode):
+
 - "Opening lead form: {type}"
 - "Lead submitted successfully: {leadId}"
 - "Lead submission error: {error.message}"
 
 Future (PR6):
+
 - Track lead form open rate (analytics event)
 - Track lead submission success/failure rate (analytics event)
 
@@ -308,6 +316,7 @@ Future (PR6):
 No migration needed - new feature, no existing data.
 
 Backwards compatibility:
+
 - Users who already chatted (before this PR) can now submit leads
 - No breaking changes to chat functionality
 
@@ -321,7 +330,7 @@ Backwards compatibility:
 
 Files to create:
 
-1. src/components/chat/__tests__/LeadCaptureModal.test.tsx
+1. src/components/chat/**tests**/LeadCaptureModal.test.tsx
    - Test modal renders when isOpen=true
    - Test modal hidden when isOpen=false
    - Test onClose called when backdrop clicked
@@ -329,7 +338,7 @@ Files to create:
    - Test renders TrainingLeadForm when leadType='training'
    - Test renders TripLeadForm when leadType='trip'
 
-2. src/components/chat/__tests__/TrainingLeadForm.test.tsx
+2. src/components/chat/**tests**/TrainingLeadForm.test.tsx
    - Test all fields render correctly
    - Test required field validation (empty name, email)
    - Test email format validation (invalid email)
@@ -338,12 +347,12 @@ Files to create:
    - Test submit button disabled during isSubmitting
    - Test error message displayed when error prop provided
 
-3. src/components/chat/__tests__/TripLeadForm.test.tsx
+3. src/components/chat/**tests**/TripLeadForm.test.tsx
    - Same tests as TrainingLeadForm
    - Additional: Test checkboxes for interests
    - Additional: Test dive count number input
 
-4. src/app/chat/__tests__/page.test.tsx (update existing or create)
+4. src/app/chat/**tests**/page.test.tsx (update existing or create)
    - Test "Get Certified" button opens training form
    - Test "Plan a Trip" button opens trip form
    - Test form closes on cancel
@@ -356,6 +365,7 @@ Files to create:
 File: tests/integration/lead-capture.test.ts (new)
 
 Tests:
+
 1. Test training lead submission end-to-end
    - Open training form
    - Fill all fields
@@ -389,6 +399,7 @@ Manual testing covers E2E scenarios for now.
 ### Manual verification checklist
 
 Pre-requisites:
+
 - Backend running: cd src/backend && uvicorn app.main:app --reload
 - Frontend running: pnpm dev
 - Open http://localhost:3000/chat
@@ -405,7 +416,7 @@ Test cases:
    - [ ] Verify loading spinner on button
    - [ ] Verify modal closes on success
    - [ ] Verify chat displays: "✅ Thanks, John Doe! We'll contact you at john@example.com soon."
-   - [ ] Check DB: SELECT * FROM leads WHERE email='john@example.com';
+   - [ ] Check DB: SELECT \* FROM leads WHERE email='john@example.com';
    - [ ] Verify lead record exists with correct data
    - [ ] Check email inbox (LEAD_EMAIL_TO) for notification email
 
@@ -467,7 +478,7 @@ Test cases:
    - [ ] Verify success
    - [ ] Immediately submit trip lead (same session)
    - [ ] Verify success
-   - [ ] Check DB: SELECT * FROM leads WHERE session_id='your-session-id';
+   - [ ] Check DB: SELECT \* FROM leads WHERE session_id='your-session-id';
    - [ ] Verify 2 lead records exist
 
 10. **Rate limiting (if backend implements it):**
@@ -545,10 +556,12 @@ pnpm build
 ### If critical bugs found post-merge
 
 Rollback strategy:
+
 1. Revert commit: git revert <commit-sha>
 2. Redeploy to Vercel
 
 Impact of rollback:
+
 - "Get Certified" and "Plan a Trip" buttons removed
 - Users cannot submit leads from chat (back to PR5 behavior)
 - Existing leads in DB are preserved
@@ -557,6 +570,7 @@ Impact of rollback:
 ### Feature flag (optional)
 
 Could add feature flag if cautious:
+
 - Environment variable: NEXT_PUBLIC_FEATURE_LEAD_CAPTURE_ENABLED=true
 - Hide buttons if false
 - Allows gradual rollout or quick disable without code change
@@ -566,6 +580,7 @@ Could add feature flag if cautious:
 No database migration needed - rollback only affects frontend.
 
 Leads submitted during this PR:
+
 - Remain in DB (no cleanup needed)
 - Can still be processed by partner shops (email notifications already sent)
 
@@ -664,34 +679,35 @@ Leads submitted during this PR:
    - ✅ Session ID included in lead payload
 
 6. **Test Coverage**
-   - ✅ LeadCaptureModal tests (src/components/chat/__tests__/LeadCaptureModal.test.tsx)
-   - ✅ TrainingLeadForm tests (src/components/chat/__tests__/TrainingLeadForm.test.tsx)
-   - ✅ TripLeadForm tests (src/components/chat/__tests__/TripLeadForm.test.tsx)
+   - ✅ LeadCaptureModal tests (src/components/chat/**tests**/LeadCaptureModal.test.tsx)
+   - ✅ TrainingLeadForm tests (src/components/chat/**tests**/TrainingLeadForm.test.tsx)
+   - ✅ TripLeadForm tests (src/components/chat/**tests**/TripLeadForm.test.tsx)
    - ✅ Component unit tests passing
 
 ### 🎯 Acceptance Criteria Status
 
-| # | Criteria | Status |
-|---|----------|--------|
-| 1 | "Request Training" and "Plan a Trip" buttons visible | ✅ Verified |
-| 2 | Clicking button opens inline modal | ✅ Verified |
-| 3 | Training form has all required fields | ✅ Verified |
-| 4 | Trip form has all required fields | ✅ Verified |
-| 5 | Client-side validation before submission | ✅ Verified |
-| 6 | Email format validation | ✅ Verified |
-| 7 | Form calls apiClient.createLead() | ✅ Verified |
-| 8 | Success shows confirmation in chat | ✅ Verified |
-| 9 | Error displays in form without closing | ✅ Verified |
-| 10 | User can cancel/close form | ✅ Verified |
-| 11 | Mobile-responsive modal | ✅ Verified |
-| 12 | Session ID included in payload | ✅ Verified |
-| 13 | User can continue chatting after submission | ✅ Verified |
-| 14 | Form resets when reopened | ✅ Verified |
-| 15 | Success confirmation includes leadId | ✅ Verified |
+| #   | Criteria                                             | Status      |
+| --- | ---------------------------------------------------- | ----------- |
+| 1   | "Request Training" and "Plan a Trip" buttons visible | ✅ Verified |
+| 2   | Clicking button opens inline modal                   | ✅ Verified |
+| 3   | Training form has all required fields                | ✅ Verified |
+| 4   | Trip form has all required fields                    | ✅ Verified |
+| 5   | Client-side validation before submission             | ✅ Verified |
+| 6   | Email format validation                              | ✅ Verified |
+| 7   | Form calls apiClient.createLead()                    | ✅ Verified |
+| 8   | Success shows confirmation in chat                   | ✅ Verified |
+| 9   | Error displays in form without closing               | ✅ Verified |
+| 10  | User can cancel/close form                           | ✅ Verified |
+| 11  | Mobile-responsive modal                              | ✅ Verified |
+| 12  | Session ID included in payload                       | ✅ Verified |
+| 13  | User can continue chatting after submission          | ✅ Verified |
+| 14  | Form resets when reopened                            | ✅ Verified |
+| 15  | Success confirmation includes leadId                 | ✅ Verified |
 
 ### 📝 Manual Testing Results
 
 **Tested by user on January 29, 2026:**
+
 - Training lead submission verified
 - Trip lead submission verified
 - Form validation tested (empty fields, invalid email)
@@ -703,6 +719,7 @@ Leads submitted during this PR:
 ### 🔧 Technical Implementation Notes
 
 **Key Files Created:**
+
 - `src/components/chat/LeadCaptureModal.tsx` (155 lines)
 - `src/components/chat/TrainingLeadForm.tsx`
 - `src/components/chat/TripLeadForm.tsx`
@@ -711,15 +728,18 @@ Leads submitted during this PR:
 - `src/components/chat/__tests__/TripLeadForm.test.tsx`
 
 **Key Files Modified:**
+
 - `src/app/chat/page.tsx` - Lead form state and handlers
 
 **API Integration:**
+
 - Training leads: POST /api/leads with type='training'
 - Trip leads: POST /api/leads with type='trip'
 - Response includes leadId for tracking
 - Email notifications sent via Resend
 
 **Edge Cases Handled:**
+
 - ✅ Form opened, user clicks backdrop
 - ✅ Network error during submission
 - ✅ Backend validation error

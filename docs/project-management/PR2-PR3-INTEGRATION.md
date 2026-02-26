@@ -12,11 +12,13 @@ Successfully integrated PR2 (RAG Pipeline) with PR3 (Model Provider & Session Lo
 ## Changes Made
 
 ### 1. Created RAG Module Index (`src/lib/rag/index.ts`)
+
 - Exports `retrieveRelevantChunks`, `retrieveRelevantChunksWithContext`, `hybridSearch`
 - Exports all types and chunking utilities
 - Provides clean import path for orchestration layer
 
 ### 2. Updated Chat Orchestrator (`src/lib/orchestration/chat-orchestrator.ts`)
+
 - **Replaced:** Mock retrieval function → Real PR2 vector search
 - **Added:** Feature flag support via `ENABLE_RAG` environment variable
 - **Added:** Error handling with graceful degradation (returns empty context on failure)
@@ -24,10 +26,12 @@ Successfully integrated PR2 (RAG Pipeline) with PR3 (Model Provider & Session Lo
 - **Configuration:** Default similarity threshold of 0.7, top-K of 5 results
 
 ### 3. Environment Configuration (`.env.example`)
+
 - **Added:** `ENABLE_RAG=false` - Feature flag for enabling/disabling vector search
 - Allows testing without database or embeddings ingestion
 
 ### 4. Updated Tests (`src/lib/orchestration/__tests__/chat-orchestrator.test.ts`)
+
 - **Added:** Mock for `@/lib/rag` module
 - All 11 orchestration tests pass with mocked RAG
 
@@ -52,12 +56,14 @@ orchestrateChat (chat-orchestrator.ts)
 ## Feature Flag Behavior
 
 ### When `ENABLE_RAG=false` (default):
+
 - Returns empty context chunks
 - No database queries
 - Faster response (no retrieval overhead)
 - Safe for environments without embeddings
 
 ### When `ENABLE_RAG=true`:
+
 - Performs vector search with pgvector
 - Returns top 5 most relevant chunks (similarity ≥ 0.7)
 - Enriches LLM context with knowledge base content
@@ -66,18 +72,21 @@ orchestrateChat (chat-orchestrator.ts)
 ## Verification Results
 
 ### ✅ Successful Tests (62/68 passing)
+
 - **Orchestration:** 11/11 tests pass
-- **API Routes:** 15/15 tests pass  
+- **API Routes:** 15/15 tests pass
 - **Prompt Detection:** 7/7 tests pass
 - **RAG Chunking:** 8/8 tests pass
 - **Embeddings:** 6/6 tests pass
 
 ### ⚠️ Pre-existing Failures (from PR3)
+
 - **Factory Tests:** 5 failures (Groq SDK browser check in test env)
 - **Session Test:** 1 failure (DB mocking complexity)
 - **Integration Test:** Skipped (requires DATABASE_URL)
 
 ### Build Status
+
 - ✅ `pnpm typecheck` - PASSED
 - ✅ `pnpm build` - PASSED (with acceptable lint warnings)
 - ✅ `pnpm test` - 62/68 passing (6 pre-existing failures)
@@ -85,6 +94,7 @@ orchestrateChat (chat-orchestrator.ts)
 ## Next Steps
 
 ### Immediate Testing
+
 1. Set up `.env.local` with:
    ```bash
    DATABASE_URL=postgresql://...
@@ -96,6 +106,7 @@ orchestrateChat (chat-orchestrator.ts)
 4. Verify chunks retrieved and used in responses
 
 ### Future Enhancements
+
 1. **Tune retrieval parameters:**
    - Adjust `minSimilarity` threshold (currently 0.7)
    - Adjust `topK` results (currently 5)

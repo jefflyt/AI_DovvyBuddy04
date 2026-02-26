@@ -52,6 +52,7 @@ Migrate multi-agent system (certification, trip, safety, retrieval agents) and c
 ### New Modules
 
 **Agent & Orchestration Structure:**
+
 ```
 src/backend/app/agents/
 ├── __init__.py
@@ -168,6 +169,7 @@ None (backend-only PR, frontend connects in PR3.2e)
 None (uses existing `sessions` table from PR3.2a)
 
 **Session table reminder:**
+
 - `id`: UUID
 - `diver_profile`: JSONB (nullable)
 - `conversation_history`: JSONB (array of messages)
@@ -295,6 +297,7 @@ INCLUDE_SAFETY_DISCLAIMER=true     # Always include safety disclaimer
      - Database failure (mocked)
 
 **Test Scenarios:**
+
 - Certification query: "What is PADI Open Water?"
 - Trip query: "Best dive sites in Tioman?"
 - Safety query: "What if I have a cold?"
@@ -322,6 +325,7 @@ INCLUDE_SAFETY_DISCLAIMER=true     # Always include safety disclaimer
      - Appropriate tone and style
 
 **Test Data:**
+
 - Use conversation_test_cases.json with labeled queries
 - Cover all domains (cert, trip, safety, general)
 - Include edge cases (ambiguous, out-of-scope, follow-ups)
@@ -363,6 +367,7 @@ curl -X POST http://localhost:3000/api/chat \
 **✅ Completed Components:**
 
 **Agent System:**
+
 - ✅ `src/backend/app/agents/base.py` — Base agent abstraction with execute() interface
 - ✅ `src/backend/app/agents/certification.py` — CertificationAgent (PADI/SSI guidance)
 - ✅ `src/backend/app/agents/trip.py` — TripAgent (destination recommendations)
@@ -373,6 +378,7 @@ curl -X POST http://localhost:3000/api/chat \
 - ✅ `src/backend/app/agents/types.py` — Agent types (AgentType, AgentCapability, AgentContext)
 
 **Orchestration:**
+
 - ✅ `src/backend/app/orchestration/orchestrator.py` — ChatOrchestrator (main controller)
 - ✅ `src/backend/app/orchestration/session_manager.py` — SessionManager (CRUD + history)
 - ✅ `src/backend/app/orchestration/mode_detector.py` — ModeDetector (classify queries)
@@ -380,6 +386,7 @@ curl -X POST http://localhost:3000/api/chat \
 - ✅ `src/backend/app/orchestration/types.py` — Orchestration types
 
 **Prompts:**
+
 - ✅ `src/backend/app/prompts/system.py` — Base system prompts
 - ✅ `src/backend/app/prompts/certification.py` — Certification templates
 - ✅ `src/backend/app/prompts/trip.py` — Trip templates
@@ -387,10 +394,12 @@ curl -X POST http://localhost:3000/api/chat \
 - ✅ `src/backend/app/prompts/templates.py` — Jinja2 utilities
 
 **API Endpoints:**
+
 - ✅ `POST /api/chat` — Full orchestration implementation (replaced placeholder)
 - ✅ `GET /api/sessions/{id}` — Session retrieval with history
 
 **Configuration:**
+
 - ✅ `MAX_MESSAGE_LENGTH=2000` in config
 - ✅ `SESSION_EXPIRY_HOURS=24` in config
 - ✅ `ENABLE_AGENT_ROUTING=true` feature flag
@@ -401,6 +410,7 @@ curl -X POST http://localhost:3000/api/chat \
 - ✅ `jinja2>=3.1.3` dependency added
 
 **Tests:**
+
 - ✅ Unit tests in `src/backend/tests/unit/agents/`
   - ✅ `test_base_agent.py`
   - ✅ `test_agent_registry.py`
@@ -413,16 +423,19 @@ curl -X POST http://localhost:3000/api/chat \
 **⚠️ Partially Completed (Acceptable for V1):**
 
 **Agent-Specific Tests:**
+
 - ⚠️ Missing: `test_certification_agent.py` (specialized test for certification logic)
 - ⚠️ Missing: `test_trip_agent.py` (specialized test for trip logic)
 - ⚠️ Missing: `test_safety_agent.py` (specialized test for safety logic)
 - ⚠️ Missing: `test_retrieval_agent.py` (specialized test for retrieval logic)
 
 **Orchestration Tests:**
+
 - ⚠️ Missing: `test_orchestrator.py` (dedicated orchestrator unit tests)
 - ⚠️ Missing: `test_session_manager.py` (dedicated session manager unit tests)
 
 **Comparison Tests:**
+
 - ✅ Created: `tests/comparison/orchestration/test_agent_routing.py` (173 lines, labeled test queries)
 - ✅ Created: `tests/comparison/orchestration/test_conversation_quality.py` (exists in codebase)
 - ⚠️ Not executed: TypeScript backend deprecated, comparison deferred
@@ -452,6 +465,7 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 ### Manual Verification Checklist
 
 **Agent System:**
+
 - ✅ CertificationAgent handles PADI/SSI queries appropriately
 - ✅ TripAgent provides relevant destination recommendations
 - ✅ SafetyAgent redirects medical queries appropriately
@@ -460,6 +474,7 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 - ✅ Agent selection logged correctly (verified in integration tests)
 
 **Orchestration:**
+
 - ✅ POST `/api/chat` returns coherent responses for all query types
 - ✅ Session created automatically if no sessionId provided
 - ✅ Session ID returned in response
@@ -470,12 +485,14 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 - ✅ Error handling graceful (invalid inputs, API failures)
 
 **RAF Enforcement (Added in current implementation):**
+
 - ✅ Citations tracked in retrieval results
 - ✅ NO_DATA signal handled when no grounding found
 - ✅ Agent refuses to answer without sources
 - ✅ Confidence scoring based on citations
 
 **Comparison Tests:**
+
 - ✅ Test files created: `test_agent_routing.py` (173 lines) and `test_conversation_quality.py`
 - ⚠️ Execution deferred: TypeScript backend deprecated, comparison not run
 - ⚠️ Manual testing performed: No obvious quality regressions observed
@@ -484,6 +501,7 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 - **Decision:** Comparison scaffolding complete but execution unnecessary since TypeScript is being phased out
 
 **Code Quality:**
+
 - ✅ Integration tests pass
 - ✅ Unit tests pass (for implemented tests)
 - ⚠️ Coverage not measured (test suite incomplete but functional)
@@ -492,6 +510,7 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 - ⚠️ Type checking not verified (`mypy app`)
 
 **Implementation Notes:**
+
 - Full orchestration working end-to-end
 - RAF enforcement added as enhancement (better than TypeScript version)
 - Some unit tests skipped in favor of integration testing
@@ -537,12 +556,14 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 **Impact:** High (wrong agent → incorrect responses)
 
 **Mitigation:**
+
 - Comparison tests with 100+ labeled queries
 - Manual review of agent selection logs
 - Threshold: ≥90% match required
 - Document intentional differences (if any improvements made)
 
 **Acceptance Criteria:**
+
 - ≥90% same agent selected for labeled queries
 - Manual review confirms routing makes sense
 - No critical misrouting (e.g., medical query → trip agent)
@@ -553,12 +574,14 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 **Impact:** High (user experience degradation)
 
 **Mitigation:**
+
 - Comparison tests with 50+ conversations
 - Manual review of 20+ responses per agent
 - Check for hallucinations, tone issues, missing disclaimers
 - Side-by-side comparison with TypeScript responses
 
 **Acceptance Criteria:**
+
 - No obvious quality regressions in manual review
 - Safety disclaimers present when needed (100%)
 - Response length appropriate (50-500 words)
@@ -570,6 +593,7 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 **Impact:** High (lost conversation context, data corruption)
 
 **Mitigation:**
+
 - Integration tests for session lifecycle
 - Test concurrent sessions (multiple users)
 - Test conversation history trimming
@@ -577,6 +601,7 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 - Load testing with concurrent requests
 
 **Acceptance Criteria:**
+
 - Sessions persist correctly across multiple messages
 - Conversation history maintained (up to MAX_CONVERSATION_HISTORY)
 - No race conditions with concurrent sessions
@@ -588,12 +613,14 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 **Impact:** Medium (crashes, incorrect routing)
 
 **Mitigation:**
+
 - Comprehensive error handling at each orchestration step
 - Extensive unit tests (≥80% coverage)
 - Integration tests covering happy path + error scenarios
 - Structured logging for debugging
 
 **Acceptance Criteria:**
+
 - Error handling graceful (no crashes)
 - Errors logged with context (request ID, session ID, error details)
 - Fallback behavior works (default agent if routing fails)
@@ -604,12 +631,14 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 **Impact:** Medium (Jinja2 errors, incorrect prompts)
 
 **Mitigation:**
+
 - Unit tests for template rendering
 - Test with various input combinations
 - Validate template syntax at startup
 - Document template variables clearly
 
 **Acceptance Criteria:**
+
 - All templates render without errors
 - Variables substituted correctly
 - No missing variables in production use
@@ -623,12 +652,14 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 **Chosen:** Custom orchestration for V1
 
 **Rationale:**
+
 - Simpler implementation (no learning curve)
 - More control over agent routing logic
 - Easier to debug and optimize
 - Proven pattern from TypeScript implementation
 
 **Trade-off:**
+
 - More code to maintain
 - Missing LangGraph features (parallel agents, advanced routing)
 
@@ -639,12 +670,14 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 **Chosen:** Sequential execution
 
 **Rationale:**
+
 - Simpler implementation
 - Easier to reason about and debug
 - Current workload doesn't require parallelism
 - One agent per query is sufficient
 
 **Trade-off:**
+
 - Can't combine multiple agent responses
 - Potential latency if multiple agents needed (future)
 
@@ -655,11 +688,13 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 **Chosen:** 90% match threshold for comparison tests
 
 **Rationale:**
+
 - Allows for minor routing differences (improvements)
 - Focus on "no critical misrouting" vs "exact match"
 - Some queries may be ambiguous (acceptable to differ)
 
 **Trade-off:**
+
 - May miss subtle routing issues
 - Requires manual review of 10% differences
 
@@ -670,11 +705,13 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 **Chosen:** Keep last 20 messages in history
 
 **Rationale:**
+
 - Balances context preservation vs token usage
 - Most conversations are <20 messages
 - Prevents unbounded history growth
 
 **Trade-off:**
+
 - Loses early context in very long conversations
 - May need to re-explain if user refers back
 
@@ -689,6 +726,7 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 **Context:** Agents could return confidence scores to enable fallback routing
 
 **Options:**
+
 - A) No confidence scoring (single agent per query)
 - B) Confidence scoring with threshold-based fallback
 - C) Confidence scoring with multi-agent consultation
@@ -702,6 +740,7 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 **Context:** Some queries could match multiple agents (e.g., "Tell me about diving in Tioman")
 
 **Options:**
+
 - A) Choose agent with highest mode detection score
 - B) Default to RetrievalAgent for ambiguous queries
 - C) Combine multiple agents (complex)
@@ -715,6 +754,7 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 **Context:** Track which agents were used for each message
 
 **Options:**
+
 - A) Store agent name in conversation_history metadata
 - B) Store in separate table (agent_usage log)
 - C) Don't persist (only log)
@@ -728,6 +768,7 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 **Context:** PR3.1 introduced Google ADK for multi-agent orchestration
 
 **Options:**
+
 - A) Replicate ADK architecture with custom Python implementation
 - B) Use Google ADK Python SDK (if available)
 - C) Use LangGraph for similar functionality
@@ -767,7 +808,7 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 ### Comparison Success (Modified)
 
 - ⚠️ 100+ labeled queries tested — Deferred
-- ⚠️ Agent routing match ≥90% — Deferred  
+- ⚠️ Agent routing match ≥90% — Deferred
 - ⚠️ 50+ conversations reviewed — Partial testing only
 - ✅ No critical quality regressions observed in manual testing
 - ✅ Safety disclaimers present when appropriate
@@ -781,6 +822,7 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 ✅ **PR3.2c Complete** — Agent orchestration system operational
 
 **Completed Deliverables:**
+
 - Multi-agent system (4 agents: certification, trip, safety, retrieval)
 - Chat orchestrator with intelligent routing
 - Session management with conversation history
@@ -796,6 +838,7 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 4. **Monitor:** Watch session data for unexpected patterns
 
 **Recommended Path Forward:**
+
 - Skip PR3.2d (content scripts) if content ingestion already working
 - Proceed to PR3.2e (Frontend Integration) or PR3.2f (Deployment)
 - Current backend is **ready for frontend connection or Cloud Run deployment**
@@ -816,11 +859,11 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=html
 
 ## Revision History
 
-| Version | Date | Author | Changes |
-|---------|------|--------|---------|
-| 0.1 | 2026-01-01 | AI Assistant | Initial draft |
-| 1.0 | 2026-01-03 | AI Assistant | Updated to Complete status with verification details |
-| 1.1 | 2026-01-08 | AI Assistant | Verified against codebase, updated test status, confirmed all components operational |
+| Version | Date       | Author       | Changes                                                                              |
+| ------- | ---------- | ------------ | ------------------------------------------------------------------------------------ |
+| 0.1     | 2026-01-01 | AI Assistant | Initial draft                                                                        |
+| 1.0     | 2026-01-03 | AI Assistant | Updated to Complete status with verification details                                 |
+| 1.1     | 2026-01-08 | AI Assistant | Verified against codebase, updated test status, confirmed all components operational |
 
 ---
 

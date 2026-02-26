@@ -6,6 +6,7 @@
 **Based on:** MASTER_PLAN.md, DovvyBuddy-PSD-V6.2.md
 
 **Sub-PRs:**
+
 - ✅ PR5.1: localStorage Session Persistence (COMPLETED)
 - ✅ PR5.2: Lead Capture Forms (COMPLETED)
 - ✅ PR5.3: New Chat Button (COMPLETED)
@@ -215,7 +216,6 @@ Deliver a fully functional chat interface where users can:
   - Request: `{ sessionId?: string, message: string }`
   - Response: `{ sessionId: string, response: string, metadata?: object }`
   - Handles session creation, retrieval, RAG orchestration, agent routing
-  
 - **`POST /api/leads`** (from PR4):
   - Request: `{ type: 'training' | 'trip', data: { ... } }`
   - Response: `{ success: boolean, leadId?: string }`
@@ -800,13 +800,13 @@ Not applicable (no schema changes).
 
 ### Design Decisions
 
-| Topic | Decision | Rationale |
-|-------|----------|-----------|
-| Bot lead suggestion | Metadata hint + soft CTA | Bot returns `suggestLeadCapture: true` when appropriate; frontend shows gentle CTA ("Ready to get started? [Request Info]"). Non-intrusive, user-controlled. |
-| Two tabs same session | Accept for V1, last-write-wins | Edge case with low impact. Both tabs share session; race conditions possible but acceptable. WebSocket sync deferred to V2. |
-| Expired session handling | SESSION_EXPIRED code → clear localStorage → auto-start new | Backend returns 404/SESSION_EXPIRED; frontend clears sessionId, shows message ("Session expired. Starting new chat..."), auto-creates new session. |
-| Pre-fill lead form | Defer to V2 | No auto-fill in V1 (form is blank). Pre-filling from conversation context requires backend extraction logic—add in V2 if conversion needs improvement. |
-| Continue after lead | Allow, show confirmation in chat | User can submit lead and continue chatting (session remains active). Show inline confirmation: "Thanks! We'll be in touch soon. Feel free to keep asking questions." |
+| Topic                    | Decision                                                   | Rationale                                                                                                                                                            |
+| ------------------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bot lead suggestion      | Metadata hint + soft CTA                                   | Bot returns `suggestLeadCapture: true` when appropriate; frontend shows gentle CTA ("Ready to get started? [Request Info]"). Non-intrusive, user-controlled.         |
+| Two tabs same session    | Accept for V1, last-write-wins                             | Edge case with low impact. Both tabs share session; race conditions possible but acceptable. WebSocket sync deferred to V2.                                          |
+| Expired session handling | SESSION_EXPIRED code → clear localStorage → auto-start new | Backend returns 404/SESSION_EXPIRED; frontend clears sessionId, shows message ("Session expired. Starting new chat..."), auto-creates new session.                   |
+| Pre-fill lead form       | Defer to V2                                                | No auto-fill in V1 (form is blank). Pre-filling from conversation context requires backend extraction logic—add in V2 if conversion needs improvement.               |
+| Continue after lead      | Allow, show confirmation in chat                           | User can submit lead and continue chatting (session remains active). Show inline confirmation: "Thanks! We'll be in touch soon. Feel free to keep asking questions." |
 
 ### Future Enhancements (V2+)
 
@@ -827,8 +827,9 @@ Not applicable (no schema changes).
 ### Summary
 
 PR5 has been **successfully implemented and verified** through three sub-PRs:
+
 - **PR5.1:** localStorage Session Persistence
-- **PR5.2:** Lead Capture Forms  
+- **PR5.2:** Lead Capture Forms
 - **PR5.3:** New Chat Button
 
 All acceptance criteria have been met, tests are passing, and the feature has been manually verified.
@@ -840,6 +841,7 @@ All acceptance criteria have been met, tests are passing, and the feature has be
 #### Core Chat Interface (src/app/chat/page.tsx)
 
 **✅ Implemented (626 lines):**
+
 - Full chat interface with message display
 - Message input with send functionality
 - Session management (create, restore, clear)
@@ -851,6 +853,7 @@ All acceptance criteria have been met, tests are passing, and the feature has be
 - Mobile-responsive layout
 
 **State Management:**
+
 ```typescript
 ✅ messages: Message[]
 ✅ isLoading: boolean
@@ -863,6 +866,7 @@ All acceptance criteria have been met, tests are passing, and the feature has be
 ```
 
 **Key Handlers:**
+
 ```typescript
 ✅ handleSubmit() - Send message to /api/chat
 ✅ handleNewChat() - Reset session with confirmation
@@ -875,6 +879,7 @@ All acceptance criteria have been met, tests are passing, and the feature has be
 #### Component Architecture
 
 **✅ Actual Implementation:**
+
 - `src/app/chat/page.tsx` - Main chat page (all-in-one)
 - `src/components/chat/LeadCaptureModal.tsx` - Modal wrapper
 - `src/components/chat/TrainingLeadForm.tsx` - Training lead form
@@ -882,14 +887,16 @@ All acceptance criteria have been met, tests are passing, and the feature has be
 
 **📝 Note on Component Design:**
 The implementation uses an **integrated approach** in `page.tsx` rather than separate components for MessageList, MessageBubble, ChatInput, etc. This is a valid design choice for V1 that:
+
 - ✅ Reduces complexity and file count
 - ✅ Makes state management simpler
 - ✅ Is easier to maintain for a solo developer
 - ✅ Can be refactored later if needed
 
 **Components NOT created separately (but functionality exists):**
+
 - ❌ `MessageList.tsx` - Implemented inline in page.tsx
-- ❌ `MessageBubble.tsx` - Implemented inline in page.tsx  
+- ❌ `MessageBubble.tsx` - Implemented inline in page.tsx
 - ❌ `ChatInput.tsx` - Implemented inline in page.tsx
 - ❌ `TypingIndicator.tsx` - Implemented inline in page.tsx
 - ❌ `NewChatButton.tsx` - Implemented inline in page.tsx
@@ -918,6 +925,7 @@ This is **acceptable for V1** as all functionality is present, just organized di
    - **Location:** `src/backend/app/api/routes/lead.py`
 
 **API Contract Verified:**
+
 - Request/response formats match plan specifications
 - Error codes properly handled
 - Session management working as expected
@@ -926,34 +934,34 @@ This is **acceptable for V1** as all functionality is present, just organized di
 
 ### Feature Completeness Matrix
 
-| Feature Category | Planned | Implemented | Status |
-|-----------------|---------|-------------|--------|
-| **Core Chat** | | | |
-| Send/receive messages | ✅ | ✅ | Complete |
-| Session creation | ✅ | ✅ | Complete |
-| Session persistence | ✅ | ✅ | Complete (PR5.1) |
-| Message history | ✅ | ✅ | Complete |
-| Error handling | ✅ | ✅ | Complete |
-| Loading states | ✅ | ✅ | Complete |
-| Empty state | ✅ | ✅ | Complete |
-| **Session Management** | | | |
-| localStorage persistence | ✅ | ✅ | Complete (PR5.1) |
-| UUID validation | ✅ | ✅ | Complete |
-| Session expiry handling | ✅ | ✅ | Complete |
-| New Chat button | ✅ | ✅ | Complete (PR5.3) |
-| Confirmation dialog | ✅ | ✅ | Complete |
-| **Lead Capture** | | | |
-| Training lead form | ✅ | ✅ | Complete (PR5.2) |
-| Trip lead form | ✅ | ✅ | Complete (PR5.2) |
-| Form validation | ✅ | ✅ | Complete |
-| Success confirmation | ✅ | ✅ | Complete |
-| Error handling | ✅ | ✅ | Complete |
-| Modal/overlay UI | ✅ | ✅ | Complete |
-| **UX/Design** | | | |
-| Mobile responsive | ✅ | ✅ | Complete |
-| Keyboard accessible | ✅ | ✅ | Complete |
-| Visual polish | ✅ | ✅ | Complete |
-| Action buttons | ✅ | ✅ | Complete |
+| Feature Category         | Planned | Implemented | Status           |
+| ------------------------ | ------- | ----------- | ---------------- |
+| **Core Chat**            |         |             |                  |
+| Send/receive messages    | ✅      | ✅          | Complete         |
+| Session creation         | ✅      | ✅          | Complete         |
+| Session persistence      | ✅      | ✅          | Complete (PR5.1) |
+| Message history          | ✅      | ✅          | Complete         |
+| Error handling           | ✅      | ✅          | Complete         |
+| Loading states           | ✅      | ✅          | Complete         |
+| Empty state              | ✅      | ✅          | Complete         |
+| **Session Management**   |         |             |                  |
+| localStorage persistence | ✅      | ✅          | Complete (PR5.1) |
+| UUID validation          | ✅      | ✅          | Complete         |
+| Session expiry handling  | ✅      | ✅          | Complete         |
+| New Chat button          | ✅      | ✅          | Complete (PR5.3) |
+| Confirmation dialog      | ✅      | ✅          | Complete         |
+| **Lead Capture**         |         |             |                  |
+| Training lead form       | ✅      | ✅          | Complete (PR5.2) |
+| Trip lead form           | ✅      | ✅          | Complete (PR5.2) |
+| Form validation          | ✅      | ✅          | Complete         |
+| Success confirmation     | ✅      | ✅          | Complete         |
+| Error handling           | ✅      | ✅          | Complete         |
+| Modal/overlay UI         | ✅      | ✅          | Complete         |
+| **UX/Design**            |         |             |                  |
+| Mobile responsive        | ✅      | ✅          | Complete         |
+| Keyboard accessible      | ✅      | ✅          | Complete         |
+| Visual polish            | ✅      | ✅          | Complete         |
+| Action buttons           | ✅      | ✅          | Complete         |
 
 ---
 
@@ -982,21 +990,21 @@ This is **acceptable for V1** as all functionality is present, just organized di
 
 **✅ Completed by user on January 29, 2026:**
 
-| Test Scenario | Status | Notes |
-|--------------|--------|-------|
-| First message & session creation | ✅ | Working |
-| Message send/receive | ✅ | Working |
-| Session persistence across refresh | ✅ | Working |
-| New Chat button | ✅ | Working |
-| Confirmation dialog (2+ messages) | ✅ | Working |
-| Training lead submission | ✅ | Working |
-| Trip lead submission | ✅ | Working |
-| Form validation | ✅ | Working |
-| Error handling | ✅ | Working |
-| Mobile responsive | ✅ | Working |
-| Keyboard accessibility | ✅ | Working |
-| Private browsing mode | ✅ | Working |
-| Multiple tabs | ✅ | Working |
+| Test Scenario                      | Status | Notes   |
+| ---------------------------------- | ------ | ------- |
+| First message & session creation   | ✅     | Working |
+| Message send/receive               | ✅     | Working |
+| Session persistence across refresh | ✅     | Working |
+| New Chat button                    | ✅     | Working |
+| Confirmation dialog (2+ messages)  | ✅     | Working |
+| Training lead submission           | ✅     | Working |
+| Trip lead submission               | ✅     | Working |
+| Form validation                    | ✅     | Working |
+| Error handling                     | ✅     | Working |
+| Mobile responsive                  | ✅     | Working |
+| Keyboard accessibility             | ✅     | Working |
+| Private browsing mode              | ✅     | Working |
+| Multiple tabs                      | ✅     | Working |
 
 ---
 
@@ -1004,25 +1012,25 @@ This is **acceptable for V1** as all functionality is present, just organized di
 
 **From Section 1 - User Impact:**
 
-| # | Criteria | Status |
-|---|----------|--------|
-| 1 | Prospective/New Divers can ask certification questions | ✅ Verified |
-| 2 | Certified Divers can inquire about destinations | ✅ Verified |
-| 3 | All Users can submit training/trip leads | ✅ Verified |
-| 4 | Session persists across page refreshes (24h) | ✅ Verified |
+| #   | Criteria                                               | Status      |
+| --- | ------------------------------------------------------ | ----------- |
+| 1   | Prospective/New Divers can ask certification questions | ✅ Verified |
+| 2   | Certified Divers can inquire about destinations        | ✅ Verified |
+| 3   | All Users can submit training/trip leads               | ✅ Verified |
+| 4   | Session persists across page refreshes (24h)           | ✅ Verified |
 
 **From Section 4 - PR Roadmap Scope:**
 
-| Feature | Status |
-|---------|--------|
-| Chat UI components | ✅ Complete (inline implementation) |
-| Integration with /api/chat | ✅ Complete |
-| Session persistence via localStorage | ✅ Complete (PR5.1) |
-| Lead capture form | ✅ Complete (PR5.2) |
-| Integration with /api/lead | ✅ Complete |
-| Error handling UI | ✅ Complete |
-| Mobile-responsive design | ✅ Complete |
-| Loading/empty states | ✅ Complete |
+| Feature                              | Status                              |
+| ------------------------------------ | ----------------------------------- |
+| Chat UI components                   | ✅ Complete (inline implementation) |
+| Integration with /api/chat           | ✅ Complete                         |
+| Session persistence via localStorage | ✅ Complete (PR5.1)                 |
+| Lead capture form                    | ✅ Complete (PR5.2)                 |
+| Integration with /api/lead           | ✅ Complete                         |
+| Error handling UI                    | ✅ Complete                         |
+| Mobile-responsive design             | ✅ Complete                         |
+| Loading/empty states                 | ✅ Complete                         |
 
 ---
 
@@ -1047,6 +1055,7 @@ This is **acceptable for V1** as all functionality is present, just organized di
    - **Status:** ✅ Acceptable - Cleaner integration
 
 **Out of Scope (As Planned):**
+
 - ❌ Real-time streaming (SSE/WebSocket) - Deferred to V2
 - ❌ Advanced chat features (editing, deletion, search) - Deferred to V2
 - ❌ User authentication - Deferred to PR8
@@ -1058,6 +1067,7 @@ This is **acceptable for V1** as all functionality is present, just organized di
 ### Technical Implementation Notes
 
 **Key Technologies:**
+
 - Next.js 14 App Router
 - React 18 with TypeScript
 - Tailwind CSS for styling
@@ -1066,12 +1076,14 @@ This is **acceptable for V1** as all functionality is present, just organized di
 - Vitest for unit testing
 
 **Performance:**
+
 - Message send/receive: ~2-5 seconds (includes LLM + RAG)
 - Session restore: Instant (localStorage read)
 - Lead submission: ~1-2 seconds
 - Mobile performance: Smooth scrolling, responsive inputs
 
 **Browser Compatibility:**
+
 - ✅ Chrome/Edge (tested)
 - ✅ Safari (localStorage tested)
 - ✅ Firefox (expected to work)
@@ -1082,12 +1094,14 @@ This is **acceptable for V1** as all functionality is present, just organized di
 ### Known Issues & Future Improvements
 
 **Minor Issues (Acceptable for V1):**
+
 - Typing indicator is simple text (not animated dots)
 - No real-time streaming (full response wait)
 - Multiple tabs share session (no conflict detection)
 - No conversation export/save functionality
 
 **Planned for V2:**
+
 - Refactor into smaller components if needed
 - Add animated typing indicator
 - Implement SSE/WebSocket streaming
@@ -1101,18 +1115,21 @@ This is **acceptable for V1** as all functionality is present, just organized di
 ### Deployment Status
 
 **Frontend:**
+
 - ✅ Deployed to Vercel (production-ready)
 - ✅ Environment variables configured
 - ✅ Build passing
 - ✅ No console errors
 
 **Backend:**
+
 - ✅ Python/FastAPI running locally
 - ✅ All endpoints functional
 - ✅ Database schema in place
 - ⚠️ Python 3.9.6 (upgrade to 3.10+ recommended)
 
 **Database:**
+
 - ✅ Sessions table active
 - ✅ Leads table active
 - ✅ Content embeddings populated
@@ -1124,6 +1141,7 @@ This is **acceptable for V1** as all functionality is present, just organized di
 **If issues are discovered:**
 
 1. **Frontend Rollback:**
+
    ```bash
    git revert <pr5-commit-sha>
    vercel --prod
@@ -1138,6 +1156,7 @@ This is **acceptable for V1** as all functionality is present, just organized di
    - No cleanup needed
 
 **Impact of Rollback:**
+
 - Chat interface returns to stub state
 - Backend APIs continue working for testing
 - No data loss
@@ -1147,6 +1166,7 @@ This is **acceptable for V1** as all functionality is present, just organized di
 ### Success Metrics
 
 **Development Metrics:**
+
 - ✅ 3 sub-PRs completed
 - ✅ 30+ unit tests passing
 - ✅ 100% acceptance criteria met
@@ -1154,12 +1174,14 @@ This is **acceptable for V1** as all functionality is present, just organized di
 - ✅ Manual verification completed
 
 **Code Quality:**
+
 - ✅ TypeScript strict mode passing
 - ✅ ESLint passing (minor warnings)
 - ✅ Build successful
 - ✅ No console errors in production
 
 **User Experience:**
+
 - ✅ Fast message send/receive (<5s)
 - ✅ Smooth mobile experience
 - ✅ Intuitive lead capture
@@ -1171,15 +1193,18 @@ This is **acceptable for V1** as all functionality is present, just organized di
 ### Next Steps
 
 **Immediate:**
+
 - ✅ PR5 is complete and ready for production use
 
 **Short-term (PR6):**
+
 - Polish & landing page improvements
 - Analytics integration
 - E2E testing with Playwright
 - Performance monitoring
 
 **Medium-term (V2):**
+
 - Component refactoring if needed
 - Real-time streaming
 - Session history UI

@@ -12,7 +12,10 @@
     "What is decompression sickness and how do I avoid it?",
     {
       "query": "What are the depths limits for recreational diving?",
-      "expected_paths": ["certifications/padi/open-water.md", "safety/decompression-safety.md"]
+      "expected_paths": [
+        "certifications/padi/open-water.md",
+        "safety/decompression-safety.md"
+      ]
     },
     {
       "query": "How do I plan a dive trip to Tioman Island?",

@@ -8,24 +8,25 @@
 
 ```yaml
 ---
-doc_type: "dive_site"
-site_id: "[unique-identifier-kebab-case]"
-title: "[Site Name]"
-destination: "[Location, Country/Region]"
-min_certification: "OW|AOW|Rescue|DM|Technical"
-difficulty: "beginner|intermediate|advanced|expert"
+doc_type: 'dive_site'
+site_id: '[unique-identifier-kebab-case]'
+title: '[Site Name]'
+destination: '[Location, Country/Region]'
+min_certification: 'OW|AOW|Rescue|DM|Technical'
+difficulty: 'beginner|intermediate|advanced|expert'
 depth_range_m: [min_depth, max_depth]
-tags: ["tag1", "tag2", "tag3"]
-keywords: ["keyword1", "keyword2", "keyword3"]
-last_updated: "YYYY-MM-DD"
-data_quality: "compiled|verified|operator-provided|community-sourced"
+tags: ['tag1', 'tag2', 'tag3']
+keywords: ['keyword1', 'keyword2', 'keyword3']
+last_updated: 'YYYY-MM-DD'
+data_quality: 'compiled|verified|operator-provided|community-sourced'
 sources:
-  - "Source 1 URL or citation"
-  - "Source 2 URL or citation"
+  - 'Source 1 URL or citation'
+  - 'Source 2 URL or citation'
 ---
 ```
 
 **Field Descriptions:**
+
 - `doc_type`: Always "dive_site" (enables filtering in RAG)
 - `site_id`: Unique identifier (e.g., "bali-uss-liberty")
 - `title`: Common site name
@@ -50,13 +51,13 @@ sources:
 ```markdown
 ## 1. Quick Facts
 
-| Feature | Details |
-| :--- | :--- |
-| **Depth Range** | X–Y m |
-| **Visibility** | X–Y m (typical range) |
-| **Current** | None/Gentle/Moderate/Strong/Variable |
-| **Water Temp** | X–Y °C (seasonal range) |
-| **Season** | Best: [months]; Diveable: [months] |
+| Feature         | Details                              |
+| :-------------- | :----------------------------------- |
+| **Depth Range** | X–Y m                                |
+| **Visibility**  | X–Y m (typical range)                |
+| **Current**     | None/Gentle/Moderate/Strong/Variable |
+| **Water Temp**  | X–Y °C (seasonal range)              |
+| **Season**      | Best: [months]; Diveable: [months]   |
 ```
 
 **RAG Tip**: Use natural language in the "Details" column (e.g., "10–30 m, best visibility March–May").
@@ -80,11 +81,13 @@ sources:
 ```
 
 **RAG Optimization:**
+
 - Use conversational language: "If you want to see sharks, this is the place..."
 - Answer implicit questions: "Is this site good for beginners?" → "This site is ideal for new divers..."
 - Include comparisons: "Unlike other wrecks, this one is fully penetrable..."
 
 **Example:**
+
 ```markdown
 Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island off Tioman's east coast. The site takes its name from its shape—when viewed from above, the rock formation resembles a crouching tiger. This is one of Tioman's flagship dive sites, known for dramatic boulder formations, prolific soft coral coverage, and predictable encounters with large pelagic schooling fish.
 
@@ -114,6 +117,7 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
 ```
 
 **RAG Optimization:**
+
 - Use descriptive language: "massive boulders stacked like a fortress"
 - Include visual metaphors: "resembles Swiss cheese with interconnected passages"
 - Mention navigation aids: "the anchor sits at 12m on the main pinnacle"
@@ -139,6 +143,7 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
 ```
 
 **RAG Optimization:**
+
 - Answer "How long can I dive here?" explicitly
 - Include air consumption notes: "Current increases air consumption by 20-30%"
 - Mention certification relevance: "Stay above 18m if you're Open Water certified"
@@ -173,11 +178,13 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
 ```
 
 **RAG Optimization:**
+
 - Use natural language: "You'll almost certainly see barracuda schools"
 - Answer likelihood: "Sharks are seen on about 30% of dives"
 - Include behaviors: "Manta rays visit cleaning stations from June-September"
 
 **Example Q&A Enhancement (optional subsection):**
+
 ```markdown
 ### Common Questions About Marine Life
 
@@ -207,6 +214,7 @@ A: March–May and September–October offer the highest probability of encounte
 ```
 
 **RAG Optimization:**
+
 - Be specific: "Visibility averages 20m in March, drops to 10m in August"
 - Warn about risks: "Strong downcurrents possible during spring tides"
 - Help with planning: "Dive at slack tide for minimal current"
@@ -241,6 +249,7 @@ A: March–May and September–October offer the highest probability of encounte
 ```
 
 **RAG Optimization:**
+
 - Use certification language: "Requires Advanced Open Water due to depth and current"
 - Include dive count guidance: "Recommended 20+ dives before attempting"
 - Answer "Can I do this dive?" directly: "Not suitable for divers with fewer than 15 dives"
@@ -265,6 +274,7 @@ A: March–May and September–October offer the highest probability of encounte
 ```
 
 **Example:**
+
 ```markdown
 - **Certification:** Advanced Open Water Diver (AOWD) or equivalent
 - **Min dive count:** 20–50 dives recommended
@@ -305,6 +315,7 @@ A: March–May and September–October offer the highest probability of encounte
 ```
 
 **RAG Optimization:**
+
 - Be direct: "Stonefish are camouflaged on the reef—never touch anything"
 - Provide context: "Current can separate buddy teams—maintain visual contact"
 - Include statistics if available: "Incidents are rare; professional operators have excellent safety records"
@@ -324,7 +335,6 @@ A: March–May and September–October offer the highest probability of encounte
 - **Focal length:**
   - **Macro:** [X-Y mm for specific subjects]
   - **Wide-angle:** [X-Y mm for specific subjects]
-  
 - **Lighting:**
   - [Strobe requirements, ambient light viability, backscatter risks]
 
@@ -338,6 +348,7 @@ A: March–May and September–October offer the highest probability of encounte
 ```
 
 **RAG Optimization:**
+
 - Answer gear questions: "A 60mm macro lens is ideal for nudibranchs"
 - Include settings guidance: "Use ISO 400 and f/8 for reef scenes in good visibility"
 
@@ -371,6 +382,7 @@ A: March–May and September–October offer the highest probability of encounte
 ```
 
 **RAG Optimization:**
+
 - Use natural language: "March to May is the sweet spot—excellent visibility and calm seas"
 - Answer "When should I go?" directly
 - Include booking advice: "Book 3-6 months ahead for high season"
@@ -398,6 +410,7 @@ A: March–May and September–October offer the highest probability of encounte
 ```
 
 **RAG Optimization:**
+
 - Be specific: "Dive this site in the morning (08:00-11:00) when current is calmest"
 - Answer cost questions: "Site fees are $5 per diver, included in most packages"
 - Local knowledge: "Ask your operator about the best entry point based on current direction"
@@ -420,6 +433,7 @@ Example opening:
 ```
 
 **RAG Optimization:**
+
 - Use vivid, sensory language
 - Include emotions and reactions: "You can't help but grin when..."
 - Mention specific moments: "Twenty minutes in, a wall of jacks suddenly appears..."
@@ -442,7 +456,6 @@ Example opening:
   - [Key features]
   - [Marine life highlights]
   - [Dive type descriptors]
-  
 - **Categories:**
   - **Depth:** [beginner/intermediate/advanced + range]
   - **Difficulty:** [skill level + primary challenges]
@@ -452,6 +465,7 @@ Example opening:
 ```
 
 **RAG Optimization:**
+
 - Include common misspellings or alternate names
 - Add comparative terms: "similar to [other famous site]"
 - Include question keywords: "best dive site for beginners in [region]"
@@ -476,11 +490,9 @@ Example opening:
   1. **Depth range:** [How verified, any discrepancies between sources]
   2. **Current:** [Consistency across sources, any conflicting info]
   3. **Marine life:** [Cross-reference notes, seasonal confirmations]
-  
 - **Inferences:**
   1. [What was inferred vs. directly stated]
   2. [Assumptions made and reasoning]
-  
 - **Gaps and uncertainties:**
   1. [Missing information]
   2. [Conflicting data that needs resolution]
@@ -492,12 +504,15 @@ Example opening:
 ## Content Writing Guidelines for RAG Optimization
 
 ### 1. Use Natural, Conversational Language
+
 - Write as if answering a friend's question
 - Use "you" and "your" to address the reader
 - Include rhetorical questions: "Want to see sharks? This is the spot."
 
 ### 2. Answer Implicit Questions
+
 Common diver questions to address throughout:
+
 - Is this suitable for my level?
 - What will I see?
 - When should I go?
@@ -507,12 +522,15 @@ Common diver questions to address throughout:
 - How do I get there?
 
 ### 3. Include Comparison Language
+
 - "Unlike [other site], this one has..."
 - "If you enjoyed [famous site], you'll love this"
 - "This is the [region's] equivalent of [famous site]"
 
 ### 4. Add Q&A Sections Where Helpful
+
 Explicitly format common questions:
+
 ```markdown
 ### Common Questions
 
@@ -524,19 +542,23 @@ A: During manta season (June-Sept), sightings occur on 60-80% of dives...
 ```
 
 ### 5. Use Specific Numbers and Facts
+
 - "Visibility averages 25m in March" (not "good visibility")
 - "Seen on 70% of dives" (not "commonly seen")
 - "Requires 20+ logged dives" (not "experienced divers")
 
 ### 6. Include Seasonal Specificity
+
 - Monthly breakdowns are better than "winter/summer"
 - Explain WHY conditions change: "March-May offers best visibility because..."
 
 ### 7. Address Multiple Skill Levels
+
 - Explicitly state beginner/intermediate/advanced guidance
 - "If you're new to diving..." vs "Advanced divers can explore..."
 
 ### 8. Use Section Headings as Natural Questions
+
 Instead of "Conditions" use "What are the water conditions like?"
 Instead of "Marine Life" use "What will I see underwater?"
 
@@ -545,6 +567,7 @@ Instead of "Marine Life" use "What will I see underwater?"
 ## Metadata Completeness Checklist
 
 Before publishing, ensure:
+
 - [ ] All frontmatter fields completed
 - [ ] At least 2 reliable sources cited
 - [ ] Depth range matches between metadata and content
@@ -563,6 +586,7 @@ Before publishing, ensure:
 See `tioman-tiger-reef.md` for a full implementation of this template.
 
 For sites with limited information, prioritize:
+
 1. Quick Facts (Section 1)
 2. Site Overview (Section 2)
 3. Marine Life (Section 5)

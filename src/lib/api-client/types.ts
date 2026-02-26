@@ -8,18 +8,18 @@
 // ============================================================================
 
 export interface ChatRequest {
-  sessionId?: string;
-  message: string;
-  sessionState?: Record<string, any>; // PR6.1: Session state from localStorage
+  sessionId?: string
+  message: string
+  sessionState?: Record<string, any> // PR6.1: Session state from localStorage
 }
 
 export interface LeadRequest {
-  sessionId: string;
-  email: string;
-  name?: string;
-  phone?: string;
-  preferredContact?: 'email' | 'phone' | 'whatsapp';
-  message?: string;
+  sessionId: string
+  email: string
+  name?: string
+  phone?: string
+  preferredContact?: 'email' | 'phone' | 'whatsapp'
+  message?: string
 }
 
 // ============================================================================
@@ -27,35 +27,35 @@ export interface LeadRequest {
 // ============================================================================
 
 export interface ChatResponse {
-  sessionId: string;
-  message: string;
-  metadata?: ChatMetadata;
-  followUpQuestion?: string; // PR6.1: Follow-up question for conversation continuity
+  sessionId: string
+  message: string
+  metadata?: ChatMetadata
+  followUpQuestion?: string // PR6.1: Follow-up question for conversation continuity
 }
 
 export interface ChatMetadata {
-  tokensUsed?: number;
-  contextChunks?: number;
-  model?: string;
-  promptMode?: string;
-  agentsUsed?: string[];
-  queryType?: string;
-  detectedIntent?: string; // PR6.1: Detected conversation intent
-  stateUpdates?: Record<string, any>; // PR6.1: Session state updates from LLM
+  tokensUsed?: number
+  contextChunks?: number
+  model?: string
+  promptMode?: string
+  agentsUsed?: string[]
+  queryType?: string
+  detectedIntent?: string // PR6.1: Detected conversation intent
+  stateUpdates?: Record<string, any> // PR6.1: Session state updates from LLM
 }
 
 export interface SessionResponse {
-  sessionId: string;
-  createdAt: string;
-  lastActivity: string;
-  messageCount: number;
-  isExpired: boolean;
+  sessionId: string
+  createdAt: string
+  lastActivity: string
+  messageCount: number
+  isExpired: boolean
 }
 
 export interface LeadResponse {
-  success: boolean;
-  leadId: string;
-  message: string;
+  success: boolean
+  leadId: string
+  message: string
 }
 
 // ============================================================================
@@ -73,17 +73,17 @@ export type ApiErrorCode =
   | 'TIMEOUT'
   | 'NETWORK_ERROR'
   | 'INTERNAL_ERROR'
-  | 'UNKNOWN_ERROR';
+  | 'UNKNOWN_ERROR'
 
 export interface ApiError {
-  error: string;
-  code: ApiErrorCode;
-  details?: ValidationDetail[] | string;
+  error: string
+  code: ApiErrorCode
+  details?: ValidationDetail[] | string
 }
 
 export interface ValidationDetail {
-  field: string;
-  message: string;
+  field: string
+  message: string
 }
 
 // ============================================================================
@@ -91,8 +91,8 @@ export interface ValidationDetail {
 // ============================================================================
 
 export interface RequestOptions {
-  timeout?: number;
-  retryAttempts?: number;
-  retryDelay?: number;
-  signal?: AbortSignal;
+  timeout?: number
+  retryAttempts?: number
+  retryDelay?: number
+  signal?: AbortSignal
 }

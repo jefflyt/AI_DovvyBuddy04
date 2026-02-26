@@ -19,12 +19,14 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 ### User Impact
 
 **Primary Users (Divers):**
+
 - **Telegram users** can link their Telegram account to their web account and access the same conversation history and profile across both channels.
 - **Web users** who also use Telegram can continue conversations seamlessly between devices/channels.
 - **Mobile-first users** get unified experience across their preferred communication channels.
 - **Cross-device users** can start a conversation on web and continue on Telegram (or vice versa).
 
 **User Flows Enabled:**
+
 - Telegram user → Types `/link` in bot → Receives magic link → Opens in browser → Signs in/signs up → Confirms linking → Telegram account linked.
 - Telegram user (linked) → Sends message → Bot uses user's profile for personalized responses → Conversation saved to history.
 - Web user → Links Telegram in settings → Types `/link` in Telegram → Confirms → Both accounts linked.
@@ -34,17 +36,20 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 ### Dependencies
 
 **Upstream (Must be complete):**
+
 - **PR9a:** Auth Infrastructure & User/Profile Schema (REQUIRED) — Backend user tables, auth middleware.
 - **PR9b:** Web UI Auth Integration (REQUIRED) — Web signup/signin flow, settings page.
 - **PR9a:** Agent Service Extraction (REQUIRED if agent logic is standalone).
 - **PR7b:** Telegram Bot Adapter (REQUIRED) — Basic Telegram bot with guest sessions.
 
 **External Dependencies:**
+
 - **Telegram Bot:** Deployed and running from PR7b.
 - **NextAuth.js:** Already integrated for web auth in PR9a/PR9b.
 - **Database:** Postgres instance with user/profile tables from PR9a.
 
 **Optional:**
+
 - **PR9c (Telegram Lead Capture):** Not required for PR9c; lead capture can work with or without account linking.
 
 ### Assumptions
@@ -72,6 +77,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 ### Rationale
 
 **Why Single-PR:**
+
 - **Well-defined scope:** Telegram linking logic, magic link flow, database column addition, bot command handlers.
 - **Clear integration points:** Web settings page + Telegram bot commands + backend API endpoints.
 - **Testable independently:** Can test linking flow end-to-end with deployed Telegram bot.
@@ -79,6 +85,7 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 - **Backend mostly ready:** User tables exist (PR9a), only need `telegram_user_id` column and linking endpoints.
 
 **Estimated Effort:**
+
 - **Backend:** Low-Medium (linking API endpoints, token generation/verification, lookup by Telegram ID).
 - **Frontend (Web):** Low (settings page additions: show linked status, unlink button).
 - **Telegram Bot:** Low-Medium (new commands: `/link`, `/unlink`, `/profile`; webhook handler updates).
@@ -206,54 +213,61 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 6. **New Commands (add to Telegram bot from PR7b):**
    - **`/link`** — Initiates account linking flow.
      - Bot response:
+
        ```
        To link your Telegram account to DovvyBuddy:
-       
+
        1. Click the link below to sign in or sign up on the web:
        https://dovvybuddy.com/auth/link-telegram?token=<magic_link_token>
-       
+
        2. Confirm linking on the web page.
-       
+
        3. Return here and type /profile to verify your account is linked.
-       
+
        Note: This link expires in 10 minutes.
        ```
+
      - Bot action:
        - Generate magic link token: `generateTelegramLinkToken(telegramUserId, telegramUsername)`.
        - Store token temporarily (in-memory or Redis, key: `telegram_link:<token>`, value: `{ telegramUserId, telegramUsername }`, TTL: 10 min).
        - Send message with link.
-   
+
    - **`/unlink`** — Unlinks Telegram account.
      - Bot response:
+
        ```
        Are you sure you want to unlink your Telegram account?
-       
+
        You'll lose access to your conversation history and saved profile. You can re-link anytime by typing /link.
-       
+
        To confirm, type: /unlink confirm
        ```
+
      - On `/unlink confirm`:
        - Query user by Telegram ID: `getUserByTelegramId(telegramUserId)`.
        - If linked: Call `unlinkTelegramAccount(userId)`.
        - Send confirmation: "Your Telegram account has been unlinked."
        - If not linked: "No linked account found."
-   
+
    - **`/profile`** — Shows current diver profile (if linked).
      - Bot response (if linked):
+
        ```
        Your DovvyBuddy Profile:
-       
+
        Email: user@example.com
        Certification: PADI Open Water
        Logged Dives: 25
        Comfort Level: Intermediate
-       
+
        To update your profile, visit: https://dovvybuddy.com/profile
        ```
+
      - Bot response (if not linked):
+
        ```
        You don't have a linked account yet.
-       
+
        Type /link to connect your Telegram to your DovvyBuddy account.
        ```
 
@@ -282,12 +296,14 @@ Enable Telegram users to link their Telegram account to a DovvyBuddy web account
 **Modified Tables:**
 
 1. **users** (add columns)
+
    ```sql
    ALTER TABLE users ADD COLUMN telegram_user_id VARCHAR(255) UNIQUE;
    ALTER TABLE users ADD COLUMN telegram_username VARCHAR(255);
-   
+
    CREATE INDEX idx_users_telegram_user_id ON users(telegram_user_id);
    ```
+
    - `telegram_user_id`: Telegram's unique user ID (numeric string, e.g., "123456789").
    - `telegram_username`: Telegram username (without "@", e.g., "johndoe"). Nullable (not all users have usernames).
 
@@ -340,12 +356,14 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
 **Goal:** Add Telegram user ID columns to users table.
 
 **Tasks:**
+
 1. Create migration: `20250129_006_add_telegram_to_users.sql`.
 2. Add `telegram_user_id VARCHAR(255) UNIQUE` and `telegram_username VARCHAR(255)` to `users` table.
 3. Run migration locally: `pnpm db:migrate`.
 4. Verify columns added: `\d users` in psql.
 
 **Acceptance Criteria:**
+
 - Migration runs successfully.
 - Columns added with correct types and constraints.
 - Unique index created on `telegram_user_id`.
@@ -357,6 +375,7 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
 **Goal:** Implement token generation, verification, and linking logic.
 
 **Tasks:**
+
 1. Create `src/lib/auth/telegram-link-service.ts`:
    - Implement `generateTelegramLinkToken()` (JWT with 10 min expiry).
    - Implement `verifyTelegramLinkToken()` (verify JWT).
@@ -371,6 +390,7 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
 4. Write unit tests for telegram-link-service.
 
 **Acceptance Criteria:**
+
 - Token generation produces valid JWT.
 - Token verification succeeds for valid tokens, fails for expired/invalid.
 - Linking updates database correctly.
@@ -384,6 +404,7 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
 **Goal:** Add `/link`, `/unlink`, `/profile` commands to Telegram bot.
 
 **Tasks:**
+
 1. Update Telegram bot command handler (from PR7b):
    - Add `/link` command handler:
      - Generate token: `generateTelegramLinkToken(telegramUserId, telegramUsername)`.
@@ -405,6 +426,7 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
    ```
 
 **Acceptance Criteria:**
+
 - `/link` command sends magic link.
 - `/unlink` command requires confirmation, successfully unlinks.
 - `/profile` shows profile for linked users, prompts to link for unlinked.
@@ -417,6 +439,7 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
 **Goal:** Update webhook handler to detect linked users and use authenticated sessions.
 
 **Tasks:**
+
 1. Modify Telegram webhook handler (from PR7b):
    - On message received, extract `telegramUserId`.
    - Query: `getUserByTelegramId(telegramUserId)`.
@@ -430,6 +453,7 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
 2. Ensure conversation messages are saved to `conversations` table for linked users.
 
 **Acceptance Criteria:**
+
 - Linked Telegram users use authenticated sessions.
 - Unlinked users continue to use guest sessions (no regression).
 - Messages from linked users appear in web conversation history.
@@ -441,6 +465,7 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
 **Goal:** Add Telegram linking section to settings page.
 
 **Tasks:**
+
 1. Create `src/components/settings/TelegramLinkingSection.tsx`:
    - Fetch link status: `GET /api/auth/telegram-link-status`.
    - Display linked status (username/ID) or instructions to link.
@@ -458,6 +483,7 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
    - Show success/error messages.
 
 **Acceptance Criteria:**
+
 - Settings page shows Telegram linking section.
 - Link status displays correctly (linked vs. unlinked).
 - Unlink button works, requires confirmation.
@@ -470,6 +496,7 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
 **Goal:** Verify messages sync between web and Telegram.
 
 **Tasks:**
+
 1. Test cross-channel sync:
    - User signs in on web, sends message.
    - User opens Telegram bot (linked account), sends message.
@@ -485,6 +512,7 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
    - Verify User B's messages use guest session (expire after 24h).
 
 **Acceptance Criteria:**
+
 - Messages from web and Telegram appear in same conversation.
 - Profile updates on web reflect in Telegram bot responses.
 - Linked and unlinked users have correct session behavior.
@@ -498,16 +526,18 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
 **Tasks:**
 
 **Unit Tests:**
+
 1. `src/lib/auth/telegram-link-service.test.ts`:
    - Test token generation and verification.
    - Test linking with valid/duplicate Telegram IDs.
    - Test unlinking.
 
-**Integration Tests:**
-2. Test `/link` command in Telegram:
-   - Send `/link`, receive magic link.
-   - Click link (or simulate), complete linking on web.
-   - Verify `users.telegram_user_id` updated.
+**Integration Tests:** 2. Test `/link` command in Telegram:
+
+- Send `/link`, receive magic link.
+- Click link (or simulate), complete linking on web.
+- Verify `users.telegram_user_id` updated.
+
 3. Test `/unlink` command:
    - Send `/unlink confirm`, verify account unlinked.
    - Verify columns set to NULL.
@@ -515,19 +545,21 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
    - Send message on web → Verify appears in Telegram session context.
    - Send message on Telegram → Verify appears in web history.
 
-**E2E Tests:**
-5. Full linking flow:
-   - User signs up on web.
-   - User opens Telegram, types `/link`.
-   - User clicks magic link, confirms linking.
-   - User types `/profile`, sees linked profile.
-   - User sends message on Telegram, checks web history.
+**E2E Tests:** 5. Full linking flow:
+
+- User signs up on web.
+- User opens Telegram, types `/link`.
+- User clicks magic link, confirms linking.
+- User types `/profile`, sees linked profile.
+- User sends message on Telegram, checks web history.
+
 6. Unlink and re-link:
    - User unlinks Telegram.
    - User types `/link` again, completes linking.
    - Verify re-linking works.
 
 **Acceptance Criteria:**
+
 - All unit tests pass.
 - Integration tests verify linking/unlinking.
 - E2E test completes full flow.
@@ -542,47 +574,50 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
 **Test Files to Create:**
 
 1. **src/lib/auth/telegram-link-service.test.ts**
+
    ```typescript
    describe('Telegram Link Service', () => {
      test('generateTelegramLinkToken creates valid JWT', async () => {
-       const token = await generateTelegramLinkToken('123456789', 'johndoe');
-       expect(token).toBeDefined();
-       expect(typeof token).toBe('string');
-     });
-     
+       const token = await generateTelegramLinkToken('123456789', 'johndoe')
+       expect(token).toBeDefined()
+       expect(typeof token).toBe('string')
+     })
+
      test('verifyTelegramLinkToken returns payload for valid token', async () => {
-       const token = await generateTelegramLinkToken('123456789', 'johndoe');
-       const payload = await verifyTelegramLinkToken(token);
-       expect(payload.telegramUserId).toBe('123456789');
-       expect(payload.telegramUsername).toBe('johndoe');
-     });
-     
+       const token = await generateTelegramLinkToken('123456789', 'johndoe')
+       const payload = await verifyTelegramLinkToken(token)
+       expect(payload.telegramUserId).toBe('123456789')
+       expect(payload.telegramUsername).toBe('johndoe')
+     })
+
      test('verifyTelegramLinkToken throws error for expired token', async () => {
-       const expiredToken = '<expired_jwt>';
-       await expect(verifyTelegramLinkToken(expiredToken)).rejects.toThrow();
-     });
-     
+       const expiredToken = '<expired_jwt>'
+       await expect(verifyTelegramLinkToken(expiredToken)).rejects.toThrow()
+     })
+
      test('linkTelegramAccount updates users table', async () => {
-       const userId = 'user-1';
-       await linkTelegramAccount(userId, '123456789', 'johndoe');
-       const user = await getUserById(userId);
-       expect(user.telegram_user_id).toBe('123456789');
-       expect(user.telegram_username).toBe('johndoe');
-     });
-     
+       const userId = 'user-1'
+       await linkTelegramAccount(userId, '123456789', 'johndoe')
+       const user = await getUserById(userId)
+       expect(user.telegram_user_id).toBe('123456789')
+       expect(user.telegram_username).toBe('johndoe')
+     })
+
      test('linkTelegramAccount throws error for duplicate Telegram ID', async () => {
-       await linkTelegramAccount('user-1', '123456789', 'johndoe');
-       await expect(linkTelegramAccount('user-2', '123456789', 'janedoe')).rejects.toThrow();
-     });
-     
+       await linkTelegramAccount('user-1', '123456789', 'johndoe')
+       await expect(
+         linkTelegramAccount('user-2', '123456789', 'janedoe')
+       ).rejects.toThrow()
+     })
+
      test('unlinkTelegramAccount sets columns to NULL', async () => {
-       await linkTelegramAccount('user-1', '123456789', 'johndoe');
-       await unlinkTelegramAccount('user-1');
-       const user = await getUserById('user-1');
-       expect(user.telegram_user_id).toBeNull();
-       expect(user.telegram_username).toBeNull();
-     });
-   });
+       await linkTelegramAccount('user-1', '123456789', 'johndoe')
+       await unlinkTelegramAccount('user-1')
+       const user = await getUserById('user-1')
+       expect(user.telegram_user_id).toBeNull()
+       expect(user.telegram_username).toBeNull()
+     })
+   })
    ```
 
 ### Integration Tests
@@ -590,112 +625,122 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
 **Telegram Bot Command Tests (mock Telegram API):**
 
 1. **Test `/link` command:**
+
    ```typescript
    test('Telegram /link command sends magic link', async () => {
      const telegramUpdate = {
        message: {
          from: { id: 123456789, username: 'johndoe' },
-         text: '/link'
-       }
-     };
-     
-     const response = await handleTelegramUpdate(telegramUpdate);
-     
-     expect(response.text).toContain('https://dovvybuddy.com/auth/link-telegram?token=');
-     expect(response.text).toContain('10 minutes');
-   });
+         text: '/link',
+       },
+     }
+
+     const response = await handleTelegramUpdate(telegramUpdate)
+
+     expect(response.text).toContain(
+       'https://dovvybuddy.com/auth/link-telegram?token='
+     )
+     expect(response.text).toContain('10 minutes')
+   })
    ```
 
 2. **Test `/unlink` command:**
+
    ```typescript
    test('Telegram /unlink command unlinks account', async () => {
      // First, link account
-     await linkTelegramAccount('user-1', '123456789', 'johndoe');
-     
+     await linkTelegramAccount('user-1', '123456789', 'johndoe')
+
      const telegramUpdate = {
        message: {
          from: { id: 123456789, username: 'johndoe' },
-         text: '/unlink confirm'
-       }
-     };
-     
-     const response = await handleTelegramUpdate(telegramUpdate);
-     
-     expect(response.text).toContain('unlinked');
-     
-     const user = await getUserByTelegramId('123456789');
-     expect(user).toBeNull();
-   });
+         text: '/unlink confirm',
+       },
+     }
+
+     const response = await handleTelegramUpdate(telegramUpdate)
+
+     expect(response.text).toContain('unlinked')
+
+     const user = await getUserByTelegramId('123456789')
+     expect(user).toBeNull()
+   })
    ```
 
 3. **Test `/profile` command (linked):**
+
    ```typescript
    test('Telegram /profile command shows profile for linked user', async () => {
-     await linkTelegramAccount('user-1', '123456789', 'johndoe');
-     await updateProfile('user-1', { certificationLevel: 'Open Water', loggedDives: 25 });
-     
+     await linkTelegramAccount('user-1', '123456789', 'johndoe')
+     await updateProfile('user-1', {
+       certificationLevel: 'Open Water',
+       loggedDives: 25,
+     })
+
      const telegramUpdate = {
        message: {
          from: { id: 123456789, username: 'johndoe' },
-         text: '/profile'
-       }
-     };
-     
-     const response = await handleTelegramUpdate(telegramUpdate);
-     
-     expect(response.text).toContain('Open Water');
-     expect(response.text).toContain('25');
-   });
+         text: '/profile',
+       },
+     }
+
+     const response = await handleTelegramUpdate(telegramUpdate)
+
+     expect(response.text).toContain('Open Water')
+     expect(response.text).toContain('25')
+   })
    ```
 
 **API Endpoint Tests:**
 
 4. **Test `POST /api/auth/link-telegram`:**
+
    ```typescript
    test('POST /api/auth/link-telegram links account', async () => {
-     const token = await generateTelegramLinkToken('123456789', 'johndoe');
-     
+     const token = await generateTelegramLinkToken('123456789', 'johndoe')
+
      const response = await fetch('/api/auth/link-telegram', {
        method: 'POST',
        headers: {
-         'Authorization': `Bearer ${validUserToken}`,
-         'Content-Type': 'application/json'
+         Authorization: `Bearer ${validUserToken}`,
+         'Content-Type': 'application/json',
        },
-       body: JSON.stringify({ token })
-     });
-     
-     expect(response.status).toBe(200);
-     const data = await response.json();
-     expect(data.success).toBe(true);
-     expect(data.telegramUsername).toBe('johndoe');
-     
+       body: JSON.stringify({ token }),
+     })
+
+     expect(response.status).toBe(200)
+     const data = await response.json()
+     expect(data.success).toBe(true)
+     expect(data.telegramUsername).toBe('johndoe')
+
      // Verify in DB
-     const user = await getUserById('user-1');
-     expect(user.telegram_user_id).toBe('123456789');
-   });
+     const user = await getUserById('user-1')
+     expect(user.telegram_user_id).toBe('123456789')
+   })
    ```
 
 5. **Test duplicate linking (409 error):**
+
    ```typescript
    test('POST /api/auth/link-telegram returns 409 for duplicate Telegram ID', async () => {
-     const token = await generateTelegramLinkToken('123456789', 'johndoe');
-     
+     const token = await generateTelegramLinkToken('123456789', 'johndoe')
+
      // Link to user-1
      await fetch('/api/auth/link-telegram', {
        method: 'POST',
-       headers: { 'Authorization': `Bearer ${user1Token}` },
-       body: JSON.stringify({ token })
-     });
-     
+       headers: { Authorization: `Bearer ${user1Token}` },
+       body: JSON.stringify({ token }),
+     })
+
      // Try to link to user-2 (should fail)
      const response = await fetch('/api/auth/link-telegram', {
        method: 'POST',
-       headers: { 'Authorization': `Bearer ${user2Token}` },
-       body: JSON.stringify({ token })
-     });
-     
-     expect(response.status).toBe(409);
-   });
+       headers: { Authorization: `Bearer ${user2Token}` },
+       body: JSON.stringify({ token }),
+     })
+
+     expect(response.status).toBe(409)
+   })
    ```
 
 ### E2E Tests (Manual)
@@ -746,6 +791,7 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
 ### Manual Testing Checklist
 
 **Linking Flow:**
+
 - [ ] `/link` command sends magic link with valid token.
 - [ ] Magic link expires after 10 minutes (test with old token).
 - [ ] Linking requires web authentication (redirects to signin if not logged in).
@@ -754,27 +800,32 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
 - [ ] Duplicate linking returns error (409).
 
 **Unlinking Flow:**
+
 - [ ] `/unlink` requires confirmation (`/unlink confirm`).
 - [ ] Unlinking sets `telegram_user_id` to NULL in database.
 - [ ] After unlinking, Telegram bot uses guest sessions.
 
 **Cross-Channel Sync:**
+
 - [ ] Message sent on web appears in Telegram conversation context (next message considers history).
 - [ ] Message sent on Telegram appears in web conversation history.
 - [ ] Conversation has single record in `conversations` table.
 - [ ] Timestamps correct for both channels.
 
 **Profile Sync:**
+
 - [ ] Profile updated on web reflects in Telegram bot responses.
 - [ ] Profile shown in `/profile` command matches web profile.
 
 **Error Handling:**
+
 - [ ] Expired token shows error message (not crash).
 - [ ] Invalid token returns 400 error.
 - [ ] Unlinking when not linked returns appropriate message.
 - [ ] `/profile` for unlinked user prompts to link.
 
 **Regression Testing:**
+
 - [ ] Unlinked Telegram users continue to use guest sessions (PR7b behavior).
 - [ ] Web-only users (no Telegram) unaffected (columns remain NULL).
 - [ ] Guest session expiry works (24h for unlinked Telegram users).
@@ -786,47 +837,56 @@ FEATURE_TELEGRAM_LINKING_ENABLED=true
 ### Commands to Run
 
 **Install Dependencies:**
+
 ```bash
 pnpm install
 ```
 
 **Run Database Migration:**
+
 ```bash
 pnpm db:migrate
 ```
 
 **Start Dev Server (Web):**
+
 ```bash
 pnpm dev
 ```
 
 **Deploy Telegram Bot (if not already running):**
+
 ```bash
 # Assuming bot deployed on Cloud Run or similar from PR7b
 gcloud run deploy telegram-bot --source . --region us-central1
 ```
 
 **Run Unit Tests:**
+
 ```bash
 pnpm test src/lib/auth/telegram-link-service.test.ts
 ```
 
 **Run Integration Tests:**
+
 ```bash
 pnpm test src/app/api/auth/link-telegram/
 ```
 
 **Typecheck:**
+
 ```bash
 pnpm typecheck
 ```
 
 **Lint:**
+
 ```bash
 pnpm lint
 ```
 
 **Build:**
+
 ```bash
 pnpm build
 ```
@@ -834,13 +894,14 @@ pnpm build
 ### Manual Verification Steps
 
 **1. Database Verification:**
+
 ```sql
 -- Verify columns added
 \d users
 
 -- Should show:
--- telegram_user_id | character varying(255) | | | 
--- telegram_username | character varying(255) | | | 
+-- telegram_user_id | character varying(255) | | |
+-- telegram_username | character varying(255) | | |
 
 -- Verify unique constraint
 \d+ users
@@ -945,12 +1006,14 @@ psql $DATABASE_URL -c "SELECT id, user_id, channel_type, last_message_at FROM co
 ### Feature Flag Strategy
 
 **Disable Telegram Linking:**
+
 - Set `FEATURE_TELEGRAM_LINKING_ENABLED=false` in environment variables.
 - Linking endpoints return 501 Not Implemented.
 - Telegram bot commands `/link`, `/unlink`, `/profile` return "Feature temporarily unavailable."
 - Existing linked accounts continue to work (no unlinking forced).
 
 **Rollback Steps:**
+
 1. Identify issue (linking broken, sync issues, security concern).
 2. Set `FEATURE_TELEGRAM_LINKING_ENABLED=false`.
 3. Redeploy or wait for env var to propagate.
@@ -960,6 +1023,7 @@ psql $DATABASE_URL -c "SELECT id, user_id, channel_type, last_message_at FROM co
 ### Revert Strategy (Full Rollback)
 
 **If feature flag is insufficient:**
+
 1. Revert PR: `git revert <commit_hash>`.
 2. Push revert commit: `git push origin main`.
 3. CI/CD deploys reverted code.
@@ -973,6 +1037,7 @@ psql $DATABASE_URL -c "SELECT id, user_id, channel_type, last_message_at FROM co
    ```
 
 **Data Safety:**
+
 - **Linked users:** Cannot access linked features (bot uses guest sessions), but data safe in DB.
 - **Unlinked users:** No impact (continue using guest sessions).
 - **Web-only users:** No impact (columns remain NULL).
@@ -1002,62 +1067,68 @@ psql $DATABASE_URL -c "SELECT id, user_id, channel_type, last_message_at FROM co
 
 ## 9. Risks & Mitigations
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| **Magic link token intercepted** | Attacker could link victim's Telegram to their account | 1. Short-lived tokens (10 min expiry)<br>2. One-time use (invalidate after linking)<br>3. Require web authentication (cannot link without signing in)<br>4. Show clear confirmation UI ("Link @username to your account?") |
-| **User links multiple Telegram accounts** | Data integrity issues | 1. Enforce unique constraint on `telegram_user_id`<br>2. Allow only one Telegram account per user<br>3. Show error if trying to link already-linked Telegram account |
-| **User forgets they linked** | Confusion when bot uses profile data | 1. Show linking status in `/profile` command<br>2. Clear unlink instructions in bot<br>3. Show linked status in web settings |
-| **Cross-channel sync race condition** | Message order inconsistency | 1. Use timestamps to order messages<br>2. Accept eventual consistency (rare edge case)<br>3. Add optimistic locking if issue occurs frequently |
-| **Telegram bot downtime** | Users cannot link or use bot | 1. Graceful error handling in web UI ("Bot temporarily unavailable")<br>2. Monitor bot uptime (Cloud Run logs)<br>3. Allow retry |
-| **Token generation/verification failure** | Linking flow broken | 1. Comprehensive error logging<br>2. Test token expiry thoroughly<br>3. Use well-tested JWT library (jsonwebtoken or jose) |
-| **Database unique constraint violation** | Linking fails with unclear error | 1. Check uniqueness before INSERT/UPDATE<br>2. Return clear 409 error message<br>3. Handle constraint violation gracefully |
-| **User unlinks then re-links multiple times** | Session confusion | 1. Clear old Telegram sessions on unlink<br>2. Create fresh session on re-link<br>3. Test re-linking flow thoroughly |
+| Risk                                          | Impact                                                 | Mitigation                                                                                                                                                                                                                 |
+| --------------------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Magic link token intercepted**              | Attacker could link victim's Telegram to their account | 1. Short-lived tokens (10 min expiry)<br>2. One-time use (invalidate after linking)<br>3. Require web authentication (cannot link without signing in)<br>4. Show clear confirmation UI ("Link @username to your account?") |
+| **User links multiple Telegram accounts**     | Data integrity issues                                  | 1. Enforce unique constraint on `telegram_user_id`<br>2. Allow only one Telegram account per user<br>3. Show error if trying to link already-linked Telegram account                                                       |
+| **User forgets they linked**                  | Confusion when bot uses profile data                   | 1. Show linking status in `/profile` command<br>2. Clear unlink instructions in bot<br>3. Show linked status in web settings                                                                                               |
+| **Cross-channel sync race condition**         | Message order inconsistency                            | 1. Use timestamps to order messages<br>2. Accept eventual consistency (rare edge case)<br>3. Add optimistic locking if issue occurs frequently                                                                             |
+| **Telegram bot downtime**                     | Users cannot link or use bot                           | 1. Graceful error handling in web UI ("Bot temporarily unavailable")<br>2. Monitor bot uptime (Cloud Run logs)<br>3. Allow retry                                                                                           |
+| **Token generation/verification failure**     | Linking flow broken                                    | 1. Comprehensive error logging<br>2. Test token expiry thoroughly<br>3. Use well-tested JWT library (jsonwebtoken or jose)                                                                                                 |
+| **Database unique constraint violation**      | Linking fails with unclear error                       | 1. Check uniqueness before INSERT/UPDATE<br>2. Return clear 409 error message<br>3. Handle constraint violation gracefully                                                                                                 |
+| **User unlinks then re-links multiple times** | Session confusion                                      | 1. Clear old Telegram sessions on unlink<br>2. Create fresh session on re-link<br>3. Test re-linking flow thoroughly                                                                                                       |
 
 ---
 
 ## 10. Trade-offs
 
-| Decision | Alternative | Rationale |
-|----------|-------------|-----------|
-| **Magic link flow** | Telegram Web App (inline OAuth) | Magic link is simpler to implement and works on all Telegram clients (mobile, desktop, web). Telegram Web App requires more complex setup and may not work on all clients. |
-| **One Telegram account per user** | Allow multiple Telegram accounts | Simplifies data model and UX; most users only have one Telegram account. Multi-account support can be added in V2.2+ if demand exists. |
-| **10-minute token expiry** | Longer expiry (30 min, 1 hour) | Short expiry reduces security risk (token interception); 10 minutes is enough time to complete flow. Can increase if users report issues. |
-| **Require confirmation on web** | Auto-link on token click | Explicit confirmation is clearer UX and safer (user sees what they're linking). Auto-link could be confusing if user clicks wrong link. |
-| **Store Telegram username in DB** | Fetch from Telegram API on demand | Storing username avoids API calls for display; usernames rarely change. Can sync username on next bot interaction if needed. |
-| **Single PR for linking + sync** | Split into linking (PR9c) and sync (PR8d) | Linking and sync are tightly coupled; splitting would add complexity. Single PR is testable end-to-end. |
-| **JWT for magic link tokens** | Database-backed tokens | JWT is stateless (no DB storage needed); simpler for short-lived tokens. DB-backed tokens are overkill for 10-minute expiry. |
-| **Unlink requires confirmation** | Instant unlink | Confirmation prevents accidental unlink (no undo). User has time to reconsider. |
+| Decision                          | Alternative                               | Rationale                                                                                                                                                                  |
+| --------------------------------- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Magic link flow**               | Telegram Web App (inline OAuth)           | Magic link is simpler to implement and works on all Telegram clients (mobile, desktop, web). Telegram Web App requires more complex setup and may not work on all clients. |
+| **One Telegram account per user** | Allow multiple Telegram accounts          | Simplifies data model and UX; most users only have one Telegram account. Multi-account support can be added in V2.2+ if demand exists.                                     |
+| **10-minute token expiry**        | Longer expiry (30 min, 1 hour)            | Short expiry reduces security risk (token interception); 10 minutes is enough time to complete flow. Can increase if users report issues.                                  |
+| **Require confirmation on web**   | Auto-link on token click                  | Explicit confirmation is clearer UX and safer (user sees what they're linking). Auto-link could be confusing if user clicks wrong link.                                    |
+| **Store Telegram username in DB** | Fetch from Telegram API on demand         | Storing username avoids API calls for display; usernames rarely change. Can sync username on next bot interaction if needed.                                               |
+| **Single PR for linking + sync**  | Split into linking (PR9c) and sync (PR8d) | Linking and sync are tightly coupled; splitting would add complexity. Single PR is testable end-to-end.                                                                    |
+| **JWT for magic link tokens**     | Database-backed tokens                    | JWT is stateless (no DB storage needed); simpler for short-lived tokens. DB-backed tokens are overkill for 10-minute expiry.                                               |
+| **Unlink requires confirmation**  | Instant unlink                            | Confirmation prevents accidental unlink (no undo). User has time to reconsider.                                                                                            |
 
 ---
 
 ## 11. Open Questions
 
 **Q1: Should we allow users to link multiple web accounts to one Telegram account?**
+
 - **Context:** Current design is 1 Telegram : 1 Web account.
 - **Recommendation:** No, enforce 1:1 for V2.0 simplicity. Multi-account support adds complexity (user must choose which account to use).
 - **Decision:** 1:1 relationship enforced by unique constraint.
 
 **Q2: Should Telegram username be synced periodically, or only on linking?**
+
 - **Context:** Users can change Telegram username; stored username may become stale.
 - **Recommendation:** Store on linking, update on next bot interaction (check if username changed). Don't poll Telegram API.
 - **Decision:** Store on linking, update opportunistically (next message or command).
 
 **Q3: Should we track which channel (web or Telegram) a conversation was started on?**
+
 - **Context:** Conversations can span both channels; `conversations.channel_type` currently stores origin channel.
 - **Recommendation:** Keep `channel_type` as origin channel for analytics; actual messages can come from both.
 - **Decision:** `channel_type` is origin channel (where conversation started); messages from both channels are included.
 
 **Q4: Should unlinking delete Telegram-originated conversations, or keep them?**
+
 - **Context:** After unlinking, user loses access to Telegram bot with profile data.
 - **Recommendation:** Keep conversations (they're part of user's history). User can delete account if they want to remove all data.
 - **Decision:** Keep conversations; unlinking only disconnects Telegram account, doesn't delete data.
 
 **Q5: Should we support Telegram group chats (multiple users) in V2.0?**
+
 - **Context:** Current design is 1-on-1 chats only (as per PR7b assumptions).
 - **Recommendation:** No, defer to V2.2+. Group chats have complex use cases (multiple users, permissions, etc.).
 - **Decision:** 1-on-1 chats only for V2.0.
 
 **Q6: Should `/profile` command be paginated if user has long preference text?**
+
 - **Context:** Telegram messages have 4096 character limit.
 - **Recommendation:** Truncate preferences in `/profile` output; show full preferences on web.
 - **Decision:** Show summary in Telegram, link to web for full details.
@@ -1069,6 +1140,7 @@ psql $DATABASE_URL -c "SELECT id, user_id, channel_type, last_message_at FROM co
 PR9c completes the multi-channel authentication experience by enabling Telegram users to link their accounts to DovvyBuddy. This ensures a seamless, unified experience across web and Telegram with synchronized conversation history and consistent diver profiles.
 
 **Key Deliverables:**
+
 - ✅ Telegram account linking via magic link flow
 - ✅ Database schema update (2 columns: `telegram_user_id`, `telegram_username`)
 - ✅ Backend APIs for linking, unlinking, and status check
@@ -1079,6 +1151,7 @@ PR9c completes the multi-channel authentication experience by enabling Telegram 
 - ✅ Comprehensive testing (unit, integration, E2E manual tests)
 
 **Success Criteria:**
+
 - Users can link Telegram to web account via magic link.
 - Linked users access same profile and conversation history on both channels.
 - Messages sent on web appear in Telegram conversation context, and vice versa.
@@ -1087,12 +1160,14 @@ PR9c completes the multi-channel authentication experience by enabling Telegram 
 - No regressions (unlinked users continue to use guest sessions).
 
 **User Value:**
+
 - **Unified experience:** Start conversation on web, continue on mobile Telegram.
 - **Persistent history:** Conversations saved regardless of channel.
 - **Consistent profile:** Bot uses latest profile data from web.
 - **Flexibility:** Link/unlink anytime, no lock-in.
 
 **Next Steps After PR9c:**
+
 - **PR9:** Dive log storage and management (V2 core feature).
 - **PR10:** Trip planning history and itinerary generation.
 - **PR11:** Personalized recommendations based on dive history.

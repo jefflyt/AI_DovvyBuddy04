@@ -11,9 +11,11 @@ source_doc: padi-cert-overview.md
 ---
 
 # PADI Recreational Certification Pathway
+
 **PADI Recreational Scuba Certifications**
 
 ## Recreational Pathway Overview
+
 PADI recreational certifications represent the progression most divers follow, from supervised introductory programs to experienced non-professional diver recognition. These certifications qualify divers for recreational diving activities and continued skill development.
 
 ---
@@ -21,9 +23,11 @@ PADI recreational certifications represent the progression most divers follow, f
 ## PADI Scuba Diver
 
 ### Overview
+
 PADI Scuba Diver is a limited entry-level certification designed for divers with time constraints or those who prefer professional supervision.
 
 ### Key Characteristics
+
 - **Minimum Age**: 10 years old
 - **Maximum Depth**: 12 meters (40 feet)
 - **Supervision Required**: Must dive with a PADI Professional
@@ -33,6 +37,7 @@ PADI Scuba Diver is a limited entry-level certification designed for divers with
   - Two open water dives
 
 ### Progression
+
 Scuba Divers may upgrade to Open Water Diver by completing the remaining Open Water training requirements.
 
 ---
@@ -40,9 +45,11 @@ Scuba Divers may upgrade to Open Water Diver by completing the remaining Open Wa
 ## PADI Open Water Diver
 
 ### Overview
+
 PADI Open Water Diver is the standard entry-level certification for independent recreational diving.
 
 ### Key Characteristics
+
 - **Minimum Age**: 10 years old
 - **Maximum Depth**:
   - Adults (15+): 18 meters (60 feet)
@@ -51,6 +58,7 @@ PADI Open Water Diver is the standard entry-level certification for independent 
 - **Diving Privileges**: Independent buddy diving within training limits
 
 ### Role in Pathway
+
 Open Water Diver is the foundation for all advanced recreational, specialty, and professional training.
 
 ---
@@ -58,9 +66,11 @@ Open Water Diver is the foundation for all advanced recreational, specialty, and
 ## PADI Adventure Diver
 
 ### Overview
+
 PADI Adventure Diver is a subset of the Advanced Open Water program, allowing divers to complete three adventure dives.
 
 ### Key Characteristics
+
 - **Prerequisites**: Open Water Diver or equivalent
 - **Training Scope**: Any three adventure dives
 - **Depth Limit**:
@@ -68,6 +78,7 @@ PADI Adventure Diver is a subset of the Advanced Open Water program, allowing di
   - 18 meters (60 feet) if Deep Adventure Dive not completed
 
 ### Progression
+
 All adventure dives credit toward Advanced Open Water Diver certification.
 
 ---
@@ -75,9 +86,11 @@ All adventure dives credit toward Advanced Open Water Diver certification.
 ## PADI Advanced Open Water Diver
 
 ### Overview
+
 PADI Advanced Open Water Diver builds experience through adventure-based learning and expands depth limits.
 
 ### Key Characteristics
+
 - **Minimum Age**: 12 years old
 - **Maximum Depth**:
   - Adults (15+): 30 meters (100 feet)
@@ -87,6 +100,7 @@ PADI Advanced Open Water Diver builds experience through adventure-based learnin
   - Mandatory Deep and Underwater Navigation dives
 
 ### Role in Pathway
+
 Advanced Open Water Diver is a prerequisite for Rescue Diver training and many advanced dive opportunities.
 
 ---
@@ -94,9 +108,11 @@ Advanced Open Water Diver is a prerequisite for Rescue Diver training and many a
 ## PADI Rescue Diver
 
 ### Overview
+
 PADI Rescue Diver focuses on dive safety, problem prevention, and emergency management.
 
 ### Key Characteristics
+
 - **Prerequisites**:
   - Advanced Open Water Diver (or Adventure Diver with Navigation dive)
   - Current CPR/First Aid training
@@ -106,6 +122,7 @@ PADI Rescue Diver focuses on dive safety, problem prevention, and emergency mana
   - Open water rescue scenarios
 
 ### Role in Pathway
+
 Rescue Diver is a prerequisite for professional training and the Master Scuba Diver rating.
 
 ---
@@ -113,9 +130,11 @@ Rescue Diver is a prerequisite for professional training and the Master Scuba Di
 ## PADI Master Scuba Diver
 
 ### Overview
+
 PADI Master Scuba Diver is the highest non-professional recreational rating.
 
 ### Key Characteristics
+
 - **Requirements**:
   - Open Water Diver
   - Advanced Open Water Diver
@@ -125,9 +144,11 @@ PADI Master Scuba Diver is the highest non-professional recreational rating.
 - **Status**: Rating (not a course)
 
 ### Recognition
+
 Master Scuba Diver recognizes extensive training and experience within recreational diving.
 
 ---
 
 ## Summary
+
 The PADI recreational certification pathway provides a structured progression from beginner to experienced recreational diver. Each level builds upon prior training, expanding depth limits, skills, and responsibilities while maintaining a focus on safe, non-professional recreational diving.

@@ -19,11 +19,13 @@ Implement a Telegram bot that connects to the ADK agent service and provides bas
 ### User Impact
 
 **Primary Users (Divers):**
+
 - **Telegram users** can ask certification and trip questions without visiting the website.
 - **Mobile-first users** get quick answers on-the-go through a familiar messaging interface.
 - **International users** who prefer Telegram over web chat gain access to DovvyBuddy.
 
 **Secondary Impact:**
+
 - Validates multi-channel agent architecture.
 - Expands distribution without duplicating business logic.
 - Proves Telegram as viable channel before adding lead capture.
@@ -31,10 +33,12 @@ Implement a Telegram bot that connects to the ADK agent service and provides bas
 ### Dependencies
 
 **Upstream:**
+
 - **PR3.2c:** Python agent orchestration (✅ Complete - no PR8a extraction needed)
 - **PR1-6:** Full web V1 functionality (database, RAG, sessions, lead capture, landing page)
 
 **External:**
+
 - **Telegram Bot Token:** Obtained from @BotFather
 - **Cloud Run:** Hosting for Telegram bot service (or can run alongside FastAPI backend)
 - **Database:** Access to existing Postgres instance (for sessions)
@@ -96,12 +100,14 @@ Implement a Telegram bot that connects to the ADK agent service and provides bas
 Two options for Telegram bot implementation:
 
 **Option A: Separate Python Service** (Recommended for V1.1)
+
 - New standalone Python service using `python-telegram-bot` library
 - Communicates with FastAPI backend via HTTP (`POST /api/chat`)
 - Deployed as separate Cloud Run service
 - Simpler to develop and deploy independently
 
 **Option B: Integrated with FastAPI Backend** (Consider for V2)
+
 - Add Telegram bot handlers directly to FastAPI app
 - Share same codebase, database connections, and services
 - Single deployment unit
@@ -132,27 +138,29 @@ src/telegram-bot/
 ├── requirements.txt           # Python dependencies
 └── README.md                  # Bot documentation
 ```
-│   └── error-handler.ts      # Formats errors for Telegram
+
+│ └── error-handler.ts # Formats errors for Telegram
 ├── services/
-│   ├── session-manager.ts    # Maps Telegram user ID to session ID
-│   ├── agent-client.ts       # HTTP client for agent service
-│   └── rate-limiter.ts       # Rate limiting per user
+│ ├── session-manager.ts # Maps Telegram user ID to session ID
+│ ├── agent-client.ts # HTTP client for agent service
+│ └── rate-limiter.ts # Rate limiting per user
 ├── utils/
-│   ├── logger.ts             # Structured logging
-│   ├── formatter.ts          # Formats responses for Telegram (markdown, chunking)
-│   └── validator.ts          # Input validation
+│ ├── logger.ts # Structured logging
+│ ├── formatter.ts # Formats responses for Telegram (markdown, chunking)
+│ └── validator.ts # Input validation
 ├── types/
-│   └── index.ts              # Telegram bot types
+│ └── index.ts # Telegram bot types
 ├── config/
-│   └── bot-config.ts         # Bot configuration (commands, rate limits)
+│ └── bot-config.ts # Bot configuration (commands, rate limits)
 ├── scripts/
-│   └── setup-webhook.ts      # Webhook registration script
+│ └── setup-webhook.ts # Webhook registration script
 ├── Dockerfile
 ├── .dockerignore
 ├── package.json
 ├── tsconfig.json
 └── README.md
-```
+
+````
 
 **Key Components:**
 
@@ -214,7 +222,7 @@ ALTER TABLE sessions ADD COLUMN channel_type VARCHAR(20) DEFAULT 'web';
 ALTER TABLE sessions ADD COLUMN channel_user_id VARCHAR(255);
 CREATE UNIQUE INDEX idx_sessions_channel_user ON sessions(channel_type, channel_user_id) WHERE channel_type IS NOT NULL AND channel_user_id IS NOT NULL;
 UPDATE sessions SET channel_type='web' WHERE channel_type IS NULL;
-```
+````
 
 ### Data
 
@@ -371,6 +379,7 @@ Update `.github/workflows/deploy.yml`:
    - Error handling with logging
 
 **Files Created:**
+
 - `src/telegram/package.json`
 - `src/telegram/tsconfig.json`
 - `src/telegram/server.ts`
@@ -404,6 +413,7 @@ Update `.github/workflows/deploy.yml`:
    - Export bot instance
 
 **Files Created:**
+
 - `src/telegram/handlers/message-handler.ts`
 - `src/telegram/handlers/command-handler.ts`
 - `src/telegram/handlers/error-handler.ts`
@@ -439,6 +449,7 @@ Update `.github/workflows/deploy.yml`:
    - Handle code blocks, lists, bold, italic
 
 **Files Created:**
+
 - `src/telegram/services/session-manager.ts`
 - `src/telegram/services/agent-client.ts`
 - `src/telegram/services/rate-limiter.ts`
@@ -479,6 +490,7 @@ Update `.github/workflows/deploy.yml`:
    - Check logs in Cloud Run
 
 **Files Created:**
+
 - `src/telegram/Dockerfile`
 - `src/telegram/.dockerignore`
 - `src/telegram/scripts/setup-webhook.ts`
@@ -500,9 +512,11 @@ Update `.github/workflows/deploy.yml`:
    - Link to web chat as alternative
 
 **Files Modified:**
+
 - `src/app/page.tsx`
 
 **Files Created (Optional):**
+
 - `src/app/telegram/page.tsx`
 - `src/components/telegram/TelegramCTA.tsx`
 
@@ -513,41 +527,48 @@ Update `.github/workflows/deploy.yml`:
 ### Unit Tests
 
 **Message Handler:**
+
 - Valid message processes successfully
 - Long message splits into chunks
 - Rate limited user receives error
 - Agent service error handled gracefully
 
 **Command Handler:**
+
 - `/start` sends welcome message
 - `/help` sends help text
 - `/newchat` clears session
 
 **Session Manager:**
+
 - Creates new session for new Telegram user
 - Retrieves existing session for returning user
 - Handles expired sessions (creates new one)
 - Updates last_active_at timestamp
 
 **Agent Client:**
+
 - Successful chat request returns response
 - Timeout handled with error
 - Retry logic works on 5xx errors
 - Authentication header included
 
 **Rate Limiter:**
+
 - Allows requests within limit
 - Blocks requests exceeding limit
 - Sliding window works correctly
 - Different users tracked separately
 
 **Formatter:**
+
 - Long text splits correctly
 - Markdown formatting applied
 - Special characters escaped
 - Code blocks preserved
 
 **Test Files:**
+
 - `src/telegram/tests/handlers/message-handler.test.ts`
 - `src/telegram/tests/handlers/command-handler.test.ts`
 - `src/telegram/tests/services/session-manager.test.ts`
@@ -567,6 +588,7 @@ Update `.github/workflows/deploy.yml`:
 6. Database shows updated session
 
 **Test Scenarios:**
+
 - New user sends first message (session created)
 - Returning user sends message (session retrieved)
 - User sends multiple messages (conversation history persists)
@@ -574,11 +596,13 @@ Update `.github/workflows/deploy.yml`:
 - Agent service timeout (graceful error)
 
 **Test Files:**
+
 - `tests/integration/telegram-bot.test.ts`
 
 ### Manual Testing Checklist
 
 **Basic Functionality:**
+
 - [ ] Send message to bot, receive relevant response
 - [ ] `/start` command shows welcome message
 - [ ] `/help` command lists commands
@@ -588,25 +612,30 @@ Update `.github/workflows/deploy.yml`:
 - [ ] Markdown formatting displays correctly
 
 **Session Persistence:**
+
 - [ ] Send message, then send follow-up → Bot remembers context
 - [ ] Wait 10 minutes, send message → Session still active
 - [ ] Use `/newchat`, send message → New session, no previous context
 
 **Rate Limiting:**
+
 - [ ] Send 11 messages in 1 minute → 11th message gets error
 - [ ] Wait 1 minute, send message → Works again
 
 **Error Handling:**
+
 - [ ] Stop agent service, send message → User-friendly error
 - [ ] Send very long message (5000 chars) → Handled gracefully
 - [ ] Send special characters (markdown syntax) → No crashes
 
 **Database Verification:**
+
 - [ ] Query sessions table → Telegram session exists with correct channel_type
 - [ ] Check conversation_history → Messages stored correctly
 - [ ] Verify expires_at → 24 hours from creation
 
 **Logging:**
+
 - [ ] Cloud Run logs show incoming messages with context
 - [ ] Errors logged with stack traces
 - [ ] No sensitive data (bot token, user IDs) in logs
@@ -752,11 +781,11 @@ Add `TELEGRAM_ENABLED` environment variable:
 
 ```typescript
 // src/telegram/config/bot-config.ts
-export const TELEGRAM_ENABLED = process.env.TELEGRAM_ENABLED !== 'false';
+export const TELEGRAM_ENABLED = process.env.TELEGRAM_ENABLED !== 'false'
 
 // In webhook-handler.ts
 if (!TELEGRAM_ENABLED) {
-  return res.status(200).json({ ok: true }); // Acknowledge but don't process
+  return res.status(200).json({ ok: true }) // Acknowledge but don't process
 }
 ```
 
@@ -825,6 +854,7 @@ if (!TELEGRAM_ENABLED) {
 **Impact:** Bot can send max 30 messages/second globally. High traffic could hit rate limits.
 
 **Mitigation:**
+
 - Implement client-side rate limiting (queue outgoing messages)
 - Monitor rate limit errors (HTTP 429) in logs
 - Use exponential backoff for retries
@@ -837,6 +867,7 @@ if (!TELEGRAM_ENABLED) {
 **Impact:** Telegram webhook might fail due to network issues, timeout, or Cloud Run cold start.
 
 **Mitigation:**
+
 - Set min instances=0 (scale to zero) but accept occasional cold starts (~2-3s)
 - Implement health check endpoint to keep service warm if needed
 - Telegram retries failed webhooks automatically
@@ -849,6 +880,7 @@ if (!TELEGRAM_ENABLED) {
 **Impact:** Mapping Telegram user IDs to sessions could have bugs (duplicate sessions, orphaned sessions).
 
 **Mitigation:**
+
 - Use unique index on `(channel_type, channel_user_id)` to prevent duplicates
 - Log session creation/retrieval for debugging
 - Add database constraints to enforce data integrity
@@ -861,6 +893,7 @@ if (!TELEGRAM_ENABLED) {
 **Impact:** Markdown formatting might break in Telegram (special characters, code blocks).
 
 **Mitigation:**
+
 - Escape special characters in formatter utility
 - Test with various message types (lists, code, links)
 - Fall back to plain text if markdown parsing fails
@@ -873,6 +906,7 @@ if (!TELEGRAM_ENABLED) {
 **Impact:** First message after idle period takes 5-10s, poor UX.
 
 **Mitigation:**
+
 - Optimize Docker image size (use Alpine, multi-stage build)
 - Accept cold starts for V1.1 (cost vs UX trade-off)
 - If cold starts exceed 10% of requests, increase min instances to 1
@@ -885,6 +919,7 @@ if (!TELEGRAM_ENABLED) {
 **Impact:** If agent service is down, Telegram bot can't respond.
 
 **Mitigation:**
+
 - Implement retry logic in agent client (3 retries)
 - Show user-friendly error: "I'm having trouble connecting. Please try again in a moment."
 - Monitor agent service uptime (should be >99.5% from PR8a)
@@ -1096,6 +1131,7 @@ if (!TELEGRAM_ENABLED) {
 PR8b implements a Telegram bot that provides the same certification guidance and trip research functionality as the web interface. The bot reuses the agent service from PR8a and stores sessions in the existing database with `channel_type='telegram'`. Lead capture functionality is deferred to PR8c to keep this PR focused and manageable.
 
 **Key Deliverables:**
+
 - ✅ Telegram bot service deployed to Cloud Run
 - ✅ Webhook-based message processing
 - ✅ Session management with 24h expiry
@@ -1105,6 +1141,7 @@ PR8b implements a Telegram bot that provides the same certification guidance and
 - ✅ Comprehensive testing (unit + integration + manual)
 
 **Main Risks:**
+
 - Telegram webhook reliability (mitigated with retries and monitoring)
 - Session management bugs (mitigated with tests and database constraints)
 - Cold start latency (accepted for V1.1, can optimize later)

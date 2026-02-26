@@ -1,33 +1,53 @@
 ---
-doc_type: "dive_site"
-site_id: "tioman-pulau-labas"
-title: "Pulau Labas (Labas Island)"
-destination: "Tioman Island, Malaysia"
-min_certification: "AOW"
-difficulty: "intermediate"
+doc_type: 'dive_site'
+site_id: 'tioman-pulau-labas'
+title: 'Pulau Labas (Labas Island)'
+destination: 'Tioman Island, Malaysia'
+min_certification: 'AOW'
+difficulty: 'intermediate'
 depth_range_m: [10, 24]
-tags: ["island", "reef", "boulder", "swim-throughs", "macro", "coral", "current-variable"]
-keywords: ["Pulau Labas", "Labas Island", "Tioman", "swim-throughs", "caverns", "volcanic rocks", "soft coral", "macro", "intermediate dive"]
-last_updated: "2026-01-01"
-data_quality: "compiled"
+tags:
+  [
+    'island',
+    'reef',
+    'boulder',
+    'swim-throughs',
+    'macro',
+    'coral',
+    'current-variable',
+  ]
+keywords:
+  [
+    'Pulau Labas',
+    'Labas Island',
+    'Tioman',
+    'swim-throughs',
+    'caverns',
+    'volcanic rocks',
+    'soft coral',
+    'macro',
+    'intermediate dive',
+  ]
+last_updated: '2026-01-01'
+data_quality: 'compiled'
 sources:
-  - "https://www.diversaloon.com/tioman-diving"
-  - "Local dive operator reports and site surveys"
+  - 'https://www.diversaloon.com/tioman-diving'
+  - 'Local dive operator reports and site surveys'
 ---
 
 # Dive Site Documentation: Pulau Labas (Labas Island), Tioman Island, Malaysia
 
 ## 1. Quick Facts
 
-| Feature | Details |
-| :--- | :--- |
-| **Depth Range** | 10–24 m |
-| **Visibility** | 10–30 m (best March–June; 8–15 m low season) |
-| **Current** | Variable; can be moderate to strong at times |
-| **Water Temp** | 27–29 °C (year-round) |
-| **Season** | Best: March–May, September–October; Diveable: March–October |
+| Feature         | Details                                                     |
+| :-------------- | :---------------------------------------------------------- |
+| **Depth Range** | 10–24 m                                                     |
+| **Visibility**  | 10–30 m (best March–June; 8–15 m low season)                |
+| **Current**     | Variable; can be moderate to strong at times                |
+| **Water Temp**  | 27–29 °C (year-round)                                       |
+| **Season**      | Best: March–May, September–October; Diveable: March–October |
 
-***
+---
 
 ## 2. Site Overview
 
@@ -37,7 +57,7 @@ Pulau Labas (commonly referred to as "Labas Island" in English) is a small, unin
 - **Atmosphere:** Exploratory and engaging; moderately challenging with good visual complexity; feels more "wild" than sheltered shallow reefs; rewards careful navigation and observation.
 - **Why dive here:** Intermediate and advanced divers appreciate the structural complexity and depth options; macro enthusiasts find healthy populations of nudibranchs, lionfish, and crustaceans; the site offers stepping-stone progression from shallow beginner sites to deeper technical dives.
 
-***
+---
 
 ## 3. Underwater Topography
 
@@ -53,7 +73,7 @@ Pulau Labas (commonly referred to as "Labas Island" in English) is a small, unin
   - Two distinct dive site zones: "Head of Labas" and "Tail of Labas," chosen based on current direction and conditions on the day.
 - **Key structures:** The pinnacle of rock formations is the primary feature; divers navigate through and around boulders rather than following a linear reef wall or slope. Depths vary significantly within a few metres of vertical movement.
 
-***
+---
 
 ## 4. Typical Dive Profile
 
@@ -65,7 +85,7 @@ Pulau Labas (commonly referred to as "Labas Island" in English) is a small, unin
 - **Duration:** 40–50 minutes typical bottom time; can extend to 60+ minutes depending on depth choice and diver air consumption.
 - **Turnaround:** Return to shallower water (10–12 m) for final minutes; ascent to 3–5 m safety stop performed on shallow rock feature or in open water.
 
-***
+---
 
 ## 5. Marine Life
 
@@ -103,7 +123,7 @@ Pulau Labas (commonly referred to as "Labas Island" in English) is a small, unin
   - **February–October (Dry season):** Consistent diving conditions; marine life activity remains good.
   - **November–January (Monsoon):** Site typically closed; diving not permitted.
 
-***
+---
 
 ## 6. Conditions
 
@@ -120,7 +140,7 @@ Pulau Labas (commonly referred to as "Labas Island" in English) is a small, unin
 
 - **Triggers:** Monsoon window (November–January) closes the island to diving. Tidal cycle and moon phase influence current strength. Upwelling events (uncommon but possible) can temporarily reduce visibility. Heavy rain or swell from passing storms may trigger operator cancellations.
 
-***
+---
 
 ## 7. Difficulty Assessment
 
@@ -143,7 +163,7 @@ Pulau Labas (commonly referred to as "Labas Island" in English) is a small, unin
 
 - **Advanced notes:** The site rewards advanced divers with excellent exploration opportunities, depth variance for skill practice (e.g., hovering at precise depths), and macro subjects. Advanced Diver certification holders or experienced recreational divers (50+ dives) will find appropriate challenge and interest.
 
-***
+---
 
 ## 8. Recommended Diver Profile
 
@@ -158,7 +178,7 @@ Pulau Labas (commonly referred to as "Labas Island" in English) is a small, unin
   - Relaxed demeanor in relatively confined rock environments (no claustrophobia).
   - Experience with mild-to-moderate current (if diving the "head" on a strong-current day).
 
-***
+---
 
 ## 9. Hazards & Safety Notes
 
@@ -187,7 +207,7 @@ Pulau Labas (commonly referred to as "Labas Island" in English) is a small, unin
 
 - **Incidents:** No specific well-documented incidents reported in readily available sources. Site is considered safe when dived within recommended certification levels and with experienced guide.
 
-***
+---
 
 ## 10. Photography Notes
 
@@ -218,7 +238,7 @@ Pulau Labas (commonly referred to as "Labas Island" in English) is a small, unin
   - Strong current can reduce bottom time available for composed shots; plan subjects and positioning in advance.
   - Tight spaces around rocks limit distance for wide-angle framing; short focal lengths required.
 
-***
+---
 
 ## 11. Best Time to Dive
 
@@ -250,7 +270,7 @@ Pulau Labas (commonly referred to as "Labas Island" in English) is a small, unin
 - **Monthly highlights (if available):**
   - Unknown based on provided sources. March–June consistently cited as best; specific monthly variations within that range not detailed in available data.
 
-***
+---
 
 ## 12. Practical Tips
 
@@ -269,9 +289,7 @@ Pulau Labas (commonly referred to as "Labas Island" in English) is a small, unin
   - 5 mm preferred if diving multiple days in a row to retain body heat and reduce fatigue.
   - No source-specific guidance for Labas; standard tropical practice applies.
 
-***
-
-
+---
 
 ## 13. Keywords & Tags
 
@@ -279,4 +297,4 @@ Pulau Labas (commonly referred to as "Labas Island" in English) is a small, unin
 
 - **Categories:** Reef exploration, rock/boulder site, swim-through diving, intermediate-to-advanced, mixed marine life, macro-friendly, Malaysia, Tioman Island.
 
-***
+---

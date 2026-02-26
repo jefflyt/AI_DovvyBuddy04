@@ -104,6 +104,7 @@ Any additional context, follow-up actions, or related information.
 ## Context
 
 DovvyBuddy needs a modern web framework that supports:
+
 - Server-side rendering for SEO
 - API routes for backend logic
 - Vercel deployment optimization
@@ -116,28 +117,33 @@ Use Next.js 14 with App Router for the web application.
 ## Consequences
 
 ### Positive
+
 - Unified codebase (frontend + API routes)
 - Excellent Vercel integration
 - Strong TypeScript support
 - Large ecosystem and community
 
 ### Negative
+
 - Vendor coupling with Vercel for optimal performance
 - Learning curve for App Router (new paradigm)
 
 ## Alternatives Considered
 
 ### Alternative 1: Separate React + Express
+
 - **Pros:** Full control, well-understood
 - **Cons:** More complex deployment, separate repos
 - **Why rejected:** Overhead not justified for solo founder
 
 ### Alternative 2: Remix
+
 - **Pros:** Excellent DX, nested routing
 - **Cons:** Smaller ecosystem, less Vercel optimization
 - **Why rejected:** Next.js has better Vercel integration
 
 ## References
+
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Vercel Platform](https://vercel.com/docs)
 ```

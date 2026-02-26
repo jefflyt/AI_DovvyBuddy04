@@ -16,17 +16,20 @@ source .venv/bin/activate
 ```
 
 **Check Python version:**
+
 ```bash
 python --version
 # Expected: Python 3.9.6 or higher
 ```
 
 **Verify .env configuration:**
+
 ```bash
 cat .env | grep -E "(AGENT|SESSION|PROMPT|MESSAGE)"
 ```
 
 Expected variables:
+
 - [ ] `MAX_MESSAGE_LENGTH=2000`
 - [ ] `SESSION_EXPIRY_HOURS=24`
 - [ ] `MAX_CONVERSATION_HISTORY=20`
@@ -42,6 +45,7 @@ pip install -e .
 ```
 
 **Verify jinja2 installed:**
+
 ```bash
 pip list | grep -i jinja
 # Expected: jinja2>=3.1.3
@@ -54,15 +58,18 @@ pip list | grep -i jinja
 ### Unit Tests
 
 #### Agent Tests
+
 ```bash
 pytest tests/unit/agents/ -v
 ```
 
 **Expected Results:**
+
 - [ ] `test_base_agent.py` - All tests pass
 - [ ] `test_agent_registry.py` - All tests pass
 
 **Key Tests:**
+
 - [ ] Agent execution works
 - [ ] Agent metadata retrieval
 - [ ] Agent error handling
@@ -73,15 +80,18 @@ pytest tests/unit/agents/ -v
 - [ ] Singleton pattern works
 
 #### Orchestration Tests
+
 ```bash
 pytest tests/unit/orchestration/ -v
 ```
 
 **Expected Results:**
+
 - [ ] `test_mode_detector.py` - All tests pass
 - [ ] `test_context_builder.py` - All tests pass
 
 **Key Tests:**
+
 - [ ] Certification mode detection
 - [ ] Trip mode detection
 - [ ] Safety mode detection (priority)
@@ -92,11 +102,13 @@ pytest tests/unit/orchestration/ -v
 - [ ] History trimming
 
 ### Integration Tests
+
 ```bash
 pytest tests/integration/test_chat_flow.py -v
 ```
 
 **Expected Results:**
+
 - [ ] New session creation works
 - [ ] Existing session retrieval works
 - [ ] Certification query routing
@@ -107,11 +119,13 @@ pytest tests/integration/test_chat_flow.py -v
 - [ ] Session retrieval by ID
 
 ### Comparison Tests
+
 ```bash
 pytest tests/comparison/orchestration/test_agent_routing.py -v
 ```
 
 **Expected Results:**
+
 - [ ] Overall accuracy ≥90% (36/40 queries)
 - [ ] Certification queries routed correctly
 - [ ] Trip queries routed correctly
@@ -121,11 +135,13 @@ pytest tests/comparison/orchestration/test_agent_routing.py -v
 - [ ] Context-based routing works
 
 ### Test Coverage
+
 ```bash
 pytest --cov=app/agents --cov=app/orchestration --cov-report=term-missing
 ```
 
 **Expected Coverage:**
+
 - [ ] `app/agents/` ≥80% coverage
 - [ ] `app/orchestration/` ≥80% coverage
 
@@ -134,32 +150,39 @@ pytest --cov=app/agents --cov=app/orchestration --cov-report=term-missing
 ## Code Quality
 
 ### Linting
+
 ```bash
 ruff check app/agents app/orchestration app/prompts app/api/routes
 ```
 
 **Expected:**
+
 - [ ] All checks passed (0 errors)
 
 **Auto-fix if needed:**
+
 ```bash
 ruff check app/agents app/orchestration app/prompts --fix
 ```
 
 ### Formatting
+
 ```bash
 ruff format --check app/agents app/orchestration app/prompts
 ```
 
 **Expected:**
+
 - [ ] All files formatted correctly
 
 **Format if needed:**
+
 ```bash
 ruff format app/agents app/orchestration app/prompts
 ```
 
 ### Type Checking (Optional)
+
 ```bash
 mypy app/agents app/orchestration app/prompts
 ```
@@ -171,11 +194,13 @@ mypy app/agents app/orchestration app/prompts
 ## Manual Functional Testing
 
 ### Start Backend Server
+
 ```bash
 uvicorn app.main:app --reload --port 8000
 ```
 
 **Verify server starts:**
+
 - [ ] No import errors
 - [ ] Server running on http://localhost:8000
 - [ ] OpenAPI docs accessible at http://localhost:8000/docs
@@ -191,6 +216,7 @@ curl -X POST http://localhost:8000/api/chat \
 ```
 
 **Verify Response:**
+
 - [ ] Status: 200 OK
 - [ ] Response has `message` field
 - [ ] Response has `sessionId` field (UUID format)
@@ -200,6 +226,7 @@ curl -X POST http://localhost:8000/api/chat \
 - [ ] Response length: 50-500 words
 
 **Save session ID for next tests:**
+
 ```bash
 SESSION_ID="<paste-session-id-here>"
 ```
@@ -215,6 +242,7 @@ curl -X POST http://localhost:8000/api/chat \
 ```
 
 **Verify Response:**
+
 - [ ] Status: 200 OK
 - [ ] Same `sessionId` returned
 - [ ] `agentType: "trip"`
@@ -232,6 +260,7 @@ curl -X POST http://localhost:8000/api/chat \
 ```
 
 **Verify Response:**
+
 - [ ] Status: 200 OK
 - [ ] `agentType: "safety"`
 - [ ] Response includes safety disclaimer
@@ -251,6 +280,7 @@ curl -X POST http://localhost:8000/api/chat \
 ```
 
 **Verify Response:**
+
 - [ ] Status: 200 OK
 - [ ] `agentType: "retrieval"`
 - [ ] Response provides general diving information
@@ -268,6 +298,7 @@ curl -X POST http://localhost:8000/api/chat \
 ```
 
 **Verify Response:**
+
 - [ ] Status: 200 OK
 - [ ] Same session ID
 - [ ] Agent routing considers context (likely certification)
@@ -282,6 +313,7 @@ curl http://localhost:8000/api/sessions/$SESSION_ID
 ```
 
 **Verify Response:**
+
 - [ ] Status: 200 OK
 - [ ] Response has `id` field
 - [ ] Response has `conversation_history` array
@@ -301,6 +333,7 @@ curl -X POST http://localhost:8000/api/chat \
 ```
 
 **Verify Response:**
+
 - [ ] Status: 400 Bad Request
 - [ ] Error message indicates empty message
 
@@ -313,6 +346,7 @@ curl http://localhost:8000/api/sessions/invalid-uuid-12345
 ```
 
 **Verify Response:**
+
 - [ ] Status: 404 Not Found
 - [ ] Error message indicates session not found
 
@@ -323,10 +357,11 @@ curl http://localhost:8000/api/sessions/invalid-uuid-12345
 ```bash
 curl -X POST http://localhost:8000/api/chat \
   -H "Content-Type: application/json" \
-  -d '{"message": "'$(python -c 'print("x" * 2001)')'"}' 
+  -d '{"message": "'$(python -c 'print("x" * 2001)')'"}'
 ```
 
 **Verify Response:**
+
 - [ ] Status: 400 Bad Request
 - [ ] Error message indicates message too long
 
@@ -342,26 +377,28 @@ psql $DATABASE_URL
 ```
 
 **SQL Queries:**
+
 ```sql
 -- Check sessions table
-SELECT id, created_at, 
-       jsonb_array_length(conversation_history) as message_count 
-FROM sessions 
-ORDER BY created_at DESC 
+SELECT id, created_at,
+       jsonb_array_length(conversation_history) as message_count
+FROM sessions
+ORDER BY created_at DESC
 LIMIT 5;
 
 -- Check specific session
-SELECT id, conversation_history, diver_profile 
-FROM sessions 
+SELECT id, conversation_history, diver_profile
+FROM sessions
 WHERE id = '<session-id>';
 
 -- Verify session expiry
-SELECT id, created_at, expires_at 
-FROM sessions 
+SELECT id, created_at, expires_at
+FROM sessions
 WHERE expires_at > NOW();
 ```
 
 **Verify:**
+
 - [ ] Sessions created successfully
 - [ ] Conversation history stored as JSONB
 - [ ] History contains correct role/content structure
@@ -391,6 +428,7 @@ for agent in agents:
 ```
 
 **Expected Output:**
+
 ```
 Total agents: 4
 - Certification Agent (certification)
@@ -400,6 +438,7 @@ Total agents: 4
 ```
 
 **Verify:**
+
 - [ ] All 4 agents registered
 - [ ] Each agent has correct metadata
 - [ ] Registry is singleton
@@ -426,6 +465,7 @@ for query in queries:
 ```
 
 **Expected Output:**
+
 ```
 What is PADI certification?    -> certification
 Best dive sites in Thailand    -> trip
@@ -434,6 +474,7 @@ What is scuba diving?          -> general
 ```
 
 **Verify:**
+
 - [ ] Mode detection works correctly
 - [ ] Safety queries prioritized
 
@@ -444,6 +485,7 @@ What is scuba diving?          -> general
 ### Response Time Testing
 
 **Test average response time:**
+
 ```bash
 time curl -X POST http://localhost:8000/api/chat \
   -H "Content-Type: application/json" \
@@ -451,10 +493,12 @@ time curl -X POST http://localhost:8000/api/chat \
 ```
 
 **Expected:**
+
 - [ ] Response time < 5 seconds (with RAG)
 - [ ] Response time < 3 seconds (without RAG)
 
 **Test multiple concurrent requests:**
+
 ```bash
 for i in {1..5}; do
   curl -X POST http://localhost:8000/api/chat \
@@ -465,6 +509,7 @@ wait
 ```
 
 **Verify:**
+
 - [ ] All requests complete successfully
 - [ ] No race conditions
 - [ ] Sessions created correctly
@@ -476,6 +521,7 @@ wait
 ### Verify RAG Integration
 
 **Check that RAG pipeline is used:**
+
 ```bash
 # Enable debug logging
 export DEBUG=true
@@ -487,6 +533,7 @@ curl -X POST http://localhost:8000/api/chat \
 ```
 
 **Verify Logs:**
+
 - [ ] RAG retrieval attempted
 - [ ] Chunks retrieved (if content exists)
 - [ ] Context passed to agent
@@ -497,6 +544,7 @@ curl -X POST http://localhost:8000/api/chat \
 **Check both providers work:**
 
 **Groq:**
+
 ```bash
 # .env should have DEFAULT_LLM_PROVIDER=groq
 curl -X POST http://localhost:8000/api/chat \
@@ -505,6 +553,7 @@ curl -X POST http://localhost:8000/api/chat \
 ```
 
 **Gemini:**
+
 ```bash
 # Temporarily change .env: DEFAULT_LLM_PROVIDER=gemini
 # Restart server
@@ -514,6 +563,7 @@ curl -X POST http://localhost:8000/api/chat \
 ```
 
 **Verify:**
+
 - [ ] Both providers generate responses
 - [ ] Model names logged correctly
 - [ ] Token usage tracked (metadata)
@@ -535,6 +585,7 @@ curl -X POST http://localhost:8000/api/chat \
 **Access:** http://localhost:8000/docs
 
 **Check endpoints:**
+
 - [ ] POST `/api/chat` documented
 - [ ] GET `/api/sessions/{id}` documented
 - [ ] Request/response schemas correct
@@ -547,11 +598,12 @@ curl -X POST http://localhost:8000/api/chat \
 ### Document Any Issues Found
 
 **Issue Template:**
+
 ```
-Issue #: 
+Issue #:
 Severity: [Critical/High/Medium/Low]
 Component: [Agent/Orchestration/API]
-Description: 
+Description:
 Reproduction Steps:
 Expected Behavior:
 Actual Behavior:
@@ -571,6 +623,7 @@ Workaround:
 ## Sign-Off Checklist
 
 ### Code Quality
+
 - [ ] All unit tests pass (≥80% coverage)
 - [ ] All integration tests pass
 - [ ] Comparison tests ≥90% accuracy
@@ -578,6 +631,7 @@ Workaround:
 - [ ] Formatting consistent (ruff format)
 
 ### Functionality
+
 - [ ] All 4 agents working
 - [ ] Agent routing correct
 - [ ] Session management works
@@ -587,12 +641,14 @@ Workaround:
 - [ ] LLM providers working
 
 ### Performance
+
 - [ ] Response times acceptable
 - [ ] Concurrent requests handled
 - [ ] Database queries efficient
 - [ ] No memory leaks
 
 ### Documentation
+
 - [ ] Plan document complete
 - [ ] Implementation summary written
 - [ ] Verification checklist complete
@@ -600,6 +656,7 @@ Workaround:
 - [ ] API docs accurate
 
 ### Deployment Readiness
+
 - [ ] Environment variables documented
 - [ ] Dependencies listed
 - [ ] Configuration validated
@@ -610,16 +667,18 @@ Workaround:
 
 ## Final Verification Status
 
-**Date Verified:** _________________
+**Date Verified:** **\*\*\*\***\_**\*\*\*\***
 
-**Verified By:** _________________
+**Verified By:** **\*\*\*\***\_**\*\*\*\***
 
-**Overall Status:** 
+**Overall Status:**
+
 - [ ] ✅ PASS - Ready for merge
 - [ ] ⚠️ PASS WITH NOTES - Minor issues documented
 - [ ] ❌ FAIL - Critical issues must be fixed
 
 **Notes:**
+
 ```
 [Add any additional notes, observations, or recommendations]
 ```

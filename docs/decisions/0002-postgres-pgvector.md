@@ -25,6 +25,7 @@ The application needs both traditional CRUD operations and semantic search capab
 Use **PostgreSQL with pgvector extension**, hosted on **Neon** (or Supabase as alternative).
 
 **Key Components:**
+
 - **Database:** PostgreSQL 15+
 - **Vector Extension:** pgvector (HNSW index for similarity search)
 - **Hosting:** Neon (serverless Postgres)
@@ -66,11 +67,13 @@ Use **PostgreSQL with pgvector extension**, hosted on **Neon** (or Supabase as a
 **Description:** PostgreSQL for relational data, Pinecone for vector search
 
 **Pros:**
+
 - Best-in-class vector search performance
 - Purpose-built for embeddings
 - Managed service with auto-scaling
 
 **Cons:**
+
 - Two databases to manage and pay for
 - Data sync complexity (keep embeddings updated)
 - Additional API calls (latency overhead)
@@ -86,11 +89,13 @@ Use **PostgreSQL with pgvector extension**, hosted on **Neon** (or Supabase as a
 **Description:** MongoDB for document storage, Atlas Vector Search for embeddings
 
 **Pros:**
+
 - Flexible schema (no migrations)
 - Integrated vector search in Atlas
 - Good for unstructured data
 
 **Cons:**
+
 - Less mature for relational queries (destinations → dive_sites)
 - No ACID guarantees for multi-document transactions
 - Larger learning curve for team (if scaling)
@@ -106,12 +111,14 @@ Use **PostgreSQL with pgvector extension**, hosted on **Neon** (or Supabase as a
 **Description:** Supabase as all-in-one backend (Postgres + pgvector + Auth + Storage)
 
 **Pros:**
+
 - Same database choice (Postgres + pgvector)
 - Integrated authentication (useful for V2)
 - Built-in storage for future photo features
 - Excellent DX and tooling
 
 **Cons:**
+
 - Vendor lock-in (harder to migrate than raw Postgres)
 - Less control over Postgres configuration
 - Slightly higher cost than Neon at scale
@@ -125,12 +132,14 @@ Use **PostgreSQL with pgvector extension**, hosted on **Neon** (or Supabase as a
 **Description:** SQLite for data, object-storage-backed vector index (e.g., FAISS)
 
 **Pros:**
+
 - Zero cost
 - Single file database
 - Extremely fast local development
 - FAISS very performant for vectors
 
 **Cons:**
+
 - No horizontal scaling
 - No managed backups
 - Requires custom vector index loading logic
@@ -154,28 +163,33 @@ Use **PostgreSQL with pgvector extension**, hosted on **Neon** (or Supabase as a
 ## Notes
 
 **Content Corpus Scale (V1):**
+
 - ~1 destination (Bali)
 - ~5-10 dive sites
 - Certification guides (PADI, SSI)
 - ~100-200 total content chunks
 
 At this scale, pgvector is more than sufficient. Reevaluate if:
+
 - Content grows to >10 destinations (>1000 chunks)
 - Query latency exceeds 200ms at p95
 - Users report slow response times
 
 **Migration Path (if needed):**
+
 - Extract `content_embeddings` table to Pinecone/Qdrant
 - Update retrieval service to query external vector DB
 - Keep relational data in Postgres
 - Minimal code changes (abstraction layer isolates retrieval logic)
 
 **Review Date:**
+
 - After V1 launch (3-6 months) — Monitor query performance
 - Before multi-destination expansion (10+ destinations) — Reevaluate if vector DB separation needed
 
 ---
 
 **Related ADRs:**
+
 - ADR-0001: Next.js + Vercel for Web Application
 - ADR-0003: LLM Provider Strategy (Groq/Gemini/SEA-LION)

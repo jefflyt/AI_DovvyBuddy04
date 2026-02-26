@@ -9,6 +9,7 @@
 ## Overview
 
 DovvyBuddy uses a split-stack architecture:
+
 - **Frontend:** Next.js on Vercel (TypeScript/React)
 - **Backend:** FastAPI on Google Cloud Run (Python 3.11)
 - **Database:** PostgreSQL + pgvector on Neon
@@ -19,6 +20,7 @@ DovvyBuddy uses a split-stack architecture:
 ## Prerequisites
 
 ### 1. Google Cloud Setup
+
 ```bash
 # Install gcloud CLI
 # https://cloud.google.com/sdk/docs/install
@@ -34,9 +36,11 @@ gcloud services enable cloudbuild.googleapis.com
 ```
 
 ### 2. Environment Variables
+
 Prepare these values before deployment:
 
 **Backend (Cloud Run):**
+
 - `DATABASE_URL` - Neon PostgreSQL connection string
 - `GEMINI_API_KEY` - Google Gemini API key
 - `CORS_ORIGINS` - Vercel domain(s), comma-separated
@@ -49,6 +53,7 @@ Prepare these values before deployment:
 - `ENABLE_RAG` - `true`
 
 **Frontend (Vercel):**
+
 - `NEXT_PUBLIC_BACKEND_URL` - Cloud Run service URL
 
 ---
@@ -79,6 +84,7 @@ curl -X POST http://localhost:8080/api/chat \
 ### Step 2: Deploy to Cloud Run
 
 **Option A: Deploy from source (recommended for iteration)**
+
 ```bash
 cd src/backend
 
@@ -104,6 +110,7 @@ gcloud run deploy dovvybuddy-backend \
 ```
 
 **Option B: Deploy from pre-built image**
+
 ```bash
 # Build and push to Container Registry
 docker build -t gcr.io/YOUR_PROJECT_ID/dovvybuddy-backend .
@@ -122,6 +129,7 @@ gcloud run deploy dovvybuddy-backend \
 The backend automatically configures CORS based on `CORS_ORIGINS` environment variable.
 
 **Update CORS origins:**
+
 ```bash
 gcloud run services update dovvybuddy-backend \
   --update-env-vars CORS_ORIGINS="https://dovvybuddy.vercel.app,https://dovvybuddy-preview.vercel.app"
@@ -188,6 +196,7 @@ open https://your-domain.vercel.app
 ### Scaling Configuration
 
 **For low traffic (MVP):**
+
 ```bash
 gcloud run services update dovvybuddy-backend \
   --min-instances 0 \
@@ -196,6 +205,7 @@ gcloud run services update dovvybuddy-backend \
 ```
 
 **For moderate traffic:**
+
 ```bash
 gcloud run services update dovvybuddy-backend \
   --min-instances 1 \
@@ -204,17 +214,20 @@ gcloud run services update dovvybuddy-backend \
 ```
 
 **Cost optimization:**
+
 - `--min-instances 0` - No idle cost, but cold starts (~2-5s)
 - `--min-instances 1` - Always warm, small idle cost (~$10/month)
 
 ### Resource Limits
 
 **Default (sufficient for MVP):**
+
 - Memory: 1Gi
 - CPU: 1
 - Timeout: 300s (5 minutes)
 
 **For higher load:**
+
 ```bash
 gcloud run services update dovvybuddy-backend \
   --memory 2Gi \
@@ -249,6 +262,7 @@ gcloud run services logs read dovvybuddy-backend \
 ### Common Issues
 
 **Issue: CORS errors in browser console**
+
 ```bash
 # Solution: Update CORS_ORIGINS
 gcloud run services update dovvybuddy-backend \
@@ -256,6 +270,7 @@ gcloud run services update dovvybuddy-backend \
 ```
 
 **Issue: Cold start latency**
+
 ```bash
 # Solution: Set min-instances to 1
 gcloud run services update dovvybuddy-backend \
@@ -263,6 +278,7 @@ gcloud run services update dovvybuddy-backend \
 ```
 
 **Issue: Database connection timeout**
+
 - Check Neon database is running
 - Verify `DATABASE_URL` format: `postgresql+asyncpg://user:pass@host/db`
 - Ensure Neon allows connections from Cloud Run IPs (usually allowed by default)
@@ -320,19 +336,23 @@ gcloud run services update-traffic dovvybuddy-backend \
 ## Cost Estimates
 
 **Cloud Run (Backend):**
+
 - Free tier: 2 million requests/month, 360,000 GB-seconds
 - Beyond free tier: ~$0.40 per million requests
 - MVP estimate: <$5/month with low traffic
 
 **Neon (Database):**
+
 - Free tier: 0.5GB storage, 100 hours compute
 - Pro tier: $19/month (recommended for production)
 
 **Vercel (Frontend):**
+
 - Hobby: Free (personal projects)
 - Pro: $20/month (custom domains, team features)
 
 **API Costs:**
+
 - Gemini: ~$0.35 per 1M input tokens (Flash model)
 
 ---

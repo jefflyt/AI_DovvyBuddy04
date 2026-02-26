@@ -10,6 +10,7 @@ Implements hybrid chunking strategy:
 
 import logging
 import re
+from functools import lru_cache
 from typing import Any, Dict, List, Optional
 
 import tiktoken
@@ -18,17 +19,12 @@ from .types import ChunkingOptions, ContentChunk
 
 logger = logging.getLogger(__name__)
 
-# Use GPT-3.5 tokenizer as approximation for Gemini
-# (Gemini's tokenizer isn't available in tiktoken, but token counts are close enough)
-_tokenizer = None
-
-
+@lru_cache(maxsize=1)
 def get_tokenizer():
-    """Get or create tiktoken tokenizer."""
-    global _tokenizer
-    if _tokenizer is None:
-        _tokenizer = tiktoken.encoding_for_model("gpt-3.5-turbo")
-    return _tokenizer
+    """Get cached tiktoken tokenizer."""
+    # Use GPT-3.5 tokenizer as approximation for Gemini
+    # (Gemini's tokenizer isn't available in tiktoken, but token counts are close enough)
+    return tiktoken.encoding_for_model("gpt-3.5-turbo")
 
 
 def count_tokens(text: str) -> int:

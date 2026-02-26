@@ -6,7 +6,7 @@ Provides centralized registry and access to feature flags.
 
 import logging
 from enum import Enum
-from typing import Dict
+from typing import Dict, Optional
 
 from app.core.config import settings
 
@@ -69,8 +69,8 @@ class FeatureFlagManager:
         return {flag.value: enabled for flag, enabled in self._cache.items()}
 
 
-# Global instance for easy access
-_flag_manager = None
+# Global singleton instance
+_flag_manager: Optional[FeatureFlagManager] = None
 
 
 def get_feature_flag_manager() -> FeatureFlagManager:
@@ -84,6 +84,12 @@ def get_feature_flag_manager() -> FeatureFlagManager:
     if _flag_manager is None:
         _flag_manager = FeatureFlagManager()
     return _flag_manager
+
+
+def reset_feature_flag_manager() -> None:
+    """Reset cached feature flag manager (useful for tests)."""
+    global _flag_manager
+    _flag_manager = None
 
 
 def is_feature_enabled(flag: FeatureFlag) -> bool:

@@ -19,12 +19,14 @@ Integrate authentication UI into the web interface, enabling users to sign up, s
 ### User Impact
 
 **Primary Users (All Divers):**
+
 - **New users** can create accounts to save conversation history and preferences across devices.
 - **Returning users** can sign in and resume previous conversations from any device.
 - **Guest users** continue to use the app without signup (no forced registration).
 - **Active guest users** who decide to sign up can import their current conversation into their new account.
 
 **User Flows Enabled:**
+
 - Browse landing page → Click "Sign Up" → Create account → Verify email → Start chatting with persistent history.
 - Start chatting as guest → Decide to save conversation → Sign up → Import guest session → Continue as authenticated user.
 - Sign in from different device → View conversation history → Resume previous chat.
@@ -34,14 +36,17 @@ Integrate authentication UI into the web interface, enabling users to sign up, s
 ### Dependencies
 
 **Upstream (Must be complete):**
+
 - **PR9a:** Auth Infrastructure & User/Profile Schema (REQUIRED) — Backend APIs, database tables, auth middleware.
 - **PR1-6:** Full web V1 functionality (database, RAG, sessions, lead capture, landing page, chat interface, E2E testing).
 
 **External Dependencies:**
+
 - **NextAuth.js React Hooks:** `useSession()` hook from `next-auth/react` for client-side session access.
 - **NextAuth.js:** Already configured in PR9a with Credentials provider.
 
 **Optional:**
+
 - **PR7a-7c (Telegram):** Not required for PR9b; Telegram account linking is in PR9c.
 
 ### Assumptions
@@ -68,6 +73,7 @@ Integrate authentication UI into the web interface, enabling users to sign up, s
 ### Rationale
 
 **Why Single-PR:**
+
 - **Focused on UI layer:** All backend endpoints ready from PR9a; this PR only adds frontend components and pages.
 - **Well-defined integration points:** Auth state from Clerk hooks, API calls to existing endpoints.
 - **Incremental testing:** Can test each page/flow independently before merging.
@@ -75,6 +81,7 @@ Integrate authentication UI into the web interface, enabling users to sign up, s
 - **Clear acceptance criteria:** Signup → Signin → Profile → History → Delete account flows are straightforward to test.
 
 **Estimated Effort:**
+
 - **Frontend:** Medium-High (10+ new components, 6 new pages, auth state integration).
 - **Backend:** None (all endpoints from PR9a).
 - **Testing:** Medium (component tests, integration tests, E2E smoke test).
@@ -357,11 +364,13 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 **Goal:** Set up NextAuth.js SessionProvider and route protection logic.
 
 **Tasks:**
+
 1. Wrap app in `<SessionProvider>` in `/app/layout.tsx`:
+
    ```typescript
    'use client';
    import { SessionProvider } from 'next-auth/react';
-   
+
    export default function RootLayout({ children }) {
      return (
        <SessionProvider>
@@ -372,6 +381,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
      );
    }
    ```
+
 2. Create `src/lib/auth/protected-route.tsx` middleware:
    - Higher-order component or hook to check auth state.
    - Uses `useSession()` from `next-auth/react`.
@@ -379,6 +389,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 3. Test auth state detection with `useSession()` hook in a test page.
 
 **Acceptance Criteria:**
+
 - SessionProvider initialized.
 - `useSession()` hook returns session data when signed in, `null` when guest.
 - Protected route HOC redirects to signin if not authenticated.
@@ -390,6 +401,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 **Goal:** Implement signup, signin, and email verification pages.
 
 **Tasks:**
+
 1. Create `/app/auth/signin/page.tsx`:
    - Custom form with email and password inputs.
    - Submit calls `signIn('credentials', { email, password, redirect: false })`.
@@ -410,6 +422,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 5. Test signup → verify → signin flow manually.
 
 **Acceptance Criteria:**
+
 - Signup page creates user in DB with hashed password.
 - Verification email sent via Resend API.
 - Signin page authenticates user via NextAuth.js Credentials provider.
@@ -423,6 +436,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 **Goal:** Add user menu to header, show auth state in UI.
 
 **Tasks:**
+
 1. Create `src/components/auth/UserMenu.tsx`:
    - Dropdown triggered by avatar/initials.
    - Menu items: Profile, History, Settings, Sign Out.
@@ -436,6 +450,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 4. Style user menu with Tailwind (dropdown, transitions).
 
 **Acceptance Criteria:**
+
 - Landing page header shows correct buttons based on auth state.
 - User menu dropdown works, links navigate correctly.
 - Sign Out clears session and redirects to landing.
@@ -447,6 +462,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 **Goal:** Build profile page with editable diver profile form.
 
 **Tasks:**
+
 1. Create `/app/profile/page.tsx` (protected):
    - Protect with auth redirect logic.
    - Fetch profile on load: `GET /api/profile`.
@@ -461,6 +477,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 4. Test profile update → verify DB updated.
 
 **Acceptance Criteria:**
+
 - Profile page loads user data.
 - Form fields populate with existing data (if profile exists).
 - Save button updates profile in DB.
@@ -473,6 +490,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 **Goal:** Display user's conversation history with resume and archive actions.
 
 **Tasks:**
+
 1. Create `/app/history/page.tsx` (protected):
    - Fetch conversations: `GET /api/conversations?limit=20&offset=0`.
    - Display list with `<ConversationHistoryList />`.
@@ -488,6 +506,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 5. Test resume flow → verify chat loads conversation history.
 
 **Acceptance Criteria:**
+
 - History page lists conversations.
 - Resume button loads conversation into chat.
 - Archive button hides conversation from list.
@@ -500,6 +519,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 **Goal:** Build settings page with account deletion flow.
 
 **Tasks:**
+
 1. Create `/app/settings/page.tsx` (protected):
    - Display current email (read-only).
    - "Change Password" button → Redirects to Clerk's password change flow or shows Clerk component.
@@ -513,6 +533,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 3. Test account deletion → verify user, profile, sessions, conversations deleted from DB.
 
 **Acceptance Criteria:**
+
 - Settings page shows email.
 - Change password flow works (via Clerk).
 - Delete account confirmation modal appears.
@@ -525,6 +546,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 **Goal:** Allow guest users to save their conversation when signing up.
 
 **Tasks:**
+
 1. Create `src/components/chat/GuestSessionMigrationPrompt.tsx`:
    - Banner/modal shown after signup if guest session exists.
    - "Save Conversation" button → Calls migration logic.
@@ -536,6 +558,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 3. Test flow: Start chat as guest → Sign up → See migration prompt → Save → Verify conversation in history.
 
 **Acceptance Criteria:**
+
 - Migration prompt appears after signup if guest session active.
 - "Save Conversation" successfully links session to user.
 - Conversation appears in user's history.
@@ -548,6 +571,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 **Goal:** Update chat page to include auth token in API calls, show history button.
 
 **Tasks:**
+
 1. Modify `/app/chat/page.tsx`:
    - Check auth state with `useUser()`.
    - If authenticated:
@@ -562,6 +586,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 3. Test authenticated chat → verify session linked to user in DB.
 
 **Acceptance Criteria:**
+
 - Authenticated users see "View History" button.
 - Chat API calls include auth token.
 - Sessions are automatically linked to user.
@@ -574,6 +599,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 **Goal:** Add nice-to-have features and polish UX.
 
 **Tasks:**
+
 1. Create `src/components/auth/EmailVerificationBanner.tsx`:
    - Show at top of app if email unverified.
    - "Resend Email" button.
@@ -592,6 +618,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
    - Consistent error toast/banner for API failures.
 
 **Acceptance Criteria:**
+
 - Email verification banner shows when needed.
 - Profile completion prompt dismissible.
 - Mobile UI works on common viewports.
@@ -604,6 +631,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 **Goal:** Comprehensive testing of all auth flows.
 
 **Tasks:**
+
 1. **Unit tests:**
    - Component tests for forms, user menu, history list.
 2. **Integration tests:**
@@ -620,6 +648,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
    - Lead capture works for both guest and authenticated.
 
 **Acceptance Criteria:**
+
 - All tests pass.
 - E2E smoke test completes successfully.
 - No regressions in guest flows.
@@ -634,13 +663,14 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 **Component Tests (Vitest + React Testing Library):**
 
 1. **`src/components/auth/UserMenu.test.tsx`**
+
    ```typescript
    describe('UserMenu', () => {
      test('renders user email', () => {
        render(<UserMenu user={{ email: 'test@example.com' }} />);
        expect(screen.getByText('test@example.com')).toBeInTheDocument();
      });
-     
+
      test('sign out button calls signOut', () => {
        const signOutMock = jest.fn();
        render(<UserMenu user={{...}} signOut={signOutMock} />);
@@ -651,6 +681,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
    ```
 
 2. **`src/components/profile/DiverProfileForm.test.tsx`**
+
    ```typescript
    describe('DiverProfileForm', () => {
      test('renders form fields', () => {
@@ -658,7 +689,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
        expect(screen.getByLabelText('Certification Agency')).toBeInTheDocument();
        expect(screen.getByLabelText('Logged Dives')).toBeInTheDocument();
      });
-     
+
      test('validates logged dives (min 0)', () => {
        render(<DiverProfileForm />);
        const input = screen.getByLabelText('Logged Dives');
@@ -666,7 +697,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
        fireEvent.submit(screen.getByRole('button', { name: 'Save' }));
        expect(screen.getByText('Must be 0 or greater')).toBeInTheDocument();
      });
-     
+
      test('calls onSave with form data', async () => {
        const onSaveMock = jest.fn();
        render(<DiverProfileForm onSave={onSaveMock} />);
@@ -678,6 +709,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
    ```
 
 3. **`src/components/profile/ConversationCard.test.tsx`**
+
    ```typescript
    describe('ConversationCard', () => {
      test('renders conversation title and timestamp', () => {
@@ -691,7 +723,7 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
        expect(screen.getByText('How do I get Open Water certified?')).toBeInTheDocument();
        expect(screen.getByText(/1 day ago/i)).toBeInTheDocument();
      });
-     
+
      test('resume button calls onResume', () => {
        const onResumeMock = jest.fn();
        render(<ConversationCard conversation={{...}} onResume={onResumeMock} />);
@@ -706,47 +738,49 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 **API Integration Tests:**
 
 1. **Profile update flow:**
+
    ```typescript
    test('profile page updates profile via API', async () => {
      // Mock Clerk auth
      mockClerkAuth({ userId: 'user-1', email: 'test@example.com' });
-     
+
      // Mock API response
      fetchMock.patch('/api/profile', { success: true, profile: {...} });
-     
+
      render(<ProfilePage />);
      await waitForElementToBeRemoved(() => screen.queryByText('Loading...'));
-     
+
      fireEvent.change(screen.getByLabelText('Logged Dives'), { target: { value: '30' } });
      fireEvent.click(screen.getByText('Save'));
-     
+
      await waitFor(() => expect(screen.getByText('Profile updated')).toBeInTheDocument());
      expect(fetchMock.calls('/api/profile')).toHaveLength(1);
    });
    ```
 
 2. **Conversation history flow:**
+
    ```typescript
    test('history page lists and resumes conversations', async () => {
      mockClerkAuth({ userId: 'user-1' });
-     
+
      // Mock conversations API
      fetchMock.get('/api/conversations?limit=20&offset=0', {
        conversations: [{ id: 'conv-1', title: 'Test conversation', ... }],
        total: 1,
        hasMore: false
      });
-     
+
      // Mock resume API
      fetchMock.post('/api/conversations/conv-1/resume', { success: true, sessionId: 'sess-1' });
-     
+
      render(<HistoryPage />);
      await waitForElementToBeRemoved(() => screen.queryByText('Loading...'));
-     
+
      expect(screen.getByText('Test conversation')).toBeInTheDocument();
-     
+
      fireEvent.click(screen.getByText('Resume'));
-     
+
      await waitFor(() => expect(window.location.pathname).toBe('/chat'));
    });
    ```
@@ -757,83 +791,91 @@ FEATURE_USER_AUTH_ENABLED=true  # Enable for PR9b
 
 ```typescript
 // tests/e2e/auth-flow.spec.ts
-import { test, expect } from '@playwright/test';
+import { test, expect } from '@playwright/test'
 
-test('complete auth flow: signup → profile → chat → history → delete', async ({ page }) => {
+test('complete auth flow: signup → profile → chat → history → delete', async ({
+  page,
+}) => {
   // 1. Navigate to landing page
-  await page.goto('http://localhost:3000');
-  
+  await page.goto('http://localhost:3000')
+
   // 2. Click Sign Up
-  await page.click('text=Sign Up');
-  await expect(page).toHaveURL(/\/auth\/signup/);
-  
+  await page.click('text=Sign Up')
+  await expect(page).toHaveURL(/\/auth\/signup/)
+
   // 3. Fill signup form
-  const testEmail = `test-${Date.now()}@example.com`;
-  await page.fill('input[name="email"]', testEmail);
-  await page.fill('input[name="password"]', 'Test1234!');
-  await page.click('button:has-text("Sign Up")');
-  
+  const testEmail = `test-${Date.now()}@example.com`
+  await page.fill('input[name="email"]', testEmail)
+  await page.fill('input[name="password"]', 'Test1234!')
+  await page.click('button:has-text("Sign Up")')
+
   // 4. Verify email verification page
-  await expect(page).toHaveURL(/\/auth\/verify/);
-  await expect(page.locator('text=Check your email')).toBeVisible();
-  
+  await expect(page).toHaveURL(/\/auth\/verify/)
+  await expect(page.locator('text=Check your email')).toBeVisible()
+
   // 5. Manually verify email (or mock verification for test)
   // In test: Use Clerk test mode or API to auto-verify
   await page.evaluate(() => {
     // Simulate verification (test helper)
-    window.clerkTestHelpers?.verifyEmail();
-  });
-  
+    window.clerkTestHelpers?.verifyEmail()
+  })
+
   // 6. Navigate to chat
-  await page.goto('http://localhost:3000/chat');
-  await expect(page.locator('text=View History')).toBeVisible(); // Authenticated
-  
+  await page.goto('http://localhost:3000/chat')
+  await expect(page.locator('text=View History')).toBeVisible() // Authenticated
+
   // 7. Send message
-  await page.fill('textarea[placeholder*="message"]', 'What is Open Water certification?');
-  await page.click('button:has-text("Send")');
-  await expect(page.locator('text=/Open Water/i')).toBeVisible({ timeout: 10000 });
-  
+  await page.fill(
+    'textarea[placeholder*="message"]',
+    'What is Open Water certification?'
+  )
+  await page.click('button:has-text("Send")')
+  await expect(page.locator('text=/Open Water/i')).toBeVisible({
+    timeout: 10000,
+  })
+
   // 8. Navigate to profile
-  await page.click('button[aria-label="User menu"]'); // Avatar/menu button
-  await page.click('text=Profile');
-  await expect(page).toHaveURL(/\/profile/);
-  
+  await page.click('button[aria-label="User menu"]') // Avatar/menu button
+  await page.click('text=Profile')
+  await expect(page).toHaveURL(/\/profile/)
+
   // 9. Update profile
-  await page.selectOption('select[name="certificationLevel"]', 'Open Water');
-  await page.fill('input[name="loggedDives"]', '25');
-  await page.click('button:has-text("Save")');
-  await expect(page.locator('text=Profile updated')).toBeVisible();
-  
+  await page.selectOption('select[name="certificationLevel"]', 'Open Water')
+  await page.fill('input[name="loggedDives"]', '25')
+  await page.click('button:has-text("Save")')
+  await expect(page.locator('text=Profile updated')).toBeVisible()
+
   // 10. Navigate to history
-  await page.click('text=Conversation History'); // From nav or direct
-  await expect(page).toHaveURL(/\/history/);
-  await expect(page.locator('text=/What is Open Water/i')).toBeVisible();
-  
+  await page.click('text=Conversation History') // From nav or direct
+  await expect(page).toHaveURL(/\/history/)
+  await expect(page.locator('text=/What is Open Water/i')).toBeVisible()
+
   // 11. Resume conversation
-  await page.click('button:has-text("Resume")');
-  await expect(page).toHaveURL(/\/chat/);
-  await expect(page.locator('text=/What is Open Water/i')).toBeVisible(); // Message history loaded
-  
+  await page.click('button:has-text("Resume")')
+  await expect(page).toHaveURL(/\/chat/)
+  await expect(page.locator('text=/What is Open Water/i')).toBeVisible() // Message history loaded
+
   // 12. Delete account
-  await page.click('button[aria-label="User menu"]');
-  await page.click('text=Settings');
-  await expect(page).toHaveURL(/\/settings/);
-  await page.click('button:has-text("Delete Account")');
-  
+  await page.click('button[aria-label="User menu"]')
+  await page.click('text=Settings')
+  await expect(page).toHaveURL(/\/settings/)
+  await page.click('button:has-text("Delete Account")')
+
   // Confirmation modal
-  await expect(page.locator('text=/permanently delete/i')).toBeVisible();
-  await page.fill('input[placeholder*="DELETE"]', 'DELETE');
-  await page.click('button:has-text("Delete My Account")');
-  
+  await expect(page.locator('text=/permanently delete/i')).toBeVisible()
+  await page.fill('input[placeholder*="DELETE"]', 'DELETE')
+  await page.click('button:has-text("Delete My Account")')
+
   // 13. Verify redirect to landing and signed out
-  await expect(page).toHaveURL('http://localhost:3000');
-  await expect(page.locator('text=Sign In')).toBeVisible(); // Guest state
-});
+  await expect(page).toHaveURL('http://localhost:3000')
+  await expect(page.locator('text=Sign In')).toBeVisible() // Guest state
+})
 ```
 
 ### Manual Testing Checklist
 
 **Signup Flow:**
+
 - [ ] Navigate to landing page, click "Sign Up".
 - [ ] Fill email and password, submit.
 - [ ] Receive verification email (check inbox).
@@ -841,12 +883,14 @@ test('complete auth flow: signup → profile → chat → history → delete', a
 - [ ] User is signed in (see user menu in header).
 
 **Signin Flow:**
+
 - [ ] Navigate to landing page, click "Sign In".
 - [ ] Enter valid credentials, submit.
 - [ ] Redirected to chat, signed in.
 - [ ] Try invalid credentials → See error message.
 
 **Profile Management:**
+
 - [ ] Navigate to profile page via user menu.
 - [ ] See current profile data (or empty if not set).
 - [ ] Update certification level, logged dives, preferences.
@@ -854,6 +898,7 @@ test('complete auth flow: signup → profile → chat → history → delete', a
 - [ ] Refresh page → Verify data persisted.
 
 **Conversation History:**
+
 - [ ] Start chat as authenticated user, send multiple messages.
 - [ ] Navigate to history page.
 - [ ] See conversation listed with title and timestamp.
@@ -861,6 +906,7 @@ test('complete auth flow: signup → profile → chat → history → delete', a
 - [ ] Click "Archive" → Conversation hidden (unless "Show Archived" enabled).
 
 **Guest Session Migration:**
+
 - [ ] Open incognito window, start chat as guest.
 - [ ] Send a message ("Test guest message").
 - [ ] Click "Sign Up" (from banner or header).
@@ -870,6 +916,7 @@ test('complete auth flow: signup → profile → chat → history → delete', a
 - [ ] Resume conversation → See guest message included.
 
 **Settings & Account Deletion:**
+
 - [ ] Navigate to settings page.
 - [ ] See current email (read-only).
 - [ ] Click "Change Password" → Redirected to Clerk password change.
@@ -879,6 +926,7 @@ test('complete auth flow: signup → profile → chat → history → delete', a
 - [ ] Verify user deleted from DB (manual query or API test).
 
 **Mobile Responsiveness:**
+
 - [ ] Test all pages on mobile viewport (375px width).
 - [ ] User menu dropdown works on mobile.
 - [ ] Profile form fields stack vertically, readable.
@@ -886,12 +934,14 @@ test('complete auth flow: signup → profile → chat → history → delete', a
 - [ ] Chat interface usable on mobile (existing from PR5).
 
 **Error Handling:**
+
 - [ ] Submit profile form with invalid data → See error message.
 - [ ] Simulate API failure (disconnect network) → See error toast.
 - [ ] Try to access protected page as guest → Redirected to signin.
 - [ ] Incorrect signin credentials → See error message.
 
 **Regression Testing (Guest Flow):**
+
 - [ ] Open incognito window.
 - [ ] Navigate to landing, click "Start Chatting" (guest CTA).
 - [ ] Send message → Verify response (no auth required).
@@ -906,36 +956,43 @@ test('complete auth flow: signup → profile → chat → history → delete', a
 ### Commands to Run
 
 **Install Dependencies (if needed):**
+
 ```bash
 pnpm install
 ```
 
 **Start Dev Server:**
+
 ```bash
 pnpm dev
 ```
 
 **Run Unit Tests:**
+
 ```bash
 pnpm test src/components/
 ```
 
 **Run E2E Tests:**
+
 ```bash
 pnpm test:e2e
 ```
 
 **Typecheck:**
+
 ```bash
 pnpm typecheck
 ```
 
 **Lint:**
+
 ```bash
 pnpm lint
 ```
 
 **Build (production):**
+
 ```bash
 pnpm build
 ```
@@ -943,12 +1000,14 @@ pnpm build
 ### Environment Setup for Testing
 
 **Local Development:**
+
 1. Set `FEATURE_USER_AUTH_ENABLED=true` in `.env.local`.
 2. Ensure `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is set.
 3. Ensure Clerk application has correct redirect URLs configured.
 4. Run `pnpm dev`.
 
 **Staging/Production:**
+
 1. Set environment variables in Vercel dashboard.
 2. Configure Clerk redirect URLs for production domain.
 3. Deploy via CI/CD pipeline.
@@ -1040,12 +1099,14 @@ pnpm build
 ### Feature Flag Strategy
 
 **Disable Auth UI:**
+
 - Set `FEATURE_USER_AUTH_ENABLED=false` in production environment.
 - Auth pages return 404 or redirect to landing.
 - Chat page reverts to guest-only behavior (no "View History" button).
 - Landing page shows guest CTAs only (no user menu).
 
 **Rollback Steps:**
+
 1. Identify issue (auth flow broken, UX problem, performance issue).
 2. Set `FEATURE_USER_AUTH_ENABLED=false` in Vercel.
 3. Redeploy or wait for environment variable to propagate.
@@ -1055,6 +1116,7 @@ pnpm build
 ### Revert Strategy (Full Rollback)
 
 **If feature flag is insufficient:**
+
 1. Revert PR: `git revert <commit_hash>`.
 2. Push revert commit: `git push origin main`.
 3. CI/CD deploys reverted code.
@@ -1062,6 +1124,7 @@ pnpm build
 5. Existing user data in DB remains (no data loss, but inaccessible until feature re-enabled).
 
 **Data Safety:**
+
 - **Guest users:** No impact, continue using guest sessions.
 - **Authenticated users:** Cannot sign in (UI hidden), but data safe in DB. Can re-access when feature re-enabled.
 - **Backend APIs:** Still functional (from PR9a), just no UI to call them.
@@ -1088,63 +1151,69 @@ pnpm build
 
 ## 9. Risks & Mitigations
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| **Email verification not received** | Users cannot complete signup | 1. Use Resend with domain authentication (SPF, DKIM)<br>2. Add "Resend Email" button<br>3. Check spam folder prompt<br>4. Support email for manual verification |
-| **Guest session migration fails** | User loses active conversation | 1. Make migration optional ("Skip" button)<br>2. Test migration logic thoroughly<br>3. Log failures for debugging<br>4. Fail gracefully (allow user to continue as authenticated without migration) |
-| **Profile form UX confusing** | Users abandon profile completion | 1. Make profile optional (dismissible prompt)<br>2. Clear help text and examples<br>3. Progress indicator if multi-step<br>4. Default values for dropdowns |
-| **History page performance (many conversations)** | Slow load, poor UX | 1. Paginate list (20 per page)<br>2. Add loading skeleton<br>3. Optimize DB query (indexed on user_id, last_message_at)<br>4. Consider virtual scrolling in V2.1 |
-| **Auth token expiry mid-conversation** | User kicked out unexpectedly | 1. Clerk handles token refresh automatically<br>2. Graceful error handling (prompt re-login)<br>3. Save draft message to localStorage<br>4. Long-lived tokens (30 days) |
-| **Mobile UI issues** | Poor UX on small screens | 1. Test on real devices (iOS, Android)<br>2. Use responsive Tailwind classes<br>3. Test touch interactions (dropdown, forms)<br>4. Avoid fixed-width elements |
-| **Clerk component styling conflicts** | Clerk UI doesn't match app branding | 1. Use Clerk's appearance customization API<br>2. Override CSS with Tailwind<br>3. Consider custom forms in V2.1 if branding critical |
-| **Signup abandonment due to friction** | Low signup rate | 1. Make profile completion optional<br>2. Allow guest usage without signup<br>3. Clear value proposition ("Save your conversations")<br>4. A/B test signup flow in V2.1 |
-| **Delete account regret** | Users accidentally delete data | 1. Strong confirmation modal<br>2. Type "DELETE" to confirm<br>3. Warning message with consequences<br>4. Consider "cooling off" period in V2.1 (mark for deletion, delete after 7 days) |
+| Risk                                              | Impact                              | Mitigation                                                                                                                                                                                          |
+| ------------------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Email verification not received**               | Users cannot complete signup        | 1. Use Resend with domain authentication (SPF, DKIM)<br>2. Add "Resend Email" button<br>3. Check spam folder prompt<br>4. Support email for manual verification                                     |
+| **Guest session migration fails**                 | User loses active conversation      | 1. Make migration optional ("Skip" button)<br>2. Test migration logic thoroughly<br>3. Log failures for debugging<br>4. Fail gracefully (allow user to continue as authenticated without migration) |
+| **Profile form UX confusing**                     | Users abandon profile completion    | 1. Make profile optional (dismissible prompt)<br>2. Clear help text and examples<br>3. Progress indicator if multi-step<br>4. Default values for dropdowns                                          |
+| **History page performance (many conversations)** | Slow load, poor UX                  | 1. Paginate list (20 per page)<br>2. Add loading skeleton<br>3. Optimize DB query (indexed on user_id, last_message_at)<br>4. Consider virtual scrolling in V2.1                                    |
+| **Auth token expiry mid-conversation**            | User kicked out unexpectedly        | 1. Clerk handles token refresh automatically<br>2. Graceful error handling (prompt re-login)<br>3. Save draft message to localStorage<br>4. Long-lived tokens (30 days)                             |
+| **Mobile UI issues**                              | Poor UX on small screens            | 1. Test on real devices (iOS, Android)<br>2. Use responsive Tailwind classes<br>3. Test touch interactions (dropdown, forms)<br>4. Avoid fixed-width elements                                       |
+| **Clerk component styling conflicts**             | Clerk UI doesn't match app branding | 1. Use Clerk's appearance customization API<br>2. Override CSS with Tailwind<br>3. Consider custom forms in V2.1 if branding critical                                                               |
+| **Signup abandonment due to friction**            | Low signup rate                     | 1. Make profile completion optional<br>2. Allow guest usage without signup<br>3. Clear value proposition ("Save your conversations")<br>4. A/B test signup flow in V2.1                             |
+| **Delete account regret**                         | Users accidentally delete data      | 1. Strong confirmation modal<br>2. Type "DELETE" to confirm<br>3. Warning message with consequences<br>4. Consider "cooling off" period in V2.1 (mark for deletion, delete after 7 days)            |
 
 ---
 
 ## 10. Trade-offs
 
-| Decision | Alternative | Rationale |
-|----------|-------------|-----------|
-| **Use Clerk's prebuilt UI components** | Custom auth forms | Faster development for solo founder; Clerk components are accessible and secure out-of-box. Custom forms can be added in V2.1 if branding requires. |
-| **Profile completion is optional** | Required before using chat | Reduces signup friction; users can complete profile when needed (e.g., before submitting lead). Optional banner prompts completion. |
-| **Guest session migration is opt-in** | Automatic migration | Gives user control; avoids confusion if migration fails. Explicit choice ("Save" or "Start Fresh") is clearer UX. |
-| **Conversation archive (soft delete) only** | Allow hard delete of individual conversations | Simpler V2.0; users can delete entire account if needed. Granular conversation deletion can be added in V2.1 if requested. |
-| **Auto-generated conversation titles** | User-editable titles | Simpler UX; titles from first message are usually descriptive. Editable titles can be added in V2.1 if users request. |
-| **Email verification required** | Optional verification | Prevents spam, ensures lead emails are deliverable. Adds friction but improves data quality. Can revisit in V2.1 if signup rate is too low. |
-| **Pagination over infinite scroll** | Infinite scroll for history | Pagination is simpler to implement and test; works well for small conversation counts (<100). Infinite scroll can be added in V2.1 if needed. |
-| **Single PR for all UI work** | Split into smaller PRs (signin, profile, history) | UI changes are cohesive and interdependent (user menu, auth state, etc.); splitting would add coordination overhead. Single PR is testable incrementally. |
+| Decision                                    | Alternative                                       | Rationale                                                                                                                                                 |
+| ------------------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Use Clerk's prebuilt UI components**      | Custom auth forms                                 | Faster development for solo founder; Clerk components are accessible and secure out-of-box. Custom forms can be added in V2.1 if branding requires.       |
+| **Profile completion is optional**          | Required before using chat                        | Reduces signup friction; users can complete profile when needed (e.g., before submitting lead). Optional banner prompts completion.                       |
+| **Guest session migration is opt-in**       | Automatic migration                               | Gives user control; avoids confusion if migration fails. Explicit choice ("Save" or "Start Fresh") is clearer UX.                                         |
+| **Conversation archive (soft delete) only** | Allow hard delete of individual conversations     | Simpler V2.0; users can delete entire account if needed. Granular conversation deletion can be added in V2.1 if requested.                                |
+| **Auto-generated conversation titles**      | User-editable titles                              | Simpler UX; titles from first message are usually descriptive. Editable titles can be added in V2.1 if users request.                                     |
+| **Email verification required**             | Optional verification                             | Prevents spam, ensures lead emails are deliverable. Adds friction but improves data quality. Can revisit in V2.1 if signup rate is too low.               |
+| **Pagination over infinite scroll**         | Infinite scroll for history                       | Pagination is simpler to implement and test; works well for small conversation counts (<100). Infinite scroll can be added in V2.1 if needed.             |
+| **Single PR for all UI work**               | Split into smaller PRs (signin, profile, history) | UI changes are cohesive and interdependent (user menu, auth state, etc.); splitting would add coordination overhead. Single PR is testable incrementally. |
 
 ---
 
 ## 11. Open Questions
 
 **Q1: Should we auto-trigger profile completion prompt after signup, or only show on profile page?**
+
 - **Context:** Profile is optional; prompt could be intrusive vs helpful.
 - **Recommendation:** Show dismissible banner after signup and in chat (if profile incomplete). Don't block user.
 - **Decision:** Dismissible banner after signup; can revisit in V2.1 if completion rate is low.
 
 **Q2: Should conversation titles be auto-generated or user-editable?**
+
 - **Context:** Auto-generation (first user message, truncated) is simple; editing adds feature.
 - **Recommendation:** Auto-generate for V2.0; add editing in V2.1 if users request.
 - **Decision:** Auto-generated titles for V2.0.
 
 **Q3: Should we allow users to delete individual conversations, or only archive?**
+
 - **Context:** Archive (soft delete) is simpler; hard delete is permanent.
 - **Recommendation:** Archive only for V2.0; add hard delete in V2.1 if users need it (e.g., delete sensitive conversations).
 - **Decision:** Archive only; hard delete in V2.1.
 
 **Q4: Should "View History" button be in chat header, sidebar, or user menu?**
+
 - **Context:** Chat header is most visible; user menu is consistent with other profile actions.
 - **Recommendation:** Add to chat header (persistent button) for easy access.
 - **Decision:** Chat header (next to "New Chat" button).
 
 **Q5: Should we implement password reset UI in PR9b, or rely on Clerk's flow?**
+
 - **Context:** Clerk provides password reset automatically via email; custom UI is branding consistency.
 - **Recommendation:** Use Clerk's built-in flow for V2.0 (settings page links to Clerk); custom UI in V2.1 if branding critical.
 - **Decision:** Clerk's built-in flow for V2.0.
 
 **Q6: Should guest session migration prompt be a modal (blocking) or banner (non-blocking)?**
+
 - **Context:** Modal forces decision; banner is less intrusive but may be missed.
 - **Recommendation:** Modal after signup (one-time, dismissible); clearer UX.
 - **Decision:** Modal prompt after signup.
@@ -1156,6 +1225,7 @@ pnpm build
 PR9b completes the user-facing authentication experience for DovvyBuddy V2. This PR adds all UI components needed for users to create accounts, manage profiles, access conversation history, and control their data.
 
 **Key Deliverables:**
+
 - ✅ 6 new pages: Signin, Signup, Verify, Profile, Settings, History
 - ✅ 10+ new components: User menu, profile form, conversation cards, session migration prompt, etc.
 - ✅ Auth state integration with Clerk hooks
@@ -1165,6 +1235,7 @@ PR9b completes the user-facing authentication experience for DovvyBuddy V2. This
 - ✅ 100% backward compatible (guest flow unchanged)
 
 **Success Criteria:**
+
 - Users can sign up, verify email, and sign in.
 - Profile page allows editing certification and dive history.
 - Conversation history lists past chats with resume/archive actions.
@@ -1175,6 +1246,7 @@ PR9b completes the user-facing authentication experience for DovvyBuddy V2. This
 - No regressions in guest flows.
 
 **Next Steps:**
+
 - **PR9c:** Telegram account linking (after PR9b + PR7b complete).
 - **V2.1:** Dive log storage, trip planning history, personalized recommendations.
 

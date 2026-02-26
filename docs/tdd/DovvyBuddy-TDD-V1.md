@@ -77,7 +77,7 @@ This document is the Technology & Technical Design Decisions (TDD) reference for
 ## 11. Where to Find More Details
 
 - **Project instructions & LLM standards:** `/.github/instructions/Global Instructions.instructions.md`
-- **Architecture & PR plans:** `docs/plans/` (see PR3, PR3.1, PR3.2*)
+- **Architecture & PR plans:** `docs/plans/` (see PR3, PR3.1, PR3.2\*)
 - **Service docs & verification:** `src/backend/README_SERVICES.md`, `src/backend/VERIFICATION_SUMMARY_PR3.2b.md`
 
 ## 12. Notes & Guidelines

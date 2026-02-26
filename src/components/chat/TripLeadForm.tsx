@@ -1,13 +1,13 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { LeadFormData } from './LeadCaptureModal';
+import { useState } from 'react'
+import { LeadFormData } from './LeadCaptureModal'
 
 interface TripLeadFormProps {
-  onSubmit: (data: LeadFormData) => Promise<void>;
-  onCancel: () => void;
-  isSubmitting: boolean;
-  error: string | null;
+  onSubmit: (data: LeadFormData) => Promise<void>
+  onCancel: () => void
+  isSubmitting: boolean
+  error: string | null
 }
 
 const INTEREST_OPTIONS = [
@@ -17,7 +17,7 @@ const INTEREST_OPTIONS = [
   { value: 'Macro', label: 'Macro Photography' },
   { value: 'Drift', label: 'Drift Diving' },
   { value: 'Night Dives', label: 'Night Dives' },
-];
+]
 
 export function TripLeadForm({
   onSubmit,
@@ -35,87 +35,101 @@ export function TripLeadForm({
     diveCount: undefined,
     interests: [],
     message: '',
-  });
+  })
 
   const [validationErrors, setValidationErrors] = useState<{
-    name?: string;
-    email?: string;
-    destination?: string;
-  }>({});
+    name?: string
+    email?: string
+    destination?: string
+  }>({})
 
   const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return emailRegex.test(email)
+  }
 
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >
   ) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'diveCount' ? (value ? parseInt(value, 10) : undefined) : value,
-    }));
-    
+      [name]:
+        name === 'diveCount'
+          ? value
+            ? parseInt(value, 10)
+            : undefined
+          : value,
+    }))
+
     // Clear validation error when user starts typing
     if (validationErrors[name as keyof typeof validationErrors]) {
-      setValidationErrors((prev) => ({ ...prev, [name]: undefined }));
+      setValidationErrors((prev) => ({ ...prev, [name]: undefined }))
     }
-  };
+  }
 
   const handleInterestChange = (interest: string) => {
     setFormData((prev) => {
-      const currentInterests = prev.interests || [];
-      const isSelected = currentInterests.includes(interest);
-      
+      const currentInterests = prev.interests || []
+      const isSelected = currentInterests.includes(interest)
+
       return {
         ...prev,
         interests: isSelected
           ? currentInterests.filter((i) => i !== interest)
           : [...currentInterests, interest],
-      };
-    });
-  };
+      }
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     // Client-side validation
-    const errors: { name?: string; email?: string; destination?: string } = {};
+    const errors: { name?: string; email?: string; destination?: string } = {}
 
     if (!formData.name?.trim()) {
-      errors.name = 'Name is required';
+      errors.name = 'Name is required'
     }
 
     if (!formData.email?.trim()) {
-      errors.email = 'Email is required';
+      errors.email = 'Email is required'
     } else if (!validateEmail(formData.email)) {
-      errors.email = 'Please enter a valid email address';
+      errors.email = 'Please enter a valid email address'
     }
 
     if (!formData.destination?.trim()) {
-      errors.destination = 'Destination is required';
+      errors.destination = 'Destination is required'
     }
 
     if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
-      return;
+      setValidationErrors(errors)
+      return
     }
 
     // Submit form
-    await onSubmit(formData);
-  };
+    await onSubmit(formData)
+  }
 
   return (
     <form onSubmit={handleSubmit}>
-      <h2 style={{ fontSize: '1.5rem', fontWeight: '600', marginBottom: '1.5rem' }}>
+      <h2
+        style={{
+          fontSize: '1.5rem',
+          fontWeight: '600',
+          marginBottom: '1.5rem',
+        }}
+      >
         Plan a Trip
       </h2>
 
-      <p style={{ fontSize: '0.875rem', color: '#666', marginBottom: '1.5rem' }}>
-        Share your trip details and we&apos;ll help you plan the perfect diving adventure.
+      <p
+        style={{ fontSize: '0.875rem', color: '#666', marginBottom: '1.5rem' }}
+      >
+        Share your trip details and we&apos;ll help you plan the perfect diving
+        adventure.
       </p>
 
       {/* Error message */}
@@ -165,7 +179,13 @@ export function TripLeadForm({
           }}
         />
         {validationErrors.name && (
-          <p style={{ fontSize: '0.75rem', color: '#cc0000', marginTop: '0.25rem' }}>
+          <p
+            style={{
+              fontSize: '0.75rem',
+              color: '#cc0000',
+              marginTop: '0.25rem',
+            }}
+          >
             {validationErrors.name}
           </p>
         )}
@@ -201,7 +221,13 @@ export function TripLeadForm({
           }}
         />
         {validationErrors.email && (
-          <p style={{ fontSize: '0.75rem', color: '#cc0000', marginTop: '0.25rem' }}>
+          <p
+            style={{
+              fontSize: '0.75rem',
+              color: '#cc0000',
+              marginTop: '0.25rem',
+            }}
+          >
             {validationErrors.email}
           </p>
         )}
@@ -270,7 +296,13 @@ export function TripLeadForm({
           }}
         />
         {validationErrors.destination && (
-          <p style={{ fontSize: '0.75rem', color: '#cc0000', marginTop: '0.25rem' }}>
+          <p
+            style={{
+              fontSize: '0.75rem',
+              color: '#cc0000',
+              marginTop: '0.25rem',
+            }}
+          >
             {validationErrors.destination}
           </p>
         )}
@@ -455,7 +487,9 @@ export function TripLeadForm({
       </div>
 
       {/* Action buttons */}
-      <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+      <div
+        style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}
+      >
         <button
           type="button"
           onClick={onCancel}
@@ -520,5 +554,5 @@ export function TripLeadForm({
         }
       `}</style>
     </form>
-  );
+  )
 }

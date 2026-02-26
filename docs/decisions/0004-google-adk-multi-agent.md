@@ -17,6 +17,7 @@ DovvyBuddy's initial architecture (PR3) used a single LLM provider with RAG-enha
 - **Scalability concerns** — Adding new capabilities (booking, community features) would further complicate the single prompt
 
 The application requires:
+
 - **Specialized expertise** — Different knowledge domains (certifications, destinations, safety)
 - **Active retrieval** — LLM should decide when to search knowledge base
 - **Safety validation** — Responses need automatic checks for required disclaimers
@@ -24,6 +25,7 @@ The application requires:
 - **Future extensibility** — Easy to add new agent capabilities without breaking existing ones
 
 We needed an orchestration framework that could:
+
 - Coordinate multiple specialized agents
 - Enable structured tool use (vector search, session lookup, validation)
 - Maintain API contract (no breaking changes for frontend)
@@ -36,17 +38,20 @@ We needed an orchestration framework that could:
 Adopt **Google Agent Development Kit (ADK)** with a **multi-agent architecture** comprising:
 
 **Agent System:**
+
 1. **Retrieval Agent** — Searches knowledge base using vector search tool
 2. **Certification Agent** — Specialist for PADI/SSI certification queries
 3. **Trip Agent** — Specialist for destination and dive site recommendations
 4. **Safety Agent** — Validates responses for required disclaimers
 
 **Orchestration Flow:**
+
 ```
 User Query → Router → [Retrieval Agent (parallel)] → Specialist Agent → Safety Agent → Response
 ```
 
 **Key Implementation Details:**
+
 - Query routing logic detects certification vs trip vs general queries
 - Retrieval agent runs in parallel with routing (2s timeout)
 - Specialist agent uses retrieved context (5s timeout)
@@ -55,6 +60,7 @@ User Query → Router → [Retrieval Agent (parallel)] → Specialist Agent → 
 - Each agent has defined tools (vector-search, session-lookup, safety-check)
 
 **Technology Choice:**
+
 - Google ADK (Genkit) for agent orchestration
 - Gemini 2.0 Flash for all agent LLM calls
 - Native integration with existing model-provider abstraction
@@ -99,12 +105,14 @@ User Query → Router → [Retrieval Agent (parallel)] → Specialist Agent → 
 **Description:** Use LangChain's agent framework for multi-agent orchestration
 
 **Pros:**
+
 - Mature ecosystem with extensive documentation
 - Provider-agnostic (supports Groq, Gemini, OpenAI, etc.)
 - Rich tool library and community integrations
 - Better observability tools (LangSmith)
 
 **Cons:**
+
 - Python-first (TypeScript support limited)
 - Heavier dependency footprint
 - More opinionated about agent structure
@@ -117,12 +125,14 @@ User Query → Router → [Retrieval Agent (parallel)] → Specialist Agent → 
 **Description:** Use LangGraph for explicit agent workflow graphs
 
 **Pros:**
+
 - More control over agent coordination flow
 - Visual graph representation of workflow
 - Better for complex multi-step workflows
 - Built on LangChain ecosystem
 
 **Cons:**
+
 - Overkill for current simple routing logic
 - Steeper learning curve
 - Python-only
@@ -135,12 +145,14 @@ User Query → Router → [Retrieval Agent (parallel)] → Specialist Agent → 
 **Description:** Keep single provider, use different system prompts per query type
 
 **Pros:**
+
 - Simpler implementation
 - No external framework dependency
 - Lower latency (single LLM call)
 - Easier debugging
 
 **Cons:**
+
 - No structured tool use (must rely on RAG always-on or prompt-based retrieval)
 - Hard to compose operations (search → generate → validate)
 - Prompt engineering becomes bottleneck
@@ -153,11 +165,13 @@ User Query → Router → [Retrieval Agent (parallel)] → Specialist Agent → 
 **Description:** Use Anthropic's Claude with native tool calling
 
 **Pros:**
+
 - Excellent tool use capabilities
 - Strong reasoning and safety features
 - Good documentation and reliability
 
 **Cons:**
+
 - Vendor lock-in (different vendor than Gemini embeddings)
 - Higher cost than Gemini Flash
 - No native ADK-style agent framework
@@ -181,22 +195,26 @@ User Query → Router → [Retrieval Agent (parallel)] → Specialist Agent → 
 **Implementation Status:** ✅ Completed (PR3.1)
 
 **Migration Strategy:**
+
 - Model-provider code intentionally retained (not deleted per Step 5) to provide fallback during Python migration (PR3.2)
 - `ENABLE_ADK=false` reverts to legacy single-provider orchestration
 - Gradual rollout possible via feature flag
 
 **Future Considerations:**
+
 - May migrate to LangGraph during Python backend migration (PR3.2) if orchestration complexity increases
 - Consider agent memory beyond session history (conversation summarization, user preferences)
 - Evaluate agent performance metrics to optimize routing and tool use
 - Add agent evaluation framework to measure response quality improvements
 
 **Cost Impact:**
+
 - Average 2-3 agent calls per query (retrieval + specialist + safety)
 - Using Flash model mitigates cost increase
 - Monitor token usage and optimize prompts if costs escalate
 
 **Performance Monitoring:**
+
 - Track P50/P95/P99 latency per agent
 - Monitor tool call success rates
 - Track query routing accuracy (correct agent selection)

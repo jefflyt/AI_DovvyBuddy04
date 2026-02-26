@@ -1,33 +1,33 @@
-'use client';
+'use client'
 
-import { useEffect } from 'react';
-import { TrainingLeadForm } from './TrainingLeadForm';
-import { TripLeadForm } from './TripLeadForm';
+import { useEffect } from 'react'
+import { TrainingLeadForm } from './TrainingLeadForm'
+import { TripLeadForm } from './TripLeadForm'
 
 export interface LeadFormData {
-  name: string;
-  email: string;
-  phone?: string;
+  name: string
+  email: string
+  phone?: string
   // Training specific
-  agency?: string;
-  certificationLevel?: string;
-  location?: string;
+  agency?: string
+  certificationLevel?: string
+  location?: string
   // Trip specific
-  destination?: string;
-  dates?: string;
-  diveCount?: number;
-  interests?: string[];
+  destination?: string
+  dates?: string
+  diveCount?: number
+  interests?: string[]
   // Common
-  message?: string;
+  message?: string
 }
 
 interface LeadCaptureModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  leadType: 'training' | 'trip' | null;
-  onSubmit: (data: LeadFormData) => Promise<void>;
-  isSubmitting: boolean;
-  error: string | null;
+  isOpen: boolean
+  onClose: () => void
+  leadType: 'training' | 'trip' | null
+  onSubmit: (data: LeadFormData) => Promise<void>
+  isSubmitting: boolean
+  error: string | null
 }
 
 export function LeadCaptureModal({
@@ -42,30 +42,30 @@ export function LeadCaptureModal({
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen && !isSubmitting) {
-        onClose();
+        onClose()
       }
-    };
+    }
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleEscape)
       // Prevent body scroll when modal is open
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden'
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen, isSubmitting, onClose]);
+      document.removeEventListener('keydown', handleEscape)
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen, isSubmitting, onClose])
 
-  if (!isOpen || !leadType) return null;
+  if (!isOpen || !leadType) return null
 
   // Handle backdrop click
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget && !isSubmitting) {
-      onClose();
+      onClose()
     }
-  };
+  }
 
   return (
     <div
@@ -153,5 +153,5 @@ export function LeadCaptureModal({
         }
       `}</style>
     </div>
-  );
+  )
 }

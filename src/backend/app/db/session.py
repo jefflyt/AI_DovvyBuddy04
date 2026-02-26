@@ -4,6 +4,7 @@ from typing import Optional
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -19,7 +20,7 @@ if env_path.exists():
 
 _engine: Optional[AsyncEngine] = None
 _async_session: Optional[async_sessionmaker[AsyncSession]] = None
-_sync_engine = None
+_sync_engine: Optional[Engine] = None
 _sync_session_factory = None
 
 
@@ -85,3 +86,18 @@ async def get_db() -> AsyncSession:
     async_session = get_session()
     async with async_session() as session:
         yield session
+
+
+async def reset_db_session_state() -> None:
+    """Reset cached DB engines/session makers (useful for tests)."""
+    global _engine, _async_session, _sync_engine, _sync_session_factory
+
+    if _engine is not None:
+        await _engine.dispose()
+    _engine = None
+    _async_session = None
+
+    if _sync_engine is not None:
+        _sync_engine.dispose()
+    _sync_engine = None
+    _sync_session_factory = None

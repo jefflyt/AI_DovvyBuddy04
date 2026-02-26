@@ -15,6 +15,7 @@ Added comprehensive Malaysia diving emergency contacts document to the content d
 **Size:** 28KB, comprehensive emergency reference document
 
 **Content Sections:**
+
 1. Quick reference table for critical contacts
 2. National emergency services (MERS 999, SaveME app)
 3. Divers Alert Network (DAN) Asia-Pacific contacts
@@ -37,6 +38,7 @@ Updated emergency response text in multiple locations to reference Malaysia-spec
 **File:** [src/backend/app/orchestration/emergency_detector_hybrid.py](../../src/backend/app/orchestration/emergency_detector_hybrid.py)
 
 **Changes:**
+
 - Updated `get_emergency_response()` to include Malaysia contacts
 - Added DAN Malaysia: +60-15-4600-0109
 - Added MERS 999 and mobile 112
@@ -49,6 +51,7 @@ Updated emergency response text in multiple locations to reference Malaysia-spec
 **File:** [src/backend/app/prompts/safety.py](../../src/backend/app/prompts/safety.py)
 
 **Changes:**
+
 - Updated `SAFETY_DISCLAIMER` to include DAN Malaysia hotline
 - Added note directing users to ask about "Malaysia diving emergency contacts"
 - Updated `EMERGENCY_RESPONSE` with Malaysia-specific:
@@ -63,6 +66,7 @@ Updated emergency response text in multiple locations to reference Malaysia-spec
 ### Current Blocker
 
 API key not configured in `.env.local`:
+
 ```
 GEMINI_API_KEY=your_gemini_api_key_here
 ```
@@ -70,12 +74,14 @@ GEMINI_API_KEY=your_gemini_api_key_here
 ### Ingestion Command
 
 Once API key is configured, run:
+
 ```bash
 cd src/backend
 python scripts/ingest_content.py
 ```
 
 **Expected Result:**
+
 - 16 markdown files processed
 - New Malaysia emergency contacts document chunked and embedded
 - Approximately 50-100 chunks created (document is detailed)
@@ -90,12 +96,14 @@ If API key remains unavailable, content can be ingested when production credenti
 ### Immediate Benefits (Code Updates)
 
 ✅ **Emergency responses now Malaysia-specific:**
+
 - Users get relevant local emergency numbers (999 vs 911)
 - Correct DAN hotline for Malaysia (+60 vs +1)
 - Actual hyperbaric chamber locations with direct contacts
 - Maritime rescue coordination centers
 
 ✅ **Prompts reference knowledge base:**
+
 - Users informed comprehensive info available
 - Can ask: "What are Malaysia diving emergency contacts?"
 - Can ask: "Where is nearest hyperbaric chamber to Sipadan?"
@@ -103,6 +111,7 @@ If API key remains unavailable, content can be ingested when production credenti
 ### After RAG Ingestion
 
 🔮 **Enhanced retrieval:**
+
 - RAG can fetch specific regional contacts (Sabah vs Peninsular)
 - Can retrieve ambulance services by location (Kuala Lumpur vs Semporna)
 - Can provide hospital A&E contacts by region
@@ -114,16 +123,12 @@ If API key remains unavailable, content can be ingested when production credenti
 
 - [ ] Query: "What's the emergency number in Malaysia?"
   - Should return: 999 (MERS) or 112 (mobile)
-  
 - [ ] Query: "Where is the nearest hyperbaric chamber to Sipadan?"
   - Should return: Semporna Navy Base +60-89-785-101
-  
 - [ ] Query: "I need DAN Malaysia contact"
   - Should return: +60-15-4600-0109
-  
 - [ ] Query: "What if a diver goes missing near Tioman?"
   - Should return: MRCC Port Klang +60-3-3167-0530
-  
 - [ ] Query: "Private ambulance in Kuala Lumpur?"
   - Should return: St. John +60-3-9285-5294 or other providers
 

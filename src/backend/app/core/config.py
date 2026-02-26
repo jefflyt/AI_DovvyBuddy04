@@ -87,4 +87,22 @@ class Settings(BaseSettings):
     lead_webhook_url: Optional[str] = None
 
 
-settings = Settings()
+_settings: Optional[Settings] = None
+
+
+def get_settings() -> Settings:
+    """Get cached settings instance."""
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings
+
+
+def reset_settings_cache() -> None:
+    """Reset cached settings instance (useful for tests)."""
+    global _settings
+    _settings = None
+
+
+# Backward-compatible module-level accessor
+settings = get_settings()

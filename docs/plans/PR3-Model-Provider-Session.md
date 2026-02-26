@@ -14,6 +14,7 @@
 ### ✅ All Success Criteria Met
 
 **Core Implementation:**
+
 - ✅ ModelProvider interface with Groq and Gemini implementations (`src/lib/model-provider/`)
 - ✅ Provider factory with environment-based switching
 - ✅ Session service with full CRUD operations (`src/lib/session/`)
@@ -25,6 +26,7 @@
 - ✅ Structured logging with Pino
 
 **Test Results:**
+
 - ✅ 57 unit tests passing
 - ✅ 14/15 integration tests passing (1 minor error message assertion)
 - ✅ Type checking clean
@@ -32,21 +34,25 @@
 - ✅ Build successful
 
 **Enhanced Implementation Notes:**
+
 1. **ADK Integration:** During implementation, PR3 was enhanced with Google ADK multi-agent system (PR3.1), providing superior orchestration capabilities while maintaining backward compatibility via `ENABLE_ADK` feature flag.
 2. **RAG Integration:** Full RAG pipeline integration completed (PR2), not mocked as originally planned.
 3. **Model Standardization:** All Gemini calls standardized to `gemini-2.0-flash` per ADR-0005.
 
 **Related PRs:**
+
 - **PR3.1 (ADK Multi-Agent RAG):** ✅ Completed - Enhanced orchestration with specialized agents
 - **PR2 (RAG Pipeline):** ✅ Completed - Real vector search integration (not mocked)
 
 **Documentation:**
+
 - ✅ `.env.example` updated with all required environment variables
 - ✅ ADR-0004: Google ADK Multi-Agent Architecture
 - ✅ ADR-0005: Gemini 2.0 Flash Model Standardization
 - ✅ Technical specification updated
 
 **Next Steps:**
+
 - PR4: Lead Capture & Delivery
 - PR5: Chat Interface & Integration (frontend UI)
 
@@ -857,31 +863,32 @@ See section 4 "Risks & Mitigations" for detailed risks and mitigation strategies
 
 ### LLM Provider Strategy
 
-| Phase | Provider | Model | Use Case |
-|-------|----------|-------|----------|
-| **MVP (Dev)** | Groq | `llama-3.1-70b-versatile` | Development, testing, fast iteration |
-| **Production V1** | Gemini | `gemini-2.0-flash` | English-language production traffic |
+| Phase             | Provider          | Model                                    | Use Case                              |
+| ----------------- | ----------------- | ---------------------------------------- | ------------------------------------- |
+| **MVP (Dev)**     | Groq              | `llama-3.1-70b-versatile`                | Development, testing, fast iteration  |
+| **Production V1** | Gemini            | `gemini-2.0-flash`                       | English-language production traffic   |
 | **Production V2** | Gemini + SEA-LION | Gemini default, SEA-LION for non-English | Multilingual support for SEA audience |
 
 **V2 Language Routing (Future):**
+
 - Detect input language (simple heuristic or library like `franc`)
 - If non-English detected → route to SEA-LION provider
 - Gemini remains default for English queries
 
 ### Design Decisions
 
-| Topic | Decision | Rationale |
-|-------|----------|-----------|
-| **History Trimming** | Defer; hard cap at 100 messages | V1 unlikely to hit limits; add if needed based on monitoring |
-| **Response Streaming** | Batch-only (no streaming) | Simpler to test; streaming can be added later without breaking changes |
-| **Gemini Safety Blocks** | Detect and explain | Check `finishReason`, return: "I'm not able to discuss that topic as it may relate to medical or safety advice. Please consult a dive medical professional." |
-| **Session Expiry** | Passive (check on retrieval) | Simpler than cron job; add cleanup if DB grows >10K rows |
-| **Error Logging** | Session ID + last message only | Balances debuggability with privacy/storage concerns |
-| **Groq Default Model** | `llama-3.1-70b-versatile` | Good speed/quality balance; configurable via `GROQ_MODEL` env var |
-| **Session Debug Endpoint** | Exclude from V1 | Use direct DB queries for debugging; reconsider if partner shops need access |
-| **RAG Mock (Pre-PR2)** | Return static "No knowledge base available yet" message | Allows PR3 to proceed independently; realistic fallback behavior |
-| **System Prompt (V1)** | Minimal placeholder | Basic DovvyBuddy persona with safety guardrails; refine after PR5 based on testing |
-| **Conversation History** | Minimal format (role, content, timestamp only) | Keep simple for V1; add token counts, provider info, chunk IDs if needed later |
+| Topic                      | Decision                                                | Rationale                                                                                                                                                    |
+| -------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **History Trimming**       | Defer; hard cap at 100 messages                         | V1 unlikely to hit limits; add if needed based on monitoring                                                                                                 |
+| **Response Streaming**     | Batch-only (no streaming)                               | Simpler to test; streaming can be added later without breaking changes                                                                                       |
+| **Gemini Safety Blocks**   | Detect and explain                                      | Check `finishReason`, return: "I'm not able to discuss that topic as it may relate to medical or safety advice. Please consult a dive medical professional." |
+| **Session Expiry**         | Passive (check on retrieval)                            | Simpler than cron job; add cleanup if DB grows >10K rows                                                                                                     |
+| **Error Logging**          | Session ID + last message only                          | Balances debuggability with privacy/storage concerns                                                                                                         |
+| **Groq Default Model**     | `llama-3.1-70b-versatile`                               | Good speed/quality balance; configurable via `GROQ_MODEL` env var                                                                                            |
+| **Session Debug Endpoint** | Exclude from V1                                         | Use direct DB queries for debugging; reconsider if partner shops need access                                                                                 |
+| **RAG Mock (Pre-PR2)**     | Return static "No knowledge base available yet" message | Allows PR3 to proceed independently; realistic fallback behavior                                                                                             |
+| **System Prompt (V1)**     | Minimal placeholder                                     | Basic DovvyBuddy persona with safety guardrails; refine after PR5 based on testing                                                                           |
+| **Conversation History**   | Minimal format (role, content, timestamp only)          | Keep simple for V1; add token counts, provider info, chunk IDs if needed later                                                                               |
 
 ### Future Enhancements (Post-V1)
 
@@ -983,6 +990,7 @@ After PR3 merges:
 ### Code Structure Verification
 
 **Model Provider (`src/lib/model-provider/`):**
+
 - ✅ `types.ts` - Complete with ModelConfig, ModelMessage, ModelResponse interfaces
 - ✅ `base-provider.ts` - Abstract base class implemented
 - ✅ `groq-provider.ts` - Full Groq implementation with error handling
@@ -992,6 +1000,7 @@ After PR3 merges:
 - ✅ `__tests__/factory.test.ts` - Comprehensive factory tests (10 tests passing)
 
 **Session Service (`src/lib/session/`):**
+
 - ✅ `types.ts` - SessionData, DiverProfile, SessionMessage types
 - ✅ `session-service.ts` - Full implementation:
   - `createSession()` - UUID generation, expiry setting
@@ -1004,6 +1013,7 @@ After PR3 merges:
 - ✅ `__tests__/session-service.test.ts` - 9 tests (7 passing, 2 skipped due to Drizzle mocking complexity)
 
 **Prompts (`src/lib/prompts/`):**
+
 - ✅ `system-prompt.ts` - BASE_SYSTEM_PROMPT with safety guardrails
 - ✅ `certification-prompt.ts` - Certification-specific prompt builder
 - ✅ `trip-prompt.ts` - Trip planning prompt builder
@@ -1011,6 +1021,7 @@ After PR3 merges:
 - ✅ `__tests__/prompt-detection.test.ts` - 7 tests passing
 
 **Orchestration (`src/lib/orchestration/`):**
+
 - ✅ `types.ts` - ChatRequest, ChatResponse, RetrievalResult interfaces
 - ✅ `chat-orchestrator.ts` - Complete flow:
   - Message validation
@@ -1025,6 +1036,7 @@ After PR3 merges:
 - ✅ `__tests__/chat-orchestrator.test.ts` - Comprehensive orchestration tests
 
 **API Endpoint (`src/app/api/chat/`):**
+
 - ✅ `route.ts` - POST /api/chat implementation:
   - Request validation (Zod schema)
   - Error handling (400, 500, 503)
@@ -1036,6 +1048,7 @@ After PR3 merges:
 ### Test Coverage Summary
 
 **Unit Tests:**
+
 - ✅ Model Provider Factory: 10/10 tests passing
 - ✅ Session Service: 7/9 tests passing (2 skipped - Drizzle mocking complexity)
 - ✅ Prompt Detection: 7/7 tests passing
@@ -1043,6 +1056,7 @@ After PR3 merges:
 - ✅ Chunking: 8/8 tests passing
 
 **Integration Tests:**
+
 - ✅ Chat API: 14/15 tests passing (1 error message assertion mismatch)
 - ⚠️ Content Ingestion: Skipped (requires DATABASE_URL)
 
@@ -1051,6 +1065,7 @@ After PR3 merges:
 ### Environment Configuration
 
 **Required Variables (in `.env.example`):**
+
 - ✅ `LLM_PROVIDER` - groq | gemini (default: groq)
 - ✅ `GROQ_API_KEY` - Groq API key
 - ✅ `GEMINI_API_KEY` - Google Gemini API key
@@ -1068,6 +1083,7 @@ After PR3 merges:
 ### Database Schema Verification
 
 **Sessions Table (from PR1):**
+
 - ✅ `id` - UUID primary key with `gen_random_uuid()` default
 - ✅ `diver_profile` - JSONB (nullable)
 - ✅ `conversation_history` - JSONB with `'[]'::jsonb` default
@@ -1077,6 +1093,7 @@ After PR3 merges:
 ### Manual Testing Verification
 
 **Curl Tests (Performed):**
+
 ```bash
 # New session test
 curl -X POST http://localhost:3000/api/chat \
@@ -1097,6 +1114,7 @@ SELECT * FROM sessions WHERE id = '<sessionId>';
 ```
 
 **Provider Switching (Verified):**
+
 - ✅ `ENABLE_ADK=false` + `LLM_PROVIDER=groq` → Uses Groq provider
 - ✅ `ENABLE_ADK=false` + `LLM_PROVIDER=gemini` → Uses Gemini provider
 - ✅ `ENABLE_ADK=true` → Routes to ADK multi-agent system
@@ -1123,6 +1141,7 @@ SELECT * FROM sessions WHERE id = '<sessionId>';
 **Status:** ✅ **READY FOR PRODUCTION**
 
 All core PR3 objectives achieved. System successfully handles:
+
 - Stateful conversations with 24-hour sessions
 - Multi-provider LLM abstraction (Groq/Gemini)
 - RAG-enhanced contextual responses

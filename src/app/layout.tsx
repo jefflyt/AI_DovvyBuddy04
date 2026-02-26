@@ -23,13 +23,10 @@ export default function RootLayout({
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        
+
         {/* Primary Meta Tags */}
         <title>DovvyBuddy - Your AI Diving Companion</title>
-        <meta
-          name="title"
-          content="DovvyBuddy - Your AI Diving Companion"
-        />
+        <meta name="title" content="DovvyBuddy - Your AI Diving Companion" />
         <meta
           name="description"
           content="Get judgment-free guidance on dive certifications, destinations, and trip planning. Built by divers, for divers."
@@ -73,12 +70,14 @@ export default function RootLayout({
 
         {/* Favicon */}
         <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/apple-touch-icon.png"
+        />
       </head>
       <body>
-        <ErrorBoundary>
-          {children}
-        </ErrorBoundary>
+        <ErrorBoundary>{children}</ErrorBoundary>
         <Analytics />
       </body>
     </html>

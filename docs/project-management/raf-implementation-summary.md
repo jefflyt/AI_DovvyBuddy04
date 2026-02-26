@@ -11,6 +11,7 @@
 ### 1. RAF (Retrieval-Augmented Facts) Enforcement ✅
 
 #### Citation Tracking (`src/backend/app/services/rag/types.py`)
+
 - Added `source_citation: Optional[str]` field to `RetrievalResult`
 - Added `__post_init__` to auto-extract citation from `content_path` metadata
 - Added `citations: List[str]` and `has_data: bool` fields to `RAGContext`
@@ -18,6 +19,7 @@
 **Purpose:** Track source documents for transparency and grounding verification
 
 #### NO_DATA Signal (`src/backend/app/services/rag/pipeline.py`)
+
 - `_format_context()` returns `"NO_DATA"` when no results found (instead of empty string)
 - `retrieve_context()` extracts citations and sets `has_data` flag
 - When RAG disabled, returns `NO_DATA` with `has_data=False`
@@ -25,12 +27,14 @@
 **Purpose:** Explicit signal to agents that no grounding data is available
 
 #### Citation Extraction (`src/backend/app/services/rag/retriever.py`)
+
 - Modified result building to extract `source_citation` from metadata
 - Passes citation through to `RetrievalResult`
 
 **Purpose:** Preserve source document reference through retrieval pipeline
 
 #### Agent-Level Enforcement (`src/backend/app/agents/retrieval.py`)
+
 - Added `_handle_no_data()` method that refuses to answer without sources
 - Modified `execute()` to check for `NO_DATA` signal
 - Updated confidence scoring: 0.8 with citations, 0.5 without, 0.0 for NO_DATA
@@ -39,6 +43,7 @@
 **Purpose:** Prevent hallucination by refusing to answer factual questions without grounding
 
 #### Prompt Improvements (`src/backend/app/agents/retrieval.py`)
+
 - Updated system prompt to require source citations in responses
 - Added `[Source: filename]` notation requirement
 - Explicit "never make up facts" instruction
@@ -51,6 +56,7 @@
 ### 2. Cloud Run Deployment Preparation ✅
 
 #### Dockerfile (`src/backend/Dockerfile`)
+
 - Python 3.11 slim base image
 - System dependencies: gcc, postgresql-client
 - Editable install of backend package
@@ -59,11 +65,13 @@
 - Uvicorn server on port 8080 (Cloud Run default)
 
 #### Docker Ignore (`src/backend/.dockerignore`)
+
 - Excludes tests, docs, dev files
 - Reduces image size
 - Faster builds
 
 #### Deployment Guide (`docs/technical/deployment.md`)
+
 - Complete Cloud Run deployment steps
 - Local Docker testing instructions
 - CORS configuration
@@ -78,6 +86,7 @@
 ### 3. Documentation Updates ✅
 
 #### Next Steps (`docs/NEXT_STEPS.md`)
+
 - Added "Recently Completed" section with RAF implementation
 - Documented SSE streaming deferral with implementation notes
 - Updated recommended next steps to prioritize Cloud Run deployment
@@ -88,6 +97,7 @@
 ### 4. Test Updates ✅
 
 #### RAG Pipeline Tests (`src/backend/tests/unit/services/test_rag_pipeline.py`)
+
 - Updated mock retriever to include `source_citation`
 - Updated `test_format_context_empty` to expect `"NO_DATA"` instead of `""`
 - Added `source_citation` to test fixtures
@@ -97,11 +107,13 @@
 ## Key Behavioral Changes
 
 ### Before RAF Enforcement
+
 - Empty RAG results → agent could hallucinate answers
 - No source tracking → users couldn't verify information
 - Low confidence in grounding quality
 
 ### After RAF Enforcement
+
 - Empty RAG results → agent refuses to answer with helpful message
 - Citations tracked through pipeline → transparent sourcing
 - Confidence scoring based on citation availability
@@ -112,19 +124,23 @@
 ## What Was NOT Implemented (Deferred)
 
 ### SSE Streaming Endpoint
+
 **Status:** Deferred to future release  
 **Reason:** Synchronous `/api/chat` sufficient for MVP
 
 **Current state:**
+
 - Only `POST /api/chat` endpoint (synchronous)
 - No `POST /api/chat/stream` or SSE support
 - No `StreamingResponse` implementation
 
 **Future implementation notes documented in:**
+
 - `docs/NEXT_STEPS.md` - SSE requirements and example code
 - `docs/technical/deployment.md` - Future enhancements section
 
 **When to implement:**
+
 - User feedback indicates need for real-time UX
 - Response times >5s become common
 - Multi-turn conversations increase
@@ -134,6 +150,7 @@
 ## Testing Checklist
 
 ### Local Testing
+
 ```bash
 # Run unit tests
 cd src/backend
@@ -169,6 +186,7 @@ curl -X POST http://localhost:8080/api/chat \
 ```
 
 ### Cloud Run Testing (After Deployment)
+
 ```bash
 # Deploy to Cloud Run
 gcloud run deploy dovvybuddy-backend --source backend --region us-central1 [...]
@@ -195,27 +213,28 @@ curl -X POST $SERVICE_URL/api/chat \
 
 ### ✅ Completed (from dovvy_buddy_adk_multi_agent_rag_plan_vercel_cloud_run.md)
 
-| Requirement | Status | Notes |
-|-------------|--------|-------|
-| Multi-agent topology | ✅ | Already implemented |
-| RAG tool wrapper | ✅ | VectorRetriever + RAGPipeline |
-| RAF enforcement | ✅ | Citations, NO_DATA, grounding checks |
-| Dockerfile | ✅ | Python 3.11, FastAPI, Cloud Run ready |
-| Environment variables | ✅ | All documented in deployment guide |
-| CORS configuration | ✅ | Configurable via CORS_ORIGINS |
-| Deployment docs | ✅ | Complete Cloud Run guide |
+| Requirement           | Status | Notes                                 |
+| --------------------- | ------ | ------------------------------------- |
+| Multi-agent topology  | ✅     | Already implemented                   |
+| RAG tool wrapper      | ✅     | VectorRetriever + RAGPipeline         |
+| RAF enforcement       | ✅     | Citations, NO_DATA, grounding checks  |
+| Dockerfile            | ✅     | Python 3.11, FastAPI, Cloud Run ready |
+| Environment variables | ✅     | All documented in deployment guide    |
+| CORS configuration    | ✅     | Configurable via CORS_ORIGINS         |
+| Deployment docs       | ✅     | Complete Cloud Run guide              |
 
 ### ⏸️ Deferred
 
-| Requirement | Status | Reason |
-|-------------|--------|--------|
-| SSE streaming | ⏸️ Deferred | MVP can use synchronous endpoint |
-| ADK Router | ⏸️ Not needed | Using FastAPI + custom orchestration |
+| Requirement    | Status        | Reason                                       |
+| -------------- | ------------- | -------------------------------------------- |
+| SSE streaming  | ⏸️ Deferred   | MVP can use synchronous endpoint             |
+| ADK Router     | ⏸️ Not needed | Using FastAPI + custom orchestration         |
 | Google ADK SDK | ⏸️ Not needed | Custom multi-agent implementation sufficient |
 
 ### 📊 Alignment Score: 90%
 
 **Rationale for not using Google ADK:**
+
 - Current custom multi-agent architecture is working well
 - No dependency on ADK-specific features (yet)
 - FastAPI provides needed flexibility

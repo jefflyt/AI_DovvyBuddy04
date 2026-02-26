@@ -1,14 +1,14 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { LeadCaptureModal } from '../LeadCaptureModal';
+import { describe, it, expect, vi } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/react'
+import { LeadCaptureModal } from '../LeadCaptureModal'
 
 describe('LeadCaptureModal', () => {
-  const mockOnClose = vi.fn();
-  const mockOnSubmit = vi.fn();
+  const mockOnClose = vi.fn()
+  const mockOnSubmit = vi.fn()
 
   afterEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+  })
 
   it('should not render when isOpen is false', () => {
     const { container } = render(
@@ -20,10 +20,10 @@ describe('LeadCaptureModal', () => {
         isSubmitting={false}
         error={null}
       />
-    );
+    )
 
-    expect(container.firstChild).toBeNull();
-  });
+    expect(container.firstChild).toBeNull()
+  })
 
   it('should render when isOpen is true', () => {
     render(
@@ -35,10 +35,10 @@ describe('LeadCaptureModal', () => {
         isSubmitting={false}
         error={null}
       />
-    );
+    )
 
-    expect(screen.getByText('Get Certified')).toBeInTheDocument();
-  });
+    expect(screen.getByText('Get Certified')).toBeInTheDocument()
+  })
 
   it('should render TrainingLeadForm when leadType is training', () => {
     render(
@@ -50,11 +50,11 @@ describe('LeadCaptureModal', () => {
         isSubmitting={false}
         error={null}
       />
-    );
+    )
 
-    expect(screen.getByText('Get Certified')).toBeInTheDocument();
-    expect(screen.getByText(/certification goals/i)).toBeInTheDocument();
-  });
+    expect(screen.getByText('Get Certified')).toBeInTheDocument()
+    expect(screen.getByText(/certification goals/i)).toBeInTheDocument()
+  })
 
   it('should render TripLeadForm when leadType is trip', () => {
     render(
@@ -66,11 +66,11 @@ describe('LeadCaptureModal', () => {
         isSubmitting={false}
         error={null}
       />
-    );
+    )
 
-    expect(screen.getByText('Plan a Trip')).toBeInTheDocument();
-    expect(screen.getByText(/trip details/i)).toBeInTheDocument();
-  });
+    expect(screen.getByText('Plan a Trip')).toBeInTheDocument()
+    expect(screen.getByText(/trip details/i)).toBeInTheDocument()
+  })
 
   it('should call onClose when close button is clicked', () => {
     render(
@@ -82,13 +82,13 @@ describe('LeadCaptureModal', () => {
         isSubmitting={false}
         error={null}
       />
-    );
+    )
 
-    const closeButton = screen.getByLabelText('Close modal');
-    fireEvent.click(closeButton);
+    const closeButton = screen.getByLabelText('Close modal')
+    fireEvent.click(closeButton)
 
-    expect(mockOnClose).toHaveBeenCalledTimes(1);
-  });
+    expect(mockOnClose).toHaveBeenCalledTimes(1)
+  })
 
   it('should call onClose when backdrop is clicked', () => {
     const { container } = render(
@@ -100,14 +100,14 @@ describe('LeadCaptureModal', () => {
         isSubmitting={false}
         error={null}
       />
-    );
+    )
 
     // Click the backdrop (first child of container)
-    const backdrop = container.firstChild as HTMLElement;
-    fireEvent.click(backdrop);
+    const backdrop = container.firstChild as HTMLElement
+    fireEvent.click(backdrop)
 
-    expect(mockOnClose).toHaveBeenCalledTimes(1);
-  });
+    expect(mockOnClose).toHaveBeenCalledTimes(1)
+  })
 
   it('should call onClose when ESC key is pressed', () => {
     render(
@@ -119,12 +119,12 @@ describe('LeadCaptureModal', () => {
         isSubmitting={false}
         error={null}
       />
-    );
+    )
 
-    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.keyDown(document, { key: 'Escape' })
 
-    expect(mockOnClose).toHaveBeenCalledTimes(1);
-  });
+    expect(mockOnClose).toHaveBeenCalledTimes(1)
+  })
 
   it('should not call onClose when submitting', () => {
     render(
@@ -136,12 +136,12 @@ describe('LeadCaptureModal', () => {
         isSubmitting={true}
         error={null}
       />
-    );
+    )
 
-    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.keyDown(document, { key: 'Escape' })
 
-    expect(mockOnClose).not.toHaveBeenCalled();
-  });
+    expect(mockOnClose).not.toHaveBeenCalled()
+  })
 
   it('should disable close button when submitting', () => {
     render(
@@ -153,9 +153,9 @@ describe('LeadCaptureModal', () => {
         isSubmitting={true}
         error={null}
       />
-    );
+    )
 
-    const closeButton = screen.getByLabelText('Close modal');
-    expect(closeButton).toBeDisabled();
-  });
-});
+    const closeButton = screen.getByLabelText('Close modal')
+    expect(closeButton).toBeDisabled()
+  })
+})

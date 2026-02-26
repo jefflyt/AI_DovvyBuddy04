@@ -109,6 +109,7 @@ AI_DovvyBuddy04/
 ## 🛠 Tech Stack
 
 ### Frontend
+
 - **Framework:** Next.js 14 (App Router)
 - **Language:** TypeScript 5.4+
 - **Styling:** Tailwind CSS
@@ -117,6 +118,7 @@ AI_DovvyBuddy04/
 - **Monitoring:** Sentry, Vercel Analytics
 
 ### Backend
+
 - **Framework:** Python FastAPI (async)
 - **Language:** Python 3.11+ (recommended: 3.11.14)
 - **Database:** PostgreSQL + pgvector extension
@@ -126,6 +128,7 @@ AI_DovvyBuddy04/
 - **Testing:** pytest
 
 ### Infrastructure
+
 - **Hosting:** Vercel (frontend), Google Cloud Run (backend)
 - **Database:** Neon (managed PostgreSQL)
 - **Email:** Resend API
@@ -232,12 +235,14 @@ DovvyBuddy uses a **specialized agent architecture** with strict Google ADK runt
 4. **Safety Agent** — Safety protocols and emergency procedures
 
 **Flow:**
+
 ```
-User Message → Orchestrator → Intent Detection → Agent Selection → 
+User Message → Orchestrator → Intent Detection → Agent Selection →
 Response Generation → Conversation Management → User
 ```
 
 Runtime settings:
+
 - `ENABLE_ADK=true`
 - `ADK_MODEL=gemini-2.5-flash-lite`
 - `ENABLE_AGENT_ROUTING=true`
@@ -310,15 +315,15 @@ pnpm test:e2e:ui  # Interactive UI mode
 
 ## 📚 Key Documentation
 
-| Document | Purpose |
-|----------|---------|
-| [Master Plan](./docs/plans/MASTER_PLAN.md) | Project roadmap & status |
-| [Product Spec](./docs/psd/DovvyBuddy-PSD-V6.2.md) | What to build |
-| [Technical Spec](./docs/technical/specification.md) | System architecture |
-| [Developer Workflow](./docs/technical/developer-workflow.md) | Development guide |
-| [Technical Debt](./docs/technical/TECHNICAL_DEBT.md) | Known issues |
-| [ADRs](./docs/decisions/) | Architecture decisions |
-| [AI Workflow](./docs/project-management/AI_WORKFLOW.md) | AI-assisted development |
+| Document                                                     | Purpose                  |
+| ------------------------------------------------------------ | ------------------------ |
+| [Master Plan](./docs/plans/MASTER_PLAN.md)                   | Project roadmap & status |
+| [Product Spec](./docs/psd/DovvyBuddy-PSD-V6.2.md)            | What to build            |
+| [Technical Spec](./docs/technical/specification.md)          | System architecture      |
+| [Developer Workflow](./docs/technical/developer-workflow.md) | Development guide        |
+| [Technical Debt](./docs/technical/TECHNICAL_DEBT.md)         | Known issues             |
+| [ADRs](./docs/decisions/)                                    | Architecture decisions   |
+| [AI Workflow](./docs/project-management/AI_WORKFLOW.md)      | AI-assisted development  |
 
 ---
 
@@ -353,6 +358,7 @@ pnpm test:e2e:ui  # Interactive UI mode
 This project uses **GitHub Copilot in Plan Mode** with custom prompts.
 
 **Workflow:**
+
 ```
 PSD → Master Plan → Feature Plan → PR Plan → Implementation → Refactor
 ```
@@ -366,6 +372,7 @@ See [AI_WORKFLOW.md](./docs/project-management/AI_WORKFLOW.md) for complete guid
 ### Database Connection Errors
 
 Ensure `.env.local` is in project root (not `src/backend/.env`):
+
 ```bash
 # Correct location
 /Users/you/AI_DovvyBuddy04/.env.local
@@ -377,6 +384,7 @@ Ensure `.env.local` is in project root (not `src/backend/.env`):
 ### Backend Not Starting
 
 Check Python virtual environment:
+
 ```bash
 which python  # Should show .venv/bin/python
 source .venv/bin/activate  # If not activated
@@ -393,6 +401,7 @@ source .venv/bin/activate  # If not activated
 ### Tests Failing
 
 Clear Next.js cache:
+
 ```bash
 rm -rf .next && pnpm dev
 ```

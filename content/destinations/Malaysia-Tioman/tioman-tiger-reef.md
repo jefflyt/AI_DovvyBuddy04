@@ -1,33 +1,43 @@
 ---
-doc_type: "dive_site"
-site_id: "tioman-tiger-reef"
-title: "Tiger Reef"
-destination: "Tioman Island, Malaysia"
-min_certification: "AOW"
-difficulty: "intermediate"
+doc_type: 'dive_site'
+site_id: 'tioman-tiger-reef'
+title: 'Tiger Reef'
+destination: 'Tioman Island, Malaysia'
+min_certification: 'AOW'
+difficulty: 'intermediate'
 depth_range_m: [9, 25]
-tags: ["pinnacle", "drift", "current", "pelagic", "coral", "advanced"]
-keywords: ["Tiger Reef", "Tioman", "pinnacle", "barracuda", "jacks", "drift dive", "strong current", "soft coral"]
-last_updated: "2026-01-01"
-data_quality: "compiled"
+tags: ['pinnacle', 'drift', 'current', 'pelagic', 'coral', 'advanced']
+keywords:
+  [
+    'Tiger Reef',
+    'Tioman',
+    'pinnacle',
+    'barracuda',
+    'jacks',
+    'drift dive',
+    'strong current',
+    'soft coral',
+  ]
+last_updated: '2026-01-01'
+data_quality: 'compiled'
 sources:
-  - "https://www.diversaloon.com/tioman-diving"
-  - "Local dive operator reports and site surveys"
+  - 'https://www.diversaloon.com/tioman-diving'
+  - 'Local dive operator reports and site surveys'
 ---
 
 # Dive Site Documentation: Tiger Reef, Tioman Island, Malaysia
 
 ## 1. Quick Facts
 
-| Feature | Details |
-| :--- | :--- |
-| **Depth Range** | 9–25 m |
-| **Visibility** | 10–30 m (varies by season) |
-| **Current** | Moderate to Strong |
-| **Water Temp** | 26–30 °C |
-| **Season** | Best: March–May, September–October; Diveable: March–October |
+| Feature         | Details                                                     |
+| :-------------- | :---------------------------------------------------------- |
+| **Depth Range** | 9–25 m                                                      |
+| **Visibility**  | 10–30 m (varies by season)                                  |
+| **Current**     | Moderate to Strong                                          |
+| **Water Temp**  | 26–30 °C                                                    |
+| **Season**      | Best: March–May, September–October; Diveable: March–October |
 
-***
+---
 
 ## 2. Site Overview
 
@@ -37,7 +47,7 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
 - **Atmosphere:** Energetic and action-packed, especially when pelagics are present; dramatic rock canyons provide shelter during stronger current phases.
 - **Why dive here:** Combines vibrant coral aesthetics with reliable macro critter life and the thrill of encountering large schooling fish; the site's geography offers natural drift-dive characteristics.
 
-***
+---
 
 ## 3. Underwater Topography
 
@@ -50,7 +60,7 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
   - Dense coral gardens filling interstitial spaces
 - **Key structures:** Main pinnacle is the central focus; rock formations extend across the site, creating horizontal and vertical relief that attracts both pelagics and cryptic critters.
 
-***
+---
 
 ## 4. Typical Dive Profile
 
@@ -62,7 +72,7 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
 - **Duration:** 40–50 minutes bottom time typical; safety stop at 5 m for 3–5 minutes.
 - **Turnaround:** Divers typically turn around based on air consumption or when current or depth becomes challenging; ascent is staggered through the upper 18 m zone before shallowing for safety stop.
 
-***
+---
 
 ## 5. Marine Life
 
@@ -98,7 +108,7 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
   - **Mid-September–early November:** Second best visibility window; continuing pelagic presence.
   - **Year-round:** Nudibranchs and small critter populations available throughout season.
 
-***
+---
 
 ## 6. Conditions
 
@@ -110,7 +120,7 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
   - Tidal phase drives current strength and direction; spring tides often produce stronger drift.
   - Monsoon patterns: North-East monsoon (November–February) brings rough seas and often halts diving operations.
 
-***
+---
 
 ## 7. Difficulty Assessment
 
@@ -136,7 +146,7 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
   - Advanced macro hunters can spend entire dive in canyon critter zones while faster currents pass overhead.
   - Divers comfortable at 22–25 m can explore deeper sections for larger specimen coral and pelagics.
 
-***
+---
 
 ## 8. Recommended Diver Profile
 
@@ -149,7 +159,7 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
   - Comfortable ascending in moving water
   - Familiar with group dynamics and current-aware positioning
 
-***
+---
 
 ## 9. Hazards & Safety Notes
 
@@ -176,7 +186,7 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
 
 - **Abort criteria:** Dives are commonly aborted if current prevents controlled descent to the pinnacle, visibility drops below ~8–10 m, or divers show elevated air consumption early in the dive.
 
-***
+---
 
 ## 10. Photography Notes
 
@@ -203,7 +213,7 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
   - Particulate water (summer months) increases backscatter; wide-angle with ambient light often better in reduced vis.
   - Current may push photographer; secure positioning or use rock shelter to stabilize framing.
 
-***
+---
 
 ## 11. Best Time to Dive
 
@@ -225,7 +235,7 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
   - **September–early October:** Very good. Visibility improving; water still warm.
   - **Mid-October–early November:** Good but variable; deteriorating end of season.
 
-***
+---
 
 ## 12. Practical Tips
 
@@ -243,9 +253,7 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
 
 - **Exposure protection:** 3–5 mm wetsuit recommended year-round. Water temperature 26–32 °C requires thermal protection even in warm season. Some divers prefer 5 mm for comfort during longer dives or if sensitive to cool water.
 
-***
-
-
+---
 
 ## 13. Keywords & Tags
 
@@ -273,4 +281,4 @@ Tiger Reef is a submerged pinnacle located between Labas Island and Sepoi Island
   - **Marine life focus:** Pelagics (barracuda, jacks), soft coral, macro
   - **Activity:** Recreational diving, photography (wide-angle & macro)
 
-***
+---

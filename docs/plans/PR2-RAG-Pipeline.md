@@ -17,16 +17,19 @@ All planned features implemented and verified. All known limitations have been r
 ### Major Improvements
 
 #### ✅ Native pgvector Integration
+
 - **Before**: Stored embeddings as JSON strings, computed similarity in-memory
 - **After**: Using native pgvector `vector(768)` type with database-side `<=>` operator
 - **Impact**: Significantly faster retrieval, better scalability, proper HNSW index utilization
 
 #### ✅ Corrected Vector Dimensions
+
 - **Before**: Schema had 1536 dimensions (incorrect for Gemini)
 - **After**: Updated to 768 dimensions (correct for text-embedding-004)
 - **Migration**: Generated `0001_past_human_fly.sql` to alter column type
 
 #### ✅ Complete Dive Site Metadata
+
 - **Before**: 5 dive sites without frontmatter
 - **After**: All dive sites have complete YAML frontmatter with proper schema
 - **Benefit**: All content ready for validation and ingestion
@@ -34,12 +37,14 @@ All planned features implemented and verified. All known limitations have been r
 ### Deliverables Summary
 
 **Content Created:**
+
 - PADI Open Water certification guide (2000+ words)
 - SSI Open Water certification guide (2000+ words)
 - Tioman Island destination overview (1500+ words)
 - 5 dive sites with complete frontmatter (Tiger Reef, Batu Malang, Pulau Chebeh, Pulau Labas, Renggis Island)
 
 **Code Delivered:**
+
 - Embedding provider abstraction with Gemini integration
 - Hybrid text chunking (semantic + paragraph split)
 - Content ingestion script (idempotent, with logging)
@@ -48,6 +53,7 @@ All planned features implemented and verified. All known limitations have been r
 - 14 unit tests (all passing)
 
 **Verification Results:**
+
 - ✅ Type checking: No errors
 - ✅ Tests: 14/14 passing (chunking: 8, embeddings: 6)
 - ✅ Build: Next.js production build successful
@@ -65,6 +71,7 @@ All planned features implemented and verified. All known limitations have been r
 ### Files Modified/Created
 
 **Content Files (9 total):**
+
 - `content/README.md` (updated with authoring guidelines)
 - `content/certifications/padi/open-water.md`
 - `content/certifications/ssi/open-water.md`
@@ -76,6 +83,7 @@ All planned features implemented and verified. All known limitations have been r
 - `content/destinations/Malaysia-Tioman/tioman-renggis-island.md` (added frontmatter)
 
 **Source Code (9 files):**
+
 - `src/lib/embeddings/types.ts`
 - `src/lib/embeddings/gemini-provider.ts`
 - `src/lib/embeddings/index.ts`
@@ -85,16 +93,19 @@ All planned features implemented and verified. All known limitations have been r
 - `src/db/schema/content-embeddings.ts` (updated to vector(768))
 
 **Scripts (3 files):**
+
 - `scripts/ingest-content.ts`
 - `scripts/clear-embeddings.ts`
 - `scripts/validate-content.ts`
 
 **Tests (3 files):**
+
 - `tests/unit/chunking.test.ts`
 - `tests/unit/embeddings.test.ts`
 - `tests/integration/ingest-content.test.ts`
 
 **Configuration:**
+
 - `package.json` (added dependencies and scripts)
 - `.env.example` (added EMBEDDING_PROVIDER configuration)
 - `drizzle.config.ts` (migration generated for vector dimension)
@@ -695,17 +706,17 @@ pnpm content:validate
 
 ### Design Decisions
 
-| Topic | Decision | Rationale |
-|-------|----------|--------|
-| **Embedding Provider** | Gemini `text-embedding-004` | Proven, 1536 dimensions, good performance; use `@google/generative-ai` SDK |
-| **Chunk Size** | 500-800 tokens per chunk | Balance between context and relevance; preserve paragraph boundaries |
-| **Chunking Strategy** | Hybrid (semantic + paragraph split) | Try semantic split first (markdown headers), fall back to paragraph split if section >800 tokens |
-| **Metadata Storage** | Frontmatter + chunk index in JSONB | Flexible for filtering and debugging; parse with `gray-matter` |
-| **Content Scope (V1)** | Minimal viable content | Certification guides (PADI/SSI OW + comparison + placeholders for other agencies), 1 destination (Tioman Island, Malaysia), 5 dive sites |
-| **Idempotency** | Check by `content_path` or hash | Skip already-ingested files; add `--force` flag for updates |
-| **Rate Limiting** | Sequential processing with retry | Exponential backoff, process files one at a time to avoid API limits |
-| **Content Sources** | All reputable sources | Official agency sites (PADI, SSI), dive magazines, DAN, reputable dive operators |
-| **Scripts Location** | Project root `scripts/` folder | Keeps utility scripts separate from `src/` application code |
+| Topic                  | Decision                            | Rationale                                                                                                                                |
+| ---------------------- | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Embedding Provider** | Gemini `text-embedding-004`         | Proven, 1536 dimensions, good performance; use `@google/generative-ai` SDK                                                               |
+| **Chunk Size**         | 500-800 tokens per chunk            | Balance between context and relevance; preserve paragraph boundaries                                                                     |
+| **Chunking Strategy**  | Hybrid (semantic + paragraph split) | Try semantic split first (markdown headers), fall back to paragraph split if section >800 tokens                                         |
+| **Metadata Storage**   | Frontmatter + chunk index in JSONB  | Flexible for filtering and debugging; parse with `gray-matter`                                                                           |
+| **Content Scope (V1)** | Minimal viable content              | Certification guides (PADI/SSI OW + comparison + placeholders for other agencies), 1 destination (Tioman Island, Malaysia), 5 dive sites |
+| **Idempotency**        | Check by `content_path` or hash     | Skip already-ingested files; add `--force` flag for updates                                                                              |
+| **Rate Limiting**      | Sequential processing with retry    | Exponential backoff, process files one at a time to avoid API limits                                                                     |
+| **Content Sources**    | All reputable sources               | Official agency sites (PADI, SSI), dive magazines, DAN, reputable dive operators                                                         |
+| **Scripts Location**   | Project root `scripts/` folder      | Keeps utility scripts separate from `src/` application code                                                                              |
 
 ### Future Enhancements
 

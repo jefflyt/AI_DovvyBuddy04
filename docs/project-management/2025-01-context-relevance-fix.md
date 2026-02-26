@@ -21,6 +21,7 @@ Users reported that chat responses were contextually incorrect:
 **Location**: [src/backend/app/agents/retrieval.py](../../src/backend/app/agents/retrieval.py)
 
 The system included conversation history BUT didn't teach the LLM to prioritize the **current question** over historical context. When users changed topics:
+
 - History contained Tioman → Indonesia question got Tioman answer
 - History influenced interpretation even when irrelevant
 
@@ -31,6 +32,7 @@ The system included conversation history BUT didn't teach the LLM to prioritize 
 **Location**: `content/destinations/` only contains `Malaysia-Tioman/`
 
 **Impact**: When asked about Indonesia:
+
 1. RAG retrieval found no Indonesia content
 2. Returned Tioman chunks (highest similarity match available)
 3. LLM used Tioman information without recognizing topic mismatch
@@ -40,6 +42,7 @@ The system included conversation history BUT didn't teach the LLM to prioritize 
 **Location**: [src/backend/app/orchestration/conversation_manager.py](../../src/backend/app/orchestration/conversation_manager.py)
 
 Follow-up templates were too generic:
+
 - "Is this for learning, planning a dive, or just curious?" (repetitive)
 - "Which destination are you considering?" (too abrupt)
 - No context awareness or variation
@@ -62,6 +65,7 @@ messages.append(LLMMessage(role="user", content=f"[CURRENT QUESTION]: {context.q
 ```
 
 **Rationale**:
+
 - Keeps sufficient history for conversational continuity
 - Explicitly marks current question with `[CURRENT QUESTION]` tag
 - LLM learns to prioritize tagged query over historical context
@@ -87,6 +91,7 @@ CONTEXT HANDLING RULES (CRITICAL):
 ```
 
 **Rationale**:
+
 - Teaches LLM to detect topic changes
 - Maintains continuity for follow-up questions ("tell me more about that")
 - Prevents cross-contamination between unrelated topics
@@ -96,6 +101,7 @@ CONTEXT HANDLING RULES (CRITICAL):
 **File**: [src/backend/app/orchestration/conversation_manager.py](../../src/backend/app/orchestration/conversation_manager.py)
 
 **Improved Templates**:
+
 ```python
 FOLLOW_UP_TEMPLATES: Dict[IntentType, str] = {
     IntentType.INFO_LOOKUP: "Would you like more details or have other questions?",
@@ -106,12 +112,14 @@ FOLLOW_UP_TEMPLATES: Dict[IntentType, str] = {
 ```
 
 **Enhanced Generation Rules**:
+
 - Increased character limit: 100 → 120 for more natural questions
 - Removed overly strict validations (e.g., no numbers allowed)
 - Added examples of good vs bad follow-ups
 - Required contextual relevance to user's last message
 
 **Rationale**:
+
 - More natural, conversational follow-ups
 - Context-aware (responds to what user just asked)
 - Avoids repetitive generic questions
@@ -132,6 +140,7 @@ logger.debug(f"Top RAG result: similarity={top_result.similarity:.3f}, ...")
 ```
 
 **Rationale**:
+
 - Visibility into RAG retrieval quality
 - Helps identify when irrelevant content is being returned
 - Aids future debugging of context issues
@@ -141,10 +150,12 @@ logger.debug(f"Top RAG result: similarity={top_result.similarity:.3f}, ...")
 ### Test Scenario 1: Topic Change Detection
 
 **Query Sequence**:
+
 1. "tell me about Tioman diving"
 2. "where can I dive in Indonesia?"
 
 **Expected Behavior**:
+
 - Question 2 should recognize Indonesia ≠ Tioman
 - Should NOT return Tioman information
 - Should explicitly state Indonesia content is not available yet
@@ -152,10 +163,12 @@ logger.debug(f"Top RAG result: similarity={top_result.similarity:.3f}, ...")
 ### Test Scenario 2: Conversational Continuity
 
 **Query Sequence**:
+
 1. "tell me about Tioman diving"
 2. "what are the best sites there?"
 
 **Expected Behavior**:
+
 - Question 2 should maintain context ("there" = Tioman)
 - 6-message history window provides continuity
 - Seamless conversation flow
@@ -163,11 +176,13 @@ logger.debug(f"Top RAG result: similarity={top_result.similarity:.3f}, ...")
 ### Test Scenario 3: Multiple Unrelated Questions
 
 **Query Sequence**:
+
 1. "where can I dive in Tioman?"
 2. "what certification does PADI offer?"
 3. "tell me about equalization techniques"
 
 **Expected Behavior**:
+
 - Each question treated independently
 - No contamination (e.g., PADI response shouldn't mention Tioman)
 - Follow-ups are contextual and varied
@@ -175,6 +190,7 @@ logger.debug(f"Top RAG result: similarity={top_result.similarity:.3f}, ...")
 ### Test Scenario 4: Follow-up Quality
 
 **Expected**:
+
 - No repetitive "Is this for learning or planning?" questions
 - Contextual follow-ups based on user's actual question
 - Natural conversation flow

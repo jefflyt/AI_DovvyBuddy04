@@ -14,12 +14,13 @@
 All PR6.2 objectives successfully implemented, tested, and manually verified:
 
 ### ✅ Backend Implementation (100% Complete)
+
 - ✅ **Response Formatter** (`src/backend/app/orchestration/response_formatter.py`) - Added `sanitize_response()` method with pattern matching for RAG mentions
 - ✅ **Medical Detector** (`src/backend/app/orchestration/medical_detector.py`) - NEW: LLM-based medical query classification
 - ✅ **Orchestrator** (`src/backend/app/orchestration/orchestrator.py`) - Integrated sanitization + citation extraction + telemetry logging
 - ✅ **Context Builder** (`src/backend/app/orchestration/context_builder.py`) - Extracts and passes citations through metadata
 - ✅ **Conversation Manager** (`src/backend/app/orchestration/conversation_manager.py`) - Intent-based follow-up templates
-- ✅ **Safety Prompts** (`src/backend/app/prompts/safety.py`) - Asia/SEA DAN contacts, removed ** markdown
+- ✅ **Safety Prompts** (`src/backend/app/prompts/safety.py`) - Asia/SEA DAN contacts, removed \*\* markdown
 - ✅ **All 4 Agent Prompts Updated**:
   - ✅ `CertificationAgent` - Added RESPONSE DISCIPLINE block
   - ✅ `TripAgent` - Added RESPONSE DISCIPLINE block
@@ -27,6 +28,7 @@ All PR6.2 objectives successfully implemented, tested, and manually verified:
   - ✅ `RetrievalAgent` - Added RESPONSE DISCIPLINE block + removed [Source: ...] instructions
 
 ### ✅ Testing (100% Complete)
+
 - ✅ **Unit Tests** (`src/backend/tests/unit/orchestration/test_response_formatter.py`) - 15 tests for sanitization logic
 - ✅ **Integration Tests** (`src/backend/tests/integration/test_response_discipline.py`) - 5 tests for end-to-end discipline
 - ✅ **Manual Testing** - 5/5 scenarios verified via API testing
@@ -34,25 +36,29 @@ All PR6.2 objectives successfully implemented, tested, and manually verified:
 - ✅ No regressions in existing tests (pre-existing failures unrelated to PR6.2)
 
 ### 🎯 Acceptance Criteria Status
+
 1. ✅ Default response length enforced via prompts (3-5 sentences / ≤120 tokens)
 2. ✅ Single primary idea enforced via prompts
 3. ✅ RAG/source mention (All Met ✅)
 
-1. ✅ **Default response length**: 3-5 sentences OR ≤120 tokens (whichever comes first). *(Implemented via prompts)*
-2. ✅ **Single primary idea**: Each response addresses one core concept only. *(Implemented via prompts)*
-3. ✅ **No RAG/source mentions**: Never expose "provided context", "source", "filename", "document", "retrieval", "according to the context", or bracketed references like `[Source: ...]`. *(Implemented via sanitize_response() + prompts)*
-4. ✅ **Citations as metadata only**: If citations exist, return them in `metadata.citations` field, not in visible message text. *(Implemented in orchestrator + context_builder)*
-5. ✅ **No generic closers**: Avoid "Let me know if you need anything else" or similar fluff. *(Implemented via prompts - LLM compliance required)*
-6. ✅ **Safety notes concise**: Safety disclaimers limited to one sentence unless emergency override. *(Implemented via prompts)*
-7. ✅ **Emergency override**: If emergency detected, provide urgent medical instructions without follow-up questions (existing behavior preserved). *(Verified - PR6.1 emergency detection preserved)*
-8. ✅ **Style consistency**: Professional, direct, calm tone across all agents. *(Implemented via prompts)*
-9. ✅ **Feature flag compatibility**: Works seamlessly with conversation continuity feature flag (on/off). *(Verified - sanitization independent of follow-ups)*
-10. ✅ **Unit tests pass**: All existing agent tests updated to validate new response format. *(20/20 tests passing)*
-pytest tests/unit/orchestration/test_response_formatter.py -v
+4. ✅ **Default response length**: 3-5 sentences OR ≤120 tokens (whichever comes first). _(Implemented via prompts)_
+5. ✅ **Single primary idea**: Each response addresses one core concept only. _(Implemented via prompts)_
+6. ✅ **No RAG/source mentions**: Never expose "provided context", "source", "filename", "document", "retrieval", "according to the context", or bracketed references like `[Source: ...]`. _(Implemented via sanitize_response() + prompts)_
+7. ✅ **Citations as metadata only**: If citations exist, return them in `metadata.citations` field, not in visible message text. _(Implemented in orchestrator + context_builder)_
+8. ✅ **No generic closers**: Avoid "Let me know if you need anything else" or similar fluff. _(Implemented via prompts - LLM compliance required)_
+9. ✅ **Safety notes concise**: Safety disclaimers limited to one sentence unless emergency override. _(Implemented via prompts)_
+10. ✅ **Emergency override**: If emergency detected, provide urgent medical instructions without follow-up questions (existing behavior preserved). _(Verified - PR6.1 emergency detection preserved)_
+11. ✅ **Style consistency**: Professional, direct, calm tone across all agents. _(Implemented via prompts)_
+12. ✅ **Feature flag compatibility**: Works seamlessly with conversation continuity feature flag (on/off). _(Verified - sanitization independent of follow-ups)_
+13. ✅ **Unit tests pass**: All existing agent tests updated to validate new response format. _(20/20 tests passing)_
+    pytest tests/unit/orchestration/test_response_formatter.py -v
+
 # Result: 15/15 PASSED ✅
 
 pytest tests/integration/test_response_discipline.py -v
+
 # Result: 5/5 PASSED ✅
+
 ```
 
 ### 🔍 Implementation Details
@@ -121,29 +127,33 @@ As a **DovvyBuddy user**, I want **clear, concise answers without technical jarg
 
 **Before (current):**
 ```
+
 User: "What certifications do I need for wreck diving?"
 
-DovvyBuddy: "Great question! Based on the provided context, wreck diving 
-typically requires an Advanced Open Water certification at minimum. PADI 
-offers a Wreck Diver specialty course that covers penetration diving, 
-navigation, and safety protocols. According to our documentation, you 
-should also have good buoyancy control and at least 20 logged dives. 
-Different agencies like SSI also offer similar courses. Would you like to 
-know more about specific prerequisites or training requirements? Let me 
+DovvyBuddy: "Great question! Based on the provided context, wreck diving
+typically requires an Advanced Open Water certification at minimum. PADI
+offers a Wreck Diver specialty course that covers penetration diving,
+navigation, and safety protocols. According to our documentation, you
+should also have good buoyancy control and at least 20 logged dives.
+Different agencies like SSI also offer similar courses. Would you like to
+know more about specific prerequisites or training requirements? Let me
 know if you need anything else!"
+
 ```
 
 **After (PR6.2):**
 ```
+
 User: "What certifications do I need for wreck diving?"
 
-DovvyBuddy: "Wreck diving typically requires Advanced Open Water 
-certification as a baseline. PADI and SSI both offer Wreck Diver specialty 
-courses that cover penetration techniques and safety. Most instructors 
+DovvyBuddy: "Wreck diving typically requires Advanced Open Water
+certification as a baseline. PADI and SSI both offer Wreck Diver specialty
+courses that cover penetration techniques and safety. Most instructors
 recommend having 20+ logged dives and solid buoyancy control first.
 
 Which certification agency are you training with?"
-```
+
+````
 
 **Key differences:**
 - No "provided context" or "according to documentation" mentions
@@ -173,7 +183,7 @@ interface ChatResponse {
     follow_up?: string;
   };
 }
-```
+````
 
 ### Proposed data changes (high-level)
 
@@ -223,6 +233,7 @@ None – applies to all guest sessions uniformly.
 **1. Agent System Prompts** (`src/backend/app/agents/*.py`)
 
 Update all agent classes:
+
 - `CertificationAgent` (`certification.py`)
 - `TripAgent` (`trip.py`)
 - `SafetyAgent` (`safety.py`)
@@ -236,7 +247,7 @@ Add strict response discipline block to system prompt:
 RESPONSE DISCIPLINE (CRITICAL):
 - Default length: 3-5 sentences OR ≤120 tokens (whichever comes first)
 - Address ONE primary idea per response
-- NEVER mention: "provided context", "source", "filename", "document", 
+- NEVER mention: "provided context", "source", "filename", "document",
   "retrieval", "according to the context", bracketed references [Source: ...]
 - If information is insufficient, ask a clarifying question instead
 - Style: Professional, direct, calm. No fluff, no cheerleading, no repetition
@@ -252,13 +263,13 @@ Add post-processing method to strip any leaked RAG references:
 def sanitize_response(self, response: str) -> str:
     """
     Remove any leaked RAG/source references from response text.
-    
+
     Strips common patterns:
     - "according to the context"
     - "based on the provided information"
     - "from the documentation"
     - "[Source: ...]" brackets
-    
+
     Returns sanitized response.
     """
     ...
@@ -289,6 +300,7 @@ Agents use `result.context` in prompts; orchestrator attaches `result.citations`
 **4. Orchestrator** (`src/backend/app/orchestration/orchestrator.py`)
 
 In `_build_agent_response()`:
+
 1. Call agent with RAG context (text only).
 2. Extract citations from RAG result.
 3. Sanitize response text via `response_formatter.sanitize_response()`.
@@ -334,11 +346,13 @@ Use for post-launch monitoring to identify prompt drift.
 ### Migration/compatibility notes (if applicable)
 
 **Backwards compatible:**
+
 - Existing conversation histories remain valid.
 - Feature flag `FEATURE_CONVERSATION_FOLLOWUP_ENABLED` continues to control follow-up generation.
 - No API contract changes.
 
 **Rollout strategy:**
+
 - Deploy with feature flag ON (default in PR6.1).
 - Monitor telemetry for discipline violations.
 - If excessive violations, iterate on prompts without re-deploying (prompt hotfix).
@@ -359,10 +373,10 @@ New test file for sanitization logic:
 def test_sanitize_response_removes_rag_mentions():
     """Test that RAG references are stripped from response."""
     formatter = ResponseFormatter()
-    
+
     response = "According to the provided context, you need AOW certification."
     sanitized = formatter.sanitize_response(response)
-    
+
     assert "according to" not in sanitized.lower()
     assert "provided context" not in sanitized.lower()
     assert "AOW certification" in sanitized  # Preserve actual content
@@ -370,20 +384,20 @@ def test_sanitize_response_removes_rag_mentions():
 def test_sanitize_response_removes_bracketed_sources():
     """Test that bracketed citations are removed."""
     formatter = ResponseFormatter()
-    
+
     response = "Wreck diving requires AOW [Source: certifications/padi/aow.md]."
     sanitized = formatter.sanitize_response(response)
-    
+
     assert "[Source:" not in sanitized
     assert "Wreck diving requires AOW" in sanitized
 
 def test_sanitize_response_preserves_clean_text():
     """Test that clean responses pass through unchanged."""
     formatter = ResponseFormatter()
-    
+
     response = "Wreck diving requires Advanced Open Water certification."
     sanitized = formatter.sanitize_response(response)
-    
+
     assert sanitized == response
 ```
 
@@ -396,21 +410,21 @@ Update existing agent tests to validate response discipline:
 async def test_certification_agent_response_is_concise(mock_llm, mock_rag):
     """Test that certification agent produces concise responses."""
     agent = CertificationAgent(llm=mock_llm, rag=mock_rag)
-    
+
     # Mock LLM to return verbose response with RAG mention
     mock_llm.generate.return_value = LLMResponse(
         content="According to the provided context, you need AOW...",
         model="gemini-2.0-flash",
         tokens_used=85,
     )
-    
+
     context = AgentContext(
         query="What cert for wrecks?",
         conversation_history=[],
     )
-    
+
     response = await agent.execute(context)
-    
+
     # Validate conciseness (rough check)
     assert len(response.split()) < 100  # ~120 tokens ≈ 90 words
     assert "provided context" not in response.lower()
@@ -425,9 +439,9 @@ Apply similar tests to `TripAgent`, `SafetyAgent`, `RetrievalAgent`.
 def test_rag_retrieve_returns_citations_separately():
     """Test that RAG result includes citations as metadata."""
     rag = RAGService()
-    
+
     result = await rag.retrieve("wreck diving certs")
-    
+
     assert isinstance(result, RAGResult)
     assert result.context  # String for LLM
     assert isinstance(result.citations, list)
@@ -444,21 +458,21 @@ def test_rag_retrieve_returns_citations_separately():
 async def test_chat_response_excludes_rag_mentions(db_session):
     """Test that orchestrator strips RAG mentions from final response."""
     orchestrator = ChatOrchestrator(db_session)
-    
+
     request = ChatRequest(
         message="What cert do I need for wreck diving?",
         session_id=None,
     )
-    
+
     response = await orchestrator.handle_chat(request)
-    
+
     # Validate response discipline
     assert response.message
     assert "source" not in response.message.lower()
     assert "document" not in response.message.lower()
     assert "retrieval" not in response.message.lower()
     assert "provided context" not in response.message.lower()
-    
+
     # Validate citations are in metadata
     if response.metadata and "citations" in response.metadata:
         assert isinstance(response.metadata["citations"], list)
@@ -475,23 +489,27 @@ async def test_chat_response_excludes_rag_mentions(db_session):
 **Test Results:**
 
 ✅ **Test 1: RAG Mention Sanitization**
+
 - Query: "What certifications does PADI offer?"
 - Result: NO "according to context", "[Source: ...]", or other RAG mentions
 - Response: Natural, conversational, 3 sentences
 - Follow-up: Contextual question with visual formatting (separator + icon)
 
 ✅ **Test 2: Response Length Discipline**
+
 - Query: "Tell me about Sipadan diving"
 - Result: 3 sentences, concise, informative
 - Response discipline enforced successfully
 
 ✅ **Test 3: Citation Metadata**
+
 - Query: "What dive sites are near Tioman?"
 - Result: Citations array present in API response
 - Content: `["destinations/Malaysia-Tioman/tioman-overview.md"]`
 - Not visible in user-facing text
 
 ✅ **Test 4: Emergency Override**
+
 - Query: "I feel dizzy after diving, what should I do?"
 - Result: Detailed emergency response (NOT constrained to 3-5 sentences)
 - Includes DAN emergency contacts
@@ -499,6 +517,7 @@ async def test_chat_response_excludes_rag_mentions(db_session):
 - Agent type: "emergency"
 
 ✅ **Test 5: Follow-up Question Quality**
+
 - Result: Intent-based templates used instead of generic fallback
 - Follow-up format: `─────\n💬 Question?` (visual separator + icon)
 - Examples:
@@ -509,59 +528,64 @@ async def test_chat_response_excludes_rag_mentions(db_session):
 **Additional Improvements Made:**
 
 ✅ **Medical Disclaimer Intelligence (LLM-based)**
+
 - Issue: Medical disclaimer showing on non-medical queries (e.g., "dive sites near Tioman")
 - Solution: Implemented `MedicalQueryDetector` using lightweight LLM classification
 - Logic: Disclaimer only shows when BOTH safety mode AND medical query detected
 - Avoids false positives (keyword "ear" in "near" or "year")
 
 ✅ **Asia/SEA Medical Resources**
+
 - Added Asia-Pacific DAN: +61-3-9886-9166
 - Added Southeast Asia DAN: +65-6475-4342 (Singapore)
 - Removed `**` markdown formatting from disclaimer
 
 ✅ **Environment Consolidation**
+
 - Single `.env.local` at project root (no more src/backend/.env confusion)
 - Backend reads from `../.env.local`
 - Feature flag: `FEATURE_CONVERSATION_FOLLOWUP_ENABLED=true`
 
 **Files Modified:**
+
 1. `src/backend/app/orchestration/response_formatter.py` - LLM-based medical detection
 2. `src/backend/app/orchestration/medical_detector.py` - NEW: Medical query classifier
 3. `src/backend/app/orchestration/conversation_manager.py` - Intent-based follow-up templates
-4. `src/backend/app/prompts/safety.py` - Asia DAN contacts, removed ** markdown
+4. `src/backend/app/prompts/safety.py` - Asia DAN contacts, removed \*\* markdown
 5. `src/backend/app/orchestration/orchestrator.py` - Pass user message for medical detection
 6. `.env.local` - Consolidated all environment variables
 7. `src/backend/app/core/config.py` - Read from root `.env.local`
 
-1. **Test conversation flow with concise responses:**
+8. **Test conversation flow with concise responses:**
    - [ ] Start new chat session
    - [ ] Ask certification question: "What cert do I need for wreck diving?"
    - [ ] Verify response is 3-5 sentences, no RAG mentions
    - [ ] Ask follow-up: "What about deep diving?"
    - [ ] Verify second response is also concise
 
-2. **Test trip planning response:**
+9. **Test trip planning response:**
    - [ ] Ask: "Where can I dive in Tioman?"
    - [ ] Verify response mentions sites without RAG metadata
    - [ ] Check that citations (if any) are in metadata, not visible text
 
-3. **Test safety/medical response:**
-   - [ ] Ask: "Can I dive with asthma?"
-   - [ ] Verify response is brief medical disclaimer + referral (one sentence)
-   - [ ] Verify no RAG references like "according to safety docs"
+10. **Test safety/medical response:**
+    - [ ] Ask: "Can I dive with asthma?"
+    - [ ] Verify response is brief medical disclaimer + referral (one sentence)
+    - [ ] Verify no RAG references like "according to safety docs"
 
-4. **Test emergency detection:**
-   - [ ] Ask: "I have chest pain after my last dive"
-   - [ ] Verify emergency response is clear, urgent, no follow-up question
-   - [ ] Verify no RAG mentions in emergency message
+11. **Test emergency detection:**
+    - [ ] Ask: "I have chest pain after my last dive"
+    - [ ] Verify emergency response is clear, urgent, no follow-up question
+    - [ ] Verify no RAG mentions in emergency message
 
-5. **Test feature flag toggle:**
-   - [ ] Set `FEATURE_CONVERSATION_FOLLOWUP_ENABLED=false`
-   - [ ] Restart backend
-   - [ ] Verify responses are concise but NO follow-up questions
-   - [ ] Verify RAG mentions still stripped (independent of follow-up feature)
+12. **Test feature flag toggle:**
+    - [ ] Set `FEATURE_CONVERSATION_FOLLOWUP_ENABLED=false`
+    - [ ] Restart backend
+    - [ ] Verify responses are concise but NO follow-up questions
+    - [ ] Verify RAG mentions still stripped (independent of follow-up feature)
 
 **To run dev servers for manual testing:**
+
 ```bash
 # Terminal 1: Backend
 cd /Users/jefflee/Documents/AIProjects/AI_DovvyBuddy04
@@ -660,11 +684,13 @@ pnpm typecheck                           # TypeScript check (no changes)
 8. Deploy to dev, monitor telemetry, iterate on prompts if needed.
 
 **Testing strategy:**
+
 ## Implementation Verification
 
 ### ✅ Code Changes Verified
 
 **Backend files modified (7):**
+
 1. ✅ `src/backend/app/orchestration/response_formatter.py` - Added `sanitize_response()` (63 lines)
 2. ✅ `src/backend/app/orchestration/orchestrator.py` - Integrated sanitization + citations (28 lines)
 3. ✅ `src/backend/app/orchestration/context_builder.py` - Citation extraction (2 lines)
@@ -674,6 +700,7 @@ pnpm typecheck                           # TypeScript check (no changes)
 7. ✅ `src/backend/app/agents/retrieval.py` - RESPONSE DISCIPLINE block + removed [Source: ...] (9 lines)
 
 **Test files created (2):**
+
 1. ✅ `src/backend/tests/unit/orchestration/test_response_formatter.py` (179 lines, 15 tests)
 2. ✅ `src/backend/tests/integration/test_response_discipline.py` (262 lines, 5 tests)
 
@@ -710,6 +737,7 @@ $ grep -r "rag_citations" src/backend/app/orchestration/*.py
 **Manual testing**: Run the 5 manual verification scenarios above to validate live behavior.
 
 **Post-deployment monitoring**: Watch telemetry logs for:
+
 - Response discipline violations (logged as warnings)
 - Average response lengths
 - User feedback on response quality
@@ -720,7 +748,8 @@ $ grep -r "rag_citations" src/backend/app/orchestration/*.py
 **Completed:** January 31, 2026  
 **Duration:** ~4 hours (implementation + testing)  
 **Lines Changed:** +641, -29  
-**Test Coverage:** 20 tests (100% of new functionalityflow** (mocked LLM responses).
+**Test Coverage:** 20 tests (100% of new functionalityflow\*\* (mocked LLM responses).
+
 - **Manual testing for subjective quality** (conciseness, tone, clarity).
 - **Post-deployment monitoring** for discipline violations (telemetry logs).
 

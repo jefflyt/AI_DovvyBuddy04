@@ -5,7 +5,7 @@ export async function register() {
   if (process.env.NEXT_RUNTIME === 'nodejs') {
     // Server-side instrumentation
     const { captureException } = await import('@sentry/nextjs')
-    
+
     // Global error handler for uncaught exceptions
     process.on('unhandledRejection', (reason) => {
       console.error('Unhandled Rejection:', reason)
@@ -21,7 +21,7 @@ export async function register() {
   if (process.env.NEXT_RUNTIME === 'edge') {
     // Edge runtime instrumentation
     const { captureException } = await import('@sentry/nextjs')
-    
+
     // Global error handler for edge runtime
     globalThis.addEventListener('unhandledrejection', (event) => {
       console.error('Unhandled Rejection (Edge):', event.reason)

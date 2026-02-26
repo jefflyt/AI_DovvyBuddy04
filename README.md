@@ -35,23 +35,29 @@ When you're ready, we'll connect you with partner dive shops and certified instr
 ## ✨ Key Features
 
 ### Intelligent Conversation
+
 Chat naturally about your diving questions and goals. DovvyBuddy understands context and provides personalized responses based on your certification level and experience.
 
 ### Curated Knowledge Base
+
 Responses are grounded in carefully curated content about:
+
 - Certification programs (PADI, SSI)
 - Dive destinations worldwide
 - Safety procedures and best practices
 - Equipment and preparation guidance
 
 ### Multi-Agent Intelligence
+
 Behind the scenes, specialized AI agents work together:
+
 - **Certification Expert** — Knows the ins and outs of diving courses
 - **Trip Advisor** — Matches you with suitable dive sites
 - **Safety Guide** — Provides emergency contacts and safety protocols
 - **Content Specialist** — Retrieves relevant information from our knowledge base
 
 ### Seamless Lead Capture
+
 When you're ready to take action, we make it easy to connect with dive shops and instructors who can help you achieve your diving goals.
 
 ---
@@ -61,6 +67,7 @@ When you're ready to take action, we make it easy to connect with dive shops and
 **Development Stage:** Active Development (V0.5 → V1.0)
 
 ### ✅ What's Working
+
 - Multi-agent RAG system with specialized diving knowledge
 - Python FastAPI backend with async operations
 - PostgreSQL database with vector embeddings
@@ -68,12 +75,14 @@ When you're ready to take action, we make it easy to connect with dive shops and
 - Session management and conversation continuity
 
 ### 🚧 In Progress
+
 - Web chat interface (React/Next.js)
 - Lead capture and email delivery
 - Landing page with feature showcase
 - Production deployment and monitoring
 
 ### 🔮 Coming Soon
+
 - Telegram bot interface
 - User authentication and profiles
 - Conversation history and bookmarking
@@ -84,22 +93,26 @@ When you're ready to take action, we make it easy to connect with dive shops and
 ## 🎯 Use Cases
 
 ### For Aspiring Divers
-*"I'm interested in learning to dive but I'm nervous about the water. What should I expect from an Open Water course?"*
+
+_"I'm interested in learning to dive but I'm nervous about the water. What should I expect from an Open Water course?"_
 
 Get honest, reassuring information about what training involves, common fears, and how instructors help students succeed.
 
 ### For Certification Progression
-*"I'm PADI Open Water certified. What are my options for advancing my skills?"*
+
+_"I'm PADI Open Water certified. What are my options for advancing my skills?"_
 
 Explore Advanced Open Water, specialties, and other certifications. Understand prerequisites, costs, and what you'll learn.
 
 ### For Trip Planning
-*"I'm Open Water certified and want to try my first dive trip. Where should I go in Southeast Asia?"*
+
+_"I'm Open Water certified and want to try my first dive trip. Where should I go in Southeast Asia?"_
 
 Receive recommendations for beginner-friendly sites with calm conditions, good visibility, and professional dive operations.
 
 ### For Safety Questions
-*"What should I do if I experience ear pain while descending?"*
+
+_"What should I do if I experience ear pain while descending?"_
 
 Access proper equalization techniques, understand when to abort a dive, and learn when to consult a doctor — with clear boundaries about what requires professional medical advice.
 
@@ -138,6 +151,7 @@ Want technical details? Check out [README.DEV.md](./README.DEV.md).
 ## 🗺️ Project Roadmap
 
 ### Phase 1: Foundation (✅ Complete)
+
 - Multi-agent RAG system
 - Python backend with FastAPI
 - Content ingestion pipeline
@@ -145,6 +159,7 @@ Want technical details? Check out [README.DEV.md](./README.DEV.md).
 - Session management
 
 ### Phase 2: Web Application (🚧 In Progress)
+
 - Chat interface with React
 - Lead capture forms
 - Landing page with feature showcase
@@ -152,11 +167,13 @@ Want technical details? Check out [README.DEV.md](./README.DEV.md).
 - Error monitoring and analytics
 
 ### Phase 3: Telegram Bot (🔮 Planned)
+
 - Telegram adapter for mobile-first experience
 - Cross-channel session continuity
 - Simplified lead capture for messaging
 
 ### Phase 4: User Accounts (🔮 Future)
+
 - Authentication and profiles
 - Conversation history
 - Bookmarked dive sites
@@ -167,32 +184,37 @@ Want technical details? Check out [README.DEV.md](./README.DEV.md).
 ## 💡 Design Philosophy
 
 ### User-First
+
 Every feature starts with a real diver's need. No complexity for complexity's sake.
 
 ### Safety-Conscious
+
 Clear boundaries about what AI can and cannot advise on. Medical and training decisions always redirect to professionals.
 
 ### Transparency
+
 Users understand they're talking to AI, not a human instructor. No deception, ever.
 
 ### Continuous Learning
+
 The knowledge base grows with feedback. Inaccuracies are corrected, gaps are filled, and content quality improves over time.
 
 ### Privacy-Aware
+
 Conversations are stored to improve the experience, but personal data is protected. Users control their information.
 
 ---
 
 ## 📚 Documentation
 
-| For... | Read... |
-|--------|---------|
-| **Understanding the project** | This README (you're here!) |
-| **Setting up development** | [README.DEV.md](./README.DEV.md) |
-| **Product vision** | [Product Spec (PSD)](./docs/psd/DovvyBuddy-PSD-V6.2.md) |
-| **Technical architecture** | [Technical Spec](./docs/technical/specification.md) |
-| **Development roadmap** | [Master Plan](./docs/plans/MASTER_PLAN.md) |
-| **Design decisions** | [Architecture Decision Records](./docs/decisions/) |
+| For...                        | Read...                                                 |
+| ----------------------------- | ------------------------------------------------------- |
+| **Understanding the project** | This README (you're here!)                              |
+| **Setting up development**    | [README.DEV.md](./README.DEV.md)                        |
+| **Product vision**            | [Product Spec (PSD)](./docs/psd/DovvyBuddy-PSD-V6.2.md) |
+| **Technical architecture**    | [Technical Spec](./docs/technical/specification.md)     |
+| **Development roadmap**       | [Master Plan](./docs/plans/MASTER_PLAN.md)              |
+| **Design decisions**          | [Architecture Decision Records](./docs/decisions/)      |
 
 ---
 
@@ -237,4 +259,4 @@ This project wouldn't be possible without:
 - **Product Vision:** Read the [Product Specification](./docs/psd/DovvyBuddy-PSD-V6.2.md)
 - **Technical Deep-Dive:** Check the [Technical Specification](./docs/technical/specification.md)
 
-*Built with curiosity, powered by AI, inspired by the ocean.*
+_Built with curiosity, powered by AI, inspired by the ocean._

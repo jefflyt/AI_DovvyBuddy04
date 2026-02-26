@@ -16,12 +16,14 @@ Establish a continuous improvement cycle for DovvyBuddy based on real user behav
 ### User Impact
 
 **Primary Users (Divers):**
+
 - **Prospective New Divers:** Experience improved answer relevance through refined RAG retrieval based on actual query patterns observed in production.
 - **OW Divers seeking Advanced Certification:** Benefit from expanded content coverage addressing gaps identified in user conversations.
 - **Trip-Planning Divers:** See faster response times through optimized LLM prompt engineering and caching strategies.
 - **Mobile Users:** Experience smoother interactions through UI/UX refinements based on real device usage data.
 
 **Secondary Impact:**
+
 - **Partner Shops:** Receive higher-quality leads with better context and qualification signals based on conversation analysis.
 - **Product Team:** Gain structured feedback loop with analytics-driven prioritization for V2 features.
 - **Content Contributors:** Benefit from clear content gap analysis and update workflows.
@@ -29,11 +31,13 @@ Establish a continuous improvement cycle for DovvyBuddy based on real user behav
 ### Dependencies
 
 **Upstream (Must be complete):**
+
 - **PR11a:** Production launch with analytics (Posthog/Vercel Analytics), error monitoring (Sentry), and observability infrastructure operational.
 - **Soft Launch Period:** Minimum 7-14 days of production traffic with real users to generate meaningful data.
 - **Analytics Data:** Session recordings, event tracking, conversion funnel data, performance metrics, error logs.
 
 **External Dependencies:**
+
 - **Analytics Dashboards:** Posthog dashboards configured for key metrics (session duration, message count per session, lead conversion rate, response latency).
 - **Error Monitoring:** Sentry configured with sufficient retention for pattern analysis.
 - **User Feedback Channel:** Simple feedback mechanism (e.g., thumbs up/down on responses, optional comment field) deployed in PR10a.
@@ -66,6 +70,7 @@ Establish a continuous improvement cycle for DovvyBuddy based on real user behav
 ### Recommended Number of PRs
 
 **4-6 PRs**, grouped by domain:
+
 1. **PR11a: Content Expansion & Gap Filling** (Data/Content layer)
 2. **PR11b: RAG Retrieval Tuning** (Backend/RAG layer)
 3. **PR11c: Prompt Engineering & Response Quality** (Backend/LLM layer)
@@ -80,6 +85,7 @@ Establish a continuous improvement cycle for DovvyBuddy based on real user behav
 ### Frontend
 
 **Pages/Components Impacted:**
+
 - `/app/chat/page.tsx` — UI refinements based on user behavior (e.g., improved empty state, better error messaging).
 - `MessageBubble.tsx` — Typography, spacing, readability improvements based on mobile usage patterns.
 - `ChatInput.tsx` — Potential enhancements (character counter, send-on-enter toggle, better mobile keyboard handling).
@@ -87,28 +93,33 @@ Establish a continuous improvement cycle for DovvyBuddy based on real user behav
 - Landing page (`/app/page.tsx`) — Copy/CTA adjustments based on bounce rate and session start analytics.
 
 **New UI States:**
+
 - Enhanced feedback widget (thumbs up/down with optional comment).
 - Improved loading states (skeleton screens, progress indicators for long RAG queries).
 - Better mobile viewport optimization (touch targets, spacing, safe areas).
 
 **Navigation/Entry Points:**
+
 - Potential "Example Questions" prompt suggestions to guide new users (based on top query patterns).
 - Quick links to common certification pathways identified in analytics.
 
 ### Backend
 
 **APIs to Add/Modify:**
+
 - `POST /api/feedback` — New endpoint for capturing user feedback on responses (thumbs up/down, optional comment).
 - `GET /api/analytics/insights` (Optional) — Internal endpoint for admin dashboard or weekly report generation.
 - `POST /api/chat` — Refine prompt construction logic based on observed failure patterns; add caching headers for repeated queries.
 
 **Services/Modules Impacted:**
+
 - `src/lib/rag/retrieval.ts` — Tuning parameters (top-k, similarity threshold, re-ranking logic) based on retrieval quality analysis.
 - `src/lib/prompts/` — Refine system prompts, add few-shot examples for common edge cases, improve safety guardrails based on observed misinterpretations.
 - `src/lib/model-provider/` — Add response caching for common queries, implement retry logic with exponential backoff if error rate is high.
 - `src/lib/session/` — Potential optimization if session lookup is a performance bottleneck.
 
 **Validation/Auth/Error Handling:**
+
 - Enhanced input validation for edge cases discovered in production (e.g., emoji handling, very long messages, special characters).
 - More granular error categorization for better Sentry alerting.
 - Rate limiting refinements based on observed abuse patterns (if any).
@@ -116,6 +127,7 @@ Establish a continuous improvement cycle for DovvyBuddy based on real user behav
 ### Data
 
 **Entities/Tables/Fields Involved:**
+
 - **New Table:** `feedback` — Store user feedback on assistant responses.
   - Fields: `id`, `session_id`, `message_id`, `rating` (positive/negative/neutral), `comment` (TEXT, nullable), `created_at`.
 - **content_embeddings** — Add new chunks for gap-filled content areas.
@@ -123,26 +135,31 @@ Establish a continuous improvement cycle for DovvyBuddy based on real user behav
 - **leads** — Add quality scoring field based on conversation depth/context richness (optional enhancement).
 
 **Migrations/Backfills:**
+
 - Migration to add `feedback` table.
 - Migration to add optional metadata columns to `sessions` table (backward-compatible, nullable fields).
 - Re-ingestion of updated content into `content_embeddings` (delete old, insert new).
 
 **Compatibility Strategy:**
+
 - All schema changes are additive (new tables, nullable columns) — no breaking changes.
 - Content re-ingestion can happen without downtime (upsert logic or versioned embeddings).
 
 ### Infra / Config
 
 **Env Vars/Secrets:**
+
 - Potentially add `FEATURE_FLAG_RESPONSE_CACHE=true|false` for testing caching logic.
 - `ANALYTICS_WEBHOOK_URL` (optional) for automated weekly reports.
 
 **Feature Flags:**
+
 - `ENABLE_FEEDBACK_WIDGET` — Toggle feedback UI on/off for gradual rollout.
 - `ENABLE_RESPONSE_CACHE` — Enable/disable LLM response caching for A/B testing.
 - `RAG_TOP_K` — Make retrieval parameter configurable via env var for easy tuning.
 
 **CI/CD:**
+
 - Add performance regression tests (response time benchmarks) to CI pipeline.
 - Add content validation checks (linting Markdown, checking for broken references).
 
@@ -159,6 +176,7 @@ Address content gaps identified through user conversation analysis and expand co
 **Scope**
 
 **In Scope:**
+
 - Analyze chat logs (anonymized) to identify top 10-15 topics with insufficient RAG retrieval results.
 - Write new Markdown content for identified gaps:
   - Expanded certification prerequisite details (medical requirements, age limits, skill prerequisites).
@@ -169,6 +187,7 @@ Address content gaps identified through user conversation analysis and expand co
 - Re-run content ingestion pipeline to update embeddings.
 
 **Out of Scope:**
+
 - Major content restructuring (taxonomy changes).
 - Content for destinations beyond initial 1-2 pilot locations.
 - User-generated content or community contributions.
@@ -203,10 +222,12 @@ None — improved responses appear automatically via updated RAG retrieval.
 **Verification**
 
 Commands:
+
 - `pnpm content:ingest`
 - `pnpm test` (run retrieval integration tests)
 
 Manual verification checklist:
+
 1. Run ingestion script, verify no errors.
 2. Query database: `SELECT COUNT(*) FROM content_embeddings;` — verify count increased.
 3. Test bot with sample gap questions, verify relevant chunks retrieved.
@@ -214,7 +235,7 @@ Manual verification checklist:
 
 **Rollback Plan**
 
-- **Revert Strategy:** 
+- **Revert Strategy:**
   - Keep previous content in git history.
   - Re-run ingestion with previous commit's content to restore old embeddings.
   - No feature flag needed (content changes are low-risk).
@@ -242,6 +263,7 @@ Optimize RAG retrieval parameters and logic based on observed retrieval quality 
 **Scope**
 
 **In Scope:**
+
 - Analyze retrieval logs to identify:
   - Queries with low similarity scores (poor retrieval).
   - Queries returning irrelevant chunks (false positives).
@@ -254,6 +276,7 @@ Optimize RAG retrieval parameters and logic based on observed retrieval quality 
 - Add retrieval metadata to session logs for debugging (chunk IDs, similarity scores).
 
 **Out of Scope:**
+
 - Switching to a different embedding model (defer to major version).
 - Implementing hybrid search (keyword + vector) — defer unless critical gap identified.
 - Semantic chunking improvements (keep existing 500-800 token strategy unless proven inadequate).
@@ -299,10 +322,12 @@ None — uses existing `content_embeddings` table.
 **Verification**
 
 Commands:
+
 - `pnpm test` (run retrieval integration tests)
 - `pnpm dev` (manual testing)
 
 Manual verification checklist:
+
 1. Deploy with `RAG_TOP_K=5, RAG_SIMILARITY_THRESHOLD=0.6`.
 2. Test 10 sample queries, review retrieved chunks and similarity scores.
 3. Adjust parameters, repeat testing.
@@ -336,6 +361,7 @@ Refine LLM system prompts and few-shot examples based on observed response quali
 **Scope**
 
 **In Scope:**
+
 - Analyze LLM responses for common failure modes:
   - Hallucinations (inventing facts not in RAG context).
   - Safety violations (giving medical/instructor advice).
@@ -352,6 +378,7 @@ Refine LLM system prompts and few-shot examples based on observed response quali
 - Optimize prompt length for performance (reduce token usage while maintaining quality).
 
 **Out of Scope:**
+
 - Switching LLM models (stay with Groq/Gemini).
 - Advanced prompt techniques (Chain-of-Thought, ReAct) — defer to V2 unless critical need identified.
 - Dynamic prompt construction based on user profile (defer to post-auth V2).
@@ -399,10 +426,12 @@ None.
 **Verification**
 
 Commands:
+
 - `pnpm test:prompts` (new script to run prompt test suite)
 - `pnpm test` (existing test suite)
 
 Manual verification checklist:
+
 1. Run prompt test suite, verify 95%+ pass rate.
 2. Manually test 10 real user queries from analytics, compare before/after responses.
 3. Check for improved tone, reduced hallucinations, better safety adherence.
@@ -436,6 +465,7 @@ Polish the chat interface and landing page based on user behavior analytics, imp
 **Scope**
 
 **In Scope:**
+
 - Analyze session recordings (Posthog) for UX friction points:
   - Interaction delays (slow taps, abandoned inputs).
   - Scroll/navigation patterns (dead zones, confusion points).
@@ -460,6 +490,7 @@ Polish the chat interface and landing page based on user behavior analytics, imp
   - Test with screen reader.
 
 **Out of Scope:**
+
 - Major redesign or new pages.
 - Complex animations or transitions (keep lightweight).
 - Dark mode (defer to V2).
@@ -507,10 +538,12 @@ None.
 **Verification**
 
 Commands:
+
 - `pnpm dev` (manual testing)
 - `pnpm build` (verify build succeeds)
 
 Manual verification checklist:
+
 1. Test chat interface on iPhone Safari, Android Chrome, desktop (Chrome, Firefox).
 2. Verify typing indicator, loading states, auto-scroll work correctly.
 3. Verify "Example Questions" appear on empty chat state.
@@ -547,6 +580,7 @@ Reduce response latency, optimize bundle size, and improve perceived performance
 **Scope**
 
 **In Scope:**
+
 - Analyze performance bottlenecks:
   - Identify slow API endpoints (response time p95).
   - Identify slow database queries (session lookup, RAG retrieval).
@@ -564,6 +598,7 @@ Reduce response latency, optimize bundle size, and improve perceived performance
   - Improve Lighthouse scores (target: >90 Performance, >90 Accessibility).
 
 **Out of Scope:**
+
 - CDN optimization beyond Vercel defaults (defer unless critical issue).
 - Server-side rendering optimizations beyond Next.js defaults (defer to major refactor).
 - Database scaling (read replicas, sharding) — defer unless traffic exceeds capacity.
@@ -627,11 +662,13 @@ Reduce response latency, optimize bundle size, and improve perceived performance
 **Verification**
 
 Commands:
+
 - `pnpm build` (verify build succeeds)
 - `pnpm analyze` (run bundle analyzer)
 - `pnpm lighthouse` (run Lighthouse audit — add script)
 
 Manual verification checklist:
+
 1. Deploy to staging with caching enabled.
 2. Test 10 common queries, verify caching works (check response headers, verify cache hits in logs).
 3. Test streaming responses (verify partial LLM output appears progressively).
@@ -670,6 +707,7 @@ Enhance observability and establish a structured feedback loop for continuous im
 **Scope**
 
 **In Scope:**
+
 - Implement user feedback widget:
   - Add thumbs up/down buttons on each assistant message.
   - Optional text field for user comments.
@@ -687,6 +725,7 @@ Enhance observability and establish a structured feedback loop for continuous im
   - Create template for quick-win improvements (content updates, prompt tweaks).
 
 **Out of Scope:**
+
 - Public-facing analytics or user dashboards.
 - Advanced BI tools (Tableau, Looker) — use Posthog/Retool for V1.
 - Real-time alerting beyond Sentry (defer complex monitoring to V2).
@@ -749,11 +788,13 @@ Enhance observability and establish a structured feedback loop for continuous im
 **Verification**
 
 Commands:
+
 - `pnpm db:migrate` (apply feedback table migration)
 - `pnpm test` (run unit/integration tests)
 - `pnpm report:weekly` (new script to generate report)
 
 Manual verification checklist:
+
 1. Deploy with `ENABLE_FEEDBACK_WIDGET=true`.
 2. Send a chat message, verify thumbs up/down buttons appear.
 3. Click thumbs up, verify success toast and DB entry.
@@ -790,10 +831,12 @@ Manual verification checklist:
 **Goal:** Improve answer relevance and coverage based on soft launch data.
 
 **PRs Included:**
+
 - **PR11a: Content Expansion & Gap Filling**
 - **PR11b: RAG Retrieval Tuning**
 
 **What "Done" Means:**
+
 - Top 10 content gaps addressed with new Markdown content.
 - RAG retrieval parameters tuned, golden test dataset passes at 90%+ relevance.
 - User queries that previously had poor answers now return relevant, grounded responses.
@@ -805,10 +848,12 @@ Manual verification checklist:
 **Goal:** Polish LLM outputs and refine UI based on user behavior.
 
 **PRs Included:**
+
 - **PR11c: Prompt Engineering & Response Quality**
 - **PR11d: UI/UX Refinements**
 
 **What "Done" Means:**
+
 - Prompt test suite passes at 95%+ (safety, grounding, tone).
 - Mobile UX friction points addressed (keyboard handling, touch targets, readability).
 - Landing page bounce rate reduced by 10-20% (monitored over 7 days).
@@ -821,10 +866,12 @@ Manual verification checklist:
 **Goal:** Optimize speed and establish continuous improvement feedback loop.
 
 **PRs Included:**
+
 - **PR11e: Performance Optimization**
 - **PR11f: Analytics & Feedback Loop** (Optional)
 
 **What "Done" Means:**
+
 - Chat response latency (p95) reduced by 20-30%.
 - Frontend bundle size reduced by 10-20%.
 - Lighthouse Performance score >90, Accessibility score >90.

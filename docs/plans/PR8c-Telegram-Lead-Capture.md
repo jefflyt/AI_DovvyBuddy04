@@ -16,15 +16,18 @@ Complete the Telegram bot implementation by adding lead capture flows (Training 
 ### User Impact
 
 **Primary Users (Divers):**
+
 - **Telegram users** can now request training or trip assistance directly through the bot.
 - **Mobile-first users** complete the full journey (discovery → guidance → lead capture) without leaving Telegram.
 - **Qualified leads** are delivered to partner shops with full Telegram user context.
 
 **Secondary Users (Partner Shops):**
+
 - Receive leads from Telegram channel with context (Telegram username, user ID).
 - Can identify Telegram users for follow-up.
 
 **Product Team:**
+
 - Full visibility into Telegram bot performance (analytics, errors, usage patterns).
 - Production-ready monitoring and alerting for Telegram channel.
 - Ability to optimize based on real usage data.
@@ -32,11 +35,13 @@ Complete the Telegram bot implementation by adding lead capture flows (Training 
 ### Dependencies
 
 **Upstream:**
+
 - **PR8a:** Agent service extracted and deployed to Cloud Run (REQUIRED).
 - **PR8b:** Telegram bot with basic chat flow (REQUIRED).
 - **PR1-6:** Database, RAG, sessions, lead capture, landing page (REQUIRED).
 
 **External:**
+
 - **Resend API:** Email delivery for leads (same as web).
 - **Sentry:** Error monitoring (optional but recommended).
 - **Analytics Service:** Posthog, GA4, or Vercel Analytics.
@@ -193,17 +198,18 @@ CREATE INDEX idx_leads_channel_type ON leads(channel_type);
 **Lead Data for Telegram:**
 
 Training Lead:
+
 ```json
 {
   "type": "training",
   "data": {
     "name": "John Doe",
     "email": "john@example.com",
-    "phone": "+1234567890",  // optional
-    "agency": "PADI",        // or "SSI" or "No preference"
-    "level": "Open Water",   // or "Advanced"
-    "location": "Cozumel",   // optional
-    "message": "..."         // optional
+    "phone": "+1234567890", // optional
+    "agency": "PADI", // or "SSI" or "No preference"
+    "level": "Open Water", // or "Advanced"
+    "location": "Cozumel", // optional
+    "message": "..." // optional
   },
   "channelType": "telegram",
   "channelMetadata": {
@@ -216,19 +222,20 @@ Training Lead:
 ```
 
 Trip Lead:
+
 ```json
 {
   "type": "trip",
   "data": {
     "name": "John Doe",
     "email": "john@example.com",
-    "phone": "+1234567890",        // optional
+    "phone": "+1234567890", // optional
     "destination": "Cozumel",
-    "dates": "March 2026",         // flexible text
+    "dates": "March 2026", // flexible text
     "certification_level": "Open Water",
-    "dive_count": "20",            // optional
-    "interests": "Wreck diving",   // optional
-    "message": "..."               // optional
+    "dive_count": "20", // optional
+    "interests": "Wreck diving", // optional
+    "message": "..." // optional
   },
   "channelType": "telegram",
   "channelMetadata": {
@@ -315,6 +322,7 @@ Update `.github/workflows/deploy.yml`:
    - "Great! I'll connect you with dive operators in that area. 🌊"
 
 3. Define state machine transitions:
+
    ```
    IDLE → [detect intent or /training or /trip] → LEAD_TYPE_SELECTION
    LEAD_TYPE_SELECTION → [click Training] → COLLECTING_NAME (training)
@@ -339,6 +347,7 @@ Update `.github/workflows/deploy.yml`:
    - Dive count: Optional, numeric or "skip"
 
 **Files Created:**
+
 - `src/telegram/docs/lead-capture-flow.md` (flow documentation)
 - `src/telegram/config/lead-config.ts` (prompts and validation rules)
 
@@ -357,8 +366,9 @@ Update `.github/workflows/deploy.yml`:
    - Background job to clean up expired states (every 1 minute)
 
 2. Add state types:
+
    ```typescript
-   type LeadCaptureState = 
+   type LeadCaptureState =
      | 'IDLE'
      | 'LEAD_TYPE_SELECTION'
      | 'COLLECTING_NAME'
@@ -368,24 +378,25 @@ Update `.github/workflows/deploy.yml`:
      | 'COLLECTING_ADDITIONAL'
      | 'COLLECTING_MESSAGE'
      | 'CONFIRM'
-     | 'LEAD_SUBMITTED';
+     | 'LEAD_SUBMITTED'
 
    interface StateData {
-     leadType?: 'training' | 'trip';
-     name?: string;
-     email?: string;
-     phone?: string;
-     agency?: string;
-     destination?: string;
-     dates?: string;
-     certificationLevel?: string;
-     diveCount?: string;
-     interests?: string;
-     message?: string;
+     leadType?: 'training' | 'trip'
+     name?: string
+     email?: string
+     phone?: string
+     agency?: string
+     destination?: string
+     dates?: string
+     certificationLevel?: string
+     diveCount?: string
+     interests?: string
+     message?: string
    }
    ```
 
 **Files Created:**
+
 - `src/telegram/services/state-manager.ts`
 - `src/telegram/types/lead-capture.ts`
 
@@ -413,16 +424,18 @@ Update `.github/workflows/deploy.yml`:
 
 4. **Confirmation Step**:
    - After all fields collected, show summary:
+
      ```
      Here's what I have:
      Name: John Doe
      Email: john@example.com
      Phone: +1234567890
      Agency: PADI
-     
+
      Is this correct?
      [✅ Submit] [❌ Cancel]
      ```
+
    - On "Submit" callback, call lead service
    - On "Cancel" callback, clear state
 
@@ -434,10 +447,12 @@ Update `.github/workflows/deploy.yml`:
    - Track analytics event
 
 **Files Created:**
+
 - `src/telegram/handlers/lead-capture-handler.ts`
 - `src/telegram/handlers/callback-handler.ts`
 
 **Files Modified:**
+
 - `src/telegram/handlers/message-handler.ts` (add lead capture routing)
 - `src/telegram/bot.ts` (register callback handler)
 
@@ -463,6 +478,7 @@ Update `.github/workflows/deploy.yml`:
    - Log error with full context to Sentry
 
 **Files Created:**
+
 - `src/telegram/services/lead-service.ts`
 
 ### Phase 5: Analytics & Error Monitoring
@@ -505,9 +521,11 @@ Update `.github/workflows/deploy.yml`:
    - Include: timestamp, user ID, session ID, state, event
 
 **Files Created:**
+
 - `src/telegram/utils/analytics.ts`
 
 **Files Modified:**
+
 - `src/telegram/handlers/error-handler.ts` (add Sentry)
 - `src/telegram/utils/logger.ts` (enhance with lead capture events)
 
@@ -540,6 +558,7 @@ Update `.github/workflows/deploy.yml`:
    - Test invalid input → Error message and re-prompt
 
 **Files Created:**
+
 - `src/telegram/tests/services/state-manager.test.ts`
 - `src/telegram/tests/handlers/lead-capture-handler.test.ts`
 - `src/telegram/tests/services/lead-service.test.ts`
@@ -567,6 +586,7 @@ Update `.github/workflows/deploy.yml`:
    - Monitor for 24 hours
 
 **Files Updated:**
+
 - `src/telegram/README.md`
 - `docs/deployment/telegram-bot.md`
 
@@ -577,6 +597,7 @@ Update `.github/workflows/deploy.yml`:
 ### Unit Tests
 
 **State Manager:**
+
 - Set and get state works
 - State data updates correctly
 - State cleared on clearState()
@@ -584,6 +605,7 @@ Update `.github/workflows/deploy.yml`:
 - Concurrent access handled safely
 
 **Lead Capture Handler:**
+
 - Intent detection triggers keyboard
 - Field validation accepts valid input
 - Field validation rejects invalid input
@@ -591,22 +613,26 @@ Update `.github/workflows/deploy.yml`:
 - `/cancel` clears state and returns to chat
 
 **Lead Service:**
+
 - Valid lead data passes validation
 - Invalid lead data rejected with clear error
 - Lead saved to database correctly
 - Email formatted with Telegram context
 
 **Callback Handler:**
+
 - Button clicks trigger correct state transitions
 - Callback queries answered (prevents spinner)
 - Invalid callbacks handled gracefully
 
 **Analytics:**
+
 - Events tracked to provider (mocked)
 - Async/non-blocking behavior
 - Errors don't crash bot
 
 **Test Files:**
+
 - `src/telegram/tests/services/state-manager.test.ts`
 - `src/telegram/tests/handlers/lead-capture-handler.test.ts`
 - `src/telegram/tests/handlers/callback-handler.test.ts`
@@ -655,11 +681,13 @@ Update `.github/workflows/deploy.yml`:
    - Verify state cleared (user not in flow anymore)
 
 **Test Files:**
+
 - `tests/integration/telegram-lead-capture.test.ts`
 
 ### Manual Testing Checklist
 
 **Lead Capture Flow:**
+
 - [ ] Send "I want to get certified" → Inline keyboard appears
 - [ ] Click "Training" → First prompt appears
 - [ ] Complete all prompts with valid data → Lead submitted successfully
@@ -671,17 +699,20 @@ Update `.github/workflows/deploy.yml`:
 - [ ] Complete trip lead flow → Lead submitted successfully
 
 **Email Delivery:**
+
 - [ ] Training lead email received with Telegram user info
 - [ ] Trip lead email received with Telegram user info
 - [ ] Email includes all captured fields
 - [ ] Email formatted correctly (no broken markdown)
 
 **Database Verification:**
+
 - [ ] Query leads table → Telegram leads exist with channel_type='telegram'
 - [ ] Verify channel_metadata includes Telegram user info
 - [ ] Check timestamps are correct
 
 **Analytics Tracking:**
+
 - [ ] Session start tracked
 - [ ] Lead intent detected tracked
 - [ ] Lead type selected tracked
@@ -689,11 +720,13 @@ Update `.github/workflows/deploy.yml`:
 - [ ] Verify events appear in analytics dashboard (Posthog/GA4)
 
 **Error Monitoring:**
+
 - [ ] Trigger error (e.g., disconnect agent service) → Error captured in Sentry
 - [ ] Verify error includes context (user ID, state, message)
 - [ ] User receives friendly error message (not stack trace)
 
 **Edge Cases:**
+
 - [ ] Send very long message (>4096 chars) during lead capture → Handled
 - [ ] Send emoji in name field → Accepted
 - [ ] Send special characters in fields → Handled correctly
@@ -753,30 +786,30 @@ pnpm test:smoke:production
 
 ```sql
 -- Check Telegram leads
-SELECT 
-  id, 
-  type, 
-  channel_type, 
+SELECT
+  id,
+  type,
+  channel_type,
   channel_metadata->>'telegram_username' as telegram_user,
   diver_profile->>'name' as name,
   diver_profile->>'email' as email,
   created_at
-FROM leads 
-WHERE channel_type = 'telegram' 
-ORDER BY created_at DESC 
+FROM leads
+WHERE channel_type = 'telegram'
+ORDER BY created_at DESC
 LIMIT 10;
 
 -- Count leads by channel
-SELECT channel_type, COUNT(*) 
-FROM leads 
+SELECT channel_type, COUNT(*)
+FROM leads
 GROUP BY channel_type;
 
 -- Check lead submission rate (last 24h)
-SELECT 
+SELECT
   DATE_TRUNC('hour', created_at) as hour,
   COUNT(*) as leads
 FROM leads
-WHERE channel_type = 'telegram' 
+WHERE channel_type = 'telegram'
   AND created_at > NOW() - INTERVAL '24 hours'
 GROUP BY hour
 ORDER BY hour;
@@ -867,11 +900,11 @@ Add `LEAD_CAPTURE_ENABLED` environment variable:
 
 ```typescript
 // src/telegram/config/lead-config.ts
-export const LEAD_CAPTURE_ENABLED = process.env.LEAD_CAPTURE_ENABLED !== 'false';
+export const LEAD_CAPTURE_ENABLED = process.env.LEAD_CAPTURE_ENABLED !== 'false'
 
 // In lead-capture-handler.ts
 if (!LEAD_CAPTURE_ENABLED) {
-  return; // Don't trigger lead capture flow
+  return // Don't trigger lead capture flow
 }
 ```
 
@@ -941,6 +974,7 @@ When disabled, bot responds with: "Lead capture is temporarily unavailable. Plea
 **Impact:** State machine bugs could cause users to get stuck in lead capture flow or lose data.
 
 **Mitigation:**
+
 - Comprehensive unit tests for all state transitions
 - TTL ensures abandoned flows are cleaned up
 - `/cancel` command always available as escape hatch
@@ -955,6 +989,7 @@ When disabled, bot responds with: "Lead capture is temporarily unavailable. Plea
 **Impact:** Users may not understand what input is expected, leading to frustration and abandoned leads.
 
 **Mitigation:**
+
 - Clear prompts with examples: "What's your email? (e.g., john@example.com)"
 - Allow flexible input (e.g., "No preference", "Not sure", "skip")
 - Show helpful error messages: "Please enter a valid email like john@example.com"
@@ -969,6 +1004,7 @@ When disabled, bot responds with: "Lead capture is temporarily unavailable. Plea
 **Impact:** Emails with Telegram user info might be flagged as spam or look suspicious to partner shops.
 
 **Mitigation:**
+
 - Test email delivery to multiple providers (Gmail, Outlook, etc.)
 - Use same email template as web, just add Telegram section
 - Include clear explanation: "This lead came from our Telegram bot"
@@ -982,6 +1018,7 @@ When disabled, bot responds with: "Lead capture is temporarily unavailable. Plea
 **Impact:** If Cloud Run instance restarts, in-memory state is lost, users lose progress in lead capture.
 
 **Mitigation:**
+
 - Accept this limitation for V1.1 (rare occurrence with Cloud Run min instances)
 - Show friendly message if state lost: "Sorry, your session timed out. Let's start over."
 - TTL is short (10 minutes), so impact is minimal
@@ -995,6 +1032,7 @@ When disabled, bot responds with: "Lead capture is temporarily unavailable. Plea
 **Impact:** Tracking user events may raise privacy concerns, especially in Europe (GDPR).
 
 **Mitigation:**
+
 - Don't track PII in events (use hashed user IDs, not names/emails)
 - Add privacy policy link in bot welcome message
 - Allow users to opt-out (future enhancement)
@@ -1008,6 +1046,7 @@ When disabled, bot responds with: "Lead capture is temporarily unavailable. Plea
 **Impact:** Multiple users submitting leads simultaneously could overwhelm agent service or email provider.
 
 **Mitigation:**
+
 - Agent service already handles concurrent requests (PR8a)
 - Resend has generous rate limits (100 emails/second)
 - Implement queue if needed (defer to post-launch optimization)
@@ -1103,16 +1142,17 @@ When disabled, bot responds with: "Lead capture is temporarily unavailable. Plea
 
 4. **Environment Variables** (`.env.example`):
    - Add Sentry and analytics variables:
+
      ```
      # Error Monitoring
      SENTRY_DSN=
      SENTRY_ENVIRONMENT=production
-     
+
      # Analytics
      ANALYTICS_PROVIDER=posthog
      POSTHOG_API_KEY=
      POSTHOG_HOST=https://app.posthog.com
-     
+
      # Feature Flags
      LEAD_CAPTURE_ENABLED=true
      ```
@@ -1252,6 +1292,7 @@ When disabled, bot responds with: "Lead capture is temporarily unavailable. Plea
 PR8c completes the Telegram integration (V1.1) by adding lead capture functionality with inline keyboards and conversational prompts, plus production hardening with error monitoring and analytics. This PR makes the Telegram channel fully feature-complete with the web interface.
 
 **Key Deliverables:**
+
 - ✅ Lead capture flow with inline keyboards and conversational prompts
 - ✅ State management for multi-step flows
 - ✅ Lead validation and submission to database
@@ -1262,6 +1303,7 @@ PR8c completes the Telegram integration (V1.1) by adding lead capture functional
 - ✅ Documentation and deployment guides
 
 **Main Risks:**
+
 - Conversational state management complexity (mitigated with tests and `/cancel` command)
 - User confusion in prompts (mitigated with clear examples and error messages)
 - State loss on restart (accepted for V1.1, migrate to Redis if needed)
@@ -1269,6 +1311,7 @@ PR8c completes the Telegram integration (V1.1) by adding lead capture functional
 **Estimated Timeline:** 3-4 days for solo founder (assuming PR8a and PR8b complete and stable).
 
 **Success Criteria:**
+
 - Lead capture completion rate > 60%
 - Error rate < 1%
 - Email delivery success > 99%

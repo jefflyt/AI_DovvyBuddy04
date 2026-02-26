@@ -1,6 +1,7 @@
 # DovvyBuddy Backend - Core Services
 
 Python backend implementation for DovvyBuddy, featuring:
+
 - Embedding generation with Gemini
 - LLM generation with Gemini
 - RAG pipeline (chunking, retrieval, orchestration)
@@ -179,6 +180,7 @@ All configuration is via environment variables (see `.env.example`):
 ## Next Steps
 
 After PR3.2b is merged:
+
 - **PR3.2c**: Agent system and orchestration
 - **PR3.2d**: Content ingestion scripts
 - **PR3.2e**: Frontend integration

@@ -452,12 +452,14 @@ _Note: PR0 (Bootstrap) is already complete._
 ### Completed Work ✅
 
 **Infrastructure & Refactoring:**
+
 - ✅ Backend moved from `src/backend/` to root-level `/src/backend/` for clear separation
 - ✅ All documentation updated to reflect new structure
 - ✅ Tests passing after refactor (97% pass rate)
 - ✅ CI/CD pipelines updated
 
 **Backend (PR3.2 - Python Migration):**
+
 - ✅ Multi-agent system implemented (certification, trip, safety, retrieval agents)
 - ✅ Chat orchestration with mode detection and emergency handling
 - ✅ RAG pipeline with RAF (Retrieval-Augmented Facts) enforcement
@@ -466,12 +468,14 @@ _Note: PR0 (Bootstrap) is already complete._
 - ✅ Content ingestion (152 chunks from 9 files)
 
 **Frontend:**
+
 - ✅ Landing page with analytics and monitoring
 - ✅ Chat interface with lead capture modals
 - ✅ Session persistence (localStorage)
 - ✅ Error boundaries and monitoring (Sentry)
 
 **Testing:**
+
 - ✅ Backend: 66/68 tests passing (pytest)
 - ✅ Frontend: TypeScript checks clean
 - ✅ E2E: Playwright smoke tests configured
@@ -480,6 +484,7 @@ _Note: PR0 (Bootstrap) is already complete._
 
 **Option 1: Cloud Run Deployment** (Priority: High)
 Deploy Python backend to production:
+
 1. Test Docker image locally
 2. Deploy to Google Cloud Run
 3. Update frontend `BACKEND_URL` to Cloud Run endpoint
@@ -488,6 +493,7 @@ Deploy Python backend to production:
 
 **Option 2: Performance Optimization** (Priority: Medium)
 Tune RAG pipeline before adding complexity:
+
 1. Benchmark retrieval latency (target <3s P95)
 2. Evaluate relevance of retrieved chunks
 3. Adjust `minSimilarity` threshold (currently 0.7)
@@ -496,12 +502,14 @@ Tune RAG pipeline before adding complexity:
 
 **Option 3: Content Expansion** (Priority: Medium)
 Add more diving content:
+
 1. Expand PADI/SSI certification guides
 2. Add more dive destinations
 3. Enhance safety procedures documentation
 4. Create FAQ content for common queries
 
 **See Also:**
+
 - Technical debt tracking: [docs/technical/TECHNICAL_DEBT.md](../technical/TECHNICAL_DEBT.md)
 - Lessons learned: [docs/project-management/lessons-learned.md](../project-management/lessons-learned.md)
-- Implementation details: [docs/plans/PR*.md](.)
+- Implementation details: [docs/plans/PR\*.md](.)

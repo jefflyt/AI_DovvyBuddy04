@@ -3,6 +3,7 @@
 ## Philosophy
 
 For a solo founder with limited resources, we take a minimal E2E approach:
+
 - **1 smoke test** catches 80% of critical issues
 - **Manual testing checklist** covers edge cases more efficiently than automated tests
 - **Full E2E suite** deferred to post-launch when user base justifies the investment
@@ -48,23 +49,27 @@ The single smoke test (`smoke.spec.ts`) covers the critical user journey:
 Before each release, manually verify the following:
 
 ### Content Quality
+
 - [ ] Certification inquiry returns relevant info (mentions PADI/SSI)
 - [ ] Trip research returns destination-specific content
 - [ ] Safety disclaimers appear where expected
 - [ ] Bot refuses medical/booking requests appropriately
 
 ### User Experience
+
 - [ ] Session persists across page refresh
 - [ ] Lead email is received (check inbox)
 - [ ] Mobile layout works (test on real device or DevTools)
 - [ ] Error states display correctly (disconnect wifi, test)
 
 ### Performance
+
 - [ ] Page load < 3s on 3G (Chrome DevTools throttling)
 - [ ] Images load and are optimized
 - [ ] No layout shift (CLS < 0.1)
 
 ### Analytics & Monitoring
+
 - [ ] Page view events fire (check analytics dashboard)
 - [ ] CTA click events fire
 - [ ] Session start events fire
@@ -82,6 +87,7 @@ The following test files are **not** implemented in V1:
 - Response content assertions (requires LLM mocking or snapshot testing)
 
 **Rationale:** These tests provide diminishing returns at V1 scale. They're valuable when:
+
 - Team size > 1 (CI catches regressions from parallel work)
 - Deploy frequency > 1/week (regression risk is higher)
 - User base > 100 active users (cost of manual testing exceeds automation cost)
@@ -89,6 +95,7 @@ The following test files are **not** implemented in V1:
 ## CI Integration
 
 The smoke test runs on every PR but is **non-blocking** for V1:
+
 - Failures generate warnings, not PR blocks
 - Screenshots/videos captured on failure for debugging
 - Can be made blocking post-launch when stability improves
@@ -96,11 +103,13 @@ The smoke test runs on every PR but is **non-blocking** for V1:
 ## Tips for Debugging
 
 1. **Use headed mode** to see what's happening:
+
    ```bash
    pnpm test:e2e:headed
    ```
 
 2. **Use UI mode** for interactive debugging:
+
    ```bash
    pnpm test:e2e:ui
    ```

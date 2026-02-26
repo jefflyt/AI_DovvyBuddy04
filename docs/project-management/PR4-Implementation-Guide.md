@@ -7,6 +7,7 @@ This PR implements the lead capture and delivery system that converts qualified 
 ### What Was Implemented
 
 #### 1. Lead Types and Validation (`app/core/lead/types.py`)
+
 - `LeadType` enum for training/trip leads
 - `TrainingLeadData` Pydantic model with validation
 - `TripLeadData` Pydantic model with validation
@@ -17,6 +18,7 @@ This PR implements the lead capture and delivery system that converts qualified 
 - Automatic whitespace trimming
 
 #### 2. Email Templates (`app/core/lead/email_template.py`)
+
 - `build_lead_email_subject()` - Formatted subject line with lead ID
 - `build_lead_email_html()` - Professional HTML email with:
   - Lead type-specific sections
@@ -27,6 +29,7 @@ This PR implements the lead capture and delivery system that converts qualified 
 - `build_lead_email_text()` - Plain text fallback
 
 #### 3. Lead Service Layer (`app/core/lead/service.py`)
+
 - `capture_lead()` - Persist lead to database
 - `deliver_lead()` - Send email notification via Resend
 - `capture_and_deliver_lead()` - Main orchestration function
@@ -36,6 +39,7 @@ This PR implements the lead capture and delivery system that converts qualified 
   - Comprehensive error handling and logging
 
 #### 4. Database Schema Updates
+
 - **Lead Model** (`app/db/models/lead.py`)
   - Added `type` field (training/trip)
   - Changed `metadata_` to `request_details` (JSONB)
@@ -51,6 +55,7 @@ This PR implements the lead capture and delivery system that converts qualified 
   - Improved type hints and documentation
 
 #### 5. API Endpoint (`app/api/routes/lead.py`)
+
 - `POST /api/leads` endpoint
 - Request validation with Pydantic
 - Structured error responses
@@ -63,6 +68,7 @@ This PR implements the lead capture and delivery system that converts qualified 
   - 500: Server errors
 
 #### 6. Configuration Updates
+
 - **Environment Variables** (`.env.example`)
   - `RESEND_API_KEY` - Resend API key (required)
   - `LEAD_EMAIL_TO` - Destination email (required)
@@ -77,6 +83,7 @@ This PR implements the lead capture and delivery system that converts qualified 
   - Added `resend>=0.8.0` for email delivery
 
 #### 7. Comprehensive Test Suite
+
 - **Unit Tests**
   - `tests/unit/core/lead/test_validation.py` - Pydantic validation tests
   - `tests/unit/core/lead/test_email_template.py` - Email template tests
@@ -138,6 +145,7 @@ pytest tests/integration/api/test_lead.py -v
 ```
 
 Expected output:
+
 - All validation tests pass
 - All email template tests pass
 - All API endpoint tests pass
@@ -166,6 +174,7 @@ curl -X POST http://localhost:8000/api/leads \
 ```
 
 Expected response (201):
+
 ```json
 {
   "success": true,
@@ -215,6 +224,7 @@ curl -X POST http://localhost:8000/api/leads \
 #### 5. Test Validation Errors
 
 Missing name:
+
 ```bash
 curl -X POST http://localhost:8000/api/leads \
   -H "Content-Type: application/json" \
@@ -227,6 +237,7 @@ curl -X POST http://localhost:8000/api/leads \
 ```
 
 Expected response (400):
+
 ```json
 {
   "error": "Validation failed",
@@ -241,6 +252,7 @@ Expected response (400):
 ```
 
 Invalid email:
+
 ```bash
 curl -X POST http://localhost:8000/api/leads \
   -H "Content-Type: application/json" \
@@ -260,13 +272,14 @@ Expected response (400) with email validation error.
 Connect to your PostgreSQL database and verify the lead was created:
 
 ```sql
-SELECT id, type, request_details, diver_profile, created_at 
-FROM leads 
-ORDER BY created_at DESC 
+SELECT id, type, request_details, diver_profile, created_at
+FROM leads
+ORDER BY created_at DESC
 LIMIT 1;
 ```
 
 Verify:
+
 - `type` is "training" or "trip"
 - `request_details` contains the submitted data as JSON
 - `created_at` is recent
@@ -309,7 +322,6 @@ Test email delivery failure resilience:
 
 1. **No Rate Limiting**: Endpoint is currently unprotected from spam/abuse
    - Mitigation: Add rate limiting in follow-up PR
-   
 2. **No CAPTCHA**: No bot protection on submission
    - Mitigation: Frontend will add CAPTCHA in PR5
 
@@ -336,11 +348,13 @@ All core functionality remains identical to the plan; only the implementation la
 ## Next Steps
 
 ### Immediate (PR5)
+
 - Frontend lead capture form implementation
 - CAPTCHA integration for bot protection
 - User-friendly validation error display
 
 ### Future Enhancements
+
 - Rate limiting per IP address
 - Lead deduplication logic
 - Webhook delivery as backup channel
@@ -351,6 +365,7 @@ All core functionality remains identical to the plan; only the implementation la
 ## Files Changed
 
 ### New Files Created
+
 ```
 src/backend/app/core/lead/
 ├── __init__.py
@@ -372,6 +387,7 @@ src/backend/tests/integration/api/
 ```
 
 ### Modified Files
+
 ```
 src/backend/app/db/models/lead.py
 src/backend/app/db/repositories/lead_repository.py
@@ -401,6 +417,7 @@ src/backend/pyproject.toml
 ## Support
 
 For questions or issues:
+
 1. Check application logs for detailed error messages
 2. Verify environment variables are correctly set
 3. Confirm database migration was applied

@@ -2,7 +2,7 @@
 
 /**
  * Content Review Script
- * 
+ *
  * Validates RAG content for:
  * - Required frontmatter fields
  * - Content length
@@ -31,7 +31,12 @@ interface ContentStats {
 const CONTENT_DIR = path.join(process.cwd(), 'content')
 const REQUIRED_FRONTMATTER_FIELDS = ['last_updated']
 const TYPE_FIELD_ALIASES = ['type', 'doc_type'] // Accept either 'type' or 'doc_type'
-const SAFETY_DISCLAIMER_KEYWORDS = ['certified', 'professional', 'instructor', 'medical']
+const SAFETY_DISCLAIMER_KEYWORDS = [
+  'certified',
+  'professional',
+  'instructor',
+  'medical',
+]
 const MAX_CONTENT_AGE_DAYS = 180 // 6 months
 const SKIP_FILES = ['TEMPLATE', 'WORKSHEET', 'README'] // Skip template and README files
 
@@ -61,13 +66,13 @@ function extractMarkdownContent(content: string): string {
 
 function checkFile(filePath: string, relativePath: string): ContentIssue[] {
   const issues: ContentIssue[] = []
-  
+
   // Skip template, worksheet, and README files
   const fileName = path.basename(filePath)
-  if (SKIP_FILES.some(skip => fileName.toUpperCase().includes(skip))) {
+  if (SKIP_FILES.some((skip) => fileName.toUpperCase().includes(skip))) {
     return issues // Skip validation for these files
   }
-  
+
   const content = fs.readFileSync(filePath, 'utf-8')
 
   // Check 1: Frontmatter exists
@@ -91,9 +96,9 @@ function checkFile(filePath: string, relativePath: string): ContentIssue[] {
       })
     }
   }
-  
+
   // Check 2a: Type field (accept either 'type' or 'doc_type')
-  const hasTypeField = TYPE_FIELD_ALIASES.some(alias => frontmatter[alias])
+  const hasTypeField = TYPE_FIELD_ALIASES.some((alias) => frontmatter[alias])
   if (!hasTypeField) {
     issues.push({
       file: relativePath,

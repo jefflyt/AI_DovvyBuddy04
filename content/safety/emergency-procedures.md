@@ -1,10 +1,10 @@
 ---
-doc_type: "safety"
-title: "Emergency Procedures"
-tags: ["safety", "emergency", "first-aid", "DCS", "rescue"]
-keywords: ["emergency", "DCS", "oxygen", "evacuation", "emergency contacts"]
-last_updated: "2025-12-23"
-data_quality: "compiled"
+doc_type: 'safety'
+title: 'Emergency Procedures'
+tags: ['safety', 'emergency', 'first-aid', 'DCS', 'rescue']
+keywords: ['emergency', 'DCS', 'oxygen', 'evacuation', 'emergency contacts']
+last_updated: '2025-12-23'
+data_quality: 'compiled'
 ---
 
 # Emergency Procedures
@@ -75,6 +75,7 @@ As a last resort when completely out of air at depth:
 5. **Meet at surface** - Reunite at last known location or boat
 
 **In current:**
+
 - Ascend immediately if in strong current
 - Don't fight current to search
 - Surface and reunite on boat/shore
@@ -121,6 +122,7 @@ Complete mask flooding or loss underwater:
 ### Signs of Decompression Sickness (DCS)
 
 **Symptoms** (can appear minutes to hours after diving):
+
 - Joint or muscle pain ("the bends")
 - Tingling, numbness, or paralysis
 - Dizziness or vertigo
@@ -129,6 +131,7 @@ Complete mask flooding or loss underwater:
 - Skin rash or itching
 
 **Immediate Response:**
+
 1. **Call emergency services** - Dial emergency number immediately
 2. **Administer 100% oxygen** - If available and trained
 3. **Keep diver lying down** - On left side if unconscious
@@ -143,6 +146,7 @@ Complete mask flooding or loss underwater:
 Caused by holding breath during ascent:
 
 **Symptoms:**
+
 - Chest pain or difficulty breathing
 - Bloody cough or frothy sputum
 - Hoarseness or voice changes
@@ -150,6 +154,7 @@ Caused by holding breath during ascent:
 - Confusion or unconsciousness
 
 **Response:**
+
 - Same as DCS protocol above
 - This is a life-threatening emergency
 - Requires immediate medical attention
@@ -159,12 +164,14 @@ Caused by holding breath during ascent:
 Pain during descent due to pressure imbalance:
 
 **Prevention:**
+
 - Never dive with congestion or cold
 - Equalize early and often
 - Descend feet-first and slowly
 - Stop if you feel pain
 
 **If Pain Occurs:**
+
 1. **Stop descent immediately**
 2. **Ascend 1-2m** to reduce pressure
 3. **Attempt equalization** - Gentle Valsalva or other techniques
@@ -183,6 +190,7 @@ If you surface far from the boat:
 6. **Remove weights** - If needed to maintain buoyancy (last resort)
 
 **Prevention:**
+
 - Always dive with surface marker buoy (SMB)
 - Carry whistle and dive light
 - Know how to deploy SMB from depth
@@ -193,18 +201,21 @@ If you surface far from the boat:
 Panic is the leading cause of diving accidents:
 
 **Signs of Panic:**
+
 - Rapid, shallow breathing
 - Wide eyes, frantic movements
 - Dropping equipment
 - Bolt to surface
 
 **Self-Management:**
+
 1. **Stop all movement** - Freeze and break the panic cycle
 2. **Breathe slowly** - Force yourself to take slow, deep breaths
 3. **Think** - Remind yourself you have air and time
 4. **Act** - Make one small positive action (check gauge, signal buddy)
 
 **Helping Panicked Diver:**
+
 1. **Establish eye contact** - Get their attention
 2. **Signal "OK?"** - Try to communicate
 3. **Signal "Stop"** - Get them to pause
@@ -214,11 +225,13 @@ Panic is the leading cause of diving accidents:
 ## Emergency Contact Information
 
 **Divers Alert Network (DAN)**
+
 - Emergency Hotline: +1-919-684-9111 (24/7)
 - Non-emergency: +1-919-684-2948
 - Website: www.diversalertnetwork.org
 
 **General Emergency Numbers:**
+
 - USA/Canada: 911
 - Europe: 112
 - Australia: 000

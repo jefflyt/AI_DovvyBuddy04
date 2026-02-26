@@ -65,6 +65,7 @@ So that I can begin fresh without my previous conversation context affecting new
 ### Proposed UX (high-level)
 
 Desktop (>768px):
+
 1. "New Chat" button in top-right corner of header (or next to title)
 2. Button shows icon (➕ or 🔄) + text "New Chat"
 3. User clicks → confirmation dialog appears (if 2+ messages)
@@ -72,11 +73,13 @@ Desktop (>768px):
 5. User clicks "New Chat" → dialog closes, messages cleared, input focused
 
 Mobile (<768px):
+
 1. "New Chat" button in header (icon-only to save space, or hamburger menu)
 2. Same confirmation dialog (modal overlay)
 3. Dialog buttons stacked vertically for easier tapping
 
 Confirmation dialog implementation options:
+
 - Option A: Browser native confirm() - simplest, no custom UI
 - Option B: Custom modal component - better UX, matches app design
 - Recommendation: Option A for V1 (fast), Option B for V2 (polish)
@@ -86,6 +89,7 @@ Confirmation dialog implementation options:
 No API changes needed.
 
 Current behavior:
+
 - POST /api/chat without sessionId → backend creates new session
 - This already happens automatically when sessionId is null
 
@@ -94,6 +98,7 @@ Current behavior:
 No database changes.
 
 State changes (src/app/chat/page.tsx):
+
 - messages: [] (reset to empty array)
 - sessionId: null (reset to null)
 - localStorage: remove 'dovvybuddy-session-id' key
@@ -163,6 +168,7 @@ Changes:
    - No changes needed (verify in testing)
 
 File structure (no new files needed):
+
 - All changes in src/app/chat/page.tsx
 
 #### Backend
@@ -180,6 +186,7 @@ No environment variables needed.
 #### Observability
 
 Console logging (dev mode):
+
 - "New chat started, session cleared"
 
 ---
@@ -233,6 +240,7 @@ Console logging (dev mode):
 No migration needed - new feature, no existing data.
 
 Backwards compatibility:
+
 - Users currently using chat (before this PR) will see new "New Chat" button
 - No breaking changes to existing functionality
 
@@ -244,7 +252,7 @@ Backwards compatibility:
 
 #### Unit
 
-File: src/app/chat/__tests__/page.test.tsx (update existing or create)
+File: src/app/chat/**tests**/page.test.tsx (update existing or create)
 
 Tests to add:
 
@@ -305,6 +313,7 @@ Deferred to PR6 (Playwright).
 ### Manual verification checklist
 
 Pre-requisites:
+
 - Backend running: cd src/backend && uvicorn app.main:app --reload
 - Frontend running: pnpm dev
 - Open http://localhost:3000/chat
@@ -366,7 +375,7 @@ Test cases:
    - [ ] Verify lead confirmation message in chat
    - [ ] Click "New Chat", confirm
    - [ ] Verify messages cleared (including lead confirmation)
-   - [ ] Verify lead still in DB: SELECT * FROM leads ORDER BY created_at DESC LIMIT 1;
+   - [ ] Verify lead still in DB: SELECT \* FROM leads ORDER BY created_at DESC LIMIT 1;
 
 7. **Mobile responsive:**
    - [ ] Open Chrome DevTools, switch to iPhone 12 (390x844)
@@ -446,10 +455,12 @@ pnpm build
 ### If critical bugs found post-merge
 
 Rollback strategy:
+
 1. Revert commit: git revert <commit-sha>
 2. Redeploy to Vercel
 
 Impact of rollback:
+
 - "New Chat" button removed
 - Users can still start new chat by refreshing page
 - No data loss (sessions in DB unaffected)
@@ -544,7 +555,7 @@ No user data affected (sessions are server-side, localStorage is per-browser).
    - ✅ Clears messages array
    - ✅ Clears error state
 
-5. **Test Coverage (src/app/chat/__tests__/page.test.tsx)**
+5. **Test Coverage (src/app/chat/**tests**/page.test.tsx)**
    - ✅ New Chat functionality test suite (lines 202+)
    - ✅ Confirmation logic tests (4 tests)
    - ✅ clearSession state cleanup tests (3 tests)
@@ -554,24 +565,25 @@ No user data affected (sessions are server-side, localStorage is per-browser).
 
 ### 🎯 Acceptance Criteria Status
 
-| # | Criteria | Status |
-|---|----------|--------|
-| 1 | "New Chat" button visible in header | ✅ Verified |
-| 2 | Button always enabled | ✅ Verified |
-| 3 | Confirmation dialog if 2+ messages | ✅ Verified |
-| 4 | No confirmation if 0-1 messages | ✅ Verified |
-| 5 | Clears messages array on confirm | ✅ Verified |
-| 6 | Sets sessionId to null on confirm | ✅ Verified |
-| 7 | Removes sessionId from localStorage | ✅ Verified |
-| 8 | Shows empty state message after reset | ✅ Verified |
-| 9 | Next message creates new session | ✅ Verified |
-| 10 | Canceling dialog does nothing | ✅ Verified |
-| 11 | Button has clear visual design | ✅ Verified |
-| 12 | Keyboard accessible (tab + Enter) | ✅ Verified |
+| #   | Criteria                              | Status      |
+| --- | ------------------------------------- | ----------- |
+| 1   | "New Chat" button visible in header   | ✅ Verified |
+| 2   | Button always enabled                 | ✅ Verified |
+| 3   | Confirmation dialog if 2+ messages    | ✅ Verified |
+| 4   | No confirmation if 0-1 messages       | ✅ Verified |
+| 5   | Clears messages array on confirm      | ✅ Verified |
+| 6   | Sets sessionId to null on confirm     | ✅ Verified |
+| 7   | Removes sessionId from localStorage   | ✅ Verified |
+| 8   | Shows empty state message after reset | ✅ Verified |
+| 9   | Next message creates new session      | ✅ Verified |
+| 10  | Canceling dialog does nothing         | ✅ Verified |
+| 11  | Button has clear visual design        | ✅ Verified |
+| 12  | Keyboard accessible (tab + Enter)     | ✅ Verified |
 
 ### 📝 Manual Testing Results
 
 **Tested by user on January 29, 2026:**
+
 - ✅ New Chat with no messages (no confirmation)
 - ✅ New Chat with 1 message (no confirmation)
 - ✅ New Chat with 2+ messages (confirmation shown)
@@ -589,10 +601,12 @@ No user data affected (sessions are server-side, localStorage is per-browser).
 ### 🔧 Technical Implementation Notes
 
 **Key Files Modified:**
+
 - `src/app/chat/page.tsx` - handleNewChat function, button UI, responsive CSS
 - `src/app/chat/__tests__/page.test.tsx` - 14 new unit tests
 
 **Implementation Details:**
+
 - Uses native window.confirm() for V1 (custom modal deferred to V2)
 - Confirmation message: "Start a new chat? Your current conversation will be cleared."
 - Button positioned with lead capture buttons in header
@@ -600,6 +614,7 @@ No user data affected (sessions are server-side, localStorage is per-browser).
 - Mobile CSS hides `.new-chat-text` class below 768px
 
 **Edge Cases Handled:**
+
 - ✅ No messages (idempotent operation)
 - ✅ 1 message (user only, no conversation yet)
 - ✅ User cancels confirmation
@@ -610,6 +625,7 @@ No user data affected (sessions are server-side, localStorage is per-browser).
 - ✅ Multiple tabs (each tab independent)
 
 **Performance:**
+
 - No API calls needed for New Chat
 - Instant state reset (synchronous)
 - localStorage.removeItem wrapped in try-catch (no crashes)

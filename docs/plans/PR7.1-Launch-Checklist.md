@@ -3,6 +3,7 @@
 ## Pre-Deployment Verification
 
 ### Code Quality
+
 - [ ] All unit tests passing (`pnpm test`)
 - [ ] Type checking passes (`pnpm typecheck`)
 - [ ] Linting passes (`pnpm lint`)
@@ -12,6 +13,7 @@
 - [ ] Content review passes (`pnpm content:review`)
 
 ### Landing Page
+
 - [ ] Landing page loads without errors
 - [ ] Hero section displays correctly (headline, subheadline, CTA)
 - [ ] Value proposition section displays 3 features
@@ -24,6 +26,7 @@
 - [ ] No console errors on page load
 
 ### Analytics Integration
+
 - [ ] Analytics provider configured (NEXT_PUBLIC_ANALYTICS_PROVIDER)
 - [ ] Vercel Analytics installed (@vercel/analytics)
 - [ ] Page view tracking verified in browser DevTools
@@ -33,6 +36,7 @@
 - [ ] Analytics dashboard shows events (verify in production)
 
 ### Error Monitoring
+
 - [ ] Sentry DSN configured (SENTRY_DSN)
 - [ ] Sentry initialization verified (check browser console)
 - [ ] Test error captured in Sentry dashboard
@@ -41,6 +45,7 @@
 - [ ] Source maps uploaded to Sentry (production only)
 
 ### Performance
+
 - [ ] Lighthouse Performance score > 80
 - [ ] Lighthouse Accessibility score > 90
 - [ ] First Contentful Paint < 2s
@@ -51,6 +56,7 @@
 - [ ] Page loads in < 3s on 3G throttling
 
 ### SEO
+
 - [ ] Meta title present and descriptive
 - [ ] Meta description present and compelling
 - [ ] Meta keywords present
@@ -61,6 +67,7 @@
 - [ ] robots.txt allows indexing (if desired)
 
 ### Accessibility
+
 - [ ] All interactive elements keyboard-accessible
 - [ ] Focus indicators visible
 - [ ] ARIA labels present where needed
@@ -70,6 +77,7 @@
 - [ ] Headings follow logical hierarchy (h1 → h2 → h3)
 
 ### Content Review
+
 - [ ] All certification content reviewed for accuracy
 - [ ] All destination content reviewed
 - [ ] All dive site content reviewed
@@ -79,6 +87,7 @@
 - [ ] Content review script passes (`pnpm content:review`)
 
 ### Integration Testing
+
 - [ ] Landing page → Chat navigation works
 - [ ] Chat interface loads correctly
 - [ ] User can send a message
@@ -92,6 +101,7 @@
 - [ ] Lead email received in inbox
 
 ### E2E Testing
+
 - [ ] Playwright installed (`pnpm exec playwright install`)
 - [ ] Smoke test passes (`pnpm test:e2e`)
 - [ ] Screenshots captured on failure
@@ -103,6 +113,7 @@
 ## Deployment
 
 ### Environment Variables (Vercel Dashboard)
+
 - [ ] `NEXT_PUBLIC_APP_URL` set to production URL
 - [ ] `BACKEND_URL` set to Python backend URL
 - [ ] `NEXT_PUBLIC_ANALYTICS_PROVIDER` set to `vercel`
@@ -113,6 +124,7 @@
 - [ ] All other required env vars from `.env.example` set
 
 ### Vercel Settings
+
 - [ ] Production domain configured
 - [ ] SSL certificate valid
 - [ ] Vercel Analytics enabled
@@ -124,6 +136,7 @@
 - [ ] Install command: `pnpm install`
 
 ### Deployment Steps
+
 1. [ ] Merge PR7.1 to `main` branch
 2. [ ] Verify CI passes on `main`
 3. [ ] Wait for Vercel auto-deployment
@@ -136,6 +149,7 @@
 ## Post-Deployment Verification
 
 ### Production Smoke Test
+
 - [ ] Visit production URL
 - [ ] Landing page loads without errors
 - [ ] Click CTA button → navigates to chat
@@ -147,6 +161,7 @@
 - [ ] Test on mobile device (real device, not emulator)
 
 ### Monitoring Setup
+
 - [ ] Sentry alerts configured (email/Slack)
 - [ ] Vercel deployment notifications enabled
 - [ ] Analytics dashboard accessible
@@ -154,6 +169,7 @@
 - [ ] Health check endpoint working (if implemented)
 
 ### Performance Verification
+
 - [ ] Run Lighthouse on production URL
 - [ ] Performance score > 80
 - [ ] Accessibility score > 90
@@ -161,6 +177,7 @@
 - [ ] SEO score > 90
 
 ### Final Checks
+
 - [ ] All PR1-7 features still working
 - [ ] No regressions in chat functionality
 - [ ] No regressions in lead capture
@@ -196,12 +213,14 @@ If critical issues are found post-deployment:
 ## Launch Communication
 
 ### Internal
+
 - [ ] Update project documentation
 - [ ] Update CHANGELOG.md
 - [ ] Create implementation summary in `/docs/project-management/`
 - [ ] Archive manual testing checklist results
 
 ### External (if applicable)
+
 - [ ] Announce launch to beta users
 - [ ] Share production URL with stakeholders
 - [ ] Update any external documentation
@@ -211,6 +230,7 @@ If critical issues are found post-deployment:
 ## Post-Launch Iteration
 
 ### Week 1 Tasks
+
 - [ ] Monitor Sentry for errors (daily)
 - [ ] Review Vercel Analytics data (daily)
 - [ ] Check lead submission rate
@@ -218,6 +238,7 @@ If critical issues are found post-deployment:
 - [ ] Identify top issues/bugs
 
 ### Week 2-4 Tasks
+
 - [ ] Address top priority issues
 - [ ] Optimize performance based on real data
 - [ ] Refine content based on user queries
@@ -226,8 +247,8 @@ If critical issues are found post-deployment:
 
 ---
 
-**Checklist Completed By:** _________________  
-**Date:** _________________  
+**Checklist Completed By:** **\*\*\*\***\_**\*\*\*\***  
+**Date:** **\*\*\*\***\_**\*\*\*\***  
 **Production URL:** https://dovvybuddy.com  
-**Deployment Time:** _________________  
+**Deployment Time:** **\*\*\*\***\_**\*\*\*\***  
 **Rollback Plan Tested:** Yes / No

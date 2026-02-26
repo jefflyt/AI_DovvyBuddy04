@@ -53,12 +53,14 @@ pnpm content:validate-py
 ```
 
 **Options:**
+
 - `--content-dir PATH` — Content directory to validate (default: `../content`)
 - `--required-fields FIELD [FIELD ...]` — Required frontmatter fields (default: `title description`)
 - `--no-structure-check` — Skip markdown structure checks
 - `--pattern GLOB` — File pattern to match (default: `**/*.md`)
 
 **Examples:**
+
 ```bash
 # Validate specific directory
 python -m scripts.validate_content --content-dir ../content/certifications
@@ -83,6 +85,7 @@ pnpm content:ingest-py
 ```
 
 **Options:**
+
 - `--content-dir PATH` — Content directory to ingest (default: `../content`)
 - `--pattern GLOB` — File pattern to match (default: `**/*.md`)
 - Incremental mode is default (skips unchanged files by hash)
@@ -92,6 +95,7 @@ pnpm content:ingest-py
 - `--batch-size N` — Embedding batch size (default: 10)
 
 **Examples:**
+
 ```bash
 # Incremental ingestion (default - skip unchanged files)
 python -m scripts.ingest_content
@@ -108,6 +112,7 @@ python -m scripts.ingest_content --clear
 ```
 
 **How Incremental Ingestion Works:**
+
 - Calculates SHA256 hash of each file
 - Stores hash in embedding metadata
 - On subsequent runs, compares hashes
@@ -127,12 +132,14 @@ pnpm content:benchmark-py
 ```
 
 **Options:**
+
 - `--queries-file PATH` — Path to queries JSON file (default: `../tests/fixtures/benchmark_queries.json`)
 - `--output PATH` — Output JSON file (default: `benchmark-results-{timestamp}.json`)
 - `--iterations N` — Number of iterations per query (default: 1)
 - `--top-k N` — Number of results to retrieve (default: 5)
 
 **Examples:**
+
 ```bash
 # Benchmark with default queries
 python -m scripts.benchmark_rag
@@ -148,6 +155,7 @@ python -m scripts.benchmark_rag --output my-results.json
 ```
 
 **Query File Format:**
+
 ```json
 {
   "queries": [
@@ -161,6 +169,7 @@ python -m scripts.benchmark_rag --output my-results.json
 ```
 
 **Output Metrics:**
+
 - Latency statistics (mean, median, P95, P99)
 - Retrieval accuracy (if ground truth provided)
 - Per-query results with result paths
@@ -179,11 +188,13 @@ pnpm content:clear-py
 ```
 
 **Options:**
+
 - `--pattern PATTERN` — Content path pattern to match (e.g., `certifications/*`)
 - `--force` — Skip confirmation prompt (use with caution)
 - `--dry-run` — Show what would be deleted without deleting
 
 **Examples:**
+
 ```bash
 # Clear all embeddings (with confirmation)
 python -m scripts.clear_embeddings
@@ -237,21 +248,25 @@ Content validation runs automatically on PRs that modify `content/` files. See `
 ### Troubleshooting
 
 **"No embeddings generated"**
+
 - Check `GEMINI_API_KEY` in project root `.env.local`
 - Verify Gemini API quota/billing
 - Check network connectivity
 
 **"Validation errors"**
+
 - Review error messages for specific files
 - Ensure frontmatter has required fields (`title`, `description`)
 - Check YAML syntax in frontmatter
 
 **"Database connection failed"**
+
 - Verify `DATABASE_URL` in project root `.env.local`
 - Ensure PostgreSQL is running
 - Check pgvector extension: `CREATE EXTENSION IF NOT EXISTS vector`
 
 **"Incremental mode not skipping files"**
+
 - Verify embeddings have `file_hash` in metadata
 - Re-ingest once with `--full` to refresh hashes and chunk metadata
 - Check database connection (hashes stored in DB)

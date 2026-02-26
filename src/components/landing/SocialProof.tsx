@@ -14,9 +14,7 @@ export default function SocialProof({
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
             {title}
           </h2>
-          <p className="text-lg text-gray-700">
-            {subtitle}
-          </p>
+          <p className="text-lg text-gray-700">{subtitle}</p>
         </div>
       </div>
     </section>

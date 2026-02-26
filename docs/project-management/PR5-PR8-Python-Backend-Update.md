@@ -19,6 +19,7 @@ Updated all future feature plans (PR5 onwards) to reflect that the backend has b
 **File:** `docs/plans/PR5-Chat-Interface.md`
 
 **Changes:**
+
 - Updated Backend section to note that Python/FastAPI endpoints already exist (from PR3.2c)
 - Clarified that `POST /api/chat` and `POST /api/leads` are fully implemented
 - Removed references to Next.js API route modifications
@@ -34,6 +35,7 @@ Updated all future feature plans (PR5 onwards) to reflect that the backend has b
 **File:** `docs/plans/PR6-Landing-Polish.md`
 
 **Changes:**
+
 - Updated API Changes section to clarify Python/FastAPI backend provides all endpoints
 - No structural changes needed (plan is primarily frontend-focused)
 
@@ -46,6 +48,7 @@ Updated all future feature plans (PR5 onwards) to reflect that the backend has b
 **File:** `docs/plans/PR7-MVP-Production-Deployment.md`
 
 **Changes:**
+
 - Added architecture note confirming plan is already Python/FastAPI-first
 - No changes needed - plan was written correctly for Python deployment
 
@@ -58,6 +61,7 @@ Updated all future feature plans (PR5 onwards) to reflect that the backend has b
 **File:** `docs/plans/PR7a-Agent-Service-Extraction.md`
 
 **Changes:**
+
 - **Marked entire PR as OBSOLETE**
 - Added prominent warning that this PR is no longer needed
 - Explained that Python backend (PR3.2c) already provides standalone agent service
@@ -73,6 +77,7 @@ Updated all future feature plans (PR5 onwards) to reflect that the backend has b
 **File:** `docs/plans/PR7b-Telegram-Bot-Adapter.md`
 
 **Changes:**
+
 - Added architecture update noting PR7a is obsolete
 - Updated dependencies to reference Python backend from PR3.2c
 - Removed references to extracting from Next.js
@@ -90,6 +95,7 @@ Updated all future feature plans (PR5 onwards) to reflect that the backend has b
 **File:** `docs/plans/PR8-User-Auth-Profiles.md`
 
 **Changes:**
+
 - Added backend clarification note
 - Specified that auth will use Python/FastAPI with appropriate libraries (FastAPI-Users, Python-JOSE)
 - Noted that frontend uses NextAuth.js for session management
@@ -104,6 +110,7 @@ Updated all future feature plans (PR5 onwards) to reflect that the backend has b
 **File:** `docs/plans/PR8a-Auth-Infrastructure.md`
 
 **Changes:**
+
 - Added backend clarification note
 - Specified Python auth libraries (FastAPI-Users, Python-JOSE, Authlib)
 - Noted that database migrations will use Alembic (not Drizzle)
@@ -118,6 +125,7 @@ Updated all future feature plans (PR5 onwards) to reflect that the backend has b
 **File:** `docs/plans/PR8b-Web-UI-Auth-Integration.md`
 
 **Changes:**
+
 - Added backend clarification note
 - Specified that frontend integrates with Python/FastAPI auth endpoints
 - Noted that API calls go to FastAPI backend at `/api/auth/*`
@@ -132,6 +140,7 @@ Updated all future feature plans (PR5 onwards) to reflect that the backend has b
 **File:** `docs/plans/PR8c-Telegram-Account-Linking.md`
 
 **Changes:**
+
 - Added backend clarification note
 - Specified Python implementation for account linking
 - Noted integration with Python Telegram bot
@@ -147,6 +156,7 @@ Updated all future feature plans (PR5 onwards) to reflect that the backend has b
 Between December 2025 and January 2026, the project underwent a **complete backend migration from TypeScript/Next.js to Python/FastAPI** (PR3.2a through PR3.2e). This migration was successful and is now complete.
 
 **Key milestones:**
+
 - **PR3.2a:** Backend foundation (database, config)
 - **PR3.2b:** Core services (RAG, embeddings, LLM)
 - **PR3.2c:** Agent orchestration (multi-agent system)
@@ -257,11 +267,13 @@ All plan updates have been reviewed to ensure:
 ## Next Steps
 
 ### Immediate
+
 - Review updated plans before starting PR5 implementation
 - Ensure Python backend (PR3.2c-PR4) is fully operational
 - Test all endpoints referenced in PR5 plan
 
 ### Future
+
 - When implementing PR7b, use Python Telegram bot approach
 - When implementing PR8, use Python auth libraries (not NextAuth.js for backend)
 - Skip PR7a entirely (obsolete)

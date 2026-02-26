@@ -2,18 +2,18 @@
  * API Client Tests
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { ApiClient } from '../client';
-import { ApiClientError } from '../error-handler';
-import type { ChatResponse, SessionResponse, LeadResponse } from '../types';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { ApiClient } from '../client'
+import { ApiClientError } from '../error-handler'
+import type { ChatResponse, SessionResponse, LeadResponse } from '../types'
 
 // Mock fetch globally
-const mockFetch = vi.fn();
+const mockFetch = vi.fn()
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-global.fetch = mockFetch as any;
+global.fetch = mockFetch as any
 
 describe('ApiClient', () => {
-  let client: ApiClient;
+  let client: ApiClient
 
   beforeEach(() => {
     client = new ApiClient({
@@ -22,13 +22,13 @@ describe('ApiClient', () => {
       retryAttempts: 3,
       retryDelay: 100,
       credentials: 'include',
-    });
-    mockFetch.mockClear();
-  });
+    })
+    mockFetch.mockClear()
+  })
 
   afterEach(() => {
-    vi.clearAllTimers();
-  });
+    vi.clearAllTimers()
+  })
 
   describe('chat', () => {
     it('should send chat message successfully', async () => {
@@ -39,54 +39,58 @@ describe('ApiClient', () => {
           tokensUsed: 150,
           model: 'gemini-2.0-flash',
         },
-      };
+      }
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
-      });
+      })
 
       const result = await client.chat({
         message: 'What is Open Water certification?',
-      });
+      })
 
-      expect(result).toEqual(mockResponse);
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-      
+      expect(result).toEqual(mockResponse)
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+
       // Check call arguments (ignore signal)
-      const [url, options] = mockFetch.mock.calls[0];
-      expect(url).toBe('http://localhost:8000/api/chat');
-      expect(options.method).toBe('POST');
-      expect(options.credentials).toBe('include');
-      expect(options.headers['Content-Type']).toBe('application/json');
-      expect(options.body).toBe(JSON.stringify({
-        message: 'What is Open Water certification?',
-      }));
-    });
+      const [url, options] = mockFetch.mock.calls[0]
+      expect(url).toBe('http://localhost:8000/api/chat')
+      expect(options.method).toBe('POST')
+      expect(options.credentials).toBe('include')
+      expect(options.headers['Content-Type']).toBe('application/json')
+      expect(options.body).toBe(
+        JSON.stringify({
+          message: 'What is Open Water certification?',
+        })
+      )
+    })
 
     it('should include session ID in request', async () => {
       const mockResponse: ChatResponse = {
         sessionId: '123e4567-e89b-12d3-a456-426614174000',
         message: 'Sure, let me explain more...',
-      };
+      }
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
-      });
+      })
 
       await client.chat({
         sessionId: '123e4567-e89b-12d3-a456-426614174000',
         message: 'Tell me more',
-      });
+      })
 
-      const [url, options] = mockFetch.mock.calls[0];
-      expect(url).toBe('http://localhost:8000/api/chat');
-      expect(options.body).toBe(JSON.stringify({
-        sessionId: '123e4567-e89b-12d3-a456-426614174000',
-        message: 'Tell me more',
-      }));
-    });
+      const [url, options] = mockFetch.mock.calls[0]
+      expect(url).toBe('http://localhost:8000/api/chat')
+      expect(options.body).toBe(
+        JSON.stringify({
+          sessionId: '123e4567-e89b-12d3-a456-426614174000',
+          message: 'Tell me more',
+        })
+      )
+    })
 
     it('should handle validation error (400)', async () => {
       // Mock for both the expect rejection and the try/catch
@@ -97,25 +101,23 @@ describe('ApiClient', () => {
         json: async () => ({
           error: 'Invalid request',
           code: 'VALIDATION_ERROR',
-          details: [
-            { field: 'message', message: 'Message is required' },
-          ],
+          details: [{ field: 'message', message: 'Message is required' }],
         }),
-      });
+      })
 
       try {
-        await client.chat({ message: '' });
-        expect.fail('Should have thrown error');
+        await client.chat({ message: '' })
+        expect.fail('Should have thrown error')
       } catch (error) {
-        expect(error).toBeInstanceOf(ApiClientError);
-        expect((error as ApiClientError).code).toBe('VALIDATION_ERROR');
-        expect((error as ApiClientError).statusCode).toBe(400);
-        expect((error as ApiClientError).isValidationError()).toBe(true);
+        expect(error).toBeInstanceOf(ApiClientError)
+        expect((error as ApiClientError).code).toBe('VALIDATION_ERROR')
+        expect((error as ApiClientError).statusCode).toBe(400)
+        expect((error as ApiClientError).isValidationError()).toBe(true)
       }
-    });
+    })
 
     it('should retry on 503 error', async () => {
-      vi.useFakeTimers();
+      vi.useFakeTimers()
 
       // First two attempts fail with 503
       mockFetch
@@ -143,20 +145,20 @@ describe('ApiClient', () => {
             sessionId: '123e4567-e89b-12d3-a456-426614174000',
             message: 'Success after retry',
           }),
-        });
+        })
 
-      const promise = client.chat({ message: 'Test retry' });
+      const promise = client.chat({ message: 'Test retry' })
 
       // Fast-forward through retry delays
-      await vi.runAllTimersAsync();
+      await vi.runAllTimersAsync()
 
-      const result = await promise;
+      const result = await promise
 
-      expect(result.message).toBe('Success after retry');
-      expect(mockFetch).toHaveBeenCalledTimes(3);
+      expect(result.message).toBe('Success after retry')
+      expect(mockFetch).toHaveBeenCalledTimes(3)
 
-      vi.useRealTimers();
-    });
+      vi.useRealTimers()
+    })
 
     it('should not retry on 400 error', async () => {
       mockFetch.mockResolvedValueOnce({
@@ -166,52 +168,48 @@ describe('ApiClient', () => {
           error: 'Invalid request',
           code: 'VALIDATION_ERROR',
         }),
-      });
+      })
 
-      await expect(
-        client.chat({ message: '' })
-      ).rejects.toThrow(ApiClientError);
+      await expect(client.chat({ message: '' })).rejects.toThrow(ApiClientError)
 
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-    });
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+    })
 
     it('should handle network error', async () => {
-      mockFetch.mockRejectedValueOnce(new TypeError('Failed to fetch'));
+      mockFetch.mockRejectedValueOnce(new TypeError('Failed to fetch'))
 
       try {
-        await client.chat({ message: 'Test' });
-        expect.fail('Should have thrown error');
+        await client.chat({ message: 'Test' })
+        expect.fail('Should have thrown error')
       } catch (error) {
-        expect(error).toBeInstanceOf(ApiClientError);
-        expect((error as ApiClientError).code).toBe('NETWORK_ERROR');
+        expect(error).toBeInstanceOf(ApiClientError)
+        expect((error as ApiClientError).code).toBe('NETWORK_ERROR')
       }
-    });
+    })
 
     it.skip('should handle timeout', async () => {
-      vi.useFakeTimers();
+      vi.useFakeTimers()
 
       // Mock fetch that never resolves
-      mockFetch.mockImplementationOnce(
-        () => new Promise(() => {})
-      );
+      mockFetch.mockImplementationOnce(() => new Promise(() => {}))
 
-      const promise = client.chat({ message: 'Test timeout' });
+      const promise = client.chat({ message: 'Test timeout' })
 
       // Fast-forward past timeout
-      await vi.advanceTimersByTimeAsync(6000);
+      await vi.advanceTimersByTimeAsync(6000)
 
-      await expect(promise).rejects.toThrow(ApiClientError);
+      await expect(promise).rejects.toThrow(ApiClientError)
 
       try {
-        await promise;
+        await promise
       } catch (error) {
-        expect(error).toBeInstanceOf(ApiClientError);
-        expect((error as ApiClientError).code).toBe('TIMEOUT');
+        expect(error).toBeInstanceOf(ApiClientError)
+        expect((error as ApiClientError).code).toBe('TIMEOUT')
       }
 
-      vi.useRealTimers();
-    });
-  });
+      vi.useRealTimers()
+    })
+  })
 
   describe('getSession', () => {
     it('should get session information', async () => {
@@ -221,21 +219,25 @@ describe('ApiClient', () => {
         lastActivity: '2026-01-03T01:00:00Z',
         messageCount: 5,
         isExpired: false,
-      };
+      }
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
-      });
+      })
 
-      const result = await client.getSession('123e4567-e89b-12d3-a456-426614174000');
+      const result = await client.getSession(
+        '123e4567-e89b-12d3-a456-426614174000'
+      )
 
-      expect(result).toEqual(mockResponse);
-      
-      const [url, options] = mockFetch.mock.calls[0];
-      expect(url).toBe('http://localhost:8000/api/session/123e4567-e89b-12d3-a456-426614174000');
-      expect(options.method).toBe('GET');
-    });
+      expect(result).toEqual(mockResponse)
+
+      const [url, options] = mockFetch.mock.calls[0]
+      expect(url).toBe(
+        'http://localhost:8000/api/session/123e4567-e89b-12d3-a456-426614174000'
+      )
+      expect(options.method).toBe('GET')
+    })
 
     it('should handle session not found (404)', async () => {
       mockFetch.mockResolvedValueOnce({
@@ -245,13 +247,13 @@ describe('ApiClient', () => {
           error: 'Session not found',
           code: 'SESSION_NOT_FOUND',
         }),
-      });
+      })
 
-      await expect(
-        client.getSession('invalid-session-id')
-      ).rejects.toThrow(ApiClientError);
-    });
-  });
+      await expect(client.getSession('invalid-session-id')).rejects.toThrow(
+        ApiClientError
+      )
+    })
+  })
 
   describe('createLead', () => {
     it('should create lead successfully', async () => {
@@ -259,29 +261,31 @@ describe('ApiClient', () => {
         success: true,
         leadId: '123e4567-e89b-12d3-a456-426614174000',
         message: 'Thank you! We will contact you soon.',
-      };
+      }
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockResponse,
-      });
+      })
 
       const result = await client.createLead({
         sessionId: '123e4567-e89b-12d3-a456-426614174000',
         email: 'test@example.com',
         name: 'John Doe',
-      });
+      })
 
-      expect(result).toEqual(mockResponse);
-      
-      const [url, options] = mockFetch.mock.calls[0];
-      expect(url).toBe('http://localhost:8000/api/leads');
-      expect(options.method).toBe('POST');
-      expect(options.body).toBe(JSON.stringify({
-        sessionId: '123e4567-e89b-12d3-a456-426614174000',
-        email: 'test@example.com',
-        name: 'John Doe',
-      }));
-    });
-  });
-});
+      expect(result).toEqual(mockResponse)
+
+      const [url, options] = mockFetch.mock.calls[0]
+      expect(url).toBe('http://localhost:8000/api/leads')
+      expect(options.method).toBe('POST')
+      expect(options.body).toBe(
+        JSON.stringify({
+          sessionId: '123e4567-e89b-12d3-a456-426614174000',
+          email: 'test@example.com',
+          name: 'John Doe',
+        })
+      )
+    })
+  })
+})

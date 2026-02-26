@@ -8,13 +8,15 @@
 > **⚠️ OBSOLETE:** This PR is no longer needed. The agent orchestration logic was implemented directly in Python/FastAPI backend (PR3.2c) and is already a standalone service. The backend can serve multiple channels (web, Telegram) without requiring extraction.
 >
 > **Migration Complete:** Python backend at `src/backend/` already contains:
+>
 > - Agent orchestration (`app/agents/`)
 > - RAG pipeline (`app/services/rag/`)
 > - Session management (`app/db/repositories/session_repository.py`)
 > - Multi-agent routing (certification, trip, safety agents)
 > - FastAPI service ready for Cloud Run deployment
 >
-> **Next Steps:** 
+> **Next Steps:**
+>
 > - Skip to **PR8b** (Telegram Bot Adapter) which will integrate directly with existing Python backend
 > - No extraction or refactoring needed
 
@@ -41,9 +43,11 @@ Extract the agent orchestration logic (RAG retrieval, model provider calls, sess
 ### Dependencies
 
 **Upstream:**
+
 - **PR1-6:** Complete (database, RAG, model provider, session management, lead capture, landing page, E2E testing).
 
 **External:**
+
 - Google Cloud Platform account with Cloud Run enabled.
 - Service account credentials for inter-service authentication.
 - Google Secret Manager for API key storage.
@@ -276,6 +280,7 @@ CMD ["node", "dist/server.js"]
 4. Update import paths in copied services
 
 **Files Created:**
+
 - `src/agent-service/package.json`
 - `src/agent-service/tsconfig.json`
 - `src/agent-service/server.ts`
@@ -304,6 +309,7 @@ CMD ["node", "dist/server.js"]
 8. Add structured logging
 
 **Files Created/Modified:**
+
 - `src/agent-service/routes/chat.ts`
 - `src/agent-service/routes/session.ts`
 - `src/agent-service/routes/lead.ts`
@@ -327,10 +333,12 @@ CMD ["node", "dist/server.js"]
    - Handles authentication, retries, timeouts
 
 **Files Modified:**
+
 - `src/app/api/chat/route.ts`
 - `src/app/api/lead/route.ts`
 
 **Files Created:**
+
 - `src/lib/agent-client.ts`
 
 ### Phase 4: Testing
@@ -348,6 +356,7 @@ CMD ["node", "dist/server.js"]
    - Apache Bench or k6 to verify performance under load
 
 **Files Created:**
+
 - `src/agent-service/tests/routes/chat.test.ts`
 - `src/agent-service/tests/routes/session.test.ts`
 - `src/agent-service/tests/routes/lead.test.ts`
@@ -453,6 +462,7 @@ vercel --prod
 8. Next.js returns response to browser
 
 **Verification:**
+
 - Session created/updated in database
 - RAG retrieval returns relevant chunks
 - LLM response is grounded
@@ -482,6 +492,7 @@ ab -n 1000 -c 10 -H "Authorization: Bearer <API_KEY>" \
 ```
 
 **Metrics to Monitor:**
+
 - Response time (P50, P95, P99)
 - Error rate
 - Database connection pool utilization
@@ -605,7 +616,7 @@ Add `USE_AGENT_SERVICE` feature flag to Next.js:
 
 ```typescript
 // src/lib/feature-flags.ts
-export const USE_AGENT_SERVICE = process.env.USE_AGENT_SERVICE === 'true';
+export const USE_AGENT_SERVICE = process.env.USE_AGENT_SERVICE === 'true'
 ```
 
 In Next.js API routes:
@@ -613,10 +624,10 @@ In Next.js API routes:
 ```typescript
 if (USE_AGENT_SERVICE) {
   // Call agent service
-  return await agentClient.chat({ sessionId, message, channelType: 'web' });
+  return await agentClient.chat({ sessionId, message, channelType: 'web' })
 } else {
   // Use embedded agent logic (legacy)
-  return await localAgentOrchestrator({ sessionId, message });
+  return await localAgentOrchestrator({ sessionId, message })
 }
 ```
 
@@ -676,6 +687,7 @@ if (USE_AGENT_SERVICE) {
 **Impact:** Extra HTTP hop adds 100-500ms latency to chat responses.
 
 **Mitigation:**
+
 - Deploy agent service and Next.js in same GCP region
 - Use HTTP/2 or gRPC for faster communication
 - Monitor P95 latency and optimize if >5s total
@@ -688,6 +700,7 @@ if (USE_AGENT_SERVICE) {
 **Impact:** Web chat stops working, users can't interact with bot.
 
 **Mitigation:**
+
 - Comprehensive integration tests before deployment
 - Feature flag to toggle between agent service and embedded logic
 - Deploy to staging environment first
@@ -701,6 +714,7 @@ if (USE_AGENT_SERVICE) {
 **Impact:** Leaked API key allows unauthorized access to agent service.
 
 **Mitigation:**
+
 - Store API key in Google Secret Manager (not in code or env files)
 - Rotate API key quarterly
 - Use service account tokens for Cloud Run inter-service auth (more secure alternative)
@@ -714,6 +728,7 @@ if (USE_AGENT_SERVICE) {
 **Impact:** Agent service can't connect to database under load, requests fail.
 
 **Mitigation:**
+
 - Configure connection pool size based on Cloud Run concurrency
 - Monitor pool utilization in logs
 - Set max pool size to 10 (for 80 concurrency)
@@ -727,6 +742,7 @@ if (USE_AGENT_SERVICE) {
 **Impact:** First request after idle takes 5-10s, poor UX.
 
 **Mitigation:**
+
 - Set min instances=1 for agent service (costs ~$10-20/month)
 - Optimize Docker image size (use Alpine base, multi-stage build)
 - Implement health check endpoint to keep service warm
@@ -739,6 +755,7 @@ if (USE_AGENT_SERVICE) {
 **Impact:** Agent service with min instances=1 increases monthly costs.
 
 **Mitigation:**
+
 - Monitor Cloud Run costs in GCP billing dashboard
 - Set budget alerts (e.g., alert if >$50/month)
 - Evaluate cost vs performance trade-off after 1 week

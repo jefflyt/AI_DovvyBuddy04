@@ -17,6 +17,7 @@ DovvyBuddy needs a Large Language Model (LLM) provider strategy that balances:
 - **Flexibility** — Ability to switch providers without code changes
 
 The application requires:
+
 - Conversational AI for certification guidance and trip planning
 - Grounded responses (RAG-enhanced to reduce hallucinations)
 - Safety guardrails (no medical advice, always defer to professionals)
@@ -27,13 +28,14 @@ The application requires:
 
 Implement a **phased LLM provider strategy** with abstraction layer:
 
-| Phase | Provider | Model | Use Case |
-|-------|----------|-------|----------|
-| **MVP (Dev)** | Groq | `llama-3.1-70b-versatile` | Development, testing, fast iteration |
-| **Production V1** | Gemini | `gemini-2.0-flash` | English-language production traffic |
+| Phase             | Provider          | Model                                    | Use Case                              |
+| ----------------- | ----------------- | ---------------------------------------- | ------------------------------------- |
+| **MVP (Dev)**     | Groq              | `llama-3.1-70b-versatile`                | Development, testing, fast iteration  |
+| **Production V1** | Gemini            | `gemini-2.0-flash`                       | English-language production traffic   |
 | **Production V2** | Gemini + SEA-LION | Gemini default, SEA-LION for non-English | Multilingual support for SEA audience |
 
 **Key Implementation:**
+
 - `ModelProvider` interface with environment-based switching (`LLM_PROVIDER=groq|gemini`)
 - Factory pattern for provider instantiation
 - Unified API contracts across providers
@@ -72,12 +74,14 @@ Implement a **phased LLM provider strategy** with abstraction layer:
 **Description:** Use OpenAI GPT-4 for all environments (dev + prod)
 
 **Pros:**
+
 - Single provider (no abstraction needed)
 - Highest quality responses
 - Most mature API
 - Extensive documentation
 
 **Cons:**
+
 - Expensive for development ($30-50/1M tokens)
 - Slower inference (2-5s typical)
 - Rate limits for free tier
@@ -92,11 +96,13 @@ Implement a **phased LLM provider strategy** with abstraction layer:
 **Description:** Use Claude 3 (Sonnet/Opus) for development and production
 
 **Pros:**
+
 - Excellent safety alignment (fewer refusals)
 - Strong reasoning capabilities
 - Good for nuanced diving safety advice
 
 **Cons:**
+
 - Higher cost than Gemini
 - Anthropic API less mature than OpenAI/Google
 - Longer context windows not needed for V1
@@ -111,12 +117,14 @@ Implement a **phased LLM provider strategy** with abstraction layer:
 **Description:** Self-hosted Llama 3.1 70B on dedicated GPU server
 
 **Pros:**
+
 - Zero API costs (after hardware)
 - Full control and privacy
 - No rate limits
 - No vendor dependency
 
 **Cons:**
+
 - High upfront cost ($3000+ GPU server)
 - DevOps complexity (model management, scaling)
 - Slower inference without optimization
@@ -132,11 +140,13 @@ Implement a **phased LLM provider strategy** with abstraction layer:
 **Description:** Use Gemini for both development and production
 
 **Pros:**
+
 - Simpler (no provider abstraction)
 - Consistent behavior across environments
 - One fewer dependency
 
 **Cons:**
+
 - Slower development iteration (Gemini ~2-3s vs Groq <1s)
 - Higher dev costs (every test run hits paid API)
 - No provider fallback if Gemini has outage
@@ -148,12 +158,14 @@ Implement a **phased LLM provider strategy** with abstraction layer:
 ## V2 Language Routing (Future Implementation)
 
 **When non-English query detected:**
+
 1. Detect input language (library like `franc` or Gemini language detection)
 2. Route to SEA-LION provider if non-English
 3. Fallback to Gemini if SEA-LION unavailable
 4. Log language distribution for optimization
 
 **SEA-LION Advantages for V2:**
+
 - Fine-tuned on Southeast Asian languages (Thai, Indonesian, Vietnamese, etc.)
 - Better cultural context for regional diving terms
 - Supports Singapore/Malaysia/Thailand dive shop partnerships
@@ -173,19 +185,23 @@ Implement a **phased LLM provider strategy** with abstraction layer:
 ## Notes
 
 **Cost Estimates (Production V1):**
+
 - Gemini 2.0 Flash: ~$0.10 per 1M input tokens, ~$0.40 per 1M output tokens
 - Expected usage: 10K conversations/month × 5 messages avg × 1000 tokens = 50M tokens/month
 - Estimated monthly cost: $5-20 (well within startup budget)
 
 **Performance Targets:**
+
 - Dev (Groq): <1s response time (achieved via LPU optimization)
 - Prod (Gemini): <3s response time (p95)
 
 **Review Date:**
+
 - After V1 launch (1 month) — Evaluate actual costs and response quality
 - Before V2 (6 months) — Assess SEA-LION integration feasibility and demand
 
 **Migration Path (if needed):**
+
 - Provider abstraction allows swapping to OpenAI/Claude/other without frontend changes
 - Only update: `LLM_PROVIDER` env var and provider implementation
 - Factory pattern isolates provider-specific logic
@@ -193,5 +209,6 @@ Implement a **phased LLM provider strategy** with abstraction layer:
 ---
 
 **Related ADRs:**
+
 - ADR-0001: Next.js + Vercel for Web Application
 - ADR-0002: PostgreSQL + pgvector for Database

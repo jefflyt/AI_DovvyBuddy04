@@ -4,28 +4,28 @@
  */
 
 export interface ApiClientConfig {
-  baseURL: string;
-  timeout: number;
-  retryAttempts: number;
-  retryDelay: number;
-  credentials: RequestCredentials;
+  baseURL: string
+  timeout: number
+  retryAttempts: number
+  retryDelay: number
+  credentials: RequestCredentials
 }
 
 /**
  * Get API base URL from environment
- * Server-side: direct connection to Python backend  
+ * Server-side: direct connection to Python backend
  * Client-side: proxied through Next.js (/api routes)
  */
 function getBaseURL(): string {
   if (typeof window === 'undefined') {
     // Server-side: use BACKEND_URL env var (direct connection to Python backend)
     // Python backend routes are under /api prefix
-    return process.env.BACKEND_URL || 'http://localhost:8000';
+    return process.env.BACKEND_URL || 'http://localhost:8000'
   }
-  
+
   // Client-side: use proxied API URL (handled by Next.js rewrites)
   // Next.js rewrites /api/* to backend
-  return process.env.NEXT_PUBLIC_API_URL || '';
+  return process.env.NEXT_PUBLIC_API_URL || ''
 }
 
 /**
@@ -37,7 +37,7 @@ export const API_CONFIG: ApiClientConfig = {
   retryAttempts: 3,
   retryDelay: 1000, // 1 second base delay (exponential backoff)
   credentials: 'include', // Include cookies for session management
-};
+}
 
 /**
  * API endpoints
@@ -49,4 +49,4 @@ export const API_ENDPOINTS = {
   chat: '/chat',
   session: (sessionId: string) => `/session/${sessionId}`,
   lead: '/leads',
-} as const;
+} as const

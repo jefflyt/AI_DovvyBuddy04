@@ -16,12 +16,14 @@ Transform DovvyBuddy from a feature-complete web application into a production-r
 ### User Impact
 
 **Primary Users (Divers):**
+
 - **All Users:** Experience faster response times (<5s chat responses) and polished, professional UI/UX.
 - **Mobile Users:** Benefit from optimized bundle sizes and responsive design refinements.
 - **First-Time Visitors:** See clear value proposition with improved landing page content and CTAs.
 - **Returning Users:** Notice improved reliability and graceful error handling.
 
 **Secondary Impact:**
+
 - **Partner Shops:** Confidence that lead delivery is reliable and monitored (delivery tracking + alerts).
 - **Product Team:** Real-time visibility into user behavior, technical health, and business metrics (session starts, lead conversions, error rates, response latency).
 - **Operations:** Proactive error detection and debugging capabilities via structured logging and error monitoring.
@@ -29,11 +31,13 @@ Transform DovvyBuddy from a feature-complete web application into a production-r
 ### Dependencies
 
 **Upstream (Must be complete):**
+
 - **PR1-PR6:** Full V1 functionality (database, RAG, model provider, lead capture, chat interface, landing page).
 - **PR7a-PR7c (Optional):** Telegram integration (if completed, include in testing scope).
 - **PR9a-PR9c (Optional):** User authentication (if completed, include in testing scope and analytics events).
 
 **External Dependencies:**
+
 - **Analytics Provider:** Posthog (preferred) or Vercel Analytics (fallback) for event tracking.
 - **Error Monitoring:** Sentry.io for error tracking, alerting, and performance monitoring.
 - **Database:** Production Postgres instance (Neon/Supabase) with connection pooling and read replicas (if needed).
@@ -61,6 +65,7 @@ Transform DovvyBuddy from a feature-complete web application into a production-r
 ### Rationale
 
 **Why Multi-PR:**
+
 - **Multiple independent workstreams:** Observability (analytics + monitoring), performance optimization (frontend + backend), and E2E testing/content review each have different testing needs and can be developed in parallel.
 - **Risk isolation:** Performance optimizations (bundle splitting, caching) carry risk of breaking existing behavior; separate PR allows focused testing.
 - **Deployment sequencing:** Analytics/monitoring should go live first to capture data during performance optimization and testing phases.
@@ -68,11 +73,13 @@ Transform DovvyBuddy from a feature-complete web application into a production-r
 - **Rollback granularity:** If analytics integration has issues, can roll back without losing performance improvements.
 
 **Recommended PR Count:** 3 PRs
+
 1. **PR10a:** Observability & Monitoring (Analytics + Error Tracking + Logging)
 2. **PR10b:** Performance Optimization & Content Polish (Bundle size, Caching, Content review, UI refinements)
 3. **PR10c:** E2E Testing & Launch Checklist (Playwright smoke tests, Manual checklist, Production deployment validation)
 
 **Estimated Complexity:**
+
 - Backend: Medium (Logging infrastructure, error handling improvements, performance profiling)
 - Frontend: Medium (Analytics instrumentation, bundle optimization, UI polish)
 - Data: Low (Content review and refinement, no schema changes)
@@ -85,6 +92,7 @@ Transform DovvyBuddy from a feature-complete web application into a production-r
 ### Frontend
 
 **Pages/Components Impacted:**
+
 - **All Existing Pages:** Add analytics event tracking (page views, interactions).
 - `/app/page.tsx` (Landing):
   - Content refinement (headline, value proposition, social proof, CTAs).
@@ -99,16 +107,19 @@ Transform DovvyBuddy from a feature-complete web application into a production-r
   - Log errors to Sentry with component stack traces.
 
 **New UI States Required:**
+
 - **Global Error State:** Friendly fallback UI when critical errors occur (with retry and "Report Issue" options).
 - **Performance Budget Warnings:** Alerts during development if bundle size exceeds thresholds.
 
 **Navigation/Entry Points:**
+
 - No new navigation; existing routes remain unchanged.
 - Add footer with links: About, FAQ, Privacy Policy, Terms of Service (pages created as static content).
 
 ### Backend
 
 **APIs to Add/Modify:**
+
 - **Existing `/api/chat` (Modify):**
   - Add structured logging for every request (session ID, message length, RAG retrieval time, LLM call time, total response time).
   - Add Sentry breadcrumbs for debugging failed requests.
@@ -124,6 +135,7 @@ Transform DovvyBuddy from a feature-complete web application into a production-r
   - Protected by internal API key (not publicly accessible).
 
 **Services/Modules Impacted:**
+
 - **Logging Service (New `src/lib/logging/`):**
   - Structured logger using Pino or Winston.
   - Log levels: ERROR, WARN, INFO, DEBUG.
@@ -134,6 +146,7 @@ Transform DovvyBuddy from a feature-complete web application into a production-r
   - Instrument key code paths with timing metrics (RAG retrieval, LLM calls, DB queries).
 
 **Validation/Auth/Error-Handling Concerns:**
+
 - Ensure all API endpoints have proper error handling and return structured JSON errors.
 - Add rate limiting to prevent abuse (use Vercel rate limiting or Upstash Redis).
 - Validate environment variables at startup (fail fast if critical vars missing).
@@ -143,6 +156,7 @@ Transform DovvyBuddy from a feature-complete web application into a production-r
 **No Schema Changes.**
 
 **Data Operations:**
+
 - **Content Review & Refinement:**
   - Audit all markdown content in `content/` for accuracy, tone, and completeness.
   - Ensure safety disclaimers are present in all relevant content.
@@ -155,14 +169,17 @@ Transform DovvyBuddy from a feature-complete web application into a production-r
   - Ensure all partner shop contact information is accurate.
 
 **Migrations/Backfills:**
+
 - None required (observability tables can be added in future if needed for analytics storage).
 
 **Compatibility Strategy:**
+
 - N/A (no breaking data changes).
 
 ### Infra / Config
 
 **Environment Variables (Add to `.env.example` and Production):**
+
 - `SENTRY_DSN` — Sentry project DSN for error tracking.
 - `SENTRY_AUTH_TOKEN` — Token for uploading source maps (optional, improves error debugging).
 - `POSTHOG_API_KEY` — Posthog project API key for analytics (if using Posthog).
@@ -173,10 +190,12 @@ Transform DovvyBuddy from a feature-complete web application into a production-r
 - `ENABLE_ANALYTICS` — Feature flag to toggle analytics (true/false, default: true in production).
 
 **Feature Flags:**
+
 - `ENABLE_ANALYTICS` — Control analytics event tracking (enable in production, disable in dev for testing).
 - `ENABLE_E2E_MODE` — Mock external services for E2E tests (LLM, email).
 
 **CI/CD Additions:**
+
 - **Production Deployment Workflow:**
   - Add GitHub Actions workflow for production deployments (already handled by Vercel, but add smoke test step post-deploy).
 - **Performance Budgets:**
@@ -185,11 +204,13 @@ Transform DovvyBuddy from a feature-complete web application into a production-r
   - Add bundle size checks in CI (fail if JavaScript bundle exceeds 500KB gzipped).
 
 **Monitoring Dashboards:**
+
 - **Sentry Dashboard:** Error rates, performance metrics, release tracking.
 - **Posthog Dashboard:** User behavior funnels (Landing → Chat → Lead), session duration, feature usage.
 - **Vercel Analytics:** Core Web Vitals (LCP, FID, CLS), page load times, traffic sources.
 
 **Alerting Rules:**
+
 - **Sentry Alerts:**
   - Critical: Error rate >5% over 5 minutes → notify via email/Slack.
   - Warning: New error type introduced → notify.
@@ -211,6 +232,7 @@ Establish real-time visibility into application health, user behavior, and busin
 #### Scope
 
 **In scope:**
+
 - Install and configure Sentry for error tracking and performance monitoring.
 - Install and configure Posthog for product analytics and event tracking.
 - Implement structured logging service (`src/lib/logging/`).
@@ -224,6 +246,7 @@ Establish real-time visibility into application health, user behavior, and busin
 - Document monitoring strategy and dashboard locations in `docs/references/MONITORING.md`.
 
 **Out of scope:**
+
 - Performance optimizations (handled in PR9b).
 - E2E testing (handled in PR9c).
 - UI/UX polish (handled in PR9b).
@@ -232,22 +255,26 @@ Establish real-time visibility into application health, user behavior, and busin
 #### Backend Changes
 
 **APIs to Modify:**
+
 - `POST /api/chat` — Add structured logging, Sentry breadcrumbs, performance traces.
 - `POST /api/lead` — Add lead delivery tracking, Sentry error capture.
 - `POST /api/session/new` — Add session creation logging.
 - All API routes — Wrap with error handling middleware that logs to Sentry.
 
 **APIs to Add:**
+
 - `GET /api/health` — Health check (DB + LLM + Email connectivity).
 - `GET /api/metrics` — Internal metrics endpoint (protected by API key).
 
 **New Services/Modules:**
+
 - `src/lib/logging/logger.ts` — Structured logger (Pino) with contextual fields.
 - `src/lib/logging/middleware.ts` — Request logging middleware for API routes.
 - `src/lib/monitoring/sentry.ts` — Sentry initialization and error capture utilities.
 - `src/lib/monitoring/analytics.ts` — Posthog event tracking wrapper.
 
 **Error Handling:**
+
 - Create centralized error handler middleware (`src/lib/errors/handler.ts`).
 - Define error types with appropriate HTTP codes and user-facing messages.
 - Capture all errors in Sentry with full context (session ID, stack trace).
@@ -255,9 +282,11 @@ Establish real-time visibility into application health, user behavior, and busin
 #### Frontend Changes
 
 **Components to Create:**
+
 - `src/components/ErrorBoundary.tsx` — React Error Boundary with Sentry integration.
 
 **Instrumentation (All existing pages):**
+
 - `/app/page.tsx` (Landing):
   - Track: Page view, "Start Chat" CTA click.
 - `/app/chat/page.tsx`:
@@ -266,6 +295,7 @@ Establish real-time visibility into application health, user behavior, and busin
 - Capture user properties: Session ID, Is authenticated (if PR9 complete).
 
 **Error Boundaries:**
+
 - Wrap `app/layout.tsx` with top-level ErrorBoundary.
 - Wrap `/app/chat/page.tsx` with chat-specific ErrorBoundary (allows retry without full page reload).
 
@@ -274,6 +304,7 @@ Establish real-time visibility into application health, user behavior, and busin
 **No schema changes.**
 
 **Logging Output:**
+
 - Logs written to stdout (captured by Vercel).
 - Structured JSON format for easy parsing.
 - Include: timestamp, level, message, context (sessionId, userId, requestId).
@@ -281,6 +312,7 @@ Establish real-time visibility into application health, user behavior, and busin
 #### Infra / Config
 
 **Environment Variables:**
+
 - `SENTRY_DSN` (required in production)
 - `SENTRY_AUTH_TOKEN` (optional, for source maps)
 - `POSTHOG_API_KEY` (required in production)
@@ -289,12 +321,14 @@ Establish real-time visibility into application health, user behavior, and busin
 - `ENABLE_ANALYTICS` (feature flag, default: true)
 
 **Sentry Setup:**
+
 - Create Sentry project (Next.js platform).
 - Configure source maps upload (via Sentry Webpack plugin).
 - Set up release tracking (tag releases with git commit SHA).
 - Configure breadcrumbs for user actions.
 
 **Posthog Setup:**
+
 - Create Posthog project.
 - Define key events:
   - `page_view` (page, referrer)
@@ -306,6 +340,7 @@ Establish real-time visibility into application health, user behavior, and busin
 - Create funnel: Landing → Chat → Lead Submit.
 
 **Alerting:**
+
 - Sentry: Email/Slack alert for error rate >5% over 5 minutes.
 - Sentry: Email alert for lead delivery failure (any occurrence).
 - UptimeRobot: Monitor `/api/health` every 5 minutes, alert if down.
@@ -313,16 +348,19 @@ Establish real-time visibility into application health, user behavior, and busin
 #### Testing
 
 **Unit Tests:**
+
 - Logger utility formats messages correctly.
 - Error handler middleware returns proper error responses.
 - Analytics wrapper calls Posthog API correctly (mocked).
 
 **Integration Tests:**
+
 - `/api/health` returns correct status when DB is reachable.
 - `/api/metrics` requires API key authentication.
 - Error in `/api/chat` is captured by Sentry (verify Sentry.captureException called).
 
 **Manual Verification:**
+
 - Trigger error in dev environment, verify it appears in Sentry dashboard.
 - Send test message in chat, verify events appear in Posthog dashboard.
 - Check `/api/health` endpoint returns expected JSON.
@@ -331,6 +369,7 @@ Establish real-time visibility into application health, user behavior, and busin
 #### Verification
 
 **Commands:**
+
 - Install: `pnpm install`
 - Dev: `pnpm dev`
 - Test: `pnpm test` (unit tests pass)
@@ -339,6 +378,7 @@ Establish real-time visibility into application health, user behavior, and busin
 - Build: `pnpm build` (successful build)
 
 **Manual Checklist:**
+
 - [ ] Sentry project created and DSN added to `.env`.
 - [ ] Posthog project created and API key added to `.env`.
 - [ ] Start dev server, navigate to landing page, verify page view event in Posthog.
@@ -356,9 +396,11 @@ Establish real-time visibility into application health, user behavior, and busin
 #### Rollback Plan
 
 **Feature Flag:**
+
 - Set `ENABLE_ANALYTICS=false` to disable analytics event tracking if causing issues.
 
 **Revert Strategy:**
+
 - Logging and error handling are additive; reverting PR removes observability but does not break existing features.
 - If Sentry causes performance issues (unlikely), remove Sentry middleware from API routes.
 - No data migrations involved; safe to revert.
@@ -366,21 +408,26 @@ Establish real-time visibility into application health, user behavior, and busin
 #### Dependencies
 
 **Upstream:**
+
 - PR1-PR6 (core functionality must exist to instrument).
 
 **External:**
+
 - Sentry account and project created.
 - Posthog account and project created.
 
 #### Risks & Mitigations
 
 **Risk: Analytics/monitoring libraries increase bundle size significantly.**
+
 - Mitigation: Use dynamic imports for analytics libraries (client-side only). Measure bundle size in CI.
 
 **Risk: Sentry captures sensitive data (user messages, PII).**
+
 - Mitigation: Configure Sentry `beforeSend` hook to scrub sensitive fields (message content, email). Log only metadata.
 
 **Risk: Logging volume causes performance issues or cost spikes.**
+
 - Mitigation: Use appropriate log levels (INFO in prod, DEBUG only when troubleshooting). Sample verbose logs if needed.
 
 ---
@@ -394,6 +441,7 @@ Optimize application performance to meet production targets (<5s chat response, 
 #### Scope
 
 **In scope:**
+
 - **Performance Optimization:**
   - Frontend: Bundle size reduction, code splitting, image optimization, font optimization, lazy loading.
   - Backend: Database query optimization, caching strategy (session cache, RAG results cache).
@@ -413,6 +461,7 @@ Optimize application performance to meet production targets (<5s chat response, 
   - Ensure semantic HTML and accessibility (ARIA labels, alt text).
 
 **Out of scope:**
+
 - Observability infrastructure (handled in PR9a).
 - E2E testing (handled in PR9c).
 - New features or functionality changes.
@@ -420,6 +469,7 @@ Optimize application performance to meet production targets (<5s chat response, 
 #### Backend Changes
 
 **Performance Optimizations:**
+
 - **Database Query Optimization:**
   - Review and optimize Drizzle queries (add indexes if missing).
   - Implement connection pooling (verify Neon/Supabase pooler is enabled).
@@ -433,16 +483,19 @@ Optimize application performance to meet production targets (<5s chat response, 
   - Test prompt variations for conciseness and response time.
 
 **APIs to Modify:**
+
 - `/api/chat` — Add session caching, RAG result caching, optimize DB queries.
 - `/api/session/:id` — Add session cache lookup.
 
 **New Utilities:**
+
 - `src/lib/cache/session-cache.ts` — In-memory session cache (Map with TTL).
 - `src/lib/cache/rag-cache.ts` — RAG result cache (Map with query hash as key).
 
 #### Frontend Changes
 
 **Performance Optimizations:**
+
 - **Bundle Size Reduction:**
   - Analyze bundle with `@next/bundle-analyzer`.
   - Identify and remove unused dependencies.
@@ -463,6 +516,7 @@ Optimize application performance to meet production targets (<5s chat response, 
   - Use `font-display: swap` to prevent invisible text.
 
 **UI/UX Polish:**
+
 - `/app/page.tsx` (Landing):
   - Refine headline and value proposition copy (A/B test variants documented in comments).
   - Add social proof section (partner logos, testimonials if available).
@@ -486,15 +540,18 @@ Optimize application performance to meet production targets (<5s chat response, 
   - Add subtle animation to loading states.
 
 **New Pages:**
+
 - `/app/about/page.tsx` — Static page: About DovvyBuddy.
 - `/app/faq/page.tsx` — Static page: Frequently Asked Questions.
 - `/app/privacy/page.tsx` — Static page: Privacy Policy.
 - `/app/terms/page.tsx` — Static page: Terms of Service.
 
 **Footer Component:**
+
 - `src/components/Footer.tsx` — Links to About, FAQ, Privacy, Terms, Contact.
 
 **SEO:**
+
 - Update `app/layout.tsx` metadata (global title, description).
 - Add page-specific metadata to each route.
 - Add Open Graph tags for social sharing.
@@ -504,6 +561,7 @@ Optimize application performance to meet production targets (<5s chat response, 
 #### Data Changes
 
 **Content Review & Refinement:**
+
 - Audit `content/certifications/padi/open-water.md` for accuracy, tone, clarity.
 - Audit `content/certifications/ssi/open-water.md` for consistency with PADI content.
 - Audit `content/destinations/[destination]/overview.md` for completeness.
@@ -515,6 +573,7 @@ Optimize application performance to meet production targets (<5s chat response, 
 - Update `content/safety/general-safety.md` with final reviewed content.
 
 **Re-run Content Ingestion:**
+
 - After content updates, run `pnpm content:ingest` to regenerate embeddings.
 - Verify embeddings stored in `content_embeddings` table.
 - Test RAG retrieval with sample queries to ensure quality.
@@ -522,6 +581,7 @@ Optimize application performance to meet production targets (<5s chat response, 
 #### Infra / Config
 
 **Performance Budgets (CI):**
+
 - Add Lighthouse CI configuration (`.lighthouserc.json`).
 - Thresholds:
   - LCP: <3s
@@ -532,26 +592,31 @@ Optimize application performance to meet production targets (<5s chat response, 
 - Fail CI build if thresholds not met.
 
 **Bundle Size Limits (CI):**
+
 - Add bundle size check (use `size-limit` or `next-bundle-analyzer`).
 - Fail CI if JavaScript bundle >500KB gzipped.
 
 **Caching Strategy:**
+
 - No CDN-level caching changes (Vercel handles static assets).
 - API route caching: No caching for `/api/chat` (dynamic). Cache `/api/health` (1 minute).
 
 #### Testing
 
 **Performance Testing:**
+
 - Run Lighthouse on landing page (desktop + mobile).
 - Verify LCP <3s, FCP <1.8s, CLS <0.1.
 - Run bundle analyzer, verify total bundle <500KB gzipped.
 - Load test `/api/chat` endpoint (simulate 10 concurrent users), verify response time <5s (p95).
 
 **Unit Tests:**
+
 - Session cache: Test cache hit/miss, TTL expiration.
 - RAG cache: Test cache key generation, cache hit/miss.
 
 **Manual Testing:**
+
 - **Content Review:** Read through all content files, verify accuracy and tone.
 - **Landing Page:** Test on desktop (Chrome, Safari, Firefox) and mobile (iOS Safari, Chrome Android).
   - Verify headline is clear and compelling.
@@ -570,6 +635,7 @@ Optimize application performance to meet production targets (<5s chat response, 
 #### Verification
 
 **Commands:**
+
 - Install: `pnpm install`
 - Dev: `pnpm dev`
 - Test: `pnpm test` (unit tests pass)
@@ -581,6 +647,7 @@ Optimize application performance to meet production targets (<5s chat response, 
 - Content ingest: `pnpm content:ingest` (after content updates)
 
 **Manual Checklist:**
+
 - [ ] Run Lighthouse on landing page (desktop), verify LCP <3s.
 - [ ] Run Lighthouse on landing page (mobile), verify LCP <3s.
 - [ ] Check bundle size (from build output or analyzer), verify <500KB gzipped.
@@ -599,35 +666,43 @@ Optimize application performance to meet production targets (<5s chat response, 
 #### Rollback Plan
 
 **Revert Strategy:**
+
 - Performance optimizations are largely additive (caching, bundle optimization). Reverting PR removes optimizations but does not break functionality.
 - If caching causes stale data issues, disable cache by setting TTL to 0 or removing cache lookups.
 - If bundle splitting causes loading issues, revert dynamic imports.
 - Content updates can be reverted by re-running `pnpm content:ingest` with previous content version.
 
 **Feature Flag:**
+
 - `ENABLE_SESSION_CACHE` — Toggle session caching on/off (default: true).
 - `ENABLE_RAG_CACHE` — Toggle RAG result caching on/off (default: true).
 
 #### Dependencies
 
 **Upstream:**
+
 - PR9a (observability) — Helpful for monitoring performance metrics but not strictly required.
 
 **External:**
+
 - None (all optimizations are internal).
 
 #### Risks & Mitigations
 
 **Risk: Aggressive caching causes stale data issues (e.g., session state out of sync).**
+
 - Mitigation: Use short TTLs (session cache 15 min, RAG cache 1 hour). Add cache invalidation on session update.
 
 **Risk: Bundle splitting breaks lazy-loaded components (load errors).**
+
 - Mitigation: Test all lazy-loaded components thoroughly. Add error boundaries to handle load failures gracefully.
 
 **Risk: Image optimization degrades visual quality.**
+
 - Mitigation: Use Next.js Image component with appropriate quality settings (75-85). Review images visually before deploy.
 
 **Risk: Content updates introduce factual errors.**
+
 - Mitigation: Peer review (if possible) or careful solo review. Test RAG retrieval with known queries. Consider adding content validation checks (e.g., no broken links).
 
 ---
@@ -641,6 +716,7 @@ Validate end-to-end user flows with automated smoke tests and comprehensive manu
 #### Scope
 
 **In scope:**
+
 - **E2E Testing (Playwright):**
   - Single smoke test covering critical path: Landing → Chat → Message → Response → Lead Form → Submit.
   - Test runs in CI (non-blocking for V1, made blocking post-launch).
@@ -666,6 +742,7 @@ Validate end-to-end user flows with automated smoke tests and comprehensive manu
   - Document rollback procedure in `docs/references/ROLLBACK.md`.
 
 **Out of scope:**
+
 - Comprehensive E2E suite (deferred to post-launch).
 - Load testing (basic load test only; full performance testing deferred).
 - Penetration testing / security audit (deferred to V2).
@@ -673,6 +750,7 @@ Validate end-to-end user flows with automated smoke tests and comprehensive manu
 #### Backend Changes
 
 **APIs to Modify:**
+
 - Add `E2E_MODE` environment variable check in relevant services.
 - When `E2E_MODE=true`:
   - Mock LLM responses (return canned response for test queries).
@@ -680,12 +758,14 @@ Validate end-to-end user flows with automated smoke tests and comprehensive manu
   - Use in-memory session storage (no DB writes).
 
 **New Utilities:**
+
 - `src/lib/testing/mocks.ts` — Mock implementations for E2E tests (LLM, email).
 - `src/lib/testing/fixtures.ts` — Test data fixtures (sample messages, leads).
 
 #### Frontend Changes
 
 **Test Utilities:**
+
 - `tests/e2e/helpers.ts` — Playwright helper functions (login, start chat, send message).
 - `tests/e2e/fixtures.ts` — Page object models for common elements.
 
@@ -696,6 +776,7 @@ Validate end-to-end user flows with automated smoke tests and comprehensive manu
 **No schema changes.**
 
 **Production Database Setup:**
+
 - Create production Postgres instance (Neon/Supabase).
 - Enable automated backups (daily).
 - Configure connection pooling.
@@ -706,6 +787,7 @@ Validate end-to-end user flows with automated smoke tests and comprehensive manu
 #### Infra / Config
 
 **E2E Testing Setup:**
+
 - Install Playwright: `pnpm add -D @playwright/test`.
 - Create `playwright.config.ts`:
   - Base URL: `http://localhost:3000` (dev) or production URL.
@@ -716,6 +798,7 @@ Validate end-to-end user flows with automated smoke tests and comprehensive manu
 - Add E2E to CI workflow (run after build, non-blocking initially).
 
 **Production Environment Variables (Verify in Vercel):**
+
 - `DATABASE_URL` (production Postgres connection string)
 - `LLM_PROVIDER=gemini`
 - `GEMINI_API_KEY` (production key)
@@ -730,6 +813,7 @@ Validate end-to-end user flows with automated smoke tests and comprehensive manu
 - `ENABLE_RAG_CACHE=true` (from PR10b)
 
 **Custom Domain (Optional):**
+
 - Configure custom domain in Vercel dashboard.
 - Set up DNS records (CNAME or A record).
 - Verify SSL certificate provisioned.
@@ -737,6 +821,7 @@ Validate end-to-end user flows with automated smoke tests and comprehensive manu
 #### Testing
 
 **E2E Smoke Test (`tests/e2e/smoke.spec.ts`):**
+
 ```
 Test: Critical Path Smoke Test
 1. Navigate to landing page.
@@ -755,6 +840,7 @@ Test: Critical Path Smoke Test
 ```
 
 **E2E Test Configuration:**
+
 - Use `E2E_MODE=true` env var to enable mocks.
 - Mock LLM response for "What is Open Water certification?" to return canned response.
 - Mock email delivery to log instead of sending.
@@ -762,6 +848,7 @@ Test: Critical Path Smoke Test
 **Manual Testing Checklist (`docs/references/MANUAL_TEST_CHECKLIST.md`):**
 
 **Functional Tests:**
+
 - [ ] Landing page loads correctly (desktop + mobile).
 - [ ] "Start Chat" CTA navigates to /chat.
 - [ ] Chat interface loads correctly.
@@ -778,17 +865,20 @@ Test: Critical Path Smoke Test
 - [ ] Test uncovered destination query, verify "not covered" response.
 
 **Error Handling:**
+
 - [ ] Disconnect network, send message, verify error message appears.
 - [ ] Reconnect network, click retry, verify request succeeds.
 - [ ] Trigger invalid LLM API key (temporarily change env var), verify graceful error.
 - [ ] Trigger database connection failure (disconnect DB), verify /api/health returns degraded status.
 
 **Performance:**
+
 - [ ] Measure landing page load time (Lighthouse or DevTools), verify LCP <3s.
 - [ ] Measure chat response time (send message, time to response), verify <5s (p95).
 - [ ] Test under slow 3G network (DevTools throttling), verify usable.
 
 **Mobile & Responsive:**
+
 - [ ] Test on iPhone (Safari iOS): Landing, Chat, Lead form.
 - [ ] Test on Android (Chrome): Landing, Chat, Lead form.
 - [ ] Test on tablet (iPad): Landing, Chat, Lead form.
@@ -796,12 +886,14 @@ Test: Critical Path Smoke Test
 - [ ] Verify touch targets are adequate (buttons, links).
 
 **Cross-Browser:**
+
 - [ ] Test on Chrome (desktop).
 - [ ] Test on Safari (desktop).
 - [ ] Test on Firefox (desktop).
 - [ ] Test on Edge (desktop).
 
 **Accessibility:**
+
 - [ ] Navigate landing page with keyboard only (Tab, Enter), verify all interactive elements accessible.
 - [ ] Navigate chat interface with keyboard only.
 - [ ] Test with screen reader (VoiceOver on Mac, NVDA on Windows), verify elements announced correctly.
@@ -810,6 +902,7 @@ Test: Critical Path Smoke Test
 - [ ] Verify form inputs have labels.
 
 **Analytics & Monitoring:**
+
 - [ ] Send test message, verify events appear in Posthog dashboard.
 - [ ] Submit test lead, verify lead_submitted event in Posthog.
 - [ ] Trigger test error, verify error appears in Sentry dashboard.
@@ -817,6 +910,7 @@ Test: Critical Path Smoke Test
 - [ ] Verify /api/health endpoint returns ok status.
 
 **Content Quality:**
+
 - [ ] Ask certification question, verify response is accurate and grounded.
 - [ ] Ask destination question (covered destination), verify response includes relevant sites.
 - [ ] Ask destination question (uncovered destination), verify refusal.
@@ -826,6 +920,7 @@ Test: Critical Path Smoke Test
 #### Verification
 
 **Commands:**
+
 - Install: `pnpm install`
 - Dev: `pnpm dev`
 - Test (unit): `pnpm test`
@@ -838,6 +933,7 @@ Test: Critical Path Smoke Test
 - Content ingest (prod): `pnpm content:ingest` (with production DATABASE_URL)
 
 **Deployment Verification (Post-Deploy to Production):**
+
 - [ ] Visit production URL, verify landing page loads.
 - [ ] Check browser console for errors (should be none).
 - [ ] Check Vercel deployment logs for errors (should be none).
@@ -851,6 +947,7 @@ Test: Critical Path Smoke Test
 **Launch Checklist (`docs/references/LAUNCH_RUNBOOK.md`):**
 
 **Pre-Launch (1 week before):**
+
 - [ ] PR9a (Observability) merged and deployed to production.
 - [ ] PR9b (Performance & Polish) merged and deployed to production.
 - [ ] All environment variables set in Vercel production environment.
@@ -864,6 +961,7 @@ Test: Critical Path Smoke Test
 - [ ] E2E smoke test passing in CI.
 
 **Launch Day (Soft Launch):**
+
 - [ ] Deploy final version to production (merge PR9c).
 - [ ] Run post-deploy verification (smoke test, manual test critical path).
 - [ ] Verify monitoring dashboards operational (Sentry, Posthog, Vercel).
@@ -874,6 +972,7 @@ Test: Critical Path Smoke Test
 - [ ] Monitor Vercel analytics for traffic and performance.
 
 **Post-Launch (1 week after):**
+
 - [ ] Review metrics: Sessions, leads, error rate, response time.
 - [ ] Gather user feedback from beta testers.
 - [ ] Identify and prioritize bugs/issues.
@@ -884,6 +983,7 @@ Test: Critical Path Smoke Test
 **Rollback Procedure (`docs/references/ROLLBACK.md`):**
 
 **Scenario 1: Critical bug in latest deployment**
+
 1. In Vercel dashboard, go to Deployments.
 2. Find the previous stable deployment.
 3. Click "..." menu → "Promote to Production".
@@ -892,6 +992,7 @@ Test: Critical Path Smoke Test
 6. Investigate and fix bug in separate hotfix branch.
 
 **Scenario 2: Database migration failure**
+
 1. If migration failed mid-apply, check DB state (which migrations applied).
 2. If possible, roll forward (apply remaining migrations).
 3. If rollback needed:
@@ -901,6 +1002,7 @@ Test: Critical Path Smoke Test
 5. Redeploy application with reverted migration.
 
 **Scenario 3: Performance degradation**
+
 1. Identify source (Sentry performance traces, Vercel logs).
 2. If caused by caching issue: Set `ENABLE_SESSION_CACHE=false` and `ENABLE_RAG_CACHE=false` in Vercel env vars.
 3. Redeploy (Vercel auto-redeploys on env var change).
@@ -910,9 +1012,11 @@ Test: Critical Path Smoke Test
 #### Rollback Plan
 
 **Feature Flag:**
+
 - `E2E_MODE` — Toggle E2E mocks on/off (only for testing).
 
 **Revert Strategy:**
+
 - E2E tests are non-breaking (CI non-blocking initially). Reverting PR removes tests but does not affect production functionality.
 - If E2E tests are flaky, disable in CI temporarily while stabilizing.
 - Production environment setup and launch checklist are documentation only; no code changes to revert.
@@ -920,11 +1024,13 @@ Test: Critical Path Smoke Test
 #### Dependencies
 
 **Upstream:**
+
 - PR9a (Observability) — Required for monitoring production.
 - PR9b (Performance & Polish) — Required for production-ready performance and UX.
 - PR1-PR6 (Core functionality) — Required for E2E tests to have features to test.
 
 **External:**
+
 - Production Postgres instance (Neon/Supabase).
 - Production Vercel account with appropriate tier.
 - Custom domain (optional).
@@ -933,18 +1039,23 @@ Test: Critical Path Smoke Test
 #### Risks & Mitigations
 
 **Risk: E2E tests are flaky (false failures in CI).**
+
 - Mitigation: Use Playwright retry mechanism (2 retries). Make tests deterministic (use mocks). Keep E2E non-blocking in CI initially.
 
 **Risk: Production deployment fails due to missing environment variable.**
+
 - Mitigation: Document all required env vars in `.env.example`. Add startup validation that checks for required vars and fails fast with clear error message.
 
 **Risk: Database migration fails in production.**
+
 - Mitigation: Test migrations thoroughly in staging environment first. Use backward-compatible migrations. Have backup/restore procedure documented and tested.
 
 **Risk: Content ingestion fails in production (API rate limit, network issue).**
+
 - Mitigation: Run content ingestion during low-traffic window. Implement retry logic with exponential backoff. Monitor ingestion job for failures.
 
 **Risk: High traffic on launch day overwhelms infrastructure.**
+
 - Mitigation: Soft launch to limited audience first. Monitor traffic and scale Vercel plan if needed. Use rate limiting to prevent abuse.
 
 ---
@@ -956,9 +1067,11 @@ Test: Critical Path Smoke Test
 **What it unlocks:** Real-time visibility into production health, enabling data-driven decisions and proactive incident response.
 
 **PRs Included:**
+
 - PR10a: Observability & Monitoring Infrastructure
 
 **Definition of Done:**
+
 - Sentry dashboard shows error rates, performance metrics, and release tracking.
 - Posthog dashboard shows user funnels (Landing → Chat → Lead).
 - Alerts configured and tested (error rate spike, lead delivery failure).
@@ -971,9 +1084,11 @@ Test: Critical Path Smoke Test
 **What it unlocks:** Fast, polished user experience meeting production performance targets, with refined content and professional UI.
 
 **PRs Included:**
+
 - PR10b: Performance Optimization & Content Polish
 
 **Definition of Done:**
+
 - Landing page LCP <3s (desktop and mobile).
 - Chat response time <5s (p95).
 - Bundle size <500KB gzipped.
@@ -989,9 +1104,11 @@ Test: Critical Path Smoke Test
 **What it unlocks:** Confidence in production deployment through automated smoke tests, comprehensive manual testing, and repeatable launch procedures.
 
 **PRs Included:**
+
 - PR10c: E2E Testing & Production Launch Checklist
 
 **Definition of Done:**
+
 - E2E smoke test passing in CI (critical path: Landing → Chat → Lead).
 - Manual testing checklist completed (100% pass rate).
 - Production environment configured (all env vars set, DB migrated, content ingested).
@@ -1006,6 +1123,7 @@ Test: Critical Path Smoke Test
 **What it unlocks:** DovvyBuddy is live and accessible to the public, ready to serve divers and generate leads for partner shops.
 
 **No PRs (Operational Milestone):**
+
 - Execute launch checklist from PR9c.
 - Announce to broader audience (social media, email, partner shops).
 - Monitor metrics for first week (sessions, leads, errors, performance).
@@ -1013,6 +1131,7 @@ Test: Critical Path Smoke Test
 - Plan next iteration based on data and feedback.
 
 **Definition of Done:**
+
 - Public URL accessible and performing well.
 - No critical bugs or errors in production.
 - Lead delivery confirmed operational (partner shops receiving leads).
@@ -1105,26 +1224,31 @@ Test: Critical Path Smoke Test
 ### Trade-offs
 
 **Trade-off 1: E2E Test Coverage vs. Solo Founder Time**
+
 - **Decision:** Single smoke test (critical path) instead of comprehensive E2E suite.
 - **Rationale:** Comprehensive E2E suite is time-intensive to build and maintain. Solo founder resources require prioritization. Single smoke test catches critical regressions while manual checklist covers edge cases.
 - **Consequence:** Some edge cases may slip through (mitigated by thorough manual testing and monitoring in production).
 
 **Trade-off 2: Posthog vs. Vercel Analytics**
+
 - **Decision:** Posthog (self-hosted or cloud) for product analytics.
 - **Rationale:** Posthog provides more detailed event tracking, funnels, and user segmentation compared to Vercel Analytics (which focuses on Core Web Vitals and traffic sources).
 - **Consequence:** Requires additional integration effort and potential cost. If budget is constrained, can fall back to Vercel Analytics initially and migrate to Posthog later.
 
 **Trade-off 3: In-Memory Caching vs. Redis**
+
 - **Decision:** In-memory caching (Map with TTL) for session and RAG results.
 - **Rationale:** Simpler implementation, no external dependency, sufficient for V1 traffic estimates. Redis adds cost and complexity.
 - **Consequence:** Cache is not shared across serverless function instances (each instance has its own cache). Cache is lost on function cold start. Acceptable for V1; migrate to Redis if traffic scales and cache hit rate is important.
 
 **Trade-off 4: Manual Content Review vs. Automated Validation**
+
 - **Decision:** Manual content review (founder reads all content files).
 - **Rationale:** Content corpus is small (~10-15 markdown files). Automated validation (fact-checking, tone analysis) is complex and time-consuming to implement.
 - **Consequence:** Manual review is slower and fallible. Mitigated by thorough checklist and testing RAG retrieval quality. Consider automated validation in V2 if content corpus grows significantly.
 
 **Trade-off 5: Soft Launch vs. Big Bang Launch**
+
 - **Decision:** Soft launch to limited audience (beta testers, partner shop staff, small social media post).
 - **Rationale:** Reduces risk of launch day disasters (high traffic, unexpected bugs). Allows validation of monitoring, lead delivery, and performance under real-world conditions before broader announcement.
 - **Consequence:** Slower user acquisition initially. Acceptable for V1; prioritizes stability over growth velocity.
@@ -1132,6 +1256,7 @@ Test: Critical Path Smoke Test
 ### Open Questions
 
 **Q1: Which destination should be the initial launch destination?**
+
 - **Impact on Plan:** Content scope (destination overview, site guides). Partner shop selection.
 - **Resolution Needed Before:** PR9b (content review).
 - **Decision Criteria:** Choose destination with:
@@ -1142,6 +1267,7 @@ Test: Critical Path Smoke Test
 - **Proposed Decision:** Defer to founder to select based on partner availability and market research. Suggested options: Cozumel (Mexico), Koh Tao (Thailand), Bonaire (Caribbean).
 
 **Q2: Should analytics use Posthog self-hosted or Posthog Cloud?**
+
 - **Impact on Plan:** Infra setup (self-hosted requires additional deployment) and cost.
 - **Resolution Needed Before:** PR9a (observability).
 - **Decision Criteria:**
@@ -1150,6 +1276,7 @@ Test: Critical Path Smoke Test
 - **Proposed Decision:** Use Posthog Cloud for V1 (simpler, faster setup). Migrate to self-hosted if cost becomes significant (>$100/month) or data privacy requirements demand it.
 
 **Q3: Should we implement rate limiting at Vercel level or application level?**
+
 - **Impact on Plan:** Implementation approach (Vercel config vs. middleware code).
 - **Resolution Needed Before:** PR9b (performance optimization).
 - **Decision Criteria:**
@@ -1158,6 +1285,7 @@ Test: Critical Path Smoke Test
 - **Proposed Decision:** Start with Vercel rate limiting (simpler). Add custom application-level rate limiting if Vercel limits are insufficient or too coarse.
 
 **Q4: What is the rollout timeline for PR9a, PR9b, PR9c?**
+
 - **Impact on Plan:** Testing schedule, deployment sequence.
 - **Resolution Needed Before:** Starting work on PR9.
 - **Proposed Timeline:**
@@ -1168,6 +1296,7 @@ Test: Critical Path Smoke Test
 - **Total Duration:** ~5 weeks from start to public launch.
 
 **Q5: Should we use a staging environment separate from production?**
+
 - **Impact on Plan:** Infra setup (additional Vercel project, additional database).
 - **Resolution Needed Before:** PR9c (production deployment).
 - **Decision Criteria:**
@@ -1182,6 +1311,7 @@ Test: Critical Path Smoke Test
 PR9 (Production Launch Readiness) is a critical epic that transforms DovvyBuddy from a feature-complete application into a production-ready product. By breaking the work into three focused PRs (Observability, Performance & Polish, E2E Testing & Launch), we ensure each component is thoroughly tested and validated before public launch. The comprehensive monitoring, performance optimization, and testing infrastructure established in PR9 will pay dividends throughout the product lifecycle, enabling rapid iteration and confident deployments.
 
 **Key Success Metrics:**
+
 - Error rate <1% (measured in Sentry).
 - Chat response time <5s (p95, measured in Sentry/Posthog).
 - Landing page LCP <3s (measured in Lighthouse/Vercel Analytics).
@@ -1189,6 +1319,7 @@ PR9 (Production Launch Readiness) is a critical epic that transforms DovvyBuddy 
 - Session-to-lead conversion rate >5% (measured in Posthog funnel).
 
 **Next Steps After PR9:**
+
 - Monitor production metrics for 1-2 weeks.
 - Gather user feedback from soft launch audience.
 - Prioritize bugs and iterate (PR10: Post-Launch Fixes & Improvements).

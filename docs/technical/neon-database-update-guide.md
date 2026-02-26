@@ -7,17 +7,19 @@
 
 ## Overview
 
-This guide explains how to update the Neon PostgreSQL database when metadata or content changes. 
+This guide explains how to update the Neon PostgreSQL database when metadata or content changes.
 
 ### Two Types of Updates
 
 **1. Structured Data Updates** (This Guide)
+
 - Updates: `dive_sites`, `destinations`, `certifications` tables
 - Source: JSON metadata files
 - Tools: `scripts/update-dive-sites.ts` and similar
 - Use When: Adding/updating dive sites, destinations, certification metadata
 
 **2. Content Embeddings** (See [Content Ingestion Guide](./content-ingestion-guide.md))
+
 - Updates: `content_embeddings` table
 - Source: Markdown content files
 - Tools: `scripts/ingest-content.ts`
@@ -381,7 +383,7 @@ psql "$DATABASE_URL" -c "SELECT version();"
 
 # Table sizes
 psql "$DATABASE_URL" -c "
-SELECT 
+SELECT
     tablename,
     pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS size
 FROM pg_tables
@@ -390,7 +392,7 @@ ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;"
 
 # Embedding statistics
 psql "$DATABASE_URL" -c "
-SELECT 
+SELECT
     COUNT(*) as total_embeddings,
     COUNT(DISTINCT content_path) as unique_files,
     MIN(created_at) as oldest_embedding,
@@ -425,7 +427,7 @@ psql "$DATABASE_URL" -c "REINDEX TABLE content_embeddings;"
 
 # Check index health
 psql "$DATABASE_URL" -c "
-SELECT 
+SELECT
     schemaname,
     tablename,
     indexname,
@@ -445,6 +447,7 @@ WHERE tablename = 'content_embeddings';"
 **Solution:**
 
 1. Delete embeddings for affected content:
+
    ```bash
    psql "$DATABASE_URL" -c "DELETE FROM content_embeddings WHERE content_path LIKE '%affected-path%';"
    ```
@@ -720,6 +723,7 @@ psql "$DATABASE_URL" -c "REINDEX TABLE content_embeddings;"
 ## Quick Reference: When to Use Each Tool
 
 ### Use `scripts/update-dive-sites.ts` When:
+
 - ✅ Adding/updating dive site metadata (difficulty, depth, tags)
 - ✅ Adding new dive sites to existing destinations
 - ✅ Updating structured data in `dive_sites` table
@@ -727,6 +731,7 @@ psql "$DATABASE_URL" -c "REINDEX TABLE content_embeddings;"
 - ⚠️ Does NOT update embeddings for RAG
 
 ### Use `scripts/ingest-content.ts` When:
+
 - ✅ Markdown content changes (descriptions, guides, FAQs)
 - ✅ Need to update semantic search results
 - ✅ Adding new content for RAG to retrieve
@@ -734,6 +739,7 @@ psql "$DATABASE_URL" -c "REINDEX TABLE content_embeddings;"
 - ⚠️ Does NOT update structured data tables
 
 ### Typical Workflow for New Dive Site:
+
 1. **Create JSON file** with metadata → `content/destinations/Malaysia-Tioman/tioman-new-site.json`
 2. **Create markdown file** with content → `content/destinations/Malaysia-Tioman/tioman-new-site.md`
 3. **Run `update-dive-sites.ts`** → Populates `dive_sites` table with metadata
