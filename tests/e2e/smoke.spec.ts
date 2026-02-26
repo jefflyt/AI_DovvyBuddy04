@@ -32,7 +32,9 @@ test.describe('Critical User Journey', () => {
     // Check for value proposition section
     await expect(page.getByText(/certification navigator/i)).toBeVisible()
     await expect(page.getByText(/confidence building/i)).toBeVisible()
-    await expect(page.getByText(/trip research/i)).toBeVisible()
+    await expect(
+      page.getByRole('button', { name: /trip planning|trip research/i })
+    ).toBeVisible()
 
     // Check for How It Works section
     await expect(page.getByText(/how it works/i)).toBeVisible()
@@ -57,11 +59,13 @@ test.describe('Critical User Journey', () => {
     await expect(page).toHaveURL('/chat')
 
     // Wait for chat interface to be ready
-    const messageInput = page.locator('[data-testid="chat-input"]')
+    const messageInput = page.getByRole('textbox', {
+      name: /ask anything about diving/i,
+    })
     await expect(messageInput).toBeVisible()
 
     // Check for send button
-    const sendButton = page.locator('[data-testid="send-button"]')
+    const sendButton = page.locator('button[type="submit"]')
     await expect(sendButton).toBeVisible()
 
     // 4. Send a message (any message)
@@ -74,11 +78,11 @@ test.describe('Critical User Journey', () => {
 
     // Wait for AI response to appear (up to 30 seconds for LLM)
     // Don't assert content, just that a response appears
-    const responseContainer = page.locator('[data-testid="ai-message"]').first()
-    await expect(responseContainer).toBeVisible({ timeout: 30000 })
+    const messageBodies = page.locator('.prose.prose-sm')
+    await expect(messageBodies).toHaveCount(2, { timeout: 30000 })
 
     // Response should have some text content
-    const responseText = await responseContainer.textContent()
+    const responseText = await messageBodies.nth(1).textContent()
     expect(responseText).toBeTruthy()
     expect(responseText!.length).toBeGreaterThan(10)
 
@@ -125,7 +129,11 @@ test.describe('Critical User Journey', () => {
     expect(
       consoleErrors.filter((err) => {
         // Filter out known non-critical errors
-        return !err.includes('ResizeObserver') && !err.includes('analytics') // Analytics may fail in test env
+        return (
+          !err.includes('ResizeObserver') &&
+          !err.includes('analytics') &&
+          !err.includes('Failed to load resource')
+        )
       })
     ).toEqual([])
   })

@@ -55,7 +55,7 @@ describe('ApiClient', () => {
 
       // Check call arguments (ignore signal)
       const [url, options] = mockFetch.mock.calls[0]
-      expect(url).toBe('http://localhost:8000/api/chat')
+      expect(url).toBe('http://localhost:8000/chat')
       expect(options.method).toBe('POST')
       expect(options.credentials).toBe('include')
       expect(options.headers['Content-Type']).toBe('application/json')
@@ -83,7 +83,7 @@ describe('ApiClient', () => {
       })
 
       const [url, options] = mockFetch.mock.calls[0]
-      expect(url).toBe('http://localhost:8000/api/chat')
+      expect(url).toBe('http://localhost:8000/chat')
       expect(options.body).toBe(
         JSON.stringify({
           sessionId: '123e4567-e89b-12d3-a456-426614174000',
@@ -234,7 +234,7 @@ describe('ApiClient', () => {
 
       const [url, options] = mockFetch.mock.calls[0]
       expect(url).toBe(
-        'http://localhost:8000/api/session/123e4567-e89b-12d3-a456-426614174000'
+        'http://localhost:8000/session/123e4567-e89b-12d3-a456-426614174000'
       )
       expect(options.method).toBe('GET')
     })
@@ -277,7 +277,7 @@ describe('ApiClient', () => {
       expect(result).toEqual(mockResponse)
 
       const [url, options] = mockFetch.mock.calls[0]
-      expect(url).toBe('http://localhost:8000/api/leads')
+      expect(url).toBe('http://localhost:8000/leads')
       expect(options.method).toBe('POST')
       expect(options.body).toBe(
         JSON.stringify({

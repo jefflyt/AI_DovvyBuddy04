@@ -73,9 +73,11 @@ describe('withRetry', () => {
       baseDelay: 1000,
     })
 
+    const rejection = expect(promise).rejects.toThrow(ApiClientError)
+
     await vi.runAllTimersAsync()
 
-    await expect(promise).rejects.toThrow(ApiClientError)
+    await rejection
     expect(fn).toHaveBeenCalledTimes(1)
 
     vi.useRealTimers()
@@ -157,9 +159,11 @@ describe('withRetry', () => {
       baseDelay: 1000,
     })
 
+    const rejection = expect(promise).rejects.toThrow(lastError)
+
     await vi.runAllTimersAsync()
 
-    await expect(promise).rejects.toThrow(lastError)
+    await rejection
     expect(fn).toHaveBeenCalledTimes(3)
 
     vi.useRealTimers()
@@ -179,6 +183,8 @@ describe('withRetry', () => {
       signal: controller.signal,
     })
 
+    const rejection = expect(promise).rejects.toThrow('Request cancelled')
+
     // Start first attempt
     await vi.advanceTimersByTimeAsync(0)
     expect(fn).toHaveBeenCalledTimes(1)
@@ -189,7 +195,7 @@ describe('withRetry', () => {
     // Try to continue
     await vi.runAllTimersAsync()
 
-    await expect(promise).rejects.toThrow('Request cancelled')
+    await rejection
     expect(fn).toHaveBeenCalledTimes(1) // Should not retry after abort
 
     vi.useRealTimers()
