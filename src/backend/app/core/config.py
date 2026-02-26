@@ -45,7 +45,8 @@ class Settings(BaseSettings):
     llm_retry_delay: float = 1.0
     
     # Embedding Configuration
-    embedding_model: str = "text-embedding-004"  # Gemini embedding model (768 dimensions)
+    embedding_model: str = "text-embedding-004"  # Gemini embedding model (768 dimensions, standardized)
+    embedding_dimension: int = 768  # Target dimension for embeddings (Matryoshka truncation)
     embedding_batch_size: int = 100
     embedding_cache_size: int = 1000
     embedding_cache_ttl: int = 3600  # 1 hour in seconds

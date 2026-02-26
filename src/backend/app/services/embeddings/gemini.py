@@ -2,6 +2,7 @@
 Gemini embedding provider implementation.
 
 Uses Google's Generative AI SDK to generate embeddings with text-embedding-004.
+Supports Matryoshka-style dimension truncation for flexible embedding sizes.
 """
 
 import asyncio
@@ -26,14 +27,17 @@ logger = logging.getLogger(__name__)
 
 # Constants
 GEMINI_EMBEDDING_MODEL = "text-embedding-004"
-# Embedding dimensions per model
+
+# Embedding dimensions per model (native dimensions before truncation)
 EMBEDDING_DIMENSIONS = {
-    "text-embedding-004": 768,
-    "gemini-embedding-001": 3072,
+    "text-embedding-004": 768,  # Standard dimension for text-embedding-004
     "models/text-embedding-004": 768,
-    "models/gemini-embedding-001": 3072,
 }
 MAX_BATCH_SIZE = 100
+
+# Matryoshka dimension support for text-embedding-004
+# This model supports flexible output dimensions via truncation
+SUPPORTED_TRUNCATION_DIMENSIONS = [256, 512, 768]
 
 
 class RateLimitError(Exception):
@@ -43,28 +47,45 @@ class RateLimitError(Exception):
 
 
 class GeminiEmbeddingProvider(EmbeddingProvider):
-    """Embedding provider using Google's Gemini API."""
+    """Embedding provider using Google's Gemini API with Matryoshka truncation support."""
 
     def __init__(
         self,
         api_key: str,
         model: str = GEMINI_EMBEDDING_MODEL,
         use_cache: bool = True,
+        dimension: int | None = None,
     ):
         """
-        Initialize Gemini embedding provider.
+        Initialize Gemini embedding provider with optional Matryoshka dimension truncation.
 
         Args:
             api_key: Google API key
             model: Embedding model name (default: text-embedding-004)
             use_cache: Whether to use in-memory cache (default: True)
+            dimension: Target output dimension for Matryoshka truncation (default: model's native dimension)
+                      For text-embedding-004: supports 256, 512, or 768 dimensions
         """
         if not api_key:
             raise ValueError("Gemini API key is required")
 
         self.model = model
-        # Get dimension for this model, default to 768 if unknown
-        self.dimension = EMBEDDING_DIMENSIONS.get(model, 768)
+        # Get native dimension for this model
+        native_dimension = EMBEDDING_DIMENSIONS.get(model, 768)
+        
+        # Support Matryoshka truncation if specified
+        if dimension is not None:
+            if dimension not in SUPPORTED_TRUNCATION_DIMENSIONS:
+                logger.warning(
+                    f"Requested dimension {dimension} not in supported truncation dimensions "
+                    f"{SUPPORTED_TRUNCATION_DIMENSIONS}. Using native dimension {native_dimension}."
+                )
+                self.dimension = native_dimension
+            else:
+                self.dimension = dimension
+                logger.info(f"Using Matryoshka truncation: {native_dimension} → {dimension} dimensions")
+        else:
+            self.dimension = native_dimension
 
         # Configure Gemini API (New SDK pattern)
         self.client = genai.Client(api_key=api_key)

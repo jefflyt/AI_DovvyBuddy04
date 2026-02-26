@@ -14,8 +14,8 @@ class ContentEmbedding(Base):
     content_path = Column(String, nullable=False)
     chunk_text = Column(Text, nullable=False)
     chunk_text_tsv = Column(TSVECTOR, Computed("to_tsvector('english', chunk_text)", persisted=True))  # Full-text search column (database-generated)
-    # Using pgvector Vector type for gemini-embedding-001 (3072 dimensions)
-    embedding = Column(Vector(3072), nullable=True)
+    # Using pgvector Vector type for text-embedding-004 (768 dimensions)
+    embedding = Column(Vector(768), nullable=True)
     metadata_ = Column(
         "metadata", JSONB, nullable=True
     )  # Use metadata_ to avoid SQLAlchemy conflict

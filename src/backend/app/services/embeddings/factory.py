@@ -19,6 +19,7 @@ def create_embedding_provider(
     provider_name: str = "gemini",
     api_key: Optional[str] = None,
     model: Optional[str] = None,
+    dimension: Optional[int] = None,
     use_cache: bool = True,
 ) -> EmbeddingProvider:
     """
@@ -28,6 +29,7 @@ def create_embedding_provider(
         provider_name: Name of the provider ("gemini")
         api_key: API key (if None, uses from settings)
         model: Model name (if None, uses from settings)
+        dimension: Target output dimension for Matryoshka truncation (if None, uses from settings)
         use_cache: Whether to enable caching
 
     Returns:
@@ -44,9 +46,15 @@ def create_embedding_provider(
             raise ValueError("Gemini API key is required (GEMINI_API_KEY env var)")
 
         model_name = model or settings.embedding_model
+        target_dimension = dimension if dimension is not None else settings.embedding_dimension
 
-        logger.info(f"Creating Gemini embedding provider with model={model_name}")
-        return GeminiEmbeddingProvider(api_key=key, model=model_name, use_cache=use_cache)
+        logger.info(f"Creating Gemini embedding provider with model={model_name}, dimension={target_dimension}")
+        return GeminiEmbeddingProvider(
+            api_key=key,
+            model=model_name,
+            dimension=target_dimension,
+            use_cache=use_cache
+        )
 
     else:
         raise ValueError(f"Unknown embedding provider: {provider_name}")
@@ -67,5 +75,6 @@ def create_embedding_provider_from_env() -> EmbeddingProvider:
         provider_name=settings.default_llm_provider,  # Use config default
         api_key=settings.gemini_api_key,
         model=settings.embedding_model,
+        dimension=settings.embedding_dimension,
         use_cache=True,
     )

@@ -37,6 +37,21 @@ class TestGeminiEmbeddingProvider:
             assert provider.dimension == 768
             assert provider.cache is not None
 
+    def test_initialization_with_matryoshka_dimension(self):
+        """Test provider initialization with Matryoshka truncation."""
+        with patch("google.genai.Client"):
+            # Valid truncation dimension
+            provider = GeminiEmbeddingProvider(api_key="test-key", dimension=512)
+            assert provider.dimension == 512
+            
+            # Invalid dimension should fall back to native
+            provider = GeminiEmbeddingProvider(api_key="test-key", dimension=999)
+            assert provider.dimension == 768
+            
+            # Explicit None should use native
+            provider = GeminiEmbeddingProvider(api_key="test-key", dimension=None)
+            assert provider.dimension == 768
+
     def test_initialization_without_api_key(self):
         """Test that initialization fails without API key."""
         with pytest.raises(ValueError, match="API key is required"):

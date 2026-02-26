@@ -47,8 +47,8 @@ Provide guidance for automated workflows, LLMs, and humans working on this proje
 - All dependencies use the root `.venv` (no subdirectory environments)
 
 ## LLM Standards
-- Default model: `gemini-2.0-flash` (cost-effective)
-- Embeddings: `text-embedding-004` (768 dimensions, recommended by Google)
+- Default model: `gemini-2.5-flash-lite` (cost-effective, standardized across backend)
+- Embeddings: `text-embedding-004` (768 dimensions, recommended by Google, supports Matryoshka truncation)
 
 ## Documentation
 - Place docs appropriately:
