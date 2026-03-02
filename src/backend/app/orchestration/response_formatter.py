@@ -5,7 +5,6 @@ import logging
 from app.core.config import settings
 from app.prompts.safety import SAFETY_DISCLAIMER
 from .mode_detector import ConversationMode
-from .medical_detector import MedicalQueryDetector
 
 logger = logging.getLogger(__name__)
 
@@ -21,9 +20,6 @@ class ResponseFormatter:
     - Check for greeting messages
     """
     
-    # Shared medical detector instance (lazy initialization)
-    _medical_detector: MedicalQueryDetector = None
-
     @staticmethod
     def is_greeting(message: str) -> bool:
         """
@@ -100,6 +96,7 @@ class ResponseFormatter:
         include_disclaimer: bool = None,
         agent_type: str = None,
         user_message: str = None,
+        safety_classification: str = None,
     ) -> str:
         """
         Format a response with optional disclaimer and follow-up.
@@ -110,7 +107,8 @@ class ResponseFormatter:
             follow_up_question: Optional follow-up question
             include_disclaimer: Override for disclaimer inclusion (defaults to settings)
             agent_type: Agent that generated response (for disclaimer logic)
-            user_message: Original user message (for medical keyword detection)
+            user_message: Original user message (retained for compatibility)
+            safety_classification: One of emergency|medical|non_medical
 
         Returns:
             Formatted response message
@@ -121,15 +119,13 @@ class ResponseFormatter:
         if include_disclaimer is None:
             include_disclaimer = settings.include_safety_disclaimer
         
-        # Use LLM to detect if query is genuinely medical/health-related
-        # This is more robust than keyword matching (avoids false positives like "ear" in "near")
-        is_medical_query = False
-        if user_message:
-            # Lazy initialization of medical detector
-            if ResponseFormatter._medical_detector is None:
-                ResponseFormatter._medical_detector = MedicalQueryDetector()
-            
-            is_medical_query = await ResponseFormatter._medical_detector.is_medical_query(user_message)
+        # Use upstream safety classification when available to avoid duplicate
+        # classifier calls in formatter stage.
+        is_medical_query = (
+            safety_classification in {"medical", "emergency"}
+            if safety_classification
+            else mode == ConversationMode.SAFETY
+        )
         
         # Add disclaimer for genuinely medical queries (must be medical AND safety context)
         # This prevents non-medical dive site/destination queries from showing medical disclaimers

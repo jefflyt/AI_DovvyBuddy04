@@ -7,6 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "agent:preflight": "bash scripts/agent-preflight.sh",
+    "agent:scan": "bash scripts/agent-scan.sh",
     "test": "vitest run --config config/vitest.config.ts",
     "test:watch": "vitest --config config/vitest.config.ts",
     "test:integration": "vitest run tests/integration --config config/vitest.config.ts",

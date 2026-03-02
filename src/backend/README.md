@@ -23,9 +23,10 @@ pip install -e src/backend/
 ## APIs
 
 - `GET /health` — health check
-- `POST /api/chat` — placeholder chat endpoint
-- `GET/POST /api/sessions` — placeholder session endpoints
-- `POST /api/leads` — placeholder lead endpoint
+- `POST /api/chat` — chat completion endpoint (stable contract)
+- `POST /api/chat/stream` — SSE streaming chat endpoint
+- `GET /api/sessions/{id}` — session retrieval
+- `POST /api/leads` — lead capture endpoint
 
 ## Content Processing Scripts
 

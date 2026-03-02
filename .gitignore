@@ -53,6 +53,7 @@ Thumbs.db
 # Temporary files
 tmp/
 temp/
+.agent-context/
 
 # Sentry
 .sentryclirc

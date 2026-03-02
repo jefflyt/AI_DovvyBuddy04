@@ -1,0 +1,20 @@
+{
+  "cases": [
+    {
+      "query": "What certification do I need before Advanced Open Water?",
+      "expected_route": "certification_specialist"
+    },
+    {
+      "query": "Where are the best dive sites in Tioman for beginners?",
+      "expected_route": "trip_specialist"
+    },
+    {
+      "query": "I have ear pain after diving, should I be worried?",
+      "expected_route": "safety_specialist"
+    },
+    {
+      "query": "What is neutral buoyancy and why is it important?",
+      "expected_route": "general_retrieval_specialist"
+    }
+  ]
+}

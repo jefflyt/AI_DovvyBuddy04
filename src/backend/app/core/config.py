@@ -80,6 +80,7 @@ class Settings(BaseSettings):
     max_conversation_history: int = 20
     enable_adk: bool = True
     adk_model: str = "gemini-2.5-flash-lite"
+    enable_adk_native_graph: bool = False
     enable_agent_routing: bool = True
     default_agent: str = "retrieval"
     

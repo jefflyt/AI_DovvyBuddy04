@@ -2,12 +2,14 @@
 Chat endpoint for conversation handling.
 """
 
+import json
 import logging
-from typing import Optional
+from typing import Any, AsyncGenerator, Dict, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.responses import StreamingResponse
 
 from app.core.rate_limit import limiter
 from app.core.security import validate_message_safety
@@ -18,6 +20,13 @@ from app.orchestration.types import ChatRequest, ChatResponse
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
+
+
+def _sse_data(event_type: str, content: Any, metadata: Optional[Dict[str, Any]] = None) -> str:
+    payload: Dict[str, Any] = {"type": event_type, "content": content}
+    if metadata:
+        payload["metadata"] = metadata
+    return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
 
 
 class ChatRequestPayload(BaseModel):
@@ -108,6 +117,80 @@ async def chat_endpoint(
             status_code=500,
             detail="An error occurred processing your request. Please try again."
         )
+
+
+@router.post("/chat/stream")
+@limiter.limit("20/minute")
+async def chat_stream_endpoint(
+    request: Request,
+    payload: ChatRequestPayload,
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Stream chat response as SSE events.
+
+    Event types:
+    - route
+    - safety
+    - token
+    - citation
+    - final
+    - error
+    """
+
+    async def event_generator() -> AsyncGenerator[str, None]:
+        try:
+            clean_message, security_error = validate_message_safety(payload.message)
+            if security_error:
+                yield _sse_data("error", "security_validation_failed", {"detail": security_error})
+                return
+
+            orchestrator = ChatOrchestrator(db)
+            chat_request = ChatRequest(
+                message=clean_message,
+                session_id=payload.session_id,
+                diver_profile=payload.diver_profile,
+                session_state=payload.session_state,
+            )
+            response = await orchestrator.handle_chat(chat_request)
+
+            route_info = response.metadata.get("route_decision")
+            if route_info:
+                yield _sse_data("route", route_info)
+
+            safety_info = response.metadata.get("safety_classification")
+            if safety_info:
+                yield _sse_data("safety", safety_info)
+
+            for token in response.message.split():
+                yield _sse_data("token", f"{token} ")
+
+            for citation in response.metadata.get("citations", []):
+                yield _sse_data("citation", citation)
+
+            yield _sse_data(
+                "final",
+                response.message,
+                {
+                    "sessionId": response.session_id,
+                    "agentType": response.agent_type,
+                    "metadata": response.metadata,
+                },
+            )
+
+        except Exception as exc:
+            logger.error("Stream chat processing failed: %s", exc, exc_info=True)
+            yield _sse_data("error", "stream_processing_failed", {"detail": str(exc)})
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 # Debug endpoint to test RAG directly in-server

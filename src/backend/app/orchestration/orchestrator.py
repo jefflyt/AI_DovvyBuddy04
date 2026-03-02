@@ -3,11 +3,12 @@ Chat orchestrator - main conversation controller.
 """
 
 import logging
-from typing import Optional
+from typing import Any, Dict, Optional
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.adk import ADKNativeGraphOrchestrator, NativeTurnResult
 from app.core.config import settings
 from app.core.feature_flags import FeatureFlag, is_feature_enabled
 
@@ -60,8 +61,17 @@ class ChatOrchestrator:
                 "Google ADK orchestration is required. Set ENABLE_AGENT_ROUTING=true."
             )
 
+        self.native_graph_orchestrator: Optional[ADKNativeGraphOrchestrator] = None
+        if settings.enable_adk_native_graph:
+            self.native_graph_orchestrator = ADKNativeGraphOrchestrator()
+            logger.info(
+                "Google ADK native graph enabled with model=%s",
+                settings.adk_model,
+            )
+
+        # Keep legacy ADK router available for compatibility fallback.
         self.orchestrator = GeminiOrchestrator()
-        logger.info(f"Google ADK orchestration enabled with model={settings.adk_model}")
+        logger.info("Google ADK orchestration enabled with model=%s", settings.adk_model)
 
     @staticmethod
     def _intent_to_mode(intent: IntentType) -> ConversationMode:
@@ -77,6 +87,88 @@ class ChatOrchestrator:
             IntentType.INFO_LOOKUP: ConversationMode.GENERAL,
         }
         return intent_mode_map.get(intent, ConversationMode.GENERAL)
+
+    @staticmethod
+    def _route_to_mode(route: str) -> ConversationMode:
+        route_mode_map = {
+            "trip_specialist": ConversationMode.TRIP,
+            "certification_specialist": ConversationMode.CERTIFICATION,
+            "safety_specialist": ConversationMode.SAFETY,
+            "general_retrieval_specialist": ConversationMode.GENERAL,
+        }
+        return route_mode_map.get(route, ConversationMode.GENERAL)
+
+    @staticmethod
+    def _route_to_agent_type(route: str) -> str:
+        route_agent_map = {
+            "trip_specialist": "trip",
+            "certification_specialist": "certification",
+            "safety_specialist": "safety",
+            "general_retrieval_specialist": "retrieval",
+        }
+        return route_agent_map.get(route, "retrieval")
+
+    async def _handle_native_graph_turn(
+        self,
+        *,
+        session: SessionData,
+        request: ChatRequest,
+        session_state: Optional[SessionState],
+    ) -> Optional[ChatResponse]:
+        if not self.native_graph_orchestrator:
+            return None
+
+        graph_result: NativeTurnResult
+        try:
+            graph_result = await self.native_graph_orchestrator.run_turn(
+                message=request.message,
+                session_id=str(session.id),
+                conversation_history=session.conversation_history,
+                session_state=session_state.to_dict() if session_state else {},
+                diver_profile=request.diver_profile or session.diver_profile,
+            )
+        except Exception:
+            logger.error("ADK native graph failed, falling back to legacy flow", exc_info=True)
+            return None
+
+        mode = self._route_to_mode(graph_result.route_decision.route)
+        agent_type = self._route_to_agent_type(graph_result.route_decision.route)
+
+        response_message = await self.response_formatter.format_response(
+            message=graph_result.message,
+            mode=mode,
+            follow_up_question=None,
+            agent_type=agent_type,
+            user_message=request.message,
+            safety_classification=graph_result.safety_classification.classification,
+        )
+
+        await self._update_session_history(
+            session.id,
+            request.message,
+            response_message,
+        )
+
+        metadata: Dict[str, Any] = {
+            "mode": mode.value,
+            "confidence": graph_result.route_decision.confidence,
+            "has_rag": bool(graph_result.citations),
+            "route_decision": graph_result.route_decision.to_dict(),
+            "safety_classification": graph_result.safety_classification.to_dict(),
+            "policy_enforced": graph_result.policy_validation.policy_enforced,
+            "trace": graph_result.trace.to_dict(),
+            "state_updates": graph_result.state_updates,
+        }
+        if graph_result.citations:
+            metadata["citations"] = graph_result.citations
+
+        return ChatResponse(
+            message=response_message,
+            session_id=str(session.id),
+            agent_type=agent_type,
+            metadata=metadata,
+            follow_up_question=None,
+        )
 
     async def handle_chat(self, request: ChatRequest) -> ChatResponse:
         """
@@ -162,12 +254,26 @@ class ChatOrchestrator:
         detected_intent = None
         session_state = None
         
-        if not self.orchestrator:
-            raise RuntimeError("Google ADK orchestrator is unavailable")
-
         # Parse session state from request
         if request.session_state:
             session_state = SessionState.from_dict(request.session_state)
+
+        # Native ADK graph path (feature-flagged), with graceful fallback.
+        native_response = await self._handle_native_graph_turn(
+            session=session,
+            request=request,
+            session_state=session_state,
+        )
+        if native_response:
+            logger.info(
+                "Chat completed via ADK native graph: session=%s, agent=%s",
+                session.id,
+                native_response.agent_type,
+            )
+            return native_response
+
+        if not self.orchestrator:
+            raise RuntimeError("Google ADK orchestrator is unavailable")
 
         # Route request using Gemini Function Calling (ADK pattern)
         route_result = await self.orchestrator.route_request(
@@ -270,6 +376,9 @@ class ChatOrchestrator:
             follow_up_question=follow_up_question,
             agent_type=agent.name.lower(),  # Pass agent type for disclaimer logic
             user_message=request.message,  # Pass original message for medical keyword detection
+            safety_classification=(
+                "medical" if mode == ConversationMode.SAFETY else "non_medical"
+            ),
         )
 
         # Update session history
@@ -393,4 +502,3 @@ class ChatOrchestrator:
             SessionData if found, None otherwise
         """
         return await self.session_manager.get_session(session_id)
-

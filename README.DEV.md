@@ -365,6 +365,26 @@ PSD → Master Plan → Feature Plan → PR Plan → Implementation → Refactor
 
 See [AI_WORKFLOW.md](./docs/project-management/AI_WORKFLOW.md) for complete guide.
 
+### Agent Context Preflight (Monorepo)
+
+To keep context windows small and deterministic, run preflight before scanning code:
+
+```bash
+# 1) Read required context docs and acknowledge
+pnpm agent:preflight -- backend
+
+# 2) Run scoped search through the gated scanner
+pnpm agent:scan -- "orchestrator" src/backend/app -n
+```
+
+Supported scopes: `backend`, `frontend`, `content`, `docs`.
+
+Notes:
+
+- `agent:scan` refuses to run if preflight was not completed recently.
+- Preflight stamp is stored at `.agent-context/preflight.stamp`.
+- Max preflight age defaults to 240 minutes and can be changed with `AGENT_PREFLIGHT_MAX_AGE_MINUTES`.
+
 ---
 
 ## 🐛 Common Issues

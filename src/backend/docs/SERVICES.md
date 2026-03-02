@@ -151,6 +151,7 @@ All configuration is via environment variables (see `.env.example`):
 
 - `ENABLE_ADK`: Enable strict Google ADK orchestration (default: `true`)
 - `ADK_MODEL`: ADK model name (default: `gemini-2.5-flash-lite`)
+- `ENABLE_ADK_NATIVE_GRAPH`: Enable coordinator+specialist ADK graph (default: `false`)
 - `ENABLE_AGENT_ROUTING`: Enable ADK routing (default: `true`)
 
 ### Embedding Configuration
