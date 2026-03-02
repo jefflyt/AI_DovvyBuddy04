@@ -7,8 +7,10 @@ Performs vector similarity search using pgvector.
 import logging
 from typing import List, Optional
 
-from sqlalchemy import func, select, text, literal_column
+from pgvector.sqlalchemy import Vector
+from sqlalchemy import bindparam, func, select, text
 
+from app.core.config import settings
 from app.db.models.content_embedding import ContentEmbedding
 from app.db.session import get_session
 from app.services.embeddings import create_embedding_provider_from_env
@@ -62,18 +64,26 @@ class VectorRetriever:
         logger.info(f"Generating embedding for query: {query[:100]}...")
         query_embedding = await self.embedding_provider.embed_text(query)
 
-        # Convert to pgvector format (string)
-        embedding_str = "[" + ",".join(str(x) for x in query_embedding) + "]"
+        expected_dimension = settings.embedding_dimension
+        if len(query_embedding) != expected_dimension:
+            raise ValueError(
+                f"Expected embedding dimension {expected_dimension}, got {len(query_embedding)}"
+            )
 
         # Build query
         session_maker = get_session()
         async with session_maker() as session:
             # Base query with cosine similarity
             # Using pgvector <=> operator: cosine distance = 1 - cosine similarity
-            from sqlalchemy.sql.elements import ColumnElement
-            
-            similarity_expr: ColumnElement[float] = literal_column(f"1 - (embedding <=> '{embedding_str}'::vector)")
-            
+            query_vector = bindparam(
+                "query_embedding",
+                value=query_embedding,
+                type_=Vector(expected_dimension),
+            )
+            similarity_expr = (
+                1 - ContentEmbedding.embedding.cosine_distance(query_vector)
+            )
+
             stmt = select(
                 ContentEmbedding.id,
                 ContentEmbedding.content_path,

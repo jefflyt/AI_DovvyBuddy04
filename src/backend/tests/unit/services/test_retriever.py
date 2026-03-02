@@ -75,6 +75,11 @@ class TestVectorRetriever:
             assert results[1].text == "Test chunk 2"
             assert results[1].similarity == 0.85
 
+            executed_stmt = mock_session.execute.call_args[0][0]
+            compiled_sql = str(executed_stmt)
+            assert "query_embedding" in compiled_sql
+            assert "[0.1" not in compiled_sql
+
     @pytest.mark.asyncio
     async def test_retrieve_with_filters(self, retriever):
         """Test retrieval with filters."""
@@ -137,3 +142,11 @@ class TestVectorRetriever:
             # Only high similarity result should be returned
             assert len(results) == 1
             assert results[0].similarity == 0.9
+
+    @pytest.mark.asyncio
+    async def test_retrieve_invalid_embedding_dimension_raises(self, retriever):
+        """Test retrieval raises if embedding dimension is invalid."""
+        retriever.embedding_provider.embed_text = AsyncMock(return_value=[0.1] * 10)
+
+        with pytest.raises(ValueError, match="Expected embedding dimension"):
+            await retriever.retrieve("test query")
