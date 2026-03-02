@@ -1,8 +1,5 @@
-import os
-from pathlib import Path
 from typing import Optional
 
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import (
@@ -13,10 +10,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import Session, sessionmaker
 
-# Load .env file from project root (5 levels up from src/backend/app/db/session.py)
-env_path = Path(__file__).resolve().parent.parent.parent.parent.parent / ".env.local"
-if env_path.exists():
-    load_dotenv(env_path)
+from app.core.config import settings
 
 _engine: Optional[AsyncEngine] = None
 _async_session: Optional[async_sessionmaker[AsyncSession]] = None
@@ -26,8 +20,8 @@ _sync_session_factory = None
 
 def get_database_url() -> str:
     """Get async database URL (converts postgresql:// to postgresql+asyncpg://)."""
-    url = os.getenv(
-        "DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/dovvybuddy"
+    url = settings.database_url or (
+        "postgresql+asyncpg://postgres:postgres@localhost:5432/dovvybuddy"
     )
     # Ensure asyncpg driver for async operations
     if url.startswith("postgresql://"):
@@ -43,7 +37,9 @@ def get_database_url() -> str:
 
 def get_sync_database_url() -> str:
     """Get synchronous database URL (replaces asyncpg with psycopg2)."""
-    url = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/dovvybuddy")
+    url = settings.database_url or (
+        "postgresql://postgres:postgres@localhost:5432/dovvybuddy"
+    )
     # Ensure plain postgresql:// for sync operations
     url = url.replace("postgresql+asyncpg://", "postgresql://")
     return url

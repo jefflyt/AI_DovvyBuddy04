@@ -1,4 +1,3 @@
-import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -27,19 +26,10 @@ def create_app() -> FastAPI:
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-    # CORS configuration for frontend integration
-    # Parse CORS_ORIGINS from environment (comma-separated)
-    cors_origins_env = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001")
-    cors_origins = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()]
-    
-    # Add wildcard support for Vercel preview deployments
-    # Format: https://*.vercel.app or https://dovvybuddy.com
-    cors_origin_regex = os.getenv("CORS_ORIGIN_REGEX", r"https://.*\.vercel\.app")
-    
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=cors_origins,
-        allow_origin_regex=cors_origin_regex if cors_origin_regex else None,
+        allow_origins=settings.cors_origins,
+        allow_origin_regex=settings.cors_origin_regex,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

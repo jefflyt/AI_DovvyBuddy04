@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.session import get_session as get_db_session
+from app.db.session import get_db
 from app.orchestration import ChatOrchestrator
 
 router = APIRouter()
@@ -24,13 +24,6 @@ class SessionResponse(BaseModel):
     diver_profile: Optional[Dict[str, Any]] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
-
-
-async def get_db():
-    """Dependency to get database session."""
-    session_maker = get_db_session()
-    async with session_maker() as session:
-        yield session
 
 
 @router.get("/sessions")

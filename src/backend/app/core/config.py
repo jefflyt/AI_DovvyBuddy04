@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     api_host: str = "0.0.0.0"
     api_port: int = 8000
     cors_origins: List[str] = ["http://localhost:3000", "http://localhost:3001"]
+    cors_origin_regex: Optional[str] = r"https://.*\.vercel\.app"
     
     @field_validator("cors_origins", mode="before")
     @classmethod
@@ -27,6 +28,14 @@ class Settings(BaseSettings):
         """Parse CORS_ORIGINS from comma-separated string to list."""
         if isinstance(v, str):
             return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
+
+    @field_validator("cors_origin_regex", mode="before")
+    @classmethod
+    def parse_cors_origin_regex(cls, v):
+        """Normalize empty CORS regex values to None."""
+        if isinstance(v, str) and not v.strip():
+            return None
         return v
     
     # Database Settings

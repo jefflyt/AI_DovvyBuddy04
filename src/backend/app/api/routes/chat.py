@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.rate_limit import limiter
 from app.core.security import validate_message_safety
 
-from app.db.session import get_session as get_db_session
+from app.db.session import get_db
 from app.orchestration import ChatOrchestrator
 from app.orchestration.types import ChatRequest, ChatResponse
 
@@ -41,13 +41,6 @@ class ChatResponsePayload(BaseModel):
     follow_up_question: Optional[str] = Field(None, alias="followUpQuestion")  # PR6.2
 
     model_config = ConfigDict(populate_by_name=True)
-
-
-async def get_db():
-    """Dependency to get database session."""
-    session_maker = get_db_session()
-    async with session_maker() as session:
-        yield session
 
 
 @router.post("/chat", response_model=ChatResponsePayload)
