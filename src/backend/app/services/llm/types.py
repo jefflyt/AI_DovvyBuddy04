@@ -21,4 +21,7 @@ class LLMResponse:
     content: str
     model: str
     tokens_used: Optional[int] = None
+    prompt_tokens: Optional[int] = None
+    completion_tokens: Optional[int] = None
+    cost_usd: Optional[float] = None
     finish_reason: Optional[str] = None

@@ -5,6 +5,8 @@ import re
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 
+from app.core.config import settings
+from app.core.quota_manager import get_quota_manager
 from app.orchestration.emergency_detector_hybrid import EmergencyDetector
 from app.orchestration.medical_detector import MedicalQueryDetector
 from app.services.rag.pipeline import RAGPipeline
@@ -45,11 +47,31 @@ class ADKToolbox:
         self.rag_pipeline = rag_pipeline or RAGPipeline()
         self.emergency_detector = emergency_detector or EmergencyDetector()
         self.medical_detector = medical_detector or MedicalQueryDetector()
+        self.quota_manager = get_quota_manager()
 
         self.turn_context = _TurnContext()
         self.last_rag_result = RagSearchResult()
         self.last_safety_classification = SafetyClassification()
         self.last_policy_validation = PolicyValidationResult()
+
+    def _adaptive_rag_top_k(self) -> int:
+        top_k = max(1, settings.rag_top_k)
+        try:
+            snapshot = self.quota_manager.snapshot("text_generation")
+            pressure = max(
+                snapshot.rpm_utilization,
+                snapshot.tpm_utilization,
+                snapshot.rpd_utilization,
+            )
+            if pressure >= 0.95:
+                return min(top_k, 2)
+            if pressure >= 0.85:
+                return min(top_k, max(3, top_k // 2))
+            if pressure >= 0.70:
+                return min(top_k, max(4, top_k - 2))
+        except Exception:
+            logger.debug("Unable to apply adaptive RAG budget profile", exc_info=True)
+        return top_k
 
     def reset_turn_state(self) -> None:
         """Reset mutable per-turn snapshots."""
@@ -81,8 +103,10 @@ class ADKToolbox:
     ) -> Dict[str, Any]:
         """Retrieve grounded context from the RAG pipeline."""
         try:
+            adaptive_top_k = self._adaptive_rag_top_k()
             context = await self.rag_pipeline.retrieve_context(
                 query=query,
+                top_k=adaptive_top_k,
                 filters=filters or {},
             )
             chunks = [result.text for result in context.results]

@@ -18,6 +18,11 @@ from tenacity import (
 )
 
 from app.core.config import settings
+from app.core.quota_manager import QuotaExceededError, get_quota_manager
+from app.services.cost.token_cost import (
+    calculate_gemini_cost,
+    estimate_tokens_from_text,
+)
 from app.services.llm.base import LLMProvider, LLMResponse
 from app.services.llm.types import LLMMessage
 
@@ -27,6 +32,7 @@ logger = logging.getLogger(__name__)
 class RateLimitError(Exception):
     """Raised when API rate limit is exceeded."""
     pass
+
 
 class GeminiLLMProvider(LLMProvider):
     """Google Gemini LLM provider implementation."""
@@ -51,6 +57,7 @@ class GeminiLLMProvider(LLMProvider):
 
         # Create Gemini Client (New SDK)
         self.client = genai.Client(api_key=api_key)
+        self.quota_manager = get_quota_manager()
 
         logger.info(f"Initialized GeminiLLMProvider with model={self.model} (New SDK)")
 
@@ -103,8 +110,23 @@ class GeminiLLMProvider(LLMProvider):
         max_tok = max_tokens if max_tokens is not None else self.max_tokens
 
         system_instruction, user_prompt = self._messages_to_gemini_format(messages)
+        estimated_tokens = estimate_tokens_from_text(
+            f"{system_instruction or ''}{user_prompt}"
+        ) + max(1, int(max_tok))
 
         try:
+            quota_decision = await self.quota_manager.reserve(
+                "text_generation",
+                estimated_tokens,
+                wait_for_capacity=True,
+            )
+            if quota_decision.wait_seconds > 0:
+                logger.info(
+                    "Quota backpressure applied bucket=%s wait=%.3fs",
+                    quota_decision.bucket,
+                    quota_decision.wait_seconds,
+                )
+
             # New SDK usage: client.models.generate_content
             config = types.GenerateContentConfig(
                 temperature=temp,
@@ -131,14 +153,26 @@ class GeminiLLMProvider(LLMProvider):
             if response.candidates and response.candidates[0].finish_reason:
                 finish_reason = response.candidates[0].finish_reason
 
+            usage_metadata = getattr(response, "usage_metadata", None)
+            prompt_tokens = getattr(usage_metadata, "prompt_token_count", None)
+            completion_tokens = getattr(usage_metadata, "candidates_token_count", None)
+            total_tokens = getattr(usage_metadata, "total_token_count", None)
+            estimated_cost = calculate_gemini_cost(prompt_tokens, completion_tokens)
+
             logger.info(f"Gemini API call successful (New SDK): len={len(content)}")
 
             return LLMResponse(
                 content=content,
                 model=self.model,
-                tokens_used=getattr(response.usage_metadata, "total_token_count", None),
+                tokens_used=total_tokens,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens,
+                cost_usd=estimated_cost,
                 finish_reason=str(finish_reason),
             )
+
+        except QuotaExceededError:
+            raise
 
         except Exception as e:
             error_msg = str(e).lower()

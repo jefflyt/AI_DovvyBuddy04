@@ -52,6 +52,9 @@ class Settings(BaseSettings):
     llm_max_tokens: int = 2048
     llm_max_retries: int = 3
     llm_retry_delay: float = 1.0
+    llm_rpm_limit: int = 15
+    llm_tpm_limit: int = 250_000
+    llm_rpd_limit: int = 1_000
     
     # Embedding Configuration
     default_embedding_provider: Literal["gemini"] = "gemini"
@@ -62,6 +65,14 @@ class Settings(BaseSettings):
     embedding_cache_ttl: int = 3600  # 1 hour in seconds
     embedding_max_retries: int = 3
     embedding_retry_delay: float = 1.0
+    embedding_rpm_limit: int = 100
+    embedding_tpm_limit: int = 30_000
+    embedding_rpd_limit: int = 1_000
+
+    # Shared quota/rate limiting
+    rate_window_seconds: int = 60
+    quota_profile_name: str = "gemini_free_tier"
+    quota_enforcement_enabled: bool = True
     
     # RAG Configuration
     enable_rag: bool = True

@@ -7,6 +7,12 @@ Tests LLM generation with mocked API calls.
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
+from app.core.quota_manager import (
+    QuotaDecision,
+    QuotaExceededError,
+    QuotaSnapshot,
+    reset_quota_manager,
+)
 from app.services.llm import GeminiLLMProvider, LLMMessage, LLMResponse
 from app.services.llm.factory import create_llm_provider
 
@@ -15,8 +21,10 @@ from app.services.llm.factory import create_llm_provider
 def gemini_provider():
     """Create a Gemini LLM provider with mocked API."""
     with patch("google.genai.Client"):
+        reset_quota_manager()
         provider = GeminiLLMProvider(api_key="test-key")
-        return provider
+        yield provider
+        reset_quota_manager()
 
 
 @pytest.fixture
@@ -77,6 +85,67 @@ class TestGeminiLLMProvider:
         # The provider fixture uses default model from settings which seems to be gemini-2.5-flash-lite now
         # We can either assert the new default or check self.model
         assert "gemini" in gemini_provider.get_model_name()
+
+    @pytest.mark.asyncio
+    async def test_generate_invokes_quota_manager(self, gemini_provider, test_messages):
+        """Provider reserves from shared text-generation quota before API call."""
+        mock_response = MagicMock()
+        mock_response.text = "Hello diver"
+        mock_response.candidates = [MagicMock(finish_reason="STOP")]
+        mock_response.usage_metadata = MagicMock(
+            prompt_token_count=10,
+            candidates_token_count=12,
+            total_token_count=22,
+        )
+        gemini_provider.client.models.generate_content = MagicMock(return_value=mock_response)
+
+        gemini_provider.quota_manager.reserve = AsyncMock(
+            return_value=QuotaDecision(
+                bucket="text_generation",
+                allowed=True,
+                wait_seconds=0.0,
+                reason="allowed",
+                snapshot=QuotaSnapshot(
+                    bucket="text_generation",
+                    rpm_limit=15,
+                    tpm_limit=250000,
+                    rpd_limit=1000,
+                    window_seconds=60,
+                    rpm_used=1,
+                    tpm_used=100,
+                    rpd_used=1,
+                ),
+            )
+        )
+
+        response = await gemini_provider.generate(test_messages)
+
+        assert response.content == "Hello diver"
+        gemini_provider.quota_manager.reserve.assert_awaited_once()
+        args, _ = gemini_provider.quota_manager.reserve.await_args
+        assert args[0] == "text_generation"
+
+    @pytest.mark.asyncio
+    async def test_generate_raises_when_quota_exhausted(self, gemini_provider, test_messages):
+        """RPD exhaustion fails fast without calling external provider."""
+        snapshot = QuotaSnapshot(
+            bucket="text_generation",
+            rpm_limit=15,
+            tpm_limit=250000,
+            rpd_limit=1000,
+            window_seconds=60,
+            rpm_used=0,
+            tpm_used=0,
+            rpd_used=1000,
+        )
+        gemini_provider.quota_manager.reserve = AsyncMock(
+            side_effect=QuotaExceededError("text_generation", snapshot)
+        )
+
+        with pytest.raises(QuotaExceededError):
+            await gemini_provider.generate(test_messages)
+
+        gemini_provider.client.models.generate_content.assert_not_called()
 
 
 class TestLLMFactory:

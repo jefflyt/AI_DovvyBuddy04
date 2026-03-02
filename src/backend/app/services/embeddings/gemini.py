@@ -19,6 +19,8 @@ from tenacity import (
 )
 
 from app.core.config import settings
+from app.core.quota_manager import QuotaExceededError, get_quota_manager
+from app.services.cost.token_cost import estimate_tokens_from_text
 
 from .base import EmbeddingProvider
 from .cache import EmbeddingCache
@@ -89,6 +91,7 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
 
         # Configure Gemini API (New SDK pattern)
         self.client = genai.Client(api_key=api_key)
+        self.quota_manager = get_quota_manager()
 
         # Initialize cache
         self.cache = EmbeddingCache() if use_cache else None
@@ -120,6 +123,18 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
             Exception: If other error occurs
         """
         try:
+            estimated_tokens = estimate_tokens_from_text(text)
+            quota_decision = await self.quota_manager.reserve(
+                "embedding",
+                estimated_tokens,
+                wait_for_capacity=True,
+            )
+            if quota_decision.wait_seconds > 0:
+                logger.info(
+                    "Embedding quota backpressure applied wait=%.3fs",
+                    quota_decision.wait_seconds,
+                )
+
             # Run synchronous Gemini API call in thread pool
             loop = asyncio.get_running_loop()
             result = await loop.run_in_executor(
@@ -152,6 +167,9 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
                 )
 
             return embedding
+
+        except QuotaExceededError:
+            raise
 
         except Exception as e:
             error_msg = str(e).lower()

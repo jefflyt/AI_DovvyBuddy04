@@ -7,6 +7,11 @@ Tests embedding generation with mocked API calls.
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
+from app.core.quota_manager import (
+    QuotaExceededError,
+    QuotaSnapshot,
+    reset_quota_manager,
+)
 from app.services.embeddings import (
     GeminiEmbeddingProvider,
     create_embedding_provider_from_env,
@@ -25,8 +30,10 @@ def mock_embedding():
 def gemini_provider():
     """Create a Gemini embedding provider with mocked API."""
     with patch("google.genai.Client"):
+        reset_quota_manager()
         provider = GeminiEmbeddingProvider(api_key="test-key", use_cache=False)
-        return provider
+        yield provider
+        reset_quota_manager()
 
 
 class TestGeminiEmbeddingProvider:
@@ -79,6 +86,26 @@ class TestGeminiEmbeddingProvider:
         """Test that empty text raises ValueError."""
         with pytest.raises(ValueError, match="cannot be empty"):
             await gemini_provider.embed_text("")
+
+    @pytest.mark.asyncio
+    async def test_embed_text_raises_when_quota_exhausted(self, gemini_provider):
+        """Embedding quota exhaustion should fail fast."""
+        snapshot = QuotaSnapshot(
+            bucket="embedding",
+            rpm_limit=100,
+            tpm_limit=30000,
+            rpd_limit=1000,
+            window_seconds=60,
+            rpm_used=0,
+            tpm_used=0,
+            rpd_used=1000,
+        )
+        gemini_provider.quota_manager.reserve = AsyncMock(
+            side_effect=QuotaExceededError("embedding", snapshot)
+        )
+
+        with pytest.raises(QuotaExceededError):
+            await gemini_provider.embed_text("test text")
 
     @pytest.mark.asyncio
     async def test_embed_text_invalid_dimension_raises(self, gemini_provider):

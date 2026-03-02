@@ -117,6 +117,7 @@ class NativeTurnResult:
     )
     state_updates: Dict[str, Any] = field(default_factory=dict)
     trace: AgentTurnTrace = field(default_factory=AgentTurnTrace)
+    quota_snapshot: Dict[str, Dict[str, Any]] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -127,4 +128,5 @@ class NativeTurnResult:
             "policy_validation": self.policy_validation.to_dict(),
             "state_updates": self.state_updates,
             "trace": self.trace.to_dict(),
+            "quota_snapshot": self.quota_snapshot,
         }

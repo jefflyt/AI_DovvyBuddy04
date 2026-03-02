@@ -1,9 +1,11 @@
 """ADK-native multi-agent orchestration graph."""
 
+from __future__ import annotations
+
 import logging
 import os
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, AsyncGenerator, Dict, List, Optional, Tuple
 
 from google.adk.agents import LlmAgent
 from google.adk.models import Gemini
@@ -11,6 +13,8 @@ from google.adk.runners import InMemoryRunner
 from google.genai import types
 
 from app.core.config import settings
+from app.core.quota_manager import QuotaExceededError, get_quota_manager
+from app.services.cost.token_cost import estimate_tokens_from_text
 
 from .tools import ADKToolbox
 from .types import (
@@ -39,6 +43,7 @@ class ADKNativeGraphOrchestrator:
         self.user_id = "backend-native-graph"
 
         self.tools = ADKToolbox()
+        self.quota_manager = get_quota_manager()
 
         self.router_agent = self._build_router_agent()
         self.router_runner = InMemoryRunner(
@@ -150,8 +155,16 @@ class ADKNativeGraphOrchestrator:
                 state=state or {},
             )
 
+    async def _reserve_text_quota(self, prompt: str, *, expected_output_tokens: int) -> None:
+        request_tokens = estimate_tokens_from_text(prompt) + max(1, expected_output_tokens)
+        await self.quota_manager.reserve(
+            "text_generation",
+            request_tokens,
+            wait_for_capacity=True,
+        )
+
     @staticmethod
-    def _extract_text(event) -> str:
+    def _extract_text(event: Any) -> str:
         content = getattr(event, "content", None)
         if not content or not getattr(content, "parts", None):
             return ""
@@ -161,6 +174,16 @@ class ADKNativeGraphOrchestrator:
             if text:
                 parts.append(text)
         return "".join(parts).strip()
+
+    @staticmethod
+    def _extract_increment(previous_text: str, current_text: str) -> str:
+        if not current_text:
+            return ""
+        if previous_text and current_text.startswith(previous_text):
+            return current_text[len(previous_text) :]
+        if previous_text == current_text:
+            return ""
+        return current_text
 
     async def _route_request(
         self,
@@ -183,6 +206,8 @@ class ADKNativeGraphOrchestrator:
                 for msg in history[-3:]
             )
             prompt = f"Recent history:\n{history_str}\n\nUser request:\n{message}"
+
+        await self._reserve_text_quota(prompt, expected_output_tokens=96)
 
         user_message = types.Content(role="user", parts=[types.Part(text=prompt)])
 
@@ -219,9 +244,12 @@ class ADKNativeGraphOrchestrator:
     ) -> Tuple[str, List[str]]:
         runner = self.specialist_runners[route]
         await self._ensure_session(runner, session_id=session_id, state=session_state or {})
+        await self._reserve_text_quota(
+            f"{route}\n{message}",
+            expected_output_tokens=max(256, settings.llm_max_tokens),
+        )
 
         user_message = types.Content(role="user", parts=[types.Part(text=message)])
-
         response_text = ""
         called_tools: List[str] = []
         async for event in runner.run_async(
@@ -251,6 +279,82 @@ class ADKNativeGraphOrchestrator:
             "route_safety_specialist": "safety_specialist",
         }
         return route_map.get(tool_name)
+
+    def _build_turn_result(
+        self,
+        *,
+        started: float,
+        route_decision: RouteDecision,
+        safety_data: Dict[str, Any],
+        safety_classification: SafetyClassification,
+        specialist_response: str,
+        route_tools_called: List[str],
+        specialist_tools_called: List[str],
+        safety_latency_ms: float,
+        route_latency_ms: float,
+        specialist_latency_ms: float,
+    ) -> NativeTurnResult:
+        citations = self.tools.last_rag_result.citations
+        response_text = specialist_response.strip()
+        if not response_text:
+            response_text = (
+                "I’m sorry, I couldn’t generate a complete answer right now. "
+                "Please try rephrasing your question."
+            )
+
+        policy_data = self.tools.response_policy_tool(
+            answer=response_text,
+            citations=citations,
+            safety_flags=safety_data,
+        )
+        policy_validation = PolicyValidationResult(
+            is_allowed=policy_data["is_allowed"],
+            policy_enforced=policy_data["policy_enforced"],
+            reason=policy_data["reason"],
+            should_append_uncertainty=policy_data["should_append_uncertainty"],
+        )
+
+        response_message = response_text
+        if policy_validation.should_append_uncertainty:
+            response_message = (
+                f"{response_text}\n\n"
+                "I don’t have enough verified sources to fully ground that answer yet. "
+                "If you can share more specifics, I can narrow it down."
+            )
+
+        total_latency_ms = (time.perf_counter() - started) * 1000
+        trace = AgentTurnTrace(
+            tools_called=route_tools_called + specialist_tools_called,
+            citations_count=len(citations),
+            safety_label=safety_classification.classification,
+            route=route_decision.route,
+            latency_ms={
+                "safety_classification_ms": safety_latency_ms,
+                "route_ms": route_latency_ms,
+                "specialist_ms": specialist_latency_ms,
+                "total_ms": total_latency_ms,
+            },
+        )
+
+        state_updates: Dict[str, Any] = {
+            "last_route": route_decision.route,
+            "medical_flag": safety_classification.is_medical,
+            "citations_used": bool(citations),
+        }
+        location = route_decision.parameters.get("location")
+        if location:
+            state_updates["location_known"] = True
+
+        return NativeTurnResult(
+            message=response_message,
+            route_decision=route_decision,
+            citations=citations,
+            safety_classification=safety_classification,
+            policy_validation=policy_validation,
+            state_updates=state_updates,
+            trace=trace,
+            quota_snapshot=self.quota_manager.snapshot_all(),
+        )
 
     async def run_turn(
         self,
@@ -300,65 +404,157 @@ class ADKNativeGraphOrchestrator:
         )
         specialist_latency_ms = (time.perf_counter() - specialist_started) * 1000
 
-        citations = self.tools.last_rag_result.citations
-        if not specialist_response:
-            specialist_response = (
-                "I’m sorry, I couldn’t generate a complete answer right now. "
-                "Please try rephrasing your question."
-            )
-
-        policy_data = self.tools.response_policy_tool(
-            answer=specialist_response,
-            citations=citations,
-            safety_flags=safety_data,
-        )
-        policy_validation = PolicyValidationResult(
-            is_allowed=policy_data["is_allowed"],
-            policy_enforced=policy_data["policy_enforced"],
-            reason=policy_data["reason"],
-            should_append_uncertainty=policy_data["should_append_uncertainty"],
-        )
-
-        response_message = specialist_response
-        if policy_validation.should_append_uncertainty:
-            response_message = (
-                f"{specialist_response}\n\n"
-                "I don’t have enough verified sources to fully ground that answer yet. "
-                "If you can share more specifics, I can narrow it down."
-            )
-
-        total_latency_ms = (time.perf_counter() - started) * 1000
-        trace = AgentTurnTrace(
-            tools_called=route_tools_called + specialist_tools_called,
-            citations_count=len(citations),
-            safety_label=safety_classification.classification,
-            route=route_decision.route,
-            latency_ms={
-                "safety_classification_ms": safety_latency_ms,
-                "route_ms": route_latency_ms,
-                "specialist_ms": specialist_latency_ms,
-                "total_ms": total_latency_ms,
-            },
-        )
-
-        state_updates: Dict[str, Any] = {
-            "last_route": route_decision.route,
-            "medical_flag": safety_classification.is_medical,
-            "citations_used": bool(citations),
-        }
-        location = route_decision.parameters.get("location")
-        if location:
-            state_updates["location_known"] = True
-
-        return NativeTurnResult(
-            message=response_message,
+        return self._build_turn_result(
+            started=started,
             route_decision=route_decision,
-            citations=citations,
+            safety_data=safety_data,
             safety_classification=safety_classification,
-            policy_validation=policy_validation,
-            state_updates=state_updates,
-            trace=trace,
+            specialist_response=specialist_response,
+            route_tools_called=route_tools_called,
+            specialist_tools_called=specialist_tools_called,
+            safety_latency_ms=safety_latency_ms,
+            route_latency_ms=route_latency_ms,
+            specialist_latency_ms=specialist_latency_ms,
         )
+
+    async def stream_turn(
+        self,
+        *,
+        message: str,
+        session_id: str,
+        conversation_history: List[Dict[str, str]],
+        session_state: Optional[Dict[str, Any]] = None,
+        diver_profile: Optional[Dict[str, Any]] = None,
+    ) -> AsyncGenerator[Dict[str, Any], None]:
+        """
+        Stream native graph events.
+
+        Event payloads:
+        - safety
+        - route
+        - token
+        - citation
+        - final (includes NativeTurnResult as `turn_result`)
+        - error
+        """
+        try:
+            started = time.perf_counter()
+            self.tools.set_turn_context(
+                session_id=session_id,
+                message=message,
+                history=conversation_history,
+                session_state=session_state,
+                diver_profile=diver_profile,
+            )
+
+            safety_started = time.perf_counter()
+            safety_data = await self.tools.safety_classification_tool(
+                message=message,
+                history=conversation_history,
+            )
+            safety_latency_ms = (time.perf_counter() - safety_started) * 1000
+            safety_classification = SafetyClassification(
+                classification=safety_data["classification"],
+                is_emergency=safety_data["is_emergency"],
+                is_medical=safety_data["is_medical"],
+            )
+            yield {
+                "type": "safety",
+                "content": safety_classification.to_dict(),
+            }
+
+            route_started = time.perf_counter()
+            route_decision, route_tools_called = await self._route_request(
+                message=message,
+                history=conversation_history,
+                session_id=session_id,
+                session_state=session_state,
+            )
+            route_latency_ms = (time.perf_counter() - route_started) * 1000
+            yield {"type": "route", "content": route_decision.to_dict()}
+
+            specialist_started = time.perf_counter()
+            runner = self.specialist_runners[route_decision.route]
+            await self._ensure_session(
+                runner,
+                session_id=session_id,
+                state=session_state or {},
+            )
+            await self._reserve_text_quota(
+                f"{route_decision.route}\n{message}",
+                expected_output_tokens=max(256, settings.llm_max_tokens),
+            )
+
+            user_message = types.Content(role="user", parts=[types.Part(text=message)])
+            specialist_response = ""
+            emitted_text = ""
+            specialist_tools_called: List[str] = []
+
+            async for event in runner.run_async(
+                user_id=self.user_id,
+                session_id=session_id,
+                new_message=user_message,
+            ):
+                function_calls = event.get_function_calls()
+                for call in function_calls:
+                    specialist_tools_called.append(call.name)
+
+                text = self._extract_text(event)
+                if text:
+                    specialist_response = text
+                    delta = self._extract_increment(emitted_text, text)
+                    if delta:
+                        emitted_text = text
+                        yield {"type": "token", "content": delta}
+
+                if event.is_final_response() and text:
+                    specialist_response = text
+
+            specialist_latency_ms = (time.perf_counter() - specialist_started) * 1000
+
+            turn_result = self._build_turn_result(
+                started=started,
+                route_decision=route_decision,
+                safety_data=safety_data,
+                safety_classification=safety_classification,
+                specialist_response=specialist_response,
+                route_tools_called=route_tools_called,
+                specialist_tools_called=specialist_tools_called,
+                safety_latency_ms=safety_latency_ms,
+                route_latency_ms=route_latency_ms,
+                specialist_latency_ms=specialist_latency_ms,
+            )
+
+            if (
+                turn_result.message
+                and emitted_text
+                and turn_result.message.startswith(emitted_text)
+            ):
+                tail = turn_result.message[len(emitted_text) :]
+                if tail:
+                    yield {"type": "token", "content": tail}
+
+            for citation in turn_result.citations:
+                yield {"type": "citation", "content": citation}
+
+            yield {"type": "final", "turn_result": turn_result}
+
+        except QuotaExceededError as exc:
+            yield {
+                "type": "error",
+                "content": "quota_exhausted",
+                "metadata": {
+                    "bucket": exc.bucket,
+                    "snapshot": exc.snapshot.to_dict(),
+                },
+            }
+        except Exception as exc:
+            logger.error("ADK stream turn failed: %s", exc, exc_info=True)
+            yield {
+                "type": "error",
+                "content": "adk_stream_failed",
+                "metadata": {"detail": str(exc)},
+            }
 
     def route_trip_specialist(
         self,
@@ -405,3 +601,4 @@ class ADKNativeGraphOrchestrator:
             "query": query,
             "reason": reason,
         }
+

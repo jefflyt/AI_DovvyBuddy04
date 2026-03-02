@@ -16,7 +16,7 @@ from app.core.security import validate_message_safety
 
 from app.db.session import get_db
 from app.orchestration import ChatOrchestrator
-from app.orchestration.types import ChatRequest, ChatResponse
+from app.orchestration.types import ChatRequest
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -152,31 +152,12 @@ async def chat_stream_endpoint(
                 diver_profile=payload.diver_profile,
                 session_state=payload.session_state,
             )
-            response = await orchestrator.handle_chat(chat_request)
-
-            route_info = response.metadata.get("route_decision")
-            if route_info:
-                yield _sse_data("route", route_info)
-
-            safety_info = response.metadata.get("safety_classification")
-            if safety_info:
-                yield _sse_data("safety", safety_info)
-
-            for token in response.message.split():
-                yield _sse_data("token", f"{token} ")
-
-            for citation in response.metadata.get("citations", []):
-                yield _sse_data("citation", citation)
-
-            yield _sse_data(
-                "final",
-                response.message,
-                {
-                    "sessionId": response.session_id,
-                    "agentType": response.agent_type,
-                    "metadata": response.metadata,
-                },
-            )
+            async for event in orchestrator.stream_chat(chat_request):
+                yield _sse_data(
+                    event.get("type", "token"),
+                    event.get("content", ""),
+                    event.get("metadata"),
+                )
 
         except Exception as exc:
             logger.error("Stream chat processing failed: %s", exc, exc_info=True)

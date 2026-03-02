@@ -146,6 +146,9 @@ All configuration is via environment variables (see `.env.example`):
 - `DEFAULT_LLM_MODEL`: Model name (default: `gemini-2.5-flash-lite`)
 - `LLM_TEMPERATURE`: 0.0-1.0 (default: 0.7)
 - `LLM_MAX_TOKENS`: Max tokens per generation (default: 2048)
+- `LLM_RPM_LIMIT`: Requests/minute budget for shared text generation quota (default: 15)
+- `LLM_TPM_LIMIT`: Tokens/minute budget for shared text generation quota (default: 250000)
+- `LLM_RPD_LIMIT`: Requests/day budget for shared text generation quota (default: 1000)
 
 ### Orchestration Configuration
 
@@ -153,6 +156,9 @@ All configuration is via environment variables (see `.env.example`):
 - `ADK_MODEL`: ADK model name (default: `gemini-2.5-flash-lite`)
 - `ENABLE_ADK_NATIVE_GRAPH`: Enable coordinator+specialist ADK graph (default: `false`)
 - `ENABLE_AGENT_ROUTING`: Enable ADK routing (default: `true`)
+- `QUOTA_ENFORCEMENT_ENABLED`: Enforce shared free-tier quota manager (default: `true`)
+- `QUOTA_PROFILE_NAME`: Named quota profile for telemetry labels (default: `gemini_free_tier`)
+- `RATE_WINDOW_SECONDS`: Rolling window used for RPM/TPM counters (default: `60`)
 
 ### Embedding Configuration
 
@@ -161,6 +167,9 @@ All configuration is via environment variables (see `.env.example`):
 - `EMBEDDING_BATCH_SIZE`: Max texts per batch (default: 100)
 - `EMBEDDING_CACHE_SIZE`: Cache entries (default: 1000)
 - `EMBEDDING_CACHE_TTL`: TTL in seconds (default: 3600)
+- `EMBEDDING_RPM_LIMIT`: Requests/minute budget for embedding quota (default: 100)
+- `EMBEDDING_TPM_LIMIT`: Tokens/minute budget for embedding quota (default: 30000)
+- `EMBEDDING_RPD_LIMIT`: Requests/day budget for embedding quota (default: 1000)
 
 ### RAG Configuration
 
