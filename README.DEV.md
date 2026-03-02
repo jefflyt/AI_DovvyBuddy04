@@ -291,7 +291,7 @@ export PYTHONPATH="$PWD/src/backend"
 
 ### Integration Tests (pytest)
 
-- API endpoints (`/api/chat`, `/api/lead`, `/api/session`)
+- API endpoints (`/api/chat`, `/api/leads`, `/api/sessions/{session_id}`)
 - Database operations
 - RAG retrieval accuracy
 
@@ -410,7 +410,7 @@ rm -rf .next && pnpm dev
 
 ## 📄 License
 
-Proprietary — All rights reserved.
+Proprietary — All rights reserved. See [LICENSE](./LICENSE).
 
 ---
 

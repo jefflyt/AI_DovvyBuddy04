@@ -95,10 +95,10 @@ User Query → Mode Detection → Agent Selection → Agent Execution → Respon
 
 - `src/backend/app/agents/base.py` - Base agent interface
 - `src/backend/app/agents/registry.py` - Agent registration & discovery
-- `src/backend/app/agents/certification_agent.py`
-- `src/backend/app/agents/trip_planning_agent.py`
-- `src/backend/app/agents/safety_agent.py`
-- `src/backend/app/agents/retrieval_agent.py`
+- `src/backend/app/agents/certification.py`
+- `src/backend/app/agents/trip.py`
+- `src/backend/app/agents/safety.py`
+- `src/backend/app/agents/retrieval.py`
 
 ---
 
@@ -125,9 +125,11 @@ User Message → Emergency Check → Mode Detection → Agent Selection
 **Key Files:**
 
 - `src/backend/app/orchestration/orchestrator.py` - Main orchestration logic
-- `src/backend/app/orchestration/conversation_manager.py` - Conversation state
+- `src/backend/app/orchestration/session_manager.py` - Conversation state
+- `src/backend/app/orchestration/context_builder.py` - Context assembly
 - `src/backend/app/orchestration/mode_detector.py` - Query classification
-- `src/backend/app/orchestration/emergency_detector.py` - Safety detection
+- `src/backend/app/orchestration/emergency_detector_hybrid.py` - Safety detection
+- `src/backend/app/orchestration/response_formatter.py` - Response formatting
 
 ---
 
@@ -182,7 +184,7 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 
 ---
 
-### 2.4 Session Management (PR3)
+### 2.5 Session Management (PR3)
 
 **Purpose:** Maintain conversation state for 24-hour sessions without user authentication.
 
@@ -216,12 +218,14 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 
 **Key Files:**
 
-- `src/lib/session/session-service.ts`
-- `src/lib/session/types.ts`
+- `src/backend/app/api/routes/session.py`
+- `src/backend/app/orchestration/session_manager.py`
+- `src/backend/app/db/repositories/session_repository.py`
+- `src/lib/hooks/useSessionState.ts`
 
 ---
 
-### 2.5 Lead Capture (PR4)
+### 2.6 Lead Capture (PR4)
 
 **Purpose:** Collect qualified leads and deliver to partner dive shops via email.
 
@@ -265,8 +269,10 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 
 **Key Files:**
 
-- `src/lib/lead/lead-service.ts`
-- `src/app/api/lead/route.ts`
+- `src/backend/app/api/routes/lead.py`
+- `src/backend/app/core/lead/service.py`
+- `src/lib/api-client/client.ts`
+- `src/app/chat/page.tsx`
 
 ---
 
@@ -278,8 +284,10 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 
 ```typescript
 {
-  sessionId?: string;  // Optional, creates new if omitted
-  message: string;     // Max 2000 chars
+  sessionId?: string;      // Optional, creates new if omitted
+  message: string;         // Max 2000 chars
+  diverProfile?: object;
+  sessionState?: object;
 }
 ```
 
@@ -288,10 +296,15 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 ```typescript
 {
   sessionId: string;
-  response: string;
+  message: string;
+  agentType: string;
+  followUpQuestion?: string;
   metadata?: {
-    tokensUsed?: number;
-    contextChunks?: number;
+    mode?: string;
+    confidence?: number;
+    has_rag?: boolean;
+    detected_intent?: string;
+    state_updates?: Record<string, unknown>;
   };
 }
 ```
@@ -304,7 +317,7 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
 
 ---
 
-### 3.2 POST /api/lead
+### 3.2 POST /api/leads
 
 **Request:**
 
@@ -316,31 +329,45 @@ Content Files → Chunking (500-800 tokens) → Gemini Embeddings
     email: string;
     phone?: string;
     certification_level?: string;
-    dive_count?: number;
+    interested_certification?: string;
+    preferred_location?: string;
     message?: string;
     destination?: string;
-    preferred_dates?: string;
+    travel_dates?: string;
+    group_size?: number;
     budget?: string;
   };
-  sessionId?: string;
+  session_id?: string;
 }
 ```
 
-**Response (200):**
+**Response (201):**
 
 ```typescript
 {
   success: true
-  leadId: string
+  lead_id: string
 }
 ```
 
 **Errors:**
 
-- `400` — Validation error (missing required fields)
-- `409` — Duplicate lead (same email + type within 5 minutes)
+- `422` — Validation error (request/body validation)
 - `500` — Internal server error
-- `503` — Email delivery failed
+
+### 3.3 GET /api/sessions/{session_id}
+
+**Response (200):**
+
+```typescript
+{
+  id: string;
+  conversation_history: Array<{ role: string; content: string }>;
+  diver_profile?: Record<string, unknown> | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+```
 
 ---
 

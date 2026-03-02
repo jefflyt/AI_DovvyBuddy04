@@ -55,6 +55,7 @@
 - Stale backend unit tests after async API/signature changes
 - Integration drift for RAG/ingestion/session contracts
 - Repository field mismatch (`chunk_text` vs legacy `content`) and vector SQL binding issues
+- Frontend/backend API contract drift (`/api/session` vs `/api/sessions`, lead payload/response shape mismatch)
 
 ---
 
