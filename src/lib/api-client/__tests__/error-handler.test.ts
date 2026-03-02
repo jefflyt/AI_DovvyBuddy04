@@ -121,7 +121,49 @@ describe('parseApiError', () => {
 
     const error = await parseApiError(response)
 
-    expect(error.code).toBe('UNKNOWN_ERROR')
+    expect(error.code).toBe('INTERNAL_ERROR')
+  })
+
+  it('should parse FastAPI detail object', async () => {
+    const response = new Response(
+      JSON.stringify({
+        detail: {
+          error: 'Session not found: 123',
+          code: 'SESSION_NOT_FOUND',
+        },
+      }),
+      { status: 404 }
+    )
+
+    const error = await parseApiError(response)
+
+    expect(error.code).toBe('SESSION_NOT_FOUND')
+    expect(error.message).toContain('Session not found')
+  })
+
+  it('should parse FastAPI validation detail array', async () => {
+    const response = new Response(
+      JSON.stringify({
+        detail: [
+          {
+            loc: ['body', 'email'],
+            msg: 'value is not a valid email address',
+            type: 'value_error.email',
+          },
+        ],
+      }),
+      { status: 422 }
+    )
+
+    const error = await parseApiError(response)
+
+    expect(error.code).toBe('VALIDATION_ERROR')
+    expect(error.getValidationDetails()).toEqual([
+      {
+        field: 'email',
+        message: 'value is not a valid email address',
+      },
+    ])
   })
 })
 

@@ -92,6 +92,25 @@ describe('ApiClient', () => {
       )
     })
 
+    it('should normalize snake_case metadata keys', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          sessionId: '123e4567-e89b-12d3-a456-426614174000',
+          message: 'Here is your answer',
+          metadata: {
+            state_updates: { location_known: true },
+            detected_intent: 'trip_planning',
+          },
+        }),
+      })
+
+      const result = await client.chat({ message: 'Plan my dive trip' })
+
+      expect(result.metadata?.stateUpdates).toEqual({ location_known: true })
+      expect(result.metadata?.detectedIntent).toBe('trip_planning')
+    })
+
     it('should handle validation error (400)', async () => {
       // Mock for both the expect rejection and the try/catch
       mockFetch.mockResolvedValue({
@@ -214,11 +233,13 @@ describe('ApiClient', () => {
   describe('getSession', () => {
     it('should get session information', async () => {
       const mockResponse: SessionResponse = {
-        sessionId: '123e4567-e89b-12d3-a456-426614174000',
-        createdAt: '2026-01-03T00:00:00Z',
-        lastActivity: '2026-01-03T01:00:00Z',
-        messageCount: 5,
-        isExpired: false,
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        conversation_history: [
+          { role: 'user', content: 'hello' },
+          { role: 'assistant', content: 'hi' },
+        ],
+        created_at: '2026-01-03T00:00:00Z',
+        updated_at: '2026-01-03T01:00:00Z',
       }
 
       mockFetch.mockResolvedValueOnce({
@@ -234,7 +255,7 @@ describe('ApiClient', () => {
 
       const [url, options] = mockFetch.mock.calls[0]
       expect(url).toBe(
-        'http://localhost:8000/session/123e4567-e89b-12d3-a456-426614174000'
+        'http://localhost:8000/sessions/123e4567-e89b-12d3-a456-426614174000'
       )
       expect(options.method).toBe('GET')
     })
@@ -259,8 +280,7 @@ describe('ApiClient', () => {
     it('should create lead successfully', async () => {
       const mockResponse: LeadResponse = {
         success: true,
-        leadId: '123e4567-e89b-12d3-a456-426614174000',
-        message: 'Thank you! We will contact you soon.',
+        lead_id: '123e4567-e89b-12d3-a456-426614174000',
       }
 
       mockFetch.mockResolvedValueOnce({
@@ -269,9 +289,12 @@ describe('ApiClient', () => {
       })
 
       const result = await client.createLead({
-        sessionId: '123e4567-e89b-12d3-a456-426614174000',
-        email: 'test@example.com',
-        name: 'John Doe',
+        type: 'training',
+        data: {
+          email: 'test@example.com',
+          name: 'John Doe',
+        },
+        session_id: '123e4567-e89b-12d3-a456-426614174000',
       })
 
       expect(result).toEqual(mockResponse)
@@ -281,9 +304,12 @@ describe('ApiClient', () => {
       expect(options.method).toBe('POST')
       expect(options.body).toBe(
         JSON.stringify({
-          sessionId: '123e4567-e89b-12d3-a456-426614174000',
-          email: 'test@example.com',
-          name: 'John Doe',
+          type: 'training',
+          data: {
+            email: 'test@example.com',
+            name: 'John Doe',
+          },
+          session_id: '123e4567-e89b-12d3-a456-426614174000',
         })
       )
     })

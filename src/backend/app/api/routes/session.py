@@ -73,7 +73,10 @@ async def get_session(
         if not session:
             raise HTTPException(
                 status_code=404,
-                detail=f"Session not found: {session_id}"
+                detail={
+                    "error": f"Session not found: {session_id}",
+                    "code": "SESSION_NOT_FOUND",
+                },
             )
 
         # Format response
@@ -92,5 +95,8 @@ async def get_session(
         logger.error(f"Failed to retrieve session {session_id}: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=500,
-            detail="An error occurred retrieving the session"
+            detail={
+                "error": "An error occurred retrieving the session",
+                "code": "INTERNAL_ERROR",
+            },
         )

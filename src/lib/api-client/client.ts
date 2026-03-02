@@ -6,6 +6,7 @@
 import { API_CONFIG, API_ENDPOINTS } from './config'
 import {
   ChatRequest,
+  ChatMetadata,
   ChatResponse,
   SessionResponse,
   LeadRequest,
@@ -131,6 +132,35 @@ export class ApiClient {
   }
 
   /**
+   * Normalize backend metadata keys to frontend-friendly keys.
+   */
+  private normalizeChatMetadata(metadata?: ChatMetadata): ChatMetadata | undefined {
+    if (!metadata) return metadata
+
+    const normalized: ChatMetadata = { ...metadata }
+
+    if (!normalized.stateUpdates && normalized.state_updates) {
+      normalized.stateUpdates = normalized.state_updates
+    }
+
+    if (!normalized.detectedIntent && normalized.detected_intent) {
+      normalized.detectedIntent = normalized.detected_intent
+    }
+
+    return normalized
+  }
+
+  /**
+   * Normalize backend chat response payload.
+   */
+  private normalizeChatResponse(response: ChatResponse): ChatResponse {
+    return {
+      ...response,
+      metadata: this.normalizeChatMetadata(response.metadata),
+    }
+  }
+
+  /**
    * Send chat message
    *
    * @param request Chat request
@@ -141,11 +171,12 @@ export class ApiClient {
     request: ChatRequest,
     options?: RequestOptions
   ): Promise<ChatResponse> {
-    return this.request<ChatResponse>(API_ENDPOINTS.chat, {
+    const response = await this.request<ChatResponse>(API_ENDPOINTS.chat, {
       method: 'POST',
       body: JSON.stringify(request),
       ...options,
     })
+    return this.normalizeChatResponse(response)
   }
 
   /**
