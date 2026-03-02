@@ -7,6 +7,10 @@ import {
   LeadCaptureModal,
   type LeadFormData,
 } from '@/components/chat/LeadCaptureModal'
+import {
+  buildLeadRequest,
+  getLeadSubmissionErrorMessage,
+} from './lead-submission'
 import { useSessionState } from '@/lib/hooks/useSessionState' // PR6.1
 import { FeatureFlag, isFeatureEnabled } from '@/lib/feature-flags' // Centralized feature flags
 import { WatercolorBackground } from '@/components/ui/WatercolorBackground'
@@ -317,52 +321,21 @@ function ChatContent() {
       return
     }
 
+    if (!leadType) {
+      setLeadError('Please choose the type of inquiry before submitting.')
+      return
+    }
+
     setLeadSubmitting(true)
     setLeadError(null)
 
     try {
-      let payload: Record<string, unknown> = {}
-
-      if (leadType === 'training') {
-        payload = {
-          type: 'training',
-          data: {
-            name: data.name,
-            email: data.email,
-            phone: data.phone || undefined,
-            certification_level: data.certificationLevel,
-            preferred_location: data.location || undefined,
-            message: data.message || undefined,
-          },
-        }
-        if (sessionId && UUID_REGEX.test(sessionId))
-          payload.session_id = sessionId
-      } else if (leadType === 'trip') {
-        payload = {
-          type: 'trip',
-          data: {
-            name: data.name,
-            email: data.email,
-            phone: data.phone || undefined,
-            destination: data.destination || undefined,
-            travel_dates: data.dates || undefined,
-            message: data.message || undefined,
-          },
-        }
-        if (sessionId && UUID_REGEX.test(sessionId))
-          payload.session_id = sessionId
-      }
-
-      const response = await fetch('/api/leads', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || 'Failed to submit lead')
-      }
+      const payload = buildLeadRequest(
+        leadType,
+        data,
+        UUID_REGEX.test(sessionId) ? sessionId : undefined
+      )
+      await apiClient.createLead(payload)
 
       setShowLeadForm(false)
       setLeadType(null)
@@ -376,9 +349,7 @@ function ChatContent() {
       }
       setMessages((prev) => [...prev, confirmationMessage])
     } catch (err) {
-      let errorMessage = 'Failed to submit. Please try again.'
-      if (err instanceof Error) errorMessage = err.message
-      setLeadError(errorMessage)
+      setLeadError(getLeadSubmissionErrorMessage(err))
     } finally {
       setLeadSubmitting(false)
     }
