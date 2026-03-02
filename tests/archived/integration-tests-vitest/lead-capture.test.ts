@@ -28,30 +28,34 @@ describe.skip('Lead Capture Integration Tests', () => {
   describe('Training Lead Submission', () => {
     it('should successfully submit a training lead', async () => {
       const leadData = {
-        sessionId,
-        email: 'test-training@example.com',
-        name: 'John Doe',
-        phone: '+1234567890',
-        preferredContact: 'email' as const,
-        message: 'Agency: PADI, Level: Open Water, Location: Singapore',
+        type: 'training' as const,
+        data: {
+          email: 'test-training@example.com',
+          name: 'John Doe',
+          phone: '+1234567890',
+          message: 'Agency: PADI, Level: Open Water, Location: Singapore',
+        },
+        session_id: sessionId,
       }
 
       const response = await apiClient.createLead(leadData)
 
       expect(response.success).toBe(true)
-      expect(response.leadId).toBeDefined()
-      expect(response.message).toBeTruthy()
+      expect(response.lead_id).toBeDefined()
 
       // Log for manual verification
-      console.log('Training lead submitted:', response.leadId)
+      console.log('Training lead submitted:', response.lead_id)
     })
 
     it('should fail with validation error for invalid email', async () => {
       const leadData = {
-        sessionId,
-        email: 'not-an-email',
-        name: 'Test User',
-        message: 'Agency: PADI',
+        type: 'training' as const,
+        data: {
+          email: 'not-an-email',
+          name: 'Test User',
+          message: 'Agency: PADI',
+        },
+        session_id: sessionId,
       }
 
       await expect(apiClient.createLead(leadData)).rejects.toThrow()
@@ -59,10 +63,13 @@ describe.skip('Lead Capture Integration Tests', () => {
 
     it('should fail with validation error for missing email', async () => {
       const leadData = {
-        sessionId,
-        email: '',
-        name: 'Test User',
-        message: 'Agency: PADI',
+        type: 'training' as const,
+        data: {
+          email: '',
+          name: 'Test User',
+          message: 'Agency: PADI',
+        },
+        session_id: sessionId,
       }
 
       await expect(apiClient.createLead(leadData)).rejects.toThrow()
@@ -72,35 +79,42 @@ describe.skip('Lead Capture Integration Tests', () => {
   describe('Trip Lead Submission', () => {
     it('should successfully submit a trip lead', async () => {
       const leadData = {
-        sessionId,
-        email: 'test-trip@example.com',
-        name: 'Jane Smith',
-        phone: '+9876543210',
-        preferredContact: 'phone' as const,
-        message:
-          'Destination: Tioman, Dates: June 2026, Certification: AOW, Dive Count: 25, Interests: Wrecks, Reefs',
+        type: 'trip' as const,
+        data: {
+          email: 'test-trip@example.com',
+          name: 'Jane Smith',
+          phone: '+9876543210',
+          destination: 'Tioman',
+          travel_dates: 'June 2026',
+          message:
+            'Certification: AOW, Dive Count: 25, Interests: Wrecks, Reefs',
+        },
+        session_id: sessionId,
       }
 
       const response = await apiClient.createLead(leadData)
 
       expect(response.success).toBe(true)
-      expect(response.leadId).toBeDefined()
-      expect(response.message).toBeTruthy()
+      expect(response.lead_id).toBeDefined()
 
-      console.log('Trip lead submitted:', response.leadId)
+      console.log('Trip lead submitted:', response.lead_id)
     })
 
     it('should handle optional fields correctly', async () => {
       const leadData = {
-        sessionId,
-        email: 'minimal@example.com',
-        message: 'Destination: Bali',
+        type: 'trip' as const,
+        data: {
+          email: 'minimal@example.com',
+          name: 'Minimal User',
+          destination: 'Bali',
+        },
+        session_id: sessionId,
       }
 
       const response = await apiClient.createLead(leadData)
 
       expect(response.success).toBe(true)
-      expect(response.leadId).toBeDefined()
+      expect(response.lead_id).toBeDefined()
     })
   })
 
@@ -108,24 +122,31 @@ describe.skip('Lead Capture Integration Tests', () => {
     it('should allow multiple lead submissions in same session', async () => {
       // First submission
       const lead1 = await apiClient.createLead({
-        sessionId,
-        email: 'first@example.com',
-        name: 'First User',
-        message: 'First inquiry',
+        type: 'training',
+        data: {
+          email: 'first@example.com',
+          name: 'First User',
+          message: 'First inquiry',
+        },
+        session_id: sessionId,
       })
 
       expect(lead1.success).toBe(true)
 
       // Second submission
       const lead2 = await apiClient.createLead({
-        sessionId,
-        email: 'second@example.com',
-        name: 'Second User',
-        message: 'Second inquiry',
+        type: 'trip',
+        data: {
+          email: 'second@example.com',
+          name: 'Second User',
+          destination: 'Bali',
+          message: 'Second inquiry',
+        },
+        session_id: sessionId,
       })
 
       expect(lead2.success).toBe(true)
-      expect(lead1.leadId).not.toBe(lead2.leadId)
+      expect(lead1.lead_id).not.toBe(lead2.lead_id)
     })
   })
 
@@ -147,10 +168,13 @@ describe.skip('Lead Capture Integration Tests', () => {
       const invalidSessionId = '00000000-0000-0000-0000-000000000000'
 
       const leadData = {
-        sessionId: invalidSessionId,
-        email: 'test@example.com',
-        name: 'Test User',
-        message: 'Test',
+        type: 'training' as const,
+        data: {
+          email: 'test@example.com',
+          name: 'Test User',
+          message: 'Test',
+        },
+        session_id: invalidSessionId,
       }
 
       // Backend should return 404 for non-existent session

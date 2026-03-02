@@ -116,11 +116,10 @@ describe.skip('API Client Integration Tests', () => {
       const sessionResponse = await client.getSession(sessionId)
 
       expect(sessionResponse).toBeDefined()
-      expect(sessionResponse.sessionId).toBe(sessionId)
-      expect(sessionResponse.createdAt).toBeDefined()
-      expect(sessionResponse.lastActivity).toBeDefined()
-      expect(sessionResponse.messageCount).toBeGreaterThanOrEqual(1)
-      expect(sessionResponse.isExpired).toBe(false)
+      expect(sessionResponse.id).toBe(sessionId)
+      expect(sessionResponse.created_at).toBeDefined()
+      expect(sessionResponse.updated_at).toBeDefined()
+      expect(sessionResponse.conversation_history.length).toBeGreaterThanOrEqual(1)
     }, 30000)
 
     it('should handle session not found (404)', async () => {
@@ -151,18 +150,19 @@ describe.skip('API Client Integration Tests', () => {
 
       // Create lead
       const leadResponse = await client.createLead({
-        sessionId,
-        email: 'test@example.com',
-        name: 'Test User',
-        phone: '+1234567890',
-        preferredContact: 'email',
-        message: 'I would like to learn more about Open Water certification',
+        type: 'training',
+        data: {
+          email: 'test@example.com',
+          name: 'Test User',
+          phone: '+1234567890',
+          message: 'I would like to learn more about Open Water certification',
+        },
+        session_id: sessionId,
       })
 
       expect(leadResponse).toBeDefined()
       expect(leadResponse.success).toBe(true)
-      expect(leadResponse.leadId).toBeDefined()
-      expect(leadResponse.message).toBeDefined()
+      expect(leadResponse.lead_id).toBeDefined()
     }, 30000)
 
     it('should handle validation error (invalid email)', async () => {
@@ -170,20 +170,28 @@ describe.skip('API Client Integration Tests', () => {
 
       await expect(
         client.createLead({
-          sessionId,
-          email: 'invalid-email',
+          type: 'training',
+          data: {
+            email: 'invalid-email',
+            name: 'Test User',
+          },
+          session_id: sessionId,
         })
       ).rejects.toThrow(ApiClientError)
 
       try {
         await client.createLead({
-          sessionId,
-          email: 'invalid-email',
+          type: 'training',
+          data: {
+            email: 'invalid-email',
+            name: 'Test User',
+          },
+          session_id: sessionId,
         })
       } catch (error) {
         expect(error).toBeInstanceOf(ApiClientError)
         expect((error as ApiClientError).code).toBe('VALIDATION_ERROR')
-        expect((error as ApiClientError).statusCode).toBe(400)
+        expect((error as ApiClientError).statusCode).toBe(422)
       }
     }, 10000)
   })
