@@ -101,14 +101,15 @@ class TestLLMFactory:
     @patch("google.genai.Client")
     def test_create_groq_provider_fallback(self, mock_client, mock_settings):
         """Test that Groq provider request falls back to Gemini."""
-        mock_settings.default_llm_provider = "gemini"  # Changed from "groq" to avoid recursion
+        mock_settings.default_llm_provider = "groq"
         mock_settings.gemini_api_key = "test-gemini-key"
+        mock_settings.default_llm_model = "gemini-2.0-flash"
         mock_settings.llm_temperature = 0.7
         mock_settings.llm_max_tokens = 2048
 
         provider = create_llm_provider(provider_name="groq")
 
-        # Should fallback to Gemini
+        # Should fallback to Gemini without recursive self-calls
         assert isinstance(provider, GeminiLLMProvider)
 
     @patch("app.services.llm.factory.settings")

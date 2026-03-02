@@ -121,7 +121,7 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
         """
         try:
             # Run synchronous Gemini API call in thread pool
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             result = await loop.run_in_executor(
                 None,
                 lambda: self.client.models.embed_content(
@@ -147,16 +147,9 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
 
             # Validate dimension
             if len(embedding) != self.dimension:
-                # If using text-embedding-004, it supports variable dimension.
-                # But we requested self.dimension via config if feasible, or just check what we got.
-                pass 
-                # Note: text-embedding-004 might not strictly obey output_dimensionality if not supported by model version, 
-                # but latest does. Let's keep check but warn? 
-                # Actually strict check is good for database consistency.
-                if len(embedding) != self.dimension:
-                     raise ValueError(
-                        f"Expected embedding dimension {self.dimension}, got {len(embedding)}"
-                    )
+                raise ValueError(
+                    f"Expected embedding dimension {self.dimension}, got {len(embedding)}"
+                )
 
             return embedding
 

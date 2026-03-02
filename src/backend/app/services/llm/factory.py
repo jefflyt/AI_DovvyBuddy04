@@ -44,10 +44,10 @@ def create_llm_provider(
 
     if provider == "groq":
         # Groq is deprecated - fallback to Gemini
-        logger.warning(f"Groq provider no longer supported - using Gemini instead")
-        return create_llm_provider(provider_name=settings.default_llm_provider, api_key=api_key, model=model, temperature=temperature, max_tokens=max_tokens)
+        logger.warning("Groq provider no longer supported - using Gemini instead")
+        provider = "gemini"
 
-    elif provider == "gemini":
+    if provider == "gemini":
         key = api_key or settings.gemini_api_key
         if not key:
             raise ValueError("Gemini API key is required (GEMINI_API_KEY env var)")

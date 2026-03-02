@@ -72,7 +72,7 @@ def create_embedding_provider_from_env() -> EmbeddingProvider:
     """
     # Currently only Gemini is supported
     return create_embedding_provider(
-        provider_name=settings.default_llm_provider,  # Use config default
+        provider_name=settings.default_embedding_provider,
         api_key=settings.gemini_api_key,
         model=settings.embedding_model,
         dimension=settings.embedding_dimension,

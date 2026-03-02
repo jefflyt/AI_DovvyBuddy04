@@ -45,6 +45,7 @@ class Settings(BaseSettings):
     llm_retry_delay: float = 1.0
     
     # Embedding Configuration
+    default_embedding_provider: Literal["gemini"] = "gemini"
     embedding_model: str = "text-embedding-004"  # Gemini embedding model (768 dimensions, standardized)
     embedding_dimension: int = 768  # Target dimension for embeddings (Matryoshka truncation)
     embedding_batch_size: int = 100

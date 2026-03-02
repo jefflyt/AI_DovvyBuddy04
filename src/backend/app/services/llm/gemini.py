@@ -113,7 +113,7 @@ class GeminiLLMProvider(LLMProvider):
             )
             
             # Run in executor
-            loop = asyncio.get_event_loop()
+            loop = asyncio.get_running_loop()
             response = await loop.run_in_executor(
                 None,
                 lambda: self.client.models.generate_content(
@@ -138,15 +138,6 @@ class GeminiLLMProvider(LLMProvider):
                 model=self.model,
                 tokens_used=getattr(response.usage_metadata, "total_token_count", None),
                 finish_reason=str(finish_reason),
-            )
-
-            logger.info(f"Gemini API call successful: finish_reason={finish_reason}")
-
-            return LLMResponse(
-                content=content,
-                model=self.model,
-                tokens_used=None,  # Gemini doesn't return token count in all cases
-                finish_reason=finish_reason,
             )
 
         except Exception as e:

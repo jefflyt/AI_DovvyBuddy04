@@ -7,7 +7,10 @@ Tests embedding generation with mocked API calls.
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.services.embeddings import GeminiEmbeddingProvider
+from app.services.embeddings import (
+    GeminiEmbeddingProvider,
+    create_embedding_provider_from_env,
+)
 from app.services.embeddings.cache import EmbeddingCache
 from app.services.embeddings.gemini import RateLimitError
 
@@ -117,6 +120,26 @@ class TestGeminiEmbeddingProvider:
     def test_get_model_name(self, gemini_provider):
         """Test get_model_name method."""
         assert gemini_provider.get_model_name() == "text-embedding-004"
+
+
+class TestEmbeddingFactory:
+    """Test embedding provider factory."""
+
+    @patch("app.services.embeddings.factory.settings")
+    @patch("google.genai.Client")
+    def test_create_provider_from_env_uses_embedding_provider_setting(
+        self, mock_client, mock_settings
+    ):
+        """Factory should use default_embedding_provider, not default_llm_provider."""
+        mock_settings.default_llm_provider = "groq"
+        mock_settings.default_embedding_provider = "gemini"
+        mock_settings.gemini_api_key = "test-gemini-key"
+        mock_settings.embedding_model = "text-embedding-004"
+        mock_settings.embedding_dimension = 768
+
+        provider = create_embedding_provider_from_env()
+
+        assert isinstance(provider, GeminiEmbeddingProvider)
 
 
 class TestEmbeddingCache:
