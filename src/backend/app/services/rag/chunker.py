@@ -13,18 +13,36 @@ import re
 from functools import lru_cache
 from typing import Any, Dict, List, Optional
 
-import tiktoken
+try:
+    import tiktoken
+except ImportError:  # pragma: no cover - exercised when optional dependency missing
+    tiktoken = None
 
 from .types import ChunkingOptions, ContentChunk
 
 logger = logging.getLogger(__name__)
+
+
+class _FallbackTokenizer:
+    """Simple deterministic tokenizer used when tiktoken models are unavailable."""
+
+    def encode(self, text: str) -> list[str]:
+        return re.findall(r"\w+|[^\w\s]", text or "")
+
 
 @lru_cache(maxsize=1)
 def get_tokenizer():
     """Get cached tiktoken tokenizer."""
     # Use GPT-3.5 tokenizer as approximation for Gemini
     # (Gemini's tokenizer isn't available in tiktoken, but token counts are close enough)
-    return tiktoken.encoding_for_model("gpt-3.5-turbo")
+    if tiktoken is None:
+        logger.warning("tiktoken is not installed, using fallback tokenizer")
+        return _FallbackTokenizer()
+    try:
+        return tiktoken.encoding_for_model("gpt-3.5-turbo")
+    except Exception as exc:
+        logger.warning("tiktoken model unavailable, using fallback tokenizer: %s", exc)
+        return _FallbackTokenizer()
 
 
 def count_tokens(text: str) -> int:
