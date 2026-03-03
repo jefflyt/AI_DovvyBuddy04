@@ -6,9 +6,9 @@ Last updated: 2026-03-02
 
 - Stage: Active development toward production launch.
 - Platform shape:
-  - Web frontend in `src/`
-  - Python backend in `src/backend/`
-  - Curated content corpus in `content/`
+  - Web frontend in `apps/web/`
+  - Python backend in `apps/api/`
+  - Curated content corpus in `content/source/`
 
 ## Current Priorities
 
@@ -27,14 +27,14 @@ Last updated: 2026-03-02
 ## Suggested Task Entry Points
 
 - Backend behavior bugs:
-  - `src/backend/app/api/routes/chat.py`
-  - `src/backend/app/orchestration/orchestrator.py`
+  - `apps/api/app/api/routes/chat.py`
+  - `apps/api/app/domain/orchestration/orchestrator.py`
 - Frontend chat behavior:
-  - `src/app/chat/page.tsx`
-  - `src/components/chat/`
+  - `apps/web/src/app/chat/page.tsx`
+  - `apps/web/src/features/chat/components/`
 - Content quality/retrieval issues:
-  - `content/`
-  - `src/backend/app/services/rag/`
+  - `content/source/`
+  - `apps/api/app/infrastructure/services/rag/`
 
 ## Fast Validation Set
 
@@ -42,11 +42,10 @@ Last updated: 2026-03-02
   - `pnpm typecheck`
   - `pnpm test`
 - Backend:
-  - `.venv/bin/python -m pytest src/backend/tests/unit -q`
+  - `.venv/bin/python -m pytest apps/api/tests/unit -q`
 - Content:
   - `pnpm content:validate`
 
 ## Update Policy
 
 When cross-domain contracts change (API payloads, session shape, lead fields, retrieval metadata), update this file in the same change set.
-

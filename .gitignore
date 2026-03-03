@@ -11,6 +11,7 @@ coverage/
 
 # Next.js
 .next/
+apps/web/.next/
 out/
 build/
 dist/
@@ -27,6 +28,8 @@ pnpm-debug.log*
 .env*.local
 backend/.env
 backend/.env.local
+apps/api/.env
+apps/api/.env.local
 
 # Vercel
 .vercel

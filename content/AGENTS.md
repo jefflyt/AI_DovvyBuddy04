@@ -5,11 +5,13 @@ Scope: `content/`
 ## Default Focus
 
 - Certification content:
-  - `content/certifications/`
+  - `content/source/certifications/`
 - Destinations:
-  - `content/destinations/`
+  - `content/source/destinations/`
 - Safety:
-  - `content/safety/`
+  - `content/source/safety/`
+- Generated destination data:
+  - `content/generated/destinations/`
 
 ## Scan Discipline
 
@@ -31,4 +33,3 @@ Scope: `content/`
 - Keep frontmatter and markdown structure valid.
 - Prefer small, targeted edits and keep terminology consistent with existing corpus.
 - For content changes that alter retrieval behavior, run ingestion/validation and note impact in `docs/context/CURRENT_STATE.md`.
-

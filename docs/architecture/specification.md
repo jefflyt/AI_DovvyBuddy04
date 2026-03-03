@@ -1,0 +1,615 @@
+# DovvyBuddy - Technical Specification Document
+
+**Version:** 1.1  
+**Last Updated:** February 26, 2026  
+**Status:** Active (Current Runtime)
+
+---
+
+## 1. System Overview
+
+### Purpose
+
+DovvyBuddy is an AI-powered conversational assistant that helps prospective and recreational divers make informed decisions about scuba diving certifications and trip planning. The system provides grounded, safety-conscious information while generating qualified leads for partner dive shops and training centers.
+
+### High-Level Architecture
+
+```
+┌─────────────┐
+│   Browser   │
+│  (Next.js)  │
+└──────┬──────┘
+       │ HTTPS
+       ▼
+┌────────────────────────────────────────────┐
+│   Frontend (Vercel)                        │
+│   ┌──────────────────────────────────┐     │
+│   │  Next.js 14 App Router           │     │
+│   │  Location: /src/                 │     │
+│   │  - Landing Page                  │     │
+│   │  - Chat Interface                │     │
+│   │  - Lead Capture Forms            │     │
+│   └──────────┬───────────────────────┘     │
+└──────────────┼─────────────────────────────┘
+               │ /api/* proxy
+               ▼
+┌────────────────────────────────────────────┐
+│   Python Backend (Cloud Run)               │
+│   ┌──────────────────────────────────┐     │
+│   │  FastAPI Application             │     │
+│   │  Location: /apps/api/         │     │
+│   │  - Multi-Agent System            │     │
+│   │  - Chat Orchestration            │     │
+│   │  - RAG Pipeline                  │     │
+│   │  - Session Management            │     │
+│   │  - Lead Capture                  │     │
+│   └──────────┬───────────────────────┘     │
+└──────────────┼─────────────────────────────┘
+               │
+       ┌───────┴────────┬──────────────┐
+       │                │              │
+       ▼                ▼              ▼
+┌─────────────┐  ┌────────────┐  ┌─────────┐
+│  Postgres   │  │   Gemini   │  │ Resend  │
+│  +pgvector  │  │ 2.5-flash- │  │  Email  │
+│   (Neon)    │  │    API     │  │   API   │
+└─────────────┘  └────────────┘  └─────────┘
+```
+
+### Technology Stack
+
+| Layer          | Technology                                            | Justification                                        |
+| -------------- | ----------------------------------------------------- | ---------------------------------------------------- |
+| **Frontend**   | Next.js 14 (App Router), React, TypeScript            | Server Components, type safety, optimized routing    |
+| **Backend**    | Python FastAPI, SQLAlchemy, Alembic                   | Async performance, robust ORM, type hints            |
+| **Database**   | PostgreSQL + pgvector (Neon)                          | Relational data + vector embeddings, managed service |
+| **LLM**        | Gemini 2.5 Flash Lite                                 | Cost-effective, low-latency production model         |
+| **Embeddings** | text-embedding-004                                    | 768 dimensions, optimized for retrieval              |
+| **Email**      | Resend API                                            | Developer-friendly, reliable delivery                |
+| **Hosting**    | Vercel (frontend) + Cloud Run (backend)               | Edge network, serverless Python                      |
+| **Testing**    | Vitest (frontend), pytest (backend), Playwright (E2E) | Comprehensive test coverage                          |
+| **Monitoring** | Sentry + Vercel Analytics                             | Error tracking, performance insights                 |
+
+---
+
+## 2. Core Components
+
+### 2.1 Multi-Agent System (apps/api/app/agents/)
+
+**Purpose:** Specialized agents handle different types of diving queries with domain expertise.
+
+**Agent Types:**
+
+- **Certification Agent** - PADI/SSI certification guidance, prerequisites, progression paths
+- **Trip Planning Agent** - Dive site recommendations, difficulty assessment, logistics
+- **Safety Agent** - Emergency procedures, medical contraindications, risk management
+- **Retrieval Agent** - RAG-powered content retrieval and context building
+
+**Architecture:**
+
+```
+User Query → Mode Detection → Agent Selection → Agent Execution → Response
+```
+
+**Key Files:**
+
+- `apps/api/app/agents/base.py` - Base agent interface
+- `apps/api/app/agents/registry.py` - Agent registration & discovery
+- `apps/api/app/agents/certification.py`
+- `apps/api/app/agents/trip.py`
+- `apps/api/app/agents/safety.py`
+- `apps/api/app/agents/retrieval.py`
+
+---
+
+### 2.2 Chat Orchestration (apps/api/app/orchestration/)
+
+**Purpose:** Coordinates conversation flow, manages context, and routes to appropriate agents.
+
+**Responsibilities:**
+
+- Session lifecycle management (create, retrieve, update)
+- Conversation context building (history + RAG context)
+- Emergency detection (safety-critical queries)
+- Mode detection (greeting, certification, trip, general)
+- Agent selection and execution
+- Response formatting and metadata
+
+**Flow:**
+
+```
+User Message → Emergency Check → Mode Detection → Agent Selection
+→ Context Building → Agent Execute → History Update → Response
+```
+
+**Key Files:**
+
+- `apps/api/app/orchestration/orchestrator.py` - Main orchestration logic
+- `apps/api/app/orchestration/session_manager.py` - Conversation state
+- `apps/api/app/orchestration/context_builder.py` - Context assembly
+- `apps/api/app/orchestration/mode_detector.py` - Query classification
+- `apps/api/app/orchestration/emergency_detector_hybrid.py` - Safety detection
+- `apps/api/app/orchestration/response_formatter.py` - Response formatting
+
+---
+
+### 2.3 RAG Pipeline (apps/api/app/services/)
+
+**Purpose:** Retrieve relevant content chunks to ground LLM responses.
+
+**Components:**
+
+1. **Content Ingestion:** Markdown files → chunks → embeddings → database
+2. **Retrieval Service:** Query → vector search → ranked chunks
+3. **Context Builder:** Chunks → formatted context string
+
+**Data Flow:**
+
+```
+Content Files → Chunking (500-800 tokens) → Gemini Embeddings
+→ Store in pgvector → Query → Retrieve Top-K → Return Context
+```
+
+**Key Decisions:**
+
+- Chunk size: 500-800 tokens (balance between context and precision)
+- Embedding model: Gemini `text-embedding-004` (768 dimensions, Matryoshka-capable)
+- Retrieval: HNSW index for fast similarity search
+- Metadata: JSONB fields for filtering (content type, certification level)
+
+**Key Files:**
+
+- `apps/api/app/services/rag/pipeline.py`
+- `apps/api/app/services/rag/retriever.py`
+- `apps/api/app/services/rag/repository.py`
+- `apps/api/scripts/ingest_content.py`
+
+---
+
+### 2.4 Google ADK Orchestration Runtime
+
+**Purpose:** Use strict Google ADK routing for intent-to-agent orchestration.
+
+**Runtime Rules:**
+
+- `ENABLE_ADK=true` and `ENABLE_AGENT_ROUTING=true` are required.
+- `ADK_MODEL=gemini-2.5-flash-lite` is the default orchestration model.
+- No legacy keyword fallback is used for normal routing.
+
+**Key Files:**
+
+- `apps/api/app/orchestration/gemini_orchestrator.py`
+- `apps/api/app/orchestration/orchestrator.py`
+- `apps/api/app/orchestration/agent_router.py`
+
+---
+
+### 2.5 Session Management (PR3)
+
+**Purpose:** Maintain conversation state for 24-hour sessions without user authentication.
+
+**Session Data Structure:**
+
+```typescript
+{
+  id: string;                    // UUID
+  conversation_history: Array<{
+    role: 'user' | 'assistant';
+    content: string;
+    timestamp: string;
+  }>;
+  diver_profile: {
+    certificationLevel?: string;
+    diveCount?: number;
+    interests?: string[];
+    fears?: string[];
+  };
+  created_at: Date;
+  expires_at: Date;              // created_at + 24h
+}
+```
+
+**Operations:**
+
+- `createSession()` — Generate UUID, set expiry
+- `getSession(id)` — Retrieve session, return null if expired
+- `updateSessionHistory(id, messages)` — Append user + assistant messages
+- `expireSession(id)` — Mark session as expired
+
+**Key Files:**
+
+- `apps/api/app/api/routes/session.py`
+- `apps/api/app/orchestration/session_manager.py`
+- `apps/api/app/db/repositories/session_repository.py`
+- `apps/web/src/shared/lib/hooks/useSessionState.ts`
+
+---
+
+### 2.6 Lead Capture (PR4)
+
+**Purpose:** Collect qualified leads and deliver to partner dive shops via email.
+
+**Lead Types:**
+
+1. **Training Leads:** Certification requests, course inquiries
+2. **Trip Leads:** Destination research, booking interest
+
+**Lead Data Structure:**
+
+```typescript
+{
+  id: string;
+  type: 'training' | 'trip';
+  diver_profile: {
+    name: string;
+    email: string;
+    phone?: string;
+    certification_level?: string;
+    dive_count?: number;
+  };
+  request_details: {
+    message?: string;
+    destination?: string;
+    preferred_dates?: string;
+    budget?: string;
+  };
+  session_id?: string;
+  created_at: Date;
+}
+```
+
+**Delivery:**
+
+- **Email:** Resend API → `LEAD_EMAIL_TO` address
+- **Webhook (optional):** HTTP POST to `LEAD_WEBHOOK_URL`
+
+**Deduplication:**
+
+- Same `email + type` within 5 minutes → reject as duplicate
+
+**Key Files:**
+
+- `apps/api/app/api/routes/lead.py`
+- `apps/api/app/core/lead/service.py`
+- `apps/web/src/shared/lib/api-client/client.ts`
+- `apps/web/src/app/chat/page.tsx`
+
+---
+
+## 3. API Contracts
+
+### 3.1 POST /api/chat
+
+**Request:**
+
+```typescript
+{
+  sessionId?: string;      // Optional, creates new if omitted
+  message: string;         // Max 2000 chars
+  diverProfile?: object;
+  sessionState?: object;
+}
+```
+
+**Response (200):**
+
+```typescript
+{
+  sessionId: string;
+  message: string;
+  agentType: string;
+  followUpQuestion?: string;
+  metadata?: {
+    mode?: string;
+    confidence?: number;
+    has_rag?: boolean;
+    detected_intent?: string;
+    state_updates?: Record<string, unknown>;
+  };
+}
+```
+
+**Errors:**
+
+- `400` — Invalid input (message too long, invalid format)
+- `500` — Internal server error
+- `503` — LLM provider unavailable
+
+---
+
+### 3.2 POST /api/leads
+
+**Request:**
+
+```typescript
+{
+  type: 'training' | 'trip';
+  data: {
+    name: string;
+    email: string;
+    phone?: string;
+    certification_level?: string;
+    interested_certification?: string;
+    preferred_location?: string;
+    message?: string;
+    destination?: string;
+    travel_dates?: string;
+    group_size?: number;
+    budget?: string;
+  };
+  session_id?: string;
+}
+```
+
+**Response (201):**
+
+```typescript
+{
+  success: true
+  lead_id: string
+}
+```
+
+**Errors:**
+
+- `422` — Validation error (request/body validation)
+- `500` — Internal server error
+
+### 3.3 GET /api/sessions/{session_id}
+
+**Response (200):**
+
+```typescript
+{
+  id: string;
+  conversation_history: Array<{ role: string; content: string }>;
+  diver_profile?: Record<string, unknown> | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+```
+
+---
+
+## 4. Data Models
+
+### 4.1 Database Schema
+
+**destinations**
+
+```sql
+CREATE TABLE destinations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(255) NOT NULL,
+  country VARCHAR(100) NOT NULL,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+**dive_sites**
+
+```sql
+CREATE TABLE dive_sites (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  destination_id UUID REFERENCES destinations(id),
+  name VARCHAR(255) NOT NULL,
+  min_certification_level VARCHAR(50),
+  min_logged_dives INTEGER,
+  difficulty_band VARCHAR(50),
+  access_type VARCHAR(50),
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+**sessions**
+
+```sql
+CREATE TABLE sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  diver_profile JSONB,
+  conversation_history JSONB DEFAULT '[]',
+  created_at TIMESTAMP DEFAULT NOW(),
+  expires_at TIMESTAMP NOT NULL
+);
+```
+
+**leads**
+
+```sql
+CREATE TABLE leads (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  type VARCHAR(20) NOT NULL CHECK (type IN ('training', 'trip')),
+  diver_profile JSONB NOT NULL,
+  request_details JSONB,
+  session_id UUID REFERENCES sessions(id),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+**content_embeddings**
+
+```sql
+CREATE TABLE content_embeddings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  content_path VARCHAR(500) NOT NULL,
+  chunk_text TEXT NOT NULL,
+  embedding vector(768),
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX ON content_embeddings USING hnsw (embedding vector_cosine_ops);
+```
+
+---
+
+## 5. Security & Performance
+
+### 5.1 Security Considerations
+
+| Area                  | Mitigation                                                           |
+| --------------------- | -------------------------------------------------------------------- |
+| **Session Hijacking** | UUID v4 (cryptographically random), no guessable patterns            |
+| **XSS Prevention**    | React auto-escaping, Content Security Policy headers                 |
+| **Input Validation**  | Zod schemas, max length checks, sanitization                         |
+| **Rate Limiting**     | Vercel edge middleware (future), 10s LLM timeout                     |
+| **API Key Exposure**  | Environment variables, never in client code                          |
+| **PII Protection**    | Minimal data collection, 24h session expiry, no persistent user data |
+
+### 5.2 Performance
+
+| Component             | Strategy                                     | Target                |
+| --------------------- | -------------------------------------------- | --------------------- |
+| **LLM Calls**         | 10s timeout, retry once on transient failure | <5s p95 response time |
+| **Vector Search**     | HNSW index, Top-5 chunks                     | <100ms query time     |
+| **Session Retrieval** | Indexed by UUID, check expiry in query       | <10ms                 |
+| **Cold Starts**       | Minimize dependencies, optimize imports      | <2s first request     |
+| **Caching**           | Static assets via Vercel CDN                 | Edge delivery         |
+
+---
+
+## 6. External Integrations
+
+### 6.1 LLM and Orchestration
+
+**Gemini (Current Runtime)**
+
+- Generation model: `gemini-2.5-flash-lite`
+- API: Google Generative AI SDK
+- Auth: API key (`GEMINI_API_KEY`)
+
+**Google ADK Orchestration**
+
+- Routing model: `ADK_MODEL` (default `gemini-2.5-flash-lite`)
+- Strict mode: `ENABLE_ADK=true`, `ENABLE_AGENT_ROUTING=true`
+
+### 6.2 Email (Resend API)
+
+- Endpoint: https://api.resend.com/emails
+- Auth: API key (`RESEND_API_KEY`)
+- Template: Plain text email with lead details
+- Recipient: `LEAD_EMAIL_TO` environment variable
+
+### 6.3 Database (Neon)
+
+- PostgreSQL 15+ with pgvector extension
+- Connection: `DATABASE_URL` environment variable
+- ORM: SQLAlchemy 2.x + Alembic migrations
+
+---
+
+## 7. Deployment Architecture
+
+### 7.1 Vercel (Web App)
+
+- **Region:** Auto (edge network)
+- **Compute:** Serverless functions (Node.js runtime)
+- **Environment:** Separate preview/production
+- **Build:** `pnpm build` → static + API routes
+
+### 7.2 Environment Variables
+
+See `.env.example` for full list. Critical variables:
+
+```bash
+DATABASE_URL=postgresql://...
+GEMINI_API_KEY=...
+DEFAULT_LLM_MODEL=gemini-2.5-flash-lite
+ENABLE_ADK=true
+ADK_MODEL=gemini-2.5-flash-lite
+EMBEDDING_MODEL=text-embedding-004
+EMBEDDING_DIMENSION=768
+RESEND_API_KEY=...
+LEAD_EMAIL_TO=partner@diveshop.com
+SESSION_SECRET=random_32char_string
+```
+
+---
+
+## 8. Testing Strategy
+
+### 8.1 Unit Tests
+
+- Frontend: Vitest (`tests/`, `src/**/__tests__`)
+- Backend: pytest (`apps/api/tests/unit`)
+
+### 8.2 Integration Tests
+
+- Backend API and services: pytest (`apps/api/tests/integration`)
+- Verified combined backend run:
+  `PYTHONPATH=$PWD/apps/api .venv/bin/python -m pytest apps/api/tests/unit apps/api/tests/integration -q --import-mode=importlib`
+
+### 8.3 E2E Tests (Playwright)
+
+- **V1 Scope:** Single smoke test
+  - Landing page → Chat → Send message → Receive response → Open lead form
+- **Assertions:** Behavior, not content (response appears, not "response says X")
+
+---
+
+## 9. Future Architecture (V1.1+)
+
+### 9.1 Agent Service Extraction (PR8a)
+
+```
+┌─────────────┐       ┌─────────────┐
+│  Web App    │       │ Telegram Bot│
+│  (Vercel)   │       │  (Adapter)  │
+└──────┬──────┘       └──────┬──────┘
+       │                     │
+       └─────────┬───────────┘
+                 │ HTTPS
+                 ▼
+         ┌───────────────┐
+         │ Agent Service │
+         │ (Cloud Run)   │
+         │ - ADK         │
+         │ - RAG         │
+         │ - LLM         │
+         └───────┬───────┘
+                 │
+         ┌───────┴───────┐
+         │               │
+    ┌────▼────┐    ┌─────▼─────┐
+    │Postgres │    │  Gemini   │
+    │+pgvector│    │    API    │
+    └─────────┘    └───────────┘
+```
+
+### 9.2 Authentication (V2 - PR8)
+
+- NextAuth.js with Credentials provider
+- User profiles table
+- JWT sessions in HTTP-only cookies
+- Cross-channel account linking (web ↔ Telegram)
+
+---
+
+## 10. Maintenance & Operations
+
+### 10.1 Monitoring
+
+- **Error Tracking:** Sentry (future)
+- **Analytics:** Vercel Analytics or Posthog (PR6)
+- **Logs:** Vercel function logs, Pino structured logging
+
+### 10.2 Backup & Recovery
+
+- **Database:** Neon automatic backups (point-in-time recovery)
+- **Code:** Git repository on GitHub
+- **Rollback:** Vercel instant rollback to previous deployment
+
+---
+
+## Related Documents
+
+- **Product Spec:** [../product/psd/DovvyBuddy-PSD-V6.2.md](../product/psd/DovvyBuddy-PSD-V6.2.md)
+- **PR Plans:** [../archive/plans/](../archive/plans/)
+- **Decisions:** [./decisions/](./decisions/)
+- **Project Context:** [../../.github/copilot-project.md](../../.github/copilot-project.md)
+
+---
+
+**End of Technical Specification Document**

@@ -27,19 +27,19 @@ Provide guidance for automated workflows, LLMs, and humans working on this proje
 
 ### Backend Work
 
-- `src/backend/README.md` - Backend structure, scripts, quick start commands
-- `docs/technical/backend-testing-guide.md` - Test paths, commands, environment setup
-- `docs/technical/developer-workflow.md` - General development workflows
+- `apps/api/README.md` - Backend structure, scripts, quick start commands
+- `docs/operations/backend-testing-guide.md` - Test paths, commands, environment setup
+- `docs/operations/developer-workflow.md` - General development workflows
 
 ### Frontend Work
 
 - `README.md` - Project overview and quick start
-- `docs/technical/deployment.md` - Deployment procedures
+- `docs/operations/deployment.md` - Deployment procedures
 
 ### Content Work
 
 - `content/README.md` - Content structure and guidelines
-- `docs/technical/content-ingestion-guide.md` - Content processing
+- `docs/operations/content-ingestion-guide.md` - Content processing
 
 **Benefits:** Avoids searching for paths, correct commands already documented, saves token usage
 
@@ -53,7 +53,7 @@ Provide guidance for automated workflows, LLMs, and humans working on this proje
 ## Python Environment
 
 - Single virtual environment at project root: `.venv`
-- Install backend: `.venv/bin/pip install -e src/backend/`
+- Install backend: `.venv/bin/pip install -e apps/api/`
 - All dependencies use the root `.venv` (no subdirectory environments)
 
 ## LLM Standards
@@ -65,16 +65,16 @@ Provide guidance for automated workflows, LLMs, and humans working on this proje
 ## Documentation
 
 - Place docs appropriately:
-  - Technical specs: `/docs/technical/`
-  - Architecture decisions: `/docs/decisions/`
-  - Implementation plans: `/docs/plans/`
-  - **Summaries & retrospectives: `/docs/project-management/`**
-  - Backend-specific: `src/backend/docs/`
+  - Technical specs: `/docs/operations/`
+  - Architecture decisions: `/docs/architecture/decisions/`
+  - Implementation plans: `/docs/archive/plans/`
+  - **Summaries & retrospectives: `/docs/archive/project-management/`**
+  - Backend-specific: `apps/api/docs/`
   - Content guides: `content/`
   - Workflow instructions: `.github/`
 - Use `kebab-case` or `snake_case` filenames
 - Include purpose, owner, and date in headers
-- **Summary documents** (implementation summaries, sprint retrospectives, completion reports) always go in `/docs/project-management/`
+- **Summary documents** (implementation summaries, sprint retrospectives, completion reports) always go in `/docs/archive/project-management/`
 
 ---
 

@@ -7,8 +7,8 @@ This repository is a monorepo. Keep task context small by default.
 1. `docs/context/AGENT_BRIEF.md`
 2. `docs/context/CURRENT_STATE.md`
 3. The nearest scoped `AGENTS.md` for your task area:
-   - `src/backend/AGENTS.md`
-   - `src/app/AGENTS.md`
+   - `apps/api/AGENTS.md`
+   - `apps/web/AGENTS.md`
    - `content/AGENTS.md`
 
 ## Start-Of-Task Convention
@@ -23,17 +23,17 @@ This repository is a monorepo. Keep task context small by default.
 
 - Start with a bounded scan using `rg` in the target directory only.
 - First pass budget: open at most 12 files and about 1,500 lines total.
-- Do not scan `docs/plans/` or archived docs unless the task is planning/history.
+- Do not scan `docs/archive/plans/` or archived docs unless the task is planning/history.
 - Expand scope only when blocked by missing dependencies or interfaces.
 
 ## Task Routing
 
 - Backend API, orchestration, RAG, ingestion, Python tests:
-  - Start in `src/backend/`
+  - Start in `apps/api/`
 - Frontend UI, chat page, client behavior, Next.js routes:
-  - Start in `src/app/` and `src/components/`
+  - Start in `apps/web/src/`
 - Knowledge base updates and content quality:
-  - Start in `content/`
+  - Start in `content/source/`
 - Architecture, decisions, implementation history:
   - Start in `docs/`
 

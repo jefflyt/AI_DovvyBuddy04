@@ -26,7 +26,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Type check
         run: pnpm typecheck
@@ -52,7 +52,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: src/backend
+        working-directory: apps/api
 
     steps:
       - name: Checkout code
@@ -93,7 +93,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install chromium --with-deps
@@ -105,7 +105,7 @@ jobs:
 
       - name: Setup Python backend
         run: |
-          cd src/backend
+          cd apps/api
           pip install -e .
 
       - name: Run E2E tests

@@ -8,8 +8,8 @@ Use this file as the default pre-read before scanning code. It provides a compac
 
 ## System Snapshot
 
-- Frontend: Next.js 14 (App Router), TypeScript (`src/`)
-- Backend: FastAPI + SQLAlchemy async (`src/backend/`)
+- Frontend: Next.js 14 (App Router), TypeScript (`apps/web/src/`)
+- Backend: FastAPI + SQLAlchemy async (`apps/api/`)
 - Data: PostgreSQL + pgvector (Neon)
 - LLM stack: Gemini (`gemini-2.5-flash-lite`) + `text-embedding-004`
 - Core domains: diving certification guidance, trip planning, safety guidance, lead capture
@@ -24,36 +24,36 @@ Use this file as the default pre-read before scanning code. It provides a compac
 ## Where To Look First
 
 - Chat orchestration and routing:
-  - `src/backend/app/orchestration/`
-  - `src/backend/app/api/routes/chat.py`
+  - `apps/api/app/domain/orchestration/`
+  - `apps/api/app/api/routes/chat.py`
 - Specialized agents:
-  - `src/backend/app/agents/`
+  - `apps/api/app/domain/agents/`
 - RAG and retrieval:
-  - `src/backend/app/services/rag/`
+  - `apps/api/app/infrastructure/services/rag/`
 - Frontend chat UX:
-  - `src/app/chat/`
-  - `src/components/chat/`
+  - `apps/web/src/app/chat/`
+  - `apps/web/src/features/chat/components/`
 - Shared frontend API and hooks:
-  - `src/lib/api-client/`
-  - `src/lib/hooks/`
+  - `apps/web/src/shared/lib/api-client/`
+  - `apps/web/src/shared/hooks/`
 - Knowledge content:
-  - `content/`
+  - `content/source/`
 
 ## Source-Of-Truth Docs
 
 - Technical runtime spec:
-  - `docs/technical/specification.md`
+  - `docs/architecture/specification.md`
 - Developer setup and command reference:
   - `README.DEV.md`
 - Product vision and scope:
-  - `docs/psd/DovvyBuddy-PSD-V6.2.md`
+  - `docs/product/psd/DovvyBuddy-PSD-V6.2.md`
 - Architecture decisions:
-  - `docs/decisions/`
+  - `docs/architecture/decisions/`
 
 ## Context Control Playbook
 
 1. Read this file and `docs/context/CURRENT_STATE.md`.
-2. Pick one primary domain (`src/backend`, `src/app`, `content`, or `docs`).
+2. Pick one primary domain (`apps/api`, `apps/web`, `content`, or `docs`).
 3. Run a narrow `rg` search in that domain only.
 4. Open only files directly tied to the task.
 5. Expand to adjacent domains only when an interface requires it.
@@ -65,5 +65,4 @@ Use this file as the default pre-read before scanning code. It provides a compac
 - Frontend type/lint:
   - `pnpm typecheck && pnpm lint`
 - Backend unit/integration tests:
-  - `.venv/bin/python -m pytest src/backend/tests -q`
-
+  - `.venv/bin/python -m pytest apps/api/tests -q`

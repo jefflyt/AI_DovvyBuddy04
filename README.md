@@ -56,6 +56,8 @@ Behind the scenes, specialized AI agents work together:
 - **Safety Guide** — Provides emergency contacts and safety protocols
 - **Content Specialist** — Retrieves relevant information from our knowledge base
 
+Routing is managed by Google ADK, with an ADK-native coordinator/specialist graph available for staged rollout.
+
 ### Seamless Lead Capture
 
 When you're ready to take action, we make it easy to connect with dive shops and instructors who can help you achieve your diving goals.
@@ -73,6 +75,8 @@ When you're ready to take action, we make it easy to connect with dive shops and
 - PostgreSQL database with vector embeddings
 - Intelligent content retrieval and response generation
 - Session management and conversation continuity
+- Streaming chat endpoint (`/api/chat/stream`) with route/safety/citation events
+- Gemini free-tier quota controls (RPM/TPM/RPD) across routing, generation, and embeddings
 
 ### 🚧 In Progress
 
@@ -211,10 +215,10 @@ Conversations are stored to improve the experience, but personal data is protect
 | ----------------------------- | ------------------------------------------------------- |
 | **Understanding the project** | This README (you're here!)                              |
 | **Setting up development**    | [README.DEV.md](./README.DEV.md)                        |
-| **Product vision**            | [Product Spec (PSD)](./docs/psd/DovvyBuddy-PSD-V6.2.md) |
-| **Technical architecture**    | [Technical Spec](./docs/technical/specification.md)     |
-| **Development roadmap**       | [Master Plan](./docs/plans/MASTER_PLAN.md)              |
-| **Design decisions**          | [Architecture Decision Records](./docs/decisions/)      |
+| **Product vision**            | [Product Spec (PSD)](./docs/product/psd/DovvyBuddy-PSD-V6.2.md) |
+| **Technical architecture**    | [Technical Spec](./docs/architecture/specification.md)     |
+| **Development roadmap**       | [Master Plan](./docs/archive/plans/MASTER_PLAN.md)              |
+| **Design decisions**          | [Architecture Decision Records](./docs/architecture/decisions/) |
 
 ---
 
@@ -256,7 +260,7 @@ This project wouldn't be possible without:
 **Ready to dive deeper?** 🤿
 
 - **Developers:** Start with [README.DEV.md](./README.DEV.md)
-- **Product Vision:** Read the [Product Specification](./docs/psd/DovvyBuddy-PSD-V6.2.md)
-- **Technical Deep-Dive:** Check the [Technical Specification](./docs/technical/specification.md)
+- **Product Vision:** Read the [Product Specification](./docs/product/psd/DovvyBuddy-PSD-V6.2.md)
+- **Technical Deep-Dive:** Check the [Technical Specification](./docs/architecture/specification.md)
 
 _Built with curiosity, powered by AI, inspired by the ocean._

@@ -29,17 +29,17 @@ pnpm install
 # Set up Python backend (use Python 3.11+)
 python3.11 -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-.venv/bin/pip install -e src/backend/
+.venv/bin/pip install -e apps/api/
 
 # Set up environment variables
 cp .env.example .env.local
 # Edit .env.local with your API keys and database URL
 
 # Run database migrations
-cd src/backend && ../../.venv/bin/alembic upgrade head && cd ../..
+cd apps/api && ../../.venv/bin/alembic upgrade head && cd ../..
 
 # Start Python backend (terminal 1)
-.venv/bin/uvicorn app.main:app --reload --app-dir src/backend
+.venv/bin/uvicorn app.main:app --reload --app-dir apps/api
 
 # Start Next.js frontend (terminal 2)
 pnpm dev
@@ -53,14 +53,12 @@ Visit `http://localhost:3000` to see the app.
 
 ```
 AI_DovvyBuddy04/
-├── src/backend/                  # Python FastAPI backend
+├── apps/api/                  # Python FastAPI backend
 │   ├── app/
 │   │   ├── main.py               # FastAPI application entry point
 │   │   ├── api/                  # API routes (chat, lead, session)
-│   │   ├── agents/               # Multi-agent system (certification, trip, safety)
-│   │   ├── orchestration/        # Chat orchestration & conversation management
-│   │   ├── services/             # Core services (LLM, RAG, embeddings)
-│   │   ├── db/                   # Database models, repositories, sessions
+│   │   ├── domain/               # Agent and orchestration domain logic
+│   │   ├── infrastructure/       # DB, services, and ADK integrations
 │   │   ├── core/                 # Config, lead service, utilities
 │   │   └── prompts/              # System prompts per agent
 │   ├── scripts/                  # Content ingestion & benchmarking scripts
@@ -68,38 +66,32 @@ AI_DovvyBuddy04/
 │   ├── tests/                    # Backend unit & integration tests
 │   └── pyproject.toml            # Python dependencies
 │
-├── src/                          # Next.js frontend
-│   ├── app/                      # Next.js App Router pages
-│   │   ├── page.tsx              # Landing page
-│   │   ├── layout.tsx            # Root layout with analytics
-│   │   └── chat/                 # Chat interface
-│   ├── components/               # React components
-│   │   ├── landing/              # Landing page components
-│   │   └── chat/                 # Chat UI & lead capture modals
-│   ├── lib/
-│   │   ├── api-client/           # Backend API client with retry logic
-│   │   ├── analytics/            # Multi-provider analytics (Vercel/GA4)
-│   │   ├── monitoring/           # Error monitoring (Sentry)
-│   │   └── hooks/                # React hooks (session state)
-│   └── types/                    # TypeScript type definitions
+├── apps/web/                      # Next.js frontend app
+│   ├── src/
+│   │   ├── app/                  # App Router routes/pages
+│   │   ├── features/             # Feature-scoped UI (chat, landing)
+│   │   └── shared/               # Shared components, libs, hooks, types
+│   ├── public/
+│   ├── next.config.js
+│   └── tsconfig.json
 │
 ├── content/                      # Curated diving content for RAG
-│   ├── certifications/           # PADI/SSI certification guides
-│   ├── destinations/             # Dive site information
-│   ├── safety/                   # Safety guidelines & procedures
-│   └── faq/                      # Frequently asked questions
+│   ├── source/                   # Markdown source of truth
+│   ├── generated/                # Generated derivatives (JSON)
+│   └── templates/                # Authoring templates
 │
-├── config/                       # Configuration files
+├── tooling/config/               # Configuration files
 │   ├── playwright.config.ts      # E2E test configuration
 │   ├── vitest.config.ts          # Unit test configuration
 │   ├── tailwind.config.ts        # Tailwind CSS configuration
 │   └── sentry.*.config.ts        # Sentry monitoring configs
+├── tooling/scripts/              # Agent wrappers and utility scripts
 │
 ├── docs/                         # Project documentation
-│   ├── plans/                    # Implementation plans (PR1-PR10)
-│   ├── technical/                # Technical specs and guides
-│   ├── decisions/                # Architecture Decision Records (ADRs)
-│   └── project-management/       # Implementation summaries
+│   ├── architecture/             # Technical spec + ADRs
+│   ├── operations/               # Deployment/testing/runbooks
+│   ├── product/                  # PSD/TDD
+│   └── archive/                  # Historical plans and implementation logs
 │
 └── tests/                        # E2E tests (Playwright)
 ```
@@ -159,24 +151,24 @@ pnpm test:e2e:ui      # Run E2E tests with UI
 
 ```bash
 # Development server
-.venv/bin/uvicorn app.main:app --reload --app-dir src/backend
+.venv/bin/uvicorn app.main:app --reload --app-dir apps/api
 
 # Testing
-export PYTHONPATH="$PWD/src/backend"
-.venv/bin/python -m pytest src/backend/tests/unit -q                                # Unit tests
-.venv/bin/python -m pytest src/backend/tests/integration -q                         # Integration tests
-.venv/bin/python -m pytest src/backend/tests/unit src/backend/tests/integration -q --import-mode=importlib  # Combined run
-.venv/bin/python -m pytest src/backend/tests -v                                     # Verbose output
+export PYTHONPATH="$PWD/apps/api"
+.venv/bin/python -m pytest apps/api/tests/unit -q                                # Unit tests
+.venv/bin/python -m pytest apps/api/tests/integration -q                         # Integration tests
+.venv/bin/python -m pytest apps/api/tests/unit apps/api/tests/integration -q --import-mode=importlib  # Combined run
+.venv/bin/python -m pytest apps/api/tests -v                                     # Verbose output
 
 # Database migrations
-cd src/backend && ../../.venv/bin/alembic upgrade head                        # Apply migrations
-cd src/backend && ../../.venv/bin/alembic revision --autogenerate -m "msg"    # Create migration
-cd src/backend && ../../.venv/bin/alembic downgrade -1                        # Rollback one migration
+cd apps/api && ../../.venv/bin/alembic upgrade head                        # Apply migrations
+cd apps/api && ../../.venv/bin/alembic revision --autogenerate -m "msg"    # Create migration
+cd apps/api && ../../.venv/bin/alembic downgrade -1                        # Rollback one migration
 
 # Content management
 pnpm content:ingest            # Ingest content (incremental by default)
 pnpm content:ingest -- --full  # Full re-ingestion
-cd src/backend && ../../.venv/bin/python -m scripts.ingest_content --full --content-dir ../../content  # Explicit content path
+cd apps/api && ../../.venv/bin/python -m scripts.ingest_content --full --content-dir ../../content  # Explicit content path
 pnpm content:validate          # Validate markdown content
 pnpm content:clear             # Clear all embeddings
 pnpm benchmark:rag             # Benchmark RAG performance
@@ -207,6 +199,24 @@ NEXT_PUBLIC_API_URL=/api
 
 # LLM Provider (Gemini)
 GEMINI_API_KEY=your_gemini_api_key_here
+DEFAULT_LLM_MODEL=gemini-2.5-flash-lite
+
+# ADK orchestration
+ENABLE_ADK=true
+ENABLE_AGENT_ROUTING=true
+ENABLE_ADK_NATIVE_GRAPH=false
+ADK_MODEL=gemini-2.5-flash-lite
+
+# Free-tier quota controls
+QUOTA_ENFORCEMENT_ENABLED=true
+QUOTA_PROFILE_NAME=gemini_free_tier
+RATE_WINDOW_SECONDS=60
+LLM_RPM_LIMIT=15
+LLM_TPM_LIMIT=250000
+LLM_RPD_LIMIT=1000
+EMBEDDING_RPM_LIMIT=100
+EMBEDDING_TPM_LIMIT=30000
+EMBEDDING_RPD_LIMIT=1000
 
 # Session Management
 SESSION_SECRET=random_32_character_secret_here
@@ -227,18 +237,21 @@ LLM_TIMEOUT_MS=10000
 
 ### Multi-Agent System
 
-DovvyBuddy uses a **specialized agent architecture** with strict Google ADK runtime orchestration:
+DovvyBuddy uses a staged Google ADK orchestration runtime:
 
-1. **Retrieval Agent** — RAG-based content retrieval
-2. **Certification Agent** — PADI/SSI certification guidance
-3. **Trip Agent** — Dive site recommendations
-4. **Safety Agent** — Safety protocols and emergency procedures
+1. **ADK-native graph path** (`ENABLE_ADK_NATIVE_GRAPH=true`)
+   - Coordinator: `dovvy_orchestrator`
+   - Specialists: trip, certification, general retrieval, safety
+   - Shared ADK tools for RAG/session/safety/policy
+2. **Legacy ADK router path** (`ENABLE_ADK_NATIVE_GRAPH=false`)
+   - ADK function-calling router + existing local specialist execution
+   - Used for compatibility and staged rollout fallback
 
 **Flow:**
 
 ```
-User Message → Orchestrator → Intent Detection → Agent Selection →
-Response Generation → Conversation Management → User
+User Message → Emergency Pre-check → (Native ADK Graph or Legacy ADK Router) →
+Response Policy + Formatting → Session Persistence → User
 ```
 
 Runtime settings:
@@ -246,16 +259,30 @@ Runtime settings:
 - `ENABLE_ADK=true`
 - `ADK_MODEL=gemini-2.5-flash-lite`
 - `ENABLE_AGENT_ROUTING=true`
+- `ENABLE_ADK_NATIVE_GRAPH=false` (default staged rollout)
+
+Emergency handling remains deterministic and always runs before normal routing.
+
+### API Notes
+
+- `POST /api/chat` keeps stable response shape and may include metadata:
+  - `route_decision`
+  - `safety_classification`
+  - `policy_enforced`
+  - `citations`
+  - `quota_snapshot`
+- `POST /api/chat/stream` emits SSE events:
+  - `route`, `safety`, `token`, `citation`, `final`, `error`
 
 ### RAG Pipeline
 
-1. **Content Ingestion** (`scripts/ingest_content.py`):
+1. **Content Ingestion** (`apps/api/scripts/ingest_content.py`):
    - Reads markdown files from `content/`
    - Chunks text intelligently (respects headings)
    - Generates embeddings via Gemini
    - Stores in PostgreSQL with pgvector
 
-2. **Retrieval** (`app/services/rag/`):
+2. **Retrieval** (`apps/api/app/infrastructure/services/rag/`):
    - Semantic search using cosine similarity
    - Hybrid filtering (metadata + embeddings)
    - Context-aware chunking
@@ -272,7 +299,7 @@ Runtime settings:
 - **chat_messages** — Conversation history
 - **leads** — Captured leads for dive shops
 
-See [PR1-Database-Schema.md](./docs/plans/PR1-Database-Schema.md) for details.
+See [PR1-Database-Schema.md](./docs/archive/plans/PR1-Database-Schema.md) for details.
 
 ---
 
@@ -285,19 +312,26 @@ See [PR1-Database-Schema.md](./docs/plans/PR1-Database-Schema.md) for details.
 
 ```bash
 pnpm test           # Frontend unit tests
-export PYTHONPATH="$PWD/src/backend"
-.venv/bin/python -m pytest src/backend/tests/unit -q
+export PYTHONPATH="$PWD/apps/api"
+.venv/bin/python -m pytest apps/api/tests/unit -q
 ```
 
 ### Integration Tests (pytest)
 
 - API endpoints (`/api/chat`, `/api/leads`, `/api/sessions/{session_id}`)
-- Database operations
-- RAG retrieval accuracy
+- Streaming endpoint (`/api/chat/stream`) event ordering/shape
+- Service integration tests (skip when `GEMINI_API_KEY` is missing)
 
 ```bash
-export PYTHONPATH="$PWD/src/backend"
-.venv/bin/python -m pytest src/backend/tests/integration -q
+export PYTHONPATH="$PWD/apps/api"
+.venv/bin/python -m pytest apps/api/tests/integration -q
+```
+
+### Full Backend Suite
+
+```bash
+export PYTHONPATH="$PWD/apps/api"
+.venv/bin/python -m pytest apps/api/tests -q
 ```
 
 ### E2E Tests (Playwright)
@@ -317,13 +351,13 @@ pnpm test:e2e:ui  # Interactive UI mode
 
 | Document                                                     | Purpose                  |
 | ------------------------------------------------------------ | ------------------------ |
-| [Master Plan](./docs/plans/MASTER_PLAN.md)                   | Project roadmap & status |
-| [Product Spec](./docs/psd/DovvyBuddy-PSD-V6.2.md)            | What to build            |
-| [Technical Spec](./docs/technical/specification.md)          | System architecture      |
-| [Developer Workflow](./docs/technical/developer-workflow.md) | Development guide        |
-| [Technical Debt](./docs/technical/TECHNICAL_DEBT.md)         | Known issues             |
-| [ADRs](./docs/decisions/)                                    | Architecture decisions   |
-| [AI Workflow](./docs/project-management/AI_WORKFLOW.md)      | AI-assisted development  |
+| [Master Plan](./docs/archive/plans/MASTER_PLAN.md)                   | Project roadmap & status |
+| [Product Spec](./docs/product/psd/DovvyBuddy-PSD-V6.2.md)            | What to build            |
+| [Technical Spec](./docs/architecture/specification.md)          | System architecture      |
+| [Developer Workflow](./docs/operations/developer-workflow.md) | Development guide        |
+| [Technical Debt](./docs/architecture/TECHNICAL_DEBT.md)      | Known issues             |
+| [ADRs](./docs/architecture/decisions/)                       | Architecture decisions   |
+| [AI Workflow](./docs/archive/project-management/AI_WORKFLOW.md) | AI-assisted development  |
 
 ---
 
@@ -363,7 +397,7 @@ This project uses **GitHub Copilot in Plan Mode** with custom prompts.
 PSD → Master Plan → Feature Plan → PR Plan → Implementation → Refactor
 ```
 
-See [AI_WORKFLOW.md](./docs/project-management/AI_WORKFLOW.md) for complete guide.
+See [AI_WORKFLOW.md](./docs/archive/project-management/AI_WORKFLOW.md) for complete guide.
 
 ### Agent Context Preflight (Monorepo)
 
@@ -374,7 +408,7 @@ To keep context windows small and deterministic, run preflight before scanning c
 pnpm agent:preflight -- backend
 
 # 2) Run scoped search through the gated scanner
-pnpm agent:scan -- "orchestrator" src/backend/app -n
+pnpm agent:scan -- "orchestrator" apps/api/app -n
 ```
 
 Supported scopes: `backend`, `frontend`, `content`, `docs`.
@@ -391,14 +425,14 @@ Notes:
 
 ### Database Connection Errors
 
-Ensure `.env.local` is in project root (not `src/backend/.env`):
+Ensure `.env.local` is in project root (not `apps/api/.env`):
 
 ```bash
 # Correct location
 /Users/you/AI_DovvyBuddy04/.env.local
 
 # Wrong location
-/Users/you/AI_DovvyBuddy04/src/backend/.env
+/Users/you/AI_DovvyBuddy04/apps/api/.env
 ```
 
 ### Backend Not Starting

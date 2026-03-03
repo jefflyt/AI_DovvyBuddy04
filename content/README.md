@@ -6,10 +6,14 @@ This directory contains the curated markdown documentation that powers DovvyBudd
 
 ```
 content/
-├── certifications/    # Certification guides (PADI, SSI, NAUI, etc.)
-├── destinations/      # Dive destination overviews
-├── faq/              # Frequently asked questions
-└── safety/           # Safety reference documents
+├── source/            # Markdown source of truth
+│   ├── certifications/
+│   ├── destinations/
+│   └── safety/
+├── generated/         # Generated artifacts (JSON derivatives, etc.)
+│   └── destinations/
+├── templates/         # Authoring templates and worksheets
+└── README.md
 ```
 
 ## Content Authoring Guidelines
@@ -139,7 +143,7 @@ Run `pnpm content:validate` before ingesting to check:
 
 The ingestion pipeline:
 
-1. **Read**: Recursively scan markdown files in `content/`.
+1. **Read**: Recursively scan markdown files in `content/source/`.
 2. **Parse**: Extract frontmatter and body text.
 3. **Chunk**: Split text using hybrid strategy (semantic + paragraph split).
 4. **Embed**: Generate 768-dimensional vectors via Gemini API (`text-embedding-004`).

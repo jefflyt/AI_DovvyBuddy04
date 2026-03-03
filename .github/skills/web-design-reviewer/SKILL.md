@@ -181,7 +181,7 @@ Identify source files from problematic elements:
 3. **File Pattern Filtering**
    ```
    Style files: src/**/*.css, styles/**/*
-   Components: src/components/**/*
+   Components: apps/web/src/features/**/*
    Pages: src/pages/**, app/**
    ```
 
