@@ -86,6 +86,15 @@ Usually keep:
 - `EMBEDDING_MODEL=text-embedding-004`
 - `EMBEDDING_DIMENSION=768`
 
+For the slim Vercel-only API deployment path, prefer:
+
+- `ENABLE_ADK=false`
+- `ENABLE_ADK_NATIVE_GRAPH=false`
+- `ENABLE_AGENT_ROUTING=true`
+
+This keeps chat routing on the lightweight built-in mode detector and avoids
+bundling the full Google ADK dependency tree into the API runtime.
+
 Optional:
 
 - `CORS_ORIGIN_REGEX=https://.*\\.vercel\\.app`

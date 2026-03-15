@@ -14,11 +14,15 @@ from app.core.quota_manager import QuotaExceededError, get_quota_manager
 from .agent_router import AgentRouter
 from .context_builder import ContextBuilder
 from .emergency_detector_hybrid import EmergencyDetector
-from .gemini_orchestrator import GeminiOrchestrator
-from .mode_detector import ConversationMode
+from .mode_detector import ConversationMode, ModeDetector
 from .response_formatter import ResponseFormatter
 from .session_manager import SessionManager
 from .types import ChatRequest, ChatResponse, IntentType, SessionData, SessionState
+
+try:
+    from .gemini_orchestrator import GeminiOrchestrator
+except Exception:  # pragma: no cover - fallback for slim production deployments
+    GeminiOrchestrator = None  # type: ignore[assignment]
 
 try:
     from app.infrastructure.adk import ADKNativeGraphOrchestrator, NativeTurnResult
@@ -37,20 +41,15 @@ class ChatOrchestrator:
         self.session_manager = SessionManager(db_session)
         self.context_builder = ContextBuilder()
         self.agent_router = AgentRouter()
+        self.mode_detector = ModeDetector()
         self.response_formatter = ResponseFormatter()
         self.emergency_detector = EmergencyDetector()
         self.quota_manager = get_quota_manager()
 
-        if not settings.enable_adk:
-            raise RuntimeError("Google ADK orchestration is required. Set ENABLE_ADK=true.")
-        if not settings.enable_agent_routing:
-            raise RuntimeError(
-                "Google ADK orchestration is required. Set ENABLE_AGENT_ROUTING=true."
-            )
-
         self.native_graph_orchestrator: Optional[ADKNativeGraphOrchestrator] = None
         if (
-            settings.enable_adk_native_graph
+            settings.enable_adk
+            and settings.enable_adk_native_graph
             and ADKNativeGraphOrchestrator is not None
         ):
             try:
@@ -66,8 +65,25 @@ class ChatOrchestrator:
                 )
 
         # Legacy ADK router fallback remains available for staged rollout.
-        self.orchestrator = GeminiOrchestrator()
-        logger.info("Google ADK orchestration enabled with model=%s", settings.adk_model)
+        self.orchestrator: Optional[GeminiOrchestrator] = None  # type: ignore[type-arg]
+        if settings.enable_adk and GeminiOrchestrator is not None:
+            try:
+                self.orchestrator = GeminiOrchestrator()
+                logger.info(
+                    "Google ADK orchestration enabled with model=%s",
+                    settings.adk_model,
+                )
+            except Exception:
+                logger.warning(
+                    "Failed to initialize ADK router; using mode detector fallback",
+                    exc_info=True,
+                )
+        elif settings.enable_adk:
+            logger.warning(
+                "Google ADK package unavailable; using mode detector fallback"
+            )
+        else:
+            logger.info("Google ADK disabled; using mode detector fallback")
 
     @staticmethod
     def _route_to_mode(route: str) -> ConversationMode:
@@ -88,6 +104,16 @@ class ChatOrchestrator:
             "general_retrieval_specialist": "retrieval",
         }
         return route_agent_map.get(route, "retrieval")
+
+    @staticmethod
+    def _mode_to_route_name(mode: ConversationMode) -> str:
+        mode_route_map = {
+            ConversationMode.TRIP: "trip_specialist",
+            ConversationMode.CERTIFICATION: "certification_specialist",
+            ConversationMode.SAFETY: "safety_specialist",
+            ConversationMode.GENERAL: "general_retrieval_specialist",
+        }
+        return mode_route_map.get(mode, "general_retrieval_specialist")
 
     @staticmethod
     def _mode_to_intent(mode: ConversationMode) -> str:
@@ -111,6 +137,22 @@ class ChatOrchestrator:
             "route_general_retrieval_specialist": "general_retrieval_specialist",
         }
         return legacy_map.get(route_name, route_name)
+
+    def _fallback_route_request(
+        self,
+        *,
+        message: str,
+        history: list[dict[str, str]],
+    ) -> dict[str, Any]:
+        mode = self.mode_detector.detect_mode(
+            query=message,
+            conversation_history=history,
+        )
+        route_name = self._mode_to_route_name(mode)
+        return {
+            "target_agent": route_name,
+            "parameters": {"reason": "mode_detector_fallback"},
+        }
 
     def _quota_snapshot(self) -> Dict[str, Dict[str, Any]]:
         return self.quota_manager.snapshot_all()
@@ -239,7 +281,7 @@ class ChatOrchestrator:
         session_state: Optional[SessionState],
     ) -> tuple[Optional[ChatResponse], Optional[Dict[str, Any]]]:
         if not self.native_graph_orchestrator:
-            if settings.enable_adk_native_graph:
+            if settings.enable_adk and settings.enable_adk_native_graph:
                 return None, {
                     "reason": "native_graph_unavailable",
                     "transient": False,
@@ -383,30 +425,42 @@ class ChatOrchestrator:
             )
             return native_response
 
-        if not self.orchestrator:
-            raise RuntimeError("Google ADK orchestrator is unavailable")
-
         try:
             router_fallback: Optional[Dict[str, Any]] = None
-            try:
-                route_result = await self.orchestrator.route_request(
+            runtime_path = "mode_detector_router"
+            if self.orchestrator:
+                runtime_path = "legacy_adk_router"
+                try:
+                    route_result = await self.orchestrator.route_request(
+                        message=request.message,
+                        history=session.conversation_history,
+                        state=session_state,
+                        session_id=str(session.id),
+                    )
+                except QuotaExceededError:
+                    raise
+                except Exception as exc:
+                    router_fallback = self._classify_runtime_failure(exc)
+                    logger.warning(
+                        "ADK route request failed; using mode detector fallback",
+                        exc_info=True,
+                    )
+                    route_result = self._fallback_route_request(
+                        message=request.message,
+                        history=session.conversation_history,
+                    )
+                    runtime_path = "mode_detector_router"
+            else:
+                route_result = self._fallback_route_request(
                     message=request.message,
                     history=session.conversation_history,
-                    state=session_state,
-                    session_id=str(session.id),
                 )
-            except QuotaExceededError:
-                raise
-            except Exception as exc:
-                router_fallback = self._classify_runtime_failure(exc)
-                logger.warning(
-                    "ADK route request failed; falling back to general_retrieval_specialist",
-                    exc_info=True,
-                )
-                route_result = {
-                    "target_agent": "general_retrieval_specialist",
-                    "parameters": {"reason": "router_fallback"},
-                }
+                if settings.enable_adk:
+                    router_fallback = {
+                        "reason": "adk_unavailable",
+                        "transient": False,
+                        "error_type": "ADKUnavailable",
+                    }
 
             raw_target = route_result.get("target_agent", "general_retrieval_specialist")
             target_route = self._normalize_legacy_target(raw_target)
@@ -461,7 +515,7 @@ class ChatOrchestrator:
 
             response_metadata: Dict[str, Any] = {
                 "mode": mode.value,
-                "runtime_path": "legacy_adk_router",
+                "runtime_path": runtime_path,
                 "confidence": result.confidence,
                 "has_rag": context.metadata.get("has_rag", False),
                 "grounding": {

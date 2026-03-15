@@ -33,6 +33,9 @@ Last updated: 2026-03-02
   - `runtime_path`
   - `grounding` (`citations_count`, `policy_reason`, `rag_invoked`, `has_verified_data`)
   - fallback/timeout flags
+- Slim-production fallback:
+  - when Google ADK is unavailable, chat routing can fall back to `mode_detector_router`
+  - native ADK graph remains preferred when the ADK runtime is installed
 
 ## Suggested Task Entry Points
 
