@@ -46,6 +46,8 @@ jobs:
 
       - name: Build
         run: pnpm build
+        env:
+          BACKEND_URL: http://localhost:8000
 
   backend:
     runs-on: ubuntu-latest
@@ -113,6 +115,7 @@ jobs:
         env:
           CI: true
           BASE_URL: http://localhost:3000
+          BACKEND_URL: http://localhost:8000
           # Backend will be started by Playwright's webServer config
         continue-on-error: true # Non-blocking for V1, can be made blocking post-launch
 

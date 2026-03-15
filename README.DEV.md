@@ -121,7 +121,7 @@ AI_DovvyBuddy04/
 
 ### Infrastructure
 
-- **Hosting:** Vercel (frontend), Google Cloud Run (backend)
+- **Hosting:** Vercel (two projects: `apps/web` + `apps/api`)
 - **Database:** Neon (managed PostgreSQL)
 - **Email:** Resend API
 - **CI/CD:** GitHub Actions

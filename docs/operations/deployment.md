@@ -1,394 +1,187 @@
-# Cloud Run Deployment Guide
+# Two-Project Vercel Deployment Guide
 
-**Status:** Active Deployment Guide  
-**Date:** February 26, 2026  
-**Target:** Google Cloud Run (Backend) + Vercel (Frontend)
+**Status:** Active deployment guide
+**Target:** Vercel web project (`apps/web`) + Vercel API project (`apps/api`)
 
----
+## Architecture
 
-## Overview
+DovvyBuddy deploys as two Vercel projects from the same monorepo:
 
-DovvyBuddy uses a split-stack architecture:
+- **Web project:** Next.js app rooted at `apps/web`
+- **API project:** FastAPI app rooted at `apps/api`
+- **Database:** Neon PostgreSQL + pgvector
+- **Email:** Resend
 
-- **Frontend:** Next.js on Vercel (TypeScript/React)
-- **Backend:** FastAPI on Google Cloud Run (Python 3.11)
-- **Database:** PostgreSQL + pgvector on Neon
-- **Communication:** Frontend → Cloud Run REST API over HTTPS
+The frontend keeps browser calls on `/api/*` and rewrites them to the API project using `BACKEND_URL`.
 
----
+## Why Two Projects
 
-## Prerequisites
+- Keeps Next.js and FastAPI runtime concerns separate
+- Lets each project own its own environment variables and logs
+- Avoids forcing frontend and backend into one Vercel runtime model
+- Matches the current repo wiring (`BACKEND_URL` + `/api` rewrites)
 
-### 1. Google Cloud Setup
+## Project Setup
 
-```bash
-# Install gcloud CLI
-# https://cloud.google.com/sdk/docs/install
+Create two Vercel projects connected to the same GitHub repo.
 
-# Login and set project
-gcloud auth login
-gcloud config set project YOUR_PROJECT_ID
+### Web project
 
-# Enable required APIs
-gcloud services enable run.googleapis.com
-gcloud services enable containerregistry.googleapis.com
-gcloud services enable cloudbuild.googleapis.com
+- Root Directory: `apps/web`
+- Framework Preset: Next.js
+- Install Command: default
+- Build Command: default
+- Output Directory: default
+
+### API project
+
+- Root Directory: `apps/api`
+- Framework Preset: FastAPI / Python
+- Install Command: default
+- Build Command: default
+
+The API project uses the Python entry point exported in [apps/api/pyproject.toml](/Users/jefflee/Documents/AIProjects/AI_DovvyBuddy04/apps/api/pyproject.toml):
+
+```toml
+[project.scripts]
+app = "app.main:app"
 ```
 
-### 2. Environment Variables
+## Environment Variables
 
-Prepare these values before deployment:
+### Web project (`apps/web`)
 
-**Backend (Cloud Run):**
+Required:
 
-- `DATABASE_URL` - Neon PostgreSQL connection string
-- `GEMINI_API_KEY` - Google Gemini API key
-- `CORS_ORIGINS` - Vercel domain(s), comma-separated
-- `DEFAULT_LLM_MODEL` - `gemini-2.5-flash-lite`
-- `ENABLE_ADK` - `true`
-- `ENABLE_AGENT_ROUTING` - `true`
-- `ADK_MODEL` - `gemini-2.5-flash-lite`
-- `EMBEDDING_MODEL` - `text-embedding-004`
-- `EMBEDDING_DIMENSION` - `768`
-- `ENABLE_RAG` - `true`
+- `BACKEND_URL=https://<api-project>.vercel.app`
+- `NEXT_PUBLIC_API_URL=/api`
 
-**Frontend (Vercel):**
+Optional / existing:
 
-- `NEXT_PUBLIC_BACKEND_URL` - Cloud Run service URL
+- `NEXT_PUBLIC_APP_URL=https://<web-project>.vercel.app`
+- Analytics and Sentry vars as needed
+- `NEXT_PUBLIC_FEATURE_CONVERSATION_FOLLOWUP_ENABLED=true`
 
----
+### API project (`apps/api`)
 
-## Backend Deployment (Cloud Run)
+Required:
 
-### Step 1: Build and Test Locally
+- `ENVIRONMENT=production`
+- `DEBUG=false`
+- `DATABASE_URL=<neon connection string>`
+- `GEMINI_API_KEY=<gemini api key>`
+- `SESSION_SECRET=<32+ char secret>`
+- `RESEND_API_KEY=<resend api key>`
+- `LEAD_EMAIL_TO=<lead destination email>`
+- `CORS_ORIGINS=https://<web-project>.vercel.app`
 
-```bash
-cd apps/api
+Usually keep:
 
-# Build Docker image
-docker build -t dovvybuddy-backend .
+- `ENABLE_ADK=true`
+- `ENABLE_AGENT_ROUTING=true`
+- `ENABLE_ADK_NATIVE_GRAPH=true`
+- `ENABLE_RAG=true`
+- `DEFAULT_LLM_MODEL=gemini-2.5-flash-lite`
+- `ADK_MODEL=gemini-2.5-flash-lite`
+- `EMBEDDING_MODEL=text-embedding-004`
+- `EMBEDDING_DIMENSION=768`
 
-# Test locally (create .env.docker for testing)
-docker run -p 8080:8080 --env-file .env dovvybuddy-backend
+Optional:
 
-# Verify health endpoint
-curl http://localhost:8080/health
-# Expected: {"status":"healthy","version":"0.1.0"}
+- `CORS_ORIGIN_REGEX=https://.*\\.vercel\\.app`
+- Sentry vars
 
-# Test chat endpoint
-curl -X POST http://localhost:8080/api/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message":"What is Open Water certification?"}'
-```
+## Deployment Flow
 
-### Step 2: Deploy to Cloud Run
+### 1. Deploy the API project first
 
-**Option A: Deploy from source (recommended for iteration)**
-
-```bash
-cd apps/api
-
-gcloud run deploy dovvybuddy-backend \
-  --source . \
-  --region us-central1 \
-  --allow-unauthenticated \
-  --min-instances 0 \
-  --max-instances 10 \
-  --memory 1Gi \
-  --cpu 1 \
-  --timeout 300 \
-  --set-env-vars DATABASE_URL="$DATABASE_URL" \
-  --set-env-vars GEMINI_API_KEY="$GEMINI_API_KEY" \
-  --set-env-vars DEFAULT_LLM_MODEL="gemini-2.5-flash-lite" \
-  --set-env-vars ENABLE_ADK="true" \
-  --set-env-vars ENABLE_AGENT_ROUTING="true" \
-  --set-env-vars ADK_MODEL="gemini-2.5-flash-lite" \
-  --set-env-vars EMBEDDING_MODEL="text-embedding-004" \
-  --set-env-vars EMBEDDING_DIMENSION="768" \
-  --set-env-vars ENABLE_RAG="true" \
-  --set-env-vars CORS_ORIGINS="https://your-vercel-domain.vercel.app"
-```
-
-**Option B: Deploy from pre-built image**
+After the first successful deployment, note the API URL:
 
 ```bash
-# Build and push to Container Registry
-docker build -t gcr.io/YOUR_PROJECT_ID/dovvybuddy-backend .
-docker push gcr.io/YOUR_PROJECT_ID/dovvybuddy-backend
-
-# Deploy from registry
-gcloud run deploy dovvybuddy-backend \
-  --image gcr.io/YOUR_PROJECT_ID/dovvybuddy-backend \
-  --region us-central1 \
-  --allow-unauthenticated \
-  [... same flags as Option A ...]
+https://<api-project>.vercel.app
 ```
 
-### Step 3: Configure CORS
+### 2. Configure the web project
 
-The backend automatically configures CORS based on `CORS_ORIGINS` environment variable.
-
-**Update CORS origins:**
+Set:
 
 ```bash
-gcloud run services update dovvybuddy-backend \
-  --update-env-vars CORS_ORIGINS="https://dovvybuddy.vercel.app,https://dovvybuddy-preview.vercel.app"
+BACKEND_URL=https://<api-project>.vercel.app
+NEXT_PUBLIC_API_URL=/api
 ```
 
-### Step 4: Verify Deployment
+Then deploy the web project.
+
+### 3. Verify the API project
+
+Run:
 
 ```bash
-# Get service URL
-SERVICE_URL=$(gcloud run services describe dovvybuddy-backend --region us-central1 --format 'value(status.url)')
-echo $SERVICE_URL
-
-# Test health endpoint
-curl $SERVICE_URL/health
-
-# Test chat endpoint
-curl -X POST $SERVICE_URL/api/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message":"What dive sites are in Tioman?"}'
+curl https://<api-project>.vercel.app/health
+curl https://<api-project>.vercel.app/ready
 ```
 
----
+Expected:
 
-## Frontend Deployment (Vercel)
+- `/health` returns `200`
+- `/ready` returns `200` only when DB and critical env are configured
 
-### Step 1: Set Environment Variables
+### 4. Verify the web project
 
-In Vercel dashboard or CLI:
+Check:
+
+- landing page loads
+- `/chat` loads
+- browser requests go to `/api/chat`
+- rewritten requests succeed against the API project
+- lead form submission succeeds
+
+## Preview Deployment Caveat
+
+Vercel preview deployments for the web project do **not** automatically discover the matching API preview URL from the separate API project.
+
+For MVP, use one of these strategies:
+
+- simplest: point web preview `BACKEND_URL` at the API production URL
+- stricter: manually set preview `BACKEND_URL` to a stable preview alias for the API project
+
+Do not assume Vercel will automatically pair the two preview deployments.
+
+## Local Validation Before Deploy
+
+From the repo root:
 
 ```bash
-# Using Vercel CLI
-vercel env add NEXT_PUBLIC_BACKEND_URL
-
-# Enter the Cloud Run service URL when prompted
-# Example: https://dovvybuddy-backend-xxxxx-uc.a.run.app
+pnpm test
+pnpm typecheck
+BACKEND_URL=http://localhost:8000 pnpm build
+.venv/bin/python -m pytest apps/api/tests/integration -q
+pnpm content:validate
 ```
 
-### Step 2: Deploy Frontend
+If you want browser validation:
 
 ```bash
-# From project root
-vercel --prod
-
-# Or via Git push (if connected to GitHub)
-git push origin main
+pnpm test:e2e tests/e2e/landing-chat-preview.spec.ts
 ```
 
-### Step 3: Verify Integration
+## MVP Launch Checklist
 
-```bash
-# Visit your Vercel deployment
-open https://your-domain.vercel.app
+- API project deployed on Vercel
+- Web project deployed on Vercel
+- `BACKEND_URL` on the web project points to the API project
+- `/ready` returns `200` on the API deployment
+- Neon DB reachable from Vercel functions
+- Gemini key configured
+- Resend lead delivery configured
+- Chat request works from the public web deployment
+- Lead submission works from the public web deployment
 
-# Test chat interface
-# - Ask a question about certifications or dive sites
-# - Verify NO_DATA handling for unknown topics
-# - Check developer console for API calls to Cloud Run
-```
+## Rollback
 
----
+Rollback independently per Vercel project:
 
-## Configuration Options
+- rollback the web project if only UI/rewrite issues regress
+- rollback the API project if backend behavior or env changes regress
 
-### Scaling Configuration
-
-**For low traffic (MVP):**
-
-```bash
-gcloud run services update dovvybuddy-backend \
-  --min-instances 0 \
-  --max-instances 3 \
-  --concurrency 80
-```
-
-**For moderate traffic:**
-
-```bash
-gcloud run services update dovvybuddy-backend \
-  --min-instances 1 \
-  --max-instances 10 \
-  --concurrency 100
-```
-
-**Cost optimization:**
-
-- `--min-instances 0` - No idle cost, but cold starts (~2-5s)
-- `--min-instances 1` - Always warm, small idle cost (~$10/month)
-
-### Resource Limits
-
-**Default (sufficient for MVP):**
-
-- Memory: 1Gi
-- CPU: 1
-- Timeout: 300s (5 minutes)
-
-**For higher load:**
-
-```bash
-gcloud run services update dovvybuddy-backend \
-  --memory 2Gi \
-  --cpu 2
-```
-
----
-
-## Monitoring & Debugging
-
-### View Logs
-
-```bash
-# Stream logs in real-time
-gcloud run services logs tail dovvybuddy-backend --region us-central1
-
-# Filter for errors
-gcloud run services logs read dovvybuddy-backend \
-  --region us-central1 \
-  --filter "severity>=ERROR"
-```
-
-### Cloud Console
-
-1. Navigate to: https://console.cloud.google.com/run
-2. Select `dovvybuddy-backend` service
-3. View:
-   - **Metrics:** Request count, latency, errors
-   - **Logs:** Application logs, access logs
-   - **Revisions:** Deployment history
-
-### Common Issues
-
-**Issue: CORS errors in browser console**
-
-```bash
-# Solution: Update CORS_ORIGINS
-gcloud run services update dovvybuddy-backend \
-  --update-env-vars CORS_ORIGINS="https://your-new-domain.vercel.app"
-```
-
-**Issue: Cold start latency**
-
-```bash
-# Solution: Set min-instances to 1
-gcloud run services update dovvybuddy-backend \
-  --min-instances 1
-```
-
-**Issue: Database connection timeout**
-
-- Check Neon database is running
-- Verify `DATABASE_URL` format: `postgresql+asyncpg://user:pass@host/db`
-- Ensure Neon allows connections from Cloud Run IPs (usually allowed by default)
-
----
-
-## Security Best Practices
-
-### 1. Use Secret Manager (Recommended)
-
-Instead of plain environment variables:
-
-```bash
-# Store secrets
-echo -n "your-gemini-api-key" | gcloud secrets create gemini-api-key --data-file=-
-
-# Grant Cloud Run access
-gcloud secrets add-iam-policy-binding gemini-api-key \
-  --member serviceAccount:YOUR_PROJECT_NUMBER-compute@developer.gserviceaccount.com \
-  --role roles/secretmanager.secretAccessor
-
-# Deploy with secrets
-gcloud run deploy dovvybuddy-backend \
-  --source . \
-  --update-secrets GEMINI_API_KEY=gemini-api-key:latest
-```
-
-### 2. Enable IAM Authentication (Optional)
-
-For production with authentication:
-
-```bash
-gcloud run deploy dovvybuddy-backend \
-  --no-allow-unauthenticated
-
-# Frontend needs to authenticate via service account or Identity Platform
-```
-
----
-
-## Rollback Procedure
-
-```bash
-# List revisions
-gcloud run revisions list --service dovvybuddy-backend --region us-central1
-
-# Rollback to previous revision
-gcloud run services update-traffic dovvybuddy-backend \
-  --to-revisions REVISION_NAME=100 \
-  --region us-central1
-```
-
----
-
-## Cost Estimates
-
-**Cloud Run (Backend):**
-
-- Free tier: 2 million requests/month, 360,000 GB-seconds
-- Beyond free tier: ~$0.40 per million requests
-- MVP estimate: <$5/month with low traffic
-
-**Neon (Database):**
-
-- Free tier: 0.5GB storage, 100 hours compute
-- Pro tier: $19/month (recommended for production)
-
-**Vercel (Frontend):**
-
-- Hobby: Free (personal projects)
-- Pro: $20/month (custom domains, team features)
-
-**API Costs:**
-
-- Gemini: ~$0.35 per 1M input tokens (Flash model)
-
----
-
-## Next Steps After Deployment
-
-1. **Monitor RAF enforcement:**
-   - Test NO_DATA handling
-   - Verify citations appear
-   - Check confidence scores
-
-2. **Performance baseline:**
-   - Measure P95 latency
-   - Track error rates
-   - Monitor database query times
-
-3. **User testing:**
-   - Share with beta testers
-   - Collect feedback on response quality
-   - Iterate on prompts and RAG tuning
-
-4. **Future enhancements:**
-   - Add SSE streaming endpoint
-   - Implement caching layer (Redis)
-   - Set up alerting (Cloud Monitoring)
-
----
-
-## Support
-
-- **Cloud Run Docs:** https://cloud.google.com/run/docs
-- **Vercel Docs:** https://vercel.com/docs
-- **FastAPI Docs:** https://fastapi.tiangolo.com/
-- **Project Issues:** GitHub Issues
-
----
-
-**Last Updated:** January 3, 2026  
-**Maintained By:** DovvyBuddy Team
+This separation is one of the main reasons to keep the deployment split into two projects.
