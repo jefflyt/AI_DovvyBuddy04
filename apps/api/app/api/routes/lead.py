@@ -100,6 +100,9 @@ async def create_lead(
         
         return LeadResponse(lead_id=lead_record.id)
         
+    except HTTPException:
+        raise
+
     except ValidationError as e:
         logger.warning(f"Lead validation failed: {str(e)}")
         raise HTTPException(

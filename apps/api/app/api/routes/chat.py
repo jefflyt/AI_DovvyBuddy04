@@ -108,6 +108,9 @@ async def chat_endpoint(
             follow_up_question=response.follow_up_question,  # PR6.2
         )
 
+    except HTTPException:
+        raise
+
     except ValueError as e:
         logger.warning(f"Invalid chat request: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))

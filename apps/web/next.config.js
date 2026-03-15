@@ -1,5 +1,6 @@
 // @ts-check
 const { withSentryConfig } = require('@sentry/nextjs')
+const { resolveBackendUrl } = require('./backend-target')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -20,14 +21,7 @@ const nextConfig = {
   // API rewrites for Python backend
   // All /api/* requests are proxied to the Python FastAPI backend
   async rewrites() {
-    const backendUrl = process.env.BACKEND_URL
-
-    if (!backendUrl) {
-      console.warn(
-        'WARN: BACKEND_URL is not set. Skipping /api rewrite; direct backend proxy is disabled for this build.'
-      )
-      return []
-    }
+    const backendUrl = resolveBackendUrl()
 
     return [
       {

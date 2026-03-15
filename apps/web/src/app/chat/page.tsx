@@ -15,6 +15,11 @@ import {
   buildLeadRequest,
   getLeadSubmissionErrorMessage,
 } from './lead-submission'
+import {
+  formatAssistantMessageContent,
+  getLeadCaptureType,
+  shouldAutoSubmitPrompt,
+} from './chat-page-logic'
 import { useSessionState } from '@/shared/hooks/useSessionState' // PR6.1
 import { FeatureFlag, isFeatureEnabled } from '@/shared/lib/feature-flags' // Centralized feature flags
 import { WatercolorBackground } from '@/shared/components/ui/WatercolorBackground'
@@ -36,12 +41,15 @@ const UUID_REGEX =
 
 function ChatContent() {
   const searchParams = useSearchParams()
+  const prompt = searchParams.get('prompt')
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [sessionHydrated, setSessionHydrated] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const handledPromptRef = useRef<string | null>(null)
 
   // PR6.1: Session state hook (only if feature enabled)
   const { sessionState, updateSessionState, clearSessionState } =
@@ -67,6 +75,8 @@ function ChatContent() {
       }
     } catch (error) {
       console.warn('localStorage unavailable:', error)
+    } finally {
+      setSessionHydrated(true)
     }
   }, [])
 
@@ -88,92 +98,128 @@ function ChatContent() {
 
   // Handle URL query parameter (e.g., from "Try this" suggestions)
   useEffect(() => {
-    const query = searchParams.get('prompt')
-    if (query && messages.length === 0 && !isLoading) {
-      setInput(query)
-      setTimeout(() => {
-        const userMessage: Message = {
-          id: crypto.randomUUID(),
-          role: 'user',
-          content: query,
-          timestamp: new Date(),
-        }
-
-        setMessages([userMessage])
-        setInput('')
-        setIsLoading(true)
-        setError(null)
-        ;(async () => {
-          try {
-            const requestPayload: {
-              sessionId?: string
-              message: string
-              sessionState?: Record<string, unknown>
-            } = {
-              sessionId: sessionId || undefined,
-              message: query,
-            }
-
-            if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)) {
-              requestPayload.sessionState = sessionState as Record<
-                string,
-                unknown
-              >
-            }
-
-            const response: ChatResponse = await apiClient.chat(requestPayload)
-
-            if (!sessionId && response.sessionId) {
-              setSessionId(response.sessionId)
-            }
-
-            if (
-              isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) &&
-              response.metadata?.stateUpdates
-            ) {
-              updateSessionState(response.metadata.stateUpdates)
-            }
-
-            let messageContent = response.message
-            if (
-              isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) &&
-              response.followUpQuestion
-            ) {
-              messageContent = `${response.message}\n\n─────\n💬 ${response.followUpQuestion}`
-            }
-
-            const assistantMessage: Message = {
-              id: crypto.randomUUID(),
-              role: 'assistant',
-              content: messageContent,
-              timestamp: new Date(),
-            }
-
-            setMessages((prev) => [...prev, assistantMessage])
-          } catch (err) {
-            let errorMessage = 'An unexpected error occurred. Please try again.'
-            if (err instanceof ApiClientError) {
-              errorMessage = err.userMessage
-              if (
-                err.code === 'SESSION_EXPIRED' ||
-                err.code === 'SESSION_NOT_FOUND'
-              ) {
-                clearSession()
-                errorMessage =
-                  'Your session has expired. Starting a new chat...'
-              }
-            }
-            setError(errorMessage)
-            setMessages((prev) =>
-              prev.filter((msg) => msg.id !== userMessage.id)
-            )
-          } finally {
-            setIsLoading(false)
-          }
-        })()
-      }, 100)
+    if (!prompt) {
+      handledPromptRef.current = null
+      return
     }
-  }, [searchParams])
+
+    if (
+      !shouldAutoSubmitPrompt({
+        prompt,
+        handledPrompt: handledPromptRef.current,
+        isLoading,
+        hasSessionHydrated: sessionHydrated,
+        messagesLength: messages.length,
+      })
+    ) {
+      return
+    }
+
+    handledPromptRef.current = prompt
+    setInput(prompt)
+
+    const timeoutId = window.setTimeout(() => {
+      const userMessage: Message = {
+        id: crypto.randomUUID(),
+        role: 'user',
+        content: prompt,
+        timestamp: new Date(),
+      }
+
+      setMessages([userMessage])
+      setInput('')
+      setIsLoading(true)
+      setError(null)
+
+      void (async () => {
+        try {
+          const requestPayload: {
+            sessionId?: string
+            message: string
+            sessionState?: Record<string, unknown>
+          } = {
+            sessionId: sessionId || undefined,
+            message: prompt,
+          }
+
+          if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)) {
+            requestPayload.sessionState = sessionState as Record<
+              string,
+              unknown
+            >
+          }
+
+          const response: ChatResponse = await apiClient.chat(requestPayload)
+
+          if (!sessionId && response.sessionId) {
+            setSessionId(response.sessionId)
+          }
+
+          if (
+            isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) &&
+            response.metadata?.stateUpdates
+          ) {
+            updateSessionState(response.metadata.stateUpdates)
+          }
+
+          const autoLeadType = getLeadCaptureType(response.message)
+          if (autoLeadType) {
+            setLeadType(autoLeadType)
+            setShowLeadForm(true)
+          }
+
+          const assistantMessage: Message = {
+            id: crypto.randomUUID(),
+            role: 'assistant',
+            content: formatAssistantMessageContent(
+              response,
+              isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)
+            ),
+            timestamp: new Date(),
+          }
+
+          setMessages((prev) => [...prev, assistantMessage])
+        } catch (err) {
+          let errorMessage = 'An unexpected error occurred. Please try again.'
+          if (err instanceof ApiClientError) {
+            errorMessage = err.userMessage
+            if (
+              err.code === 'SESSION_EXPIRED' ||
+              err.code === 'SESSION_NOT_FOUND'
+            ) {
+              try {
+                localStorage.removeItem(STORAGE_KEY)
+              } catch (storageError) {
+                console.warn('Failed to clear localStorage:', storageError)
+              }
+              setSessionId(null)
+              setMessages([])
+              setError(null)
+              if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)) {
+                clearSessionState()
+              }
+              errorMessage = 'Your session has expired. Starting a new chat...'
+            }
+          }
+          setError(errorMessage)
+          setMessages((prev) => prev.filter((msg) => msg.id !== userMessage.id))
+        } finally {
+          setIsLoading(false)
+        }
+      })()
+    }, 100)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [
+    prompt,
+    sessionHydrated,
+    messages.length,
+    isLoading,
+    sessionId,
+    sessionState,
+    updateSessionState,
+    clearSessionState,
+  ])
 
   const clearSession = () => {
     try {
@@ -243,36 +289,19 @@ function ChatContent() {
         updateSessionState(response.metadata.stateUpdates)
       }
 
-      // Check for lead capture triggers
-      if (
-        response.message.toLowerCase().includes('connect you') ||
-        response.message.toLowerCase().includes('recommend a shop')
-      ) {
-        if (
-          response.message.toLowerCase().includes('course') ||
-          response.message.toLowerCase().includes('certification')
-        ) {
-          setLeadType('training')
-        } else if (
-          response.message.toLowerCase().includes('trip') ||
-          response.message.toLowerCase().includes('liveaboard')
-        ) {
-          setLeadType('trip')
-        }
-      }
-
-      let messageContent = response.message
-      if (
-        isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) &&
-        response.followUpQuestion
-      ) {
-        messageContent = `${response.message}\n\n─────\n💬 ${response.followUpQuestion}`
+      const autoLeadType = getLeadCaptureType(response.message)
+      if (autoLeadType) {
+        setLeadType(autoLeadType)
+        setShowLeadForm(true)
       }
 
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: messageContent,
+        content: formatAssistantMessageContent(
+          response,
+          isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)
+        ),
         timestamp: new Date(),
       }
 

@@ -194,5 +194,32 @@ class TestLeadEndpoint:
                 mock_capture.return_value = mock_lead_record
                 
                 response = await client.post("/api/leads", json=payload)
-        
+
         assert response.status_code == status.HTTP_201_CREATED
+
+    @pytest.mark.asyncio
+    async def test_missing_resend_key_preserves_config_error(self):
+        """Missing Resend config should surface the CONFIG_ERROR detail."""
+        from app.core.config import settings
+
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            payload = {
+                "type": "training",
+                "data": {
+                    "name": "John Doe",
+                    "email": "john@example.com",
+                },
+            }
+
+            with patch.object(settings, "resend_api_key", None), patch.object(
+                settings,
+                "lead_email_to",
+                "ops@example.com",
+            ):
+                response = await client.post("/api/leads", json=payload)
+
+        assert response.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
+        assert response.json()["detail"] == {
+            "error": "Email service not configured",
+            "code": "CONFIG_ERROR",
+        }
