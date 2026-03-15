@@ -2,7 +2,6 @@
 Unit tests for agent registry.
 """
 
-import pytest
 
 from app.domain.agents.registry import AgentRegistry, create_agent, get_agent_registry
 from app.domain.agents.types import AgentType

@@ -7,7 +7,6 @@ import pytest
 from fastapi import status
 from httpx import ASGITransport, AsyncClient
 
-from app.core.lead.types import LeadType
 from app.main import app
 
 
@@ -43,14 +42,14 @@ class TestLeadEndpoint:
                     "interested_certification": "Advanced Open Water",
                 },
             }
-            
+
             with patch("app.api.routes.lead.capture_and_deliver_lead") as mock_capture:
                 mock_lead_record = MagicMock()
                 mock_lead_record.id = uuid4()
                 mock_capture.return_value = mock_lead_record
-                
+
                 response = await client.post("/api/leads", json=payload)
-        
+
         assert response.status_code == status.HTTP_201_CREATED
         data = response.json()
         assert data["success"] is True
@@ -70,14 +69,14 @@ class TestLeadEndpoint:
                     "group_size": 4,
                 },
             }
-            
+
             with patch("app.api.routes.lead.capture_and_deliver_lead") as mock_capture:
                 mock_lead_record = MagicMock()
                 mock_lead_record.id = uuid4()
                 mock_capture.return_value = mock_lead_record
-                
+
                 response = await client.post("/api/leads", json=payload)
-        
+
         assert response.status_code == status.HTTP_201_CREATED
 
     @pytest.mark.asyncio
@@ -90,9 +89,9 @@ class TestLeadEndpoint:
                     "email": "john@example.com",
                 },
             }
-            
+
             response = await client.post("/api/leads", json=payload)
-        
+
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
         data = response.json()
         assert "detail" in data
@@ -108,9 +107,9 @@ class TestLeadEndpoint:
                     "email": "not-an-email",
                 },
             }
-            
+
             response = await client.post("/api/leads", json=payload)
-        
+
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     @pytest.mark.asyncio
@@ -123,9 +122,9 @@ class TestLeadEndpoint:
                     "email": "john@example.com",
                 },
             }
-            
+
             response = await client.post("/api/leads", json=payload)
-        
+
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     @pytest.mark.asyncio
@@ -137,7 +136,7 @@ class TestLeadEndpoint:
                 content="not valid json",
                 headers={"Content-Type": "application/json"},
             )
-        
+
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     @pytest.mark.asyncio
@@ -152,9 +151,9 @@ class TestLeadEndpoint:
                     "message": "A" * 2001,
                 },
             }
-            
+
             response = await client.post("/api/leads", json=payload)
-        
+
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     @pytest.mark.asyncio
@@ -169,9 +168,9 @@ class TestLeadEndpoint:
                     "group_size": 0,  # Invalid: must be >= 1
                 },
             }
-            
+
             response = await client.post("/api/leads", json=payload)
-        
+
         assert response.status_code == status.HTTP_422_UNPROCESSABLE_CONTENT
 
     @pytest.mark.asyncio
@@ -187,12 +186,12 @@ class TestLeadEndpoint:
                 },
                 "session_id": session_id,
             }
-            
+
             with patch("app.api.routes.lead.capture_and_deliver_lead") as mock_capture:
                 mock_lead_record = MagicMock()
                 mock_lead_record.id = uuid4()
                 mock_capture.return_value = mock_lead_record
-                
+
                 response = await client.post("/api/leads", json=payload)
 
         assert response.status_code == status.HTTP_201_CREATED

@@ -2,16 +2,17 @@
 Integration tests for chat flow.
 """
 
-import pytest
 from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
+import pytest
+
+from app.domain.agents.base import AgentResult
+from app.domain.agents.types import AgentContext, AgentType
 from app.domain.orchestration import ChatOrchestrator
 from app.domain.orchestration.mode_detector import ConversationMode
 from app.domain.orchestration.types import ChatRequest
-from app.domain.agents.base import AgentResult
-from app.domain.agents.types import AgentContext, AgentType
 
 
 @pytest.fixture

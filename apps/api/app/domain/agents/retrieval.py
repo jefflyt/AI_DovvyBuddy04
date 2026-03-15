@@ -5,12 +5,12 @@ Retrieval agent for RAG-based information retrieval.
 import logging
 from typing import Optional
 
+from app.core.config import settings
 from app.infrastructure.services.llm.base import LLMProvider
 from app.infrastructure.services.llm.factory import create_llm_provider
 from app.infrastructure.services.llm.types import LLMMessage
 from app.infrastructure.services.rag.pipeline import RAGPipeline
-from app.core.config import settings
-from app.prompts.rag import RAG_SYSTEM_PROMPT, NO_RAG_PROMPT
+from app.prompts.rag import NO_RAG_PROMPT, RAG_SYSTEM_PROMPT
 from app.prompts.specialists_v1 import NO_VERIFIED_DATA_RESPONSE
 
 from .base import Agent, AgentResult
@@ -82,7 +82,7 @@ class RetrievalAgent(Agent):
             # Use RAG context if provided, otherwise retrieve
             rag_context = None
             has_citations = False
-            
+
             if context.rag_context:
                 rag_context_str = context.rag_context
                 # Check if NO_DATA signal present (RAF requirement)
@@ -92,11 +92,11 @@ class RetrievalAgent(Agent):
             else:
                 rag_result = await self.rag_pipeline.retrieve_context(context.query)
                 rag_context_str = rag_result.formatted_context
-                
+
                 # Check NO_DATA signal (RAF requirement)
                 if rag_context_str == "NO_DATA" or not rag_result.has_data:
                     return self._handle_no_data(context)
-                    
+
                 has_citations = len(rag_result.citations) > 0
                 rag_context = rag_result
 
@@ -174,7 +174,7 @@ class RetrievalAgent(Agent):
     def _handle_no_data(self, context: AgentContext) -> AgentResult:
         """
         Handle NO_DATA signal from RAG (RAF requirement).
-        
+
         When no relevant grounding data is found, refuse to answer factual
         questions rather than hallucinating.
 

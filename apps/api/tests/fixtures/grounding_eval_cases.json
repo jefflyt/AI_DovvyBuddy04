@@ -3,27 +3,28 @@
     {
       "id": "factual_with_citation",
       "answer": "Advanced Open Water is commonly recommended before diving to 30 meters.",
-      "citations": ["content/certifications/courses/padi/advanced-open-water/AOW_Overview_and_Privileges.md"],
-      "safety_flags": {"is_emergency": false}
+      "citations": [
+        "content/certifications/courses/padi/advanced-open-water/AOW_Overview_and_Privileges.md"
+      ],
+      "safety_flags": { "is_emergency": false }
     },
     {
       "id": "factual_without_citation",
       "answer": "Renggis Island has 8 to 15 meter depth and calm current for beginners.",
       "citations": [],
-      "safety_flags": {"is_emergency": false}
+      "safety_flags": { "is_emergency": false }
     },
     {
       "id": "non_factual_question",
       "answer": "Can you share your certification level so I can tailor recommendations?",
       "citations": [],
-      "safety_flags": {"is_emergency": false}
+      "safety_flags": { "is_emergency": false }
     },
     {
       "id": "safety_emergency",
       "answer": "Seek emergency medical care immediately and contact local emergency services.",
       "citations": [],
-      "safety_flags": {"is_emergency": true}
+      "safety_flags": { "is_emergency": true }
     }
   ]
 }
-

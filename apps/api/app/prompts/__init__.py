@@ -5,8 +5,8 @@ Provides system prompts and templates for different conversation modes.
 """
 
 from .certification import CERTIFICATION_SYSTEM_PROMPT
-from .specialists_v1 import PROMPT_VERSION
 from .safety import SAFETY_DISCLAIMER, SAFETY_SYSTEM_PROMPT
+from .specialists_v1 import PROMPT_VERSION
 from .system import BASE_SYSTEM_PROMPT
 from .templates import render_template
 from .trip import TRIP_SYSTEM_PROMPT

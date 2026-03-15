@@ -8,7 +8,6 @@ Utility for clearing embeddings from the database:
 
 import argparse
 import sys
-from pathlib import Path
 
 from app.infrastructure.db.session import SessionLocal
 from app.infrastructure.services.rag.repository import RAGRepository
@@ -24,10 +23,10 @@ def main():
 Examples:
   # Clear all embeddings (with confirmation)
   python -m scripts.clear_embeddings
-  
+
   # Clear embeddings for specific path pattern
   python -m scripts.clear_embeddings --pattern "certifications/*"
-  
+
   # Force clear without confirmation (use with caution!)
   python -m scripts.clear_embeddings --force
         """,
@@ -48,17 +47,17 @@ Examples:
         action="store_true",
         help="Show what would be deleted without actually deleting",
     )
-    
+
     args = parser.parse_args()
-    
+
     if args.dry_run:
         warning("DRY RUN MODE: No deletions will be performed")
-    
+
     # Initialize repository
     db = SessionLocal()
     try:
         repository = RAGRepository(db)
-        
+
         # Get count of embeddings to delete
         if args.pattern:
             info(f"Finding embeddings matching pattern: {args.pattern}")
@@ -69,30 +68,30 @@ Examples:
         else:
             count = repository.count_all()
             scope = "all embeddings"
-        
+
         if count == 0:
-            info(f"No embeddings found to delete")
+            info("No embeddings found to delete")
             sys.exit(0)
-        
+
         info(f"Found {count} embedding(s) to delete")
-        
+
         # Confirm deletion
         if not args.force and not args.dry_run:
             if not confirm(f"Delete {scope}?", default=False):
                 error("Aborted by user")
                 sys.exit(1)
-        
+
         # Perform deletion
         if not args.dry_run:
             if args.pattern:
                 deleted_count = repository.delete_by_pattern(args.pattern)
             else:
                 deleted_count = repository.delete_all()
-            
+
             success(f"Deleted {deleted_count} embedding(s)")
         else:
             info(f"Would delete {count} embedding(s)")
-        
+
     finally:
         db.close()
 

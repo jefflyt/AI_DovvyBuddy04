@@ -2,8 +2,9 @@
 Unit tests for context builder.
 """
 
+from unittest.mock import AsyncMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 
 from app.domain.orchestration.context_builder import ContextBuilder
 from app.infrastructure.services.rag.types import RAGContext, RetrievalResult

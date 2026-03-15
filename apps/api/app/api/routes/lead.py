@@ -48,17 +48,17 @@ async def create_lead(
     db: AsyncSession = Depends(get_db),
 ) -> LeadResponse:
     """Create a new lead and deliver notification via email.
-    
+
     This endpoint accepts training or trip lead inquiries, validates the data,
     persists to database, and sends email notification to configured recipient.
-    
+
     Args:
         payload: Lead payload with type (training/trip) and associated data
         db: Database session (injected)
-        
+
     Returns:
         LeadResponse with success status and lead ID
-        
+
     Raises:
         HTTPException: 400 for validation errors, 500 for server errors
     """
@@ -73,7 +73,7 @@ async def create_lead(
                     "code": "CONFIG_ERROR",
                 },
             )
-        
+
         if not settings.lead_email_to:
             logger.error("LEAD_EMAIL_TO not configured")
             raise HTTPException(
@@ -83,10 +83,10 @@ async def create_lead(
                     "code": "CONFIG_ERROR",
                 },
             )
-        
+
         # Extract session_id if provided
         session_id = payload.session_id
-        
+
         # Process lead (capture + deliver)
         lead_record = await capture_and_deliver_lead(
             db=db,
@@ -95,11 +95,11 @@ async def create_lead(
             resend_client=resend,
             config=settings,
         )
-        
+
         logger.info(f"Lead created successfully: {lead_record.id}")
-        
+
         return LeadResponse(lead_id=lead_record.id)
-        
+
     except HTTPException:
         raise
 
@@ -115,8 +115,8 @@ async def create_lead(
                     for err in e.errors()
                 ],
             },
-        )
-        
+        ) from e
+
     except Exception as e:
         logger.error(f"Failed to create lead: {str(e)}", exc_info=True)
         raise HTTPException(
@@ -125,4 +125,4 @@ async def create_lead(
                 "error": "Failed to capture lead",
                 "code": "DB_ERROR" if "database" in str(e).lower() else "UNKNOWN",
             },
-        )
+        ) from e

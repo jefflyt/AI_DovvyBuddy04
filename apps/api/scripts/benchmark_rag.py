@@ -17,7 +17,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from app.core.config import settings
 from app.infrastructure.db.session import init_db
 from app.infrastructure.services.rag.pipeline import RAGPipeline
 from scripts.common import error, info, progress_bar, success, warning
@@ -25,10 +24,10 @@ from scripts.common import error, info, progress_bar, success, warning
 
 class BenchmarkResult:
     """Results from a single query benchmark."""
-    
+
     def __init__(self, query: str, ground_truth: Optional[List[str]] = None):
         """Initialize benchmark result.
-        
+
         Args:
             query: Query text
             ground_truth: Expected content paths (for accuracy measurement)
@@ -39,23 +38,23 @@ class BenchmarkResult:
         self.num_results: int = 0
         self.result_paths: List[str] = []
         self.error: Optional[str] = None
-    
+
     def calculate_accuracy(self) -> Optional[float]:
         """Calculate retrieval accuracy.
-        
+
         Returns:
             Accuracy (0-1) if ground truth available, None otherwise
         """
         if not self.ground_truth or self.error:
             return None
-        
+
         if not self.ground_truth:
             return None
-        
+
         # Calculate how many ground truth items were retrieved
         matches = sum(1 for path in self.ground_truth if path in self.result_paths)
         return matches / len(self.ground_truth) if self.ground_truth else None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary."""
         result = {
@@ -64,33 +63,33 @@ class BenchmarkResult:
             "num_results": self.num_results,
             "result_paths": self.result_paths,
         }
-        
+
         if self.ground_truth:
             result["ground_truth"] = self.ground_truth
             result["accuracy"] = self.calculate_accuracy()
-        
+
         if self.error:
             result["error"] = self.error
-        
+
         return result
 
 
 def load_queries(queries_file: Path) -> List[Dict[str, Any]]:
     """Load test queries from JSON file.
-    
+
     Args:
         queries_file: Path to queries JSON file
-        
+
     Returns:
         List of query dictionaries
-        
+
     Raises:
         FileNotFoundError: If file not found
         json.JSONDecodeError: If invalid JSON
     """
     with open(queries_file, "r", encoding="utf-8") as f:
         data = json.load(f)
-    
+
     # Support both array and object with "queries" key
     if isinstance(data, list):
         return data
@@ -106,48 +105,48 @@ async def run_benchmark_query(
     top_k: int = 5,
 ) -> BenchmarkResult:
     """Run a single benchmark query.
-    
+
     Args:
         pipeline: RAG pipeline
         query: Query text
         top_k: Number of results to retrieve
-        
+
     Returns:
         BenchmarkResult with timing and results
     """
     result = BenchmarkResult(query)
-    
+
     try:
         start_time = time.perf_counter()
         rag_context = await pipeline.retrieve_context(query, top_k=top_k)
         end_time = time.perf_counter()
-        
+
         result.latency_ms = (end_time - start_time) * 1000
         result.num_results = len(rag_context.results)
         result.result_paths = [r.metadata.get("content_path", "") for r in rag_context.results]
-        
+
     except Exception as e:
         result.error = str(e)
-    
+
     return result
 
 
 def calculate_percentile(values: List[float], percentile: int) -> float:
     """Calculate percentile from list of values.
-    
+
     Args:
         values: List of numeric values
         percentile: Percentile to calculate (0-100)
-        
+
     Returns:
         Percentile value
     """
     if not values:
         return 0.0
-    
+
     sorted_values = sorted(values)
     index = (percentile / 100) * (len(sorted_values) - 1)
-    
+
     if index.is_integer():
         return sorted_values[int(index)]
     else:
@@ -213,13 +212,13 @@ async def main():
 Examples:
   # Benchmark with default queries file
   python -m scripts.benchmark_rag
-  
+
   # Benchmark with custom queries
   python -m scripts.benchmark_rag --queries-file my_queries.json
-  
+
   # Run 3 iterations per query
   python -m scripts.benchmark_rag --iterations 3
-  
+
   # Save results to custom file
   python -m scripts.benchmark_rag --output results.json
         """,
@@ -266,9 +265,9 @@ Examples:
         default=None,
         help="Fail if p95 latency exceeds this threshold in ms",
     )
-    
+
     args = parser.parse_args()
-    
+
     # Load queries
     try:
         queries_data = load_queries(args.queries_file)
@@ -278,27 +277,27 @@ Examples:
     except (json.JSONDecodeError, ValueError) as e:
         error(f"Invalid queries file: {e}")
         sys.exit(1)
-    
+
     if not queries_data:
         warning("No queries found in file")
         sys.exit(0)
-    
+
     info(f"Loaded {len(queries_data)} queries")
     if args.iterations > 1:
         info(f"Running {args.iterations} iteration(s) per query")
-    
+
     # Initialize database
     await init_db()
-    
+
     # Initialize pipeline (creates default VectorRetriever)
     pipeline = RAGPipeline()
-    
+
     # Run benchmarks
     all_results: List[BenchmarkResult] = []
     all_latencies: List[float] = []
-    
+
     total_runs = len(queries_data) * args.iterations
-    
+
     with progress_bar(total=total_runs, description="Running benchmarks") as bar:
         for query_data in queries_data:
             # Extract query and ground truth
@@ -308,37 +307,37 @@ Examples:
             else:
                 query = query_data.get("query", "")
                 ground_truth = query_data.get("expected_paths")
-            
+
             if not query:
                 warning("Skipping empty query")
                 continue
-            
+
             # Run multiple iterations
             iteration_results = []
             for _ in range(args.iterations):
                 result = await run_benchmark_query(pipeline, query, top_k=args.top_k)
                 iteration_results.append(result)
-                
+
                 if result.latency_ms:
                     all_latencies.append(result.latency_ms)
-                
+
                 bar.update()
-            
+
             # Use median result if multiple iterations
             if args.iterations > 1:
-                iteration_results.sort(key=lambda r: r.latency_ms or float('inf'))
+                iteration_results.sort(key=lambda r: r.latency_ms or float("inf"))
                 median_result = iteration_results[len(iteration_results) // 2]
             else:
                 median_result = iteration_results[0]
-            
+
             median_result.ground_truth = ground_truth
             all_results.append(median_result)
-        
+
     # Calculate statistics
     print()
     success(f"Completed {total_runs} benchmark run(s)")
     print()
-    
+
     if all_latencies:
         info("Latency Statistics:")
         info(f"  Mean: {statistics.mean(all_latencies):.2f}ms")
@@ -347,7 +346,7 @@ Examples:
         info(f"  P99: {calculate_percentile(all_latencies, 99):.2f}ms")
         info(f"  Min: {min(all_latencies):.2f}ms")
         info(f"  Max: {max(all_latencies):.2f}ms")
-    
+
     # Calculate accuracy if ground truth available
     accuracy_results = [r.calculate_accuracy() for r in all_results if r.calculate_accuracy() is not None]
     if accuracy_results:
@@ -357,14 +356,14 @@ Examples:
         info(f"  Median: {statistics.median(accuracy_results):.2%}")
         info(f"  Min: {min(accuracy_results):.2%}")
         info(f"  Max: {max(accuracy_results):.2%}")
-    
+
     # Count errors
     error_count = sum(1 for r in all_results if r.error)
     if error_count > 0:
         print()
         warning(f"Errors: {error_count}/{len(all_results)} queries failed")
     error_rate = (error_count / len(all_results)) if all_results else None
-    
+
     # Prepare output
     output_data = {
         "timestamp": datetime.now().isoformat(),
@@ -386,7 +385,7 @@ Examples:
         },
         "results": [r.to_dict() for r in all_results],
     }
-    
+
     if accuracy_results:
         output_data["statistics"]["accuracy"] = {
             "mean": statistics.mean(accuracy_results),
@@ -394,17 +393,17 @@ Examples:
             "min": min(accuracy_results),
             "max": max(accuracy_results),
         }
-    
+
     # Write output file
     if args.output:
         output_file = args.output
     else:
         timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
         output_file = Path(f"benchmark-results-{timestamp}.json")
-    
+
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(output_data, f, indent=2)
-    
+
     success(f"Results written to: {output_file}")
 
     gate_failures = evaluate_quality_gates(

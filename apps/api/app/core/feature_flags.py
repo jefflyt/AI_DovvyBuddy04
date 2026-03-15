@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class FeatureFlag(str, Enum):
     """
     Registry of all feature flags in the system.
-    
+
     Flags should follow naming convention: FEATURE_NAME
     """
     CONVERSATION_FOLLOWUP = "conversation_followup"
@@ -29,7 +29,7 @@ class FeatureFlag(str, Enum):
 class FeatureFlagManager:
     """
     Manages feature flag state and provides access methods.
-    
+
     Features are controlled via environment variables in the format:
     FEATURE_{FLAG_NAME}_ENABLED=true|false
     """

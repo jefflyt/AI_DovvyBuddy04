@@ -153,19 +153,28 @@ export class ApiClient {
       normalized.runtimePath = normalized.runtime_path
     }
 
-    if (normalized.timeoutOrFallback === undefined && normalized.timeout_or_fallback !== undefined) {
+    if (
+      normalized.timeoutOrFallback === undefined &&
+      normalized.timeout_or_fallback !== undefined
+    ) {
       normalized.timeoutOrFallback = normalized.timeout_or_fallback
     }
 
     if (normalized.grounding) {
       const grounding = { ...normalized.grounding }
-      if (grounding.citationsCount === undefined && grounding.citations_count !== undefined) {
+      if (
+        grounding.citationsCount === undefined &&
+        grounding.citations_count !== undefined
+      ) {
         grounding.citationsCount = grounding.citations_count
       }
       if (!grounding.policyReason && grounding.policy_reason) {
         grounding.policyReason = grounding.policy_reason
       }
-      if (grounding.ragInvoked === undefined && grounding.rag_invoked !== undefined) {
+      if (
+        grounding.ragInvoked === undefined &&
+        grounding.rag_invoked !== undefined
+      ) {
         grounding.ragInvoked = grounding.rag_invoked
       }
       if (

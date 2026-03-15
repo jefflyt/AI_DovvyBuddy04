@@ -8,6 +8,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
+
 @dataclass
 class SessionData:
     """Session data model for internal use."""

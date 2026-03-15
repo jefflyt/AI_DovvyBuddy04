@@ -4,7 +4,6 @@ Unit tests for text chunking.
 Tests chunking logic with various markdown inputs.
 """
 
-import pytest
 
 from app.infrastructure.services.rag.chunker import (
     chunk_text,

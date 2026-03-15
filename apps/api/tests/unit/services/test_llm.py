@@ -4,8 +4,9 @@ Unit tests for LLM providers.
 Tests LLM generation with mocked API calls.
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from app.core.quota_manager import (
     QuotaDecision,
@@ -13,7 +14,7 @@ from app.core.quota_manager import (
     QuotaSnapshot,
     reset_quota_manager,
 )
-from app.infrastructure.services.llm import GeminiLLMProvider, LLMMessage, LLMResponse
+from app.infrastructure.services.llm import GeminiLLMProvider, LLMMessage
 from app.infrastructure.services.llm.factory import create_llm_provider
 
 
@@ -67,7 +68,7 @@ class TestGeminiLLMProvider:
         )
 
         assert system_instruction == "You are helpful."
-        # The new implementation joins user messages. 
+        # The new implementation joins user messages.
         # It ignores assistant messages for the simple prompt construction in the new SDK adapter logic shown previously.
         # "Hello" + "\n\n" + "How are you?"
         assert "Hello" in user_prompt

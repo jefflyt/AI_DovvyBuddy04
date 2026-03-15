@@ -65,7 +65,7 @@ class GeminiLLMProvider(LLMProvider):
         self, messages: List[LLMMessage]
     ) -> Tuple[Optional[str], str]:
         """Convert messages to Gemini format."""
-        
+
         # New SDK supports chat history better, but for single-turn compatible interface:
         system_instruction = None
         user_messages = []
@@ -76,8 +76,8 @@ class GeminiLLMProvider(LLMProvider):
             elif msg.role == "user":
                 user_messages.append(msg.content)
             elif msg.role == "assistant":
-                # For basic generation, we might skip or append. 
-                # For true chat, we'd build a history list. 
+                # For basic generation, we might skip or append.
+                # For true chat, we'd build a history list.
                 # Keeping it simple for now as per previous implementation:
                 pass
 
@@ -151,7 +151,7 @@ class GeminiLLMProvider(LLMProvider):
 
             # Extract content
             content = response.text if response.text else ""
-            
+
             # Finish reason in new SDK
             finish_reason = "unknown"
             if response.candidates and response.candidates[0].finish_reason:

@@ -9,8 +9,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.infrastructure.db.session import get_db
 from app.domain.orchestration import ChatOrchestrator
+from app.infrastructure.db.session import get_db
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -51,7 +51,7 @@ async def create_session(payload: dict):
 @router.get("/sessions/{session_id}", response_model=SessionResponse)
 async def get_session(
     session_id: str,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
     """
     Get session by ID.
@@ -99,4 +99,4 @@ async def get_session(
                 "error": "An error occurred retrieving the session",
                 "code": "INTERNAL_ERROR",
             },
-        )
+        ) from e

@@ -4,11 +4,11 @@ Integration tests for LLM providers.
 Tests real API calls (marked as slow for CI).
 """
 
-import pytest
 import os
 
-from app.infrastructure.services.llm import GeminiLLMProvider, LLMMessage
+import pytest
 
+from app.infrastructure.services.llm import GeminiLLMProvider, LLMMessage
 
 pytestmark = pytest.mark.slow
 

@@ -4,14 +4,14 @@ Integration tests for RAG pipeline.
 Tests end-to-end RAG with real database and APIs (marked as slow for CI).
 """
 
-import pytest
-import pytest_asyncio
 import os
 
-from app.infrastructure.services.rag import RAGPipeline
+import pytest
+import pytest_asyncio
+
 from app.infrastructure.db import session as db_session
 from app.infrastructure.db.session import init_db
-
+from app.infrastructure.services.rag import RAGPipeline
 
 pytestmark = pytest.mark.slow
 

@@ -163,41 +163,41 @@ class VectorRetriever:
     ) -> List[RetrievalResult]:
         """
         Hybrid search combining keyword + semantic search.
-        
+
         Args:
             query: Search query
             options: Retrieval options (default: RetrievalOptions())
             keyword_weight: Weight for keyword results (0-1, default: 0.3)
-        
+
         Returns:
             Merged and re-ranked results using Reciprocal Rank Fusion
         """
         if options is None:
             options = RetrievalOptions()
-        
+
         # Clear cache for new query
         self._result_cache = {}
-        
+
         # 1. Semantic search (existing method)
         logger.info(f"Hybrid search: Running semantic search for '{query[:50]}...'")
         semantic_results = await self.retrieve(query, options)
-        
+
         # 2. Keyword search (new)
         logger.info(f"Hybrid search: Running keyword search for '{query[:50]}...'")
         keyword_results = await self._keyword_search(query, options)
-        
+
         # 3. Merge using Reciprocal Rank Fusion
         logger.info(f"Hybrid search: Merging {len(semantic_results)} semantic + {len(keyword_results)} keyword results")
         merged_results = self._merge_rrf(
-            semantic_results, 
+            semantic_results,
             keyword_results,
             keyword_weight
         )
-        
+
         # Return top-k results
         final_results = merged_results[:options.top_k]
         logger.info(f"Hybrid search: Returning {len(final_results)} merged results")
-        
+
         return final_results
 
     async def _keyword_search(
@@ -207,17 +207,17 @@ class VectorRetriever:
     ) -> List[RetrievalResult]:
         """
         Full-text search using PostgreSQL tsvector.
-        
+
         Args:
             query: Search query
             options: Retrieval options
-        
+
         Returns:
             List of results ranked by FTS relevance
         """
         if not query or not query.strip():
             return []
-        
+
         session_maker = get_session()
         async with session_maker() as session:
             # Use ts_rank for relevance scoring
@@ -228,14 +228,14 @@ class VectorRetriever:
                 ContentEmbedding.metadata_,
                 func.ts_rank(
                     ContentEmbedding.chunk_text_tsv,
-                    func.plainto_tsquery('english', query)
+                    func.plainto_tsquery("english", query)
                 ).label("rank")
             ).where(
-                ContentEmbedding.chunk_text_tsv.op('@@')(
-                    func.plainto_tsquery('english', query)
+                ContentEmbedding.chunk_text_tsv.op("@@")(
+                    func.plainto_tsquery("english", query)
                 )
             )
-            
+
             # Apply metadata filters if present
             if options.filters:
                 if "doc_type" in options.filters:
@@ -261,12 +261,12 @@ class VectorRetriever:
                             ContentEmbedding.metadata_["tags"]
                             .astext.contains(f'"{tag}"')
                         )
-            
+
             stmt = stmt.order_by(text("rank DESC")).limit(options.top_k * 2)
-            
+
             result = await session.execute(stmt)
             rows = result.all()
-            
+
             results = [
                 RetrievalResult(
                     chunk_id=str(row.id),
@@ -277,7 +277,7 @@ class VectorRetriever:
                 )
                 for row in rows
             ]
-            
+
             logger.info(f"Keyword search found {len(results)} results")
             return results
 
@@ -290,38 +290,38 @@ class VectorRetriever:
     ) -> List[RetrievalResult]:
         """
         Merge results using Reciprocal Rank Fusion.
-        
+
         RRF formula: score = Σ(weight / (k + rank))
-        
+
         Args:
             semantic_results: Results from semantic search
             keyword_results: Results from keyword search
             keyword_weight: Weight for keyword results (0-1)
             k: RRF constant (default: 60)
-        
+
         Returns:
             Merged and re-ranked results
         """
         scores = {}
         semantic_weight = 1 - keyword_weight
-        
+
         # Score semantic results
         for rank, result in enumerate(semantic_results, 1):
             chunk_id = result.chunk_id
             scores[chunk_id] = scores.get(chunk_id, 0) + semantic_weight / (k + rank)
             if chunk_id not in self._result_cache:
                 self._result_cache[chunk_id] = result
-        
+
         # Score keyword results
         for rank, result in enumerate(keyword_results, 1):
             chunk_id = result.chunk_id
             scores[chunk_id] = scores.get(chunk_id, 0) + keyword_weight / (k + rank)
             if chunk_id not in self._result_cache:
                 self._result_cache[chunk_id] = result
-        
+
         # Sort by combined score
         sorted_ids = sorted(scores.keys(), key=lambda x: scores[x], reverse=True)
-        
+
         # Return merged results with updated similarity scores
         merged = []
         for chunk_id in sorted_ids:
@@ -335,5 +335,5 @@ class VectorRetriever:
                 source_citation=result.source_citation
             )
             merged.append(merged_result)
-        
+
         return merged

@@ -5,7 +5,7 @@ Base agent interface and common functionality.
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 
 from .types import AgentCapability, AgentContext, AgentType
 
@@ -100,7 +100,7 @@ class Agent(ABC):
     def get_tool_definition(self) -> dict:
         """
         Get the tool definition for Gemini Function Calling.
-        
+
         Using Google Generative AI SDK format.
         Subclasses should override this to provide specific parameter schemas.
         """
@@ -108,7 +108,7 @@ class Agent(ABC):
             "name": self.agent_type.value,
             "description": self.description,
             "parameters": {
-                "type": "object", 
+                "type": "object",
                 "properties": {
                     "query": {"type": "string", "description": "User query"}
                 },
@@ -145,7 +145,7 @@ class Agent(ABC):
             f"Error in {self.name}: {str(error)}",
             exc_info=True
         )
-        
+
         return AgentResult(
             response=(
                 "I apologize, but I encountered an error processing your request. "

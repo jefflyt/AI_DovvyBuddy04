@@ -2,11 +2,8 @@
 
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
 
-import pytest
-
-from scripts.validate_content import validate_file, ValidationError
+from scripts.validate_content import ValidationError, validate_file
 
 
 def test_validate_file_valid():
@@ -20,14 +17,14 @@ description: A test document
 
 Some content here.
 """
-    
+
     with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".md") as f:
         f.write(content)
         temp_file = Path(f.name)
-    
+
     try:
         is_valid, errors = validate_file(temp_file, required_fields=["title", "description"])
-        
+
         assert is_valid
         assert errors == []
     finally:
@@ -37,14 +34,14 @@ Some content here.
 def test_validate_file_missing_frontmatter():
     """Test validating file with no frontmatter."""
     content = "# Just Content\n\nNo frontmatter here."
-    
+
     with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".md") as f:
         f.write(content)
         temp_file = Path(f.name)
-    
+
     try:
         is_valid, errors = validate_file(temp_file, required_fields=["title"])
-        
+
         assert not is_valid
         assert len(errors) > 0
         assert any("frontmatter" in str(e).lower() for e in errors)
@@ -60,17 +57,17 @@ title: Test Document
 
 # Content
 """
-    
+
     with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".md") as f:
         f.write(content)
         temp_file = Path(f.name)
-    
+
     try:
         is_valid, errors = validate_file(
             temp_file,
             required_fields=["title", "description"]
         )
-        
+
         assert not is_valid
         assert len(errors) >= 1
         assert any("description" in str(e) for e in errors)
@@ -90,18 +87,18 @@ description: Test
 
 Content between headings is missing above.
 """
-    
+
     with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".md") as f:
         f.write(content)
         temp_file = Path(f.name)
-    
+
     try:
         is_valid, errors = validate_file(
             temp_file,
             required_fields=["title", "description"],
             check_structure=True
         )
-        
+
         # Structure warnings should be reported as errors
         assert not is_valid
         assert any("consecutive" in str(e).lower() for e in errors)
@@ -119,18 +116,18 @@ description: Test
 # Heading 1
 ## Heading 2
 """
-    
+
     with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".md") as f:
         f.write(content)
         temp_file = Path(f.name)
-    
+
     try:
         is_valid, errors = validate_file(
             temp_file,
             required_fields=["title", "description"],
             check_structure=False
         )
-        
+
         # Should be valid when structure check is skipped
         assert is_valid
         assert errors == []
@@ -141,9 +138,9 @@ description: Test
 def test_validation_error_string_representation():
     """Test ValidationError string representation."""
     error = ValidationError(Path("/path/to/file.md"), "Test error message", line=42)
-    
+
     error_str = str(error)
-    
+
     assert "/path/to/file.md" in error_str
     assert ":42" in error_str
     assert "Test error message" in error_str
@@ -152,9 +149,9 @@ def test_validation_error_string_representation():
 def test_validation_error_no_line_number():
     """Test ValidationError without line number."""
     error = ValidationError(Path("/path/to/file.md"), "Test error")
-    
+
     error_str = str(error)
-    
+
     assert "/path/to/file.md" in error_str
     assert "Test error" in error_str
     # Should not have line number suffix

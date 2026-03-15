@@ -2,10 +2,11 @@
 Integration tests for response discipline (PR6.2).
 """
 
-import pytest
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
+
+import pytest
 
 from app.domain.agents.base import AgentResult
 from app.domain.agents.types import AgentType
@@ -238,7 +239,7 @@ async def test_emergency_response_no_follow_up(mock_db_session, mock_session_dat
 
         # Metadata should indicate emergency (if emergency detector is enabled)
         if response.metadata.get("mode") == "emergency":
-            assert response.metadata.get("emergency_detected") == True
+            assert response.metadata.get("emergency_detected")
 
         # Response should be urgent and clear (if emergency was detected)
         if response.agent_type == "emergency":

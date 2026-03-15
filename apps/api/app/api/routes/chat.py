@@ -11,13 +11,12 @@ from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import StreamingResponse
 
+from app.core.config import settings
 from app.core.rate_limit import limiter
 from app.core.security import validate_message_safety
-from app.core.config import settings
-
-from app.infrastructure.db.session import get_db
 from app.domain.orchestration import ChatOrchestrator
 from app.domain.orchestration.types import ChatRequest
+from app.infrastructure.db.session import get_db
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -75,14 +74,14 @@ async def chat_endpoint(
     """
     try:
         logger.info(f"🚀 CHAT ENDPOINT CALLED: message='{payload.message[:100]}...', session_id={payload.session_id}")
-        
+
         # Security validation: sanitize and detect injection attempts
         clean_message, security_error = validate_message_safety(payload.message)
-        
+
         if security_error:
             logger.warning(f"Security validation failed for message: {payload.message[:100]}")
             raise HTTPException(status_code=400, detail=security_error)
-        
+
         # Create orchestrator
         orchestrator = ChatOrchestrator(db)
 
@@ -113,14 +112,14 @@ async def chat_endpoint(
 
     except ValueError as e:
         logger.warning(f"Invalid chat request: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
     except Exception as e:
         logger.error(f"Chat processing failed: {str(e)}", exc_info=True)
         raise HTTPException(
             status_code=500,
             detail="An error occurred processing your request. Please try again."
-        )
+        ) from e
 
 
 @router.post("/chat/stream")
@@ -195,7 +194,7 @@ async def debug_rag_endpoint(q: str = "Where can I dive in Tioman?"):
         "pipeline.enabled": pipeline.enabled,
         "query": q,
     }
-    
+
     try:
         context = await pipeline.retrieve_context(q)
         result["results_count"] = len(context.results)
@@ -215,5 +214,5 @@ async def debug_rag_endpoint(q: str = "Where can I dive in Tioman?"):
         result["error"] = str(e)
         import traceback
         result["traceback"] = traceback.format_exc()
-    
+
     return result

@@ -4,6 +4,7 @@ import logging
 
 from app.core.config import settings
 from app.prompts.safety import SAFETY_DISCLAIMER
+
 from .mode_detector import ConversationMode
 
 logger = logging.getLogger(__name__)
@@ -12,14 +13,14 @@ logger = logging.getLogger(__name__)
 class ResponseFormatter:
     """
     Formats chat responses with disclaimers, follow-ups, and greetings.
-    
+
     Responsibilities:
     - Add safety disclaimers
     - Append follow-up questions
     - Generate welcome messages
     - Check for greeting messages
     """
-    
+
     @staticmethod
     def is_greeting(message: str) -> bool:
         """
@@ -32,8 +33,8 @@ class ResponseFormatter:
             True if message is a greeting, False otherwise
         """
         greetings = {
-            'hi', 'hello', 'hey', 'greetings', 'howdy', 
-            'good morning', 'good afternoon', 'good evening'
+            "hi", "hello", "hey", "greetings", "howdy",
+            "good morning", "good afternoon", "good evening"
         }
         normalized = message.strip().lower()
         return normalized in greetings
@@ -83,7 +84,7 @@ class ResponseFormatter:
         """
         if not follow_up_question:
             return message
-        
+
         logger.info(f"Appending follow-up: {follow_up_question}")
         # Visual separator + icon + question for better readability
         return f"{message}\n\n─────\n💬 {follow_up_question}"
@@ -118,7 +119,7 @@ class ResponseFormatter:
         # Add safety disclaimer ONLY for medical/health-related content
         if include_disclaimer is None:
             include_disclaimer = settings.include_safety_disclaimer
-        
+
         # Use upstream safety classification when available to avoid duplicate
         # classifier calls in formatter stage.
         is_medical_query = (
@@ -126,14 +127,14 @@ class ResponseFormatter:
             if safety_classification
             else mode == ConversationMode.SAFETY
         )
-        
+
         # Add disclaimer for genuinely medical queries (must be medical AND safety context)
         # This prevents non-medical dive site/destination queries from showing medical disclaimers
         should_add_disclaimer = include_disclaimer and (
             (mode == ConversationMode.SAFETY and is_medical_query) or  # Safety mode WITH medical content
             (agent_type == "emergency")  # Always show for emergency agent
         )
-        
+
         if should_add_disclaimer:
             formatted = ResponseFormatter.add_safety_disclaimer(formatted)
 
@@ -147,7 +148,7 @@ class ResponseFormatter:
     def sanitize_response(response: str) -> str:
         """
         Remove any leaked RAG/source references from response text.
-        
+
         Strips common patterns that expose internal system behavior:
         - "according to the context"
         - "based on the provided information"
@@ -156,44 +157,44 @@ class ResponseFormatter:
         - "provided context"
         - "retrieved document"
         - "in the document"
-        
+
         This is a defensive layer in case agent prompts fail to comply.
-        
+
         Args:
             response: Original response text
-            
+
         Returns:
             Sanitized response with RAG mentions removed
         """
         import re
-        
+
         if not response:
             return response
-        
+
         sanitized = response
-        
+
         # Patterns to remove (case-insensitive)
         # Match full phrases with context, being careful with word boundaries
         patterns = [
-            r'\baccording to\s+(the\s+)?(provided\s+|retrieved\s+)?(context|information|document|documentation)\b,?\s*',
-            r'\bbased on\s+(the\s+)?(provided\s+|retrieved\s+)?(context|information|document|documentation)\b,?\s*',
-            r'\bfrom\s+(the\s+)?(provided\s+|retrieved\s+)?(context|information|document|documentation)\b,?\s*',
-            r'\bin\s+(the\s+)?(provided\s+|retrieved\s+)?(context|document|documentation)\b,?\s*',
-            r'\bthe\s+(provided\s+|retrieved\s+)?(context|document|documentation)\s+(shows?|states?|indicates?|mentions?|says?)\b,?\s*',
-            r'\[Source:.*?\]',  # Remove bracketed source citations
-            r'\(Source:.*?\)',  # Remove parenthetical source citations
+            r"\baccording to\s+(the\s+)?(provided\s+|retrieved\s+)?(context|information|document|documentation)\b,?\s*",
+            r"\bbased on\s+(the\s+)?(provided\s+|retrieved\s+)?(context|information|document|documentation)\b,?\s*",
+            r"\bfrom\s+(the\s+)?(provided\s+|retrieved\s+)?(context|information|document|documentation)\b,?\s*",
+            r"\bin\s+(the\s+)?(provided\s+|retrieved\s+)?(context|document|documentation)\b,?\s*",
+            r"\bthe\s+(provided\s+|retrieved\s+)?(context|document|documentation)\s+(shows?|states?|indicates?|mentions?|says?)\b,?\s*",
+            r"\[Source:.*?\]",  # Remove bracketed source citations
+            r"\(Source:.*?\)",  # Remove parenthetical source citations
         ]
-        
+
         for pattern in patterns:
             sanitized = re.sub(pattern, "", sanitized, flags=re.IGNORECASE)
-        
+
         # Clean up extra whitespace and punctuation artifacts
-        sanitized = re.sub(r'\s+', ' ', sanitized)  # Multiple spaces to single
-        sanitized = re.sub(r'\s+([.,!?])', r'\1', sanitized)  # Space before punctuation
-        sanitized = re.sub(r'([.,!?])\s*\1+', r'\1', sanitized)  # Duplicate punctuation
-        sanitized = re.sub(r'^[.,!?]\s*', '', sanitized)  # Leading punctuation
+        sanitized = re.sub(r"\s+", " ", sanitized)  # Multiple spaces to single
+        sanitized = re.sub(r"\s+([.,!?])", r"\1", sanitized)  # Space before punctuation
+        sanitized = re.sub(r"([.,!?])\s*\1+", r"\1", sanitized)  # Duplicate punctuation
+        sanitized = re.sub(r"^[.,!?]\s*", "", sanitized)  # Leading punctuation
         sanitized = sanitized.strip()
-        
+
         # Log if sanitization made changes
         if sanitized != response:
             logger.warning(
@@ -201,5 +202,5 @@ class ResponseFormatter:
                 f"original_length={len(response)}, "
                 f"sanitized_length={len(sanitized)}"
             )
-        
+
         return sanitized

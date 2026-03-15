@@ -1,8 +1,8 @@
 import uuid
 
-from sqlalchemy import Column, Computed, DateTime, String, Text, func
-from sqlalchemy.dialects.postgresql import JSONB, UUID, TSVECTOR
 from pgvector.sqlalchemy import Vector
+from sqlalchemy import Column, Computed, DateTime, String, Text, func
+from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR, UUID
 
 from app.infrastructure.db.base import Base
 

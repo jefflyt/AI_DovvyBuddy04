@@ -74,7 +74,7 @@ class RAGPipeline:
         if settings.rag_use_hybrid:
             logger.info(f"Using hybrid search (keyword_weight={settings.rag_keyword_weight})")
             results = await self.retriever.retrieve_hybrid(
-                query, 
+                query,
                 options,
                 keyword_weight=settings.rag_keyword_weight
             )
@@ -84,7 +84,7 @@ class RAGPipeline:
 
         # Format context
         formatted_context = self._format_context(results)
-        
+
         # Extract citations for RAF enforcement (deduped, stable order)
         citations = self._normalize_citations(results)
         has_data = len(results) > 0

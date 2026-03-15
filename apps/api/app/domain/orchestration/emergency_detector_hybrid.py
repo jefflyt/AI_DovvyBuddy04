@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class EmergencyDetector:
     """
     Hybrid emergency detector for safety-critical messages.
-    
+
     Uses two-tier approach:
     1. Keyword detection for fast, deterministic emergency detection
     2. LLM validation for ambiguous cases (e.g., "What is DCS?" vs "I have DCS")
@@ -104,13 +104,13 @@ Respond with ONLY a JSON object:
         logger.info("EmergencyDetector initialized (hybrid keyword + LLM)")
 
     async def detect_emergency(
-        self, 
-        message: str, 
+        self,
+        message: str,
         conversation_history: Optional[List[dict]] = None
     ) -> tuple[bool, str]:
         """
         Detect if message indicates active medical emergency.
-        
+
         Uses fast keyword check first, LLM validation for ambiguous cases.
 
         Args:
@@ -127,7 +127,7 @@ Respond with ONLY a JSON object:
 
         # Fast path: Check for symptom keywords
         has_symptom = any(keyword in message_lower for keyword in self.SYMPTOM_KEYWORDS)
-        
+
         if not has_symptom:
             return False, ""  # No symptom keywords = not emergency
 

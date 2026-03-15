@@ -7,7 +7,6 @@ vs general diving questions (dive sites, destinations, certifications).
 
 import json
 import logging
-from typing import Optional
 
 from app.core.config import settings
 from app.infrastructure.services.llm.factory import create_llm_provider

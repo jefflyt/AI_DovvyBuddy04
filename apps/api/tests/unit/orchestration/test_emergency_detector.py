@@ -91,7 +91,7 @@ class TestEmergencyDetection:
     def test_emergency_response_message(self, detector):
         """Should return proper emergency response message."""
         response = detector.get_emergency_response()
-        
+
         # Should contain key safety information
         assert "⚠️" in response
         assert "EMERGENCY" in response.upper()

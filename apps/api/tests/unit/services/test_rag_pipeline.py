@@ -4,8 +4,9 @@ Unit tests for RAG pipeline.
 Tests pipeline orchestration with mocked components.
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from app.infrastructure.services.rag.pipeline import RAGPipeline
 from app.infrastructure.services.rag.types import RAGContext, RetrievalResult

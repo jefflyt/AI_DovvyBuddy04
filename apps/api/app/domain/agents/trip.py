@@ -46,7 +46,7 @@ class TripAgent(Agent):
                 "type": "object",
                 "properties": {
                     "query": {
-                        "type": "string", 
+                        "type": "string",
                         "description": "The user's trip-related request"
                     },
                     "location": {
@@ -122,7 +122,7 @@ class TripAgent(Agent):
 
         # Current query with RAG context
         query_text = context.query
-        
+
         # CRITICAL: Log whether RAG context exists
         if context.rag_context:
             logger.info(f"✅ TripAgent: RAG context EXISTS (length: {len(context.rag_context)} chars)")

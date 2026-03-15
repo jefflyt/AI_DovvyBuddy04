@@ -5,10 +5,10 @@ Uses Google ADK's LlmAgent + Runner pattern to route user queries to
 the appropriate specialist tool.
 """
 
+import asyncio
 import logging
 import os
-import asyncio
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 from google.adk.agents import LlmAgent
@@ -28,10 +28,10 @@ logger = logging.getLogger(__name__)
 class GeminiOrchestrator:
     """
     Orchestrates conversation flow using Gemini Function Calling.
-    
+
     Acts as a router that translates user intent into specific agent calls.
     """
-    
+
     def __init__(self):
         """Initialize ADK runner with routing tools."""
         self.api_key = settings.gemini_api_key or os.getenv("GEMINI_API_KEY")
@@ -115,11 +115,11 @@ class GeminiOrchestrator:
             session_id=session_id,
             state=state.to_dict() if state else {},
         )
-        
+
     async def route_request(
-        self, 
-        message: str, 
-        history: List[Dict[str, str]], 
+        self,
+        message: str,
+        history: List[Dict[str, str]],
         state: Optional[SessionState] = None,
         session_id: Optional[str] = None,
     ) -> Dict[str, Any]:

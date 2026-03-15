@@ -15,6 +15,7 @@ from google.genai import types
 
 from app.core.config import settings
 from app.core.quota_manager import QuotaExceededError, get_quota_manager
+from app.infrastructure.services.cost.token_cost import estimate_tokens_from_text
 from app.prompts.specialists_v1 import (
     NATIVE_CERTIFICATION_SPECIALIST_PROMPT,
     NATIVE_GENERAL_SPECIALIST_PROMPT,
@@ -22,7 +23,6 @@ from app.prompts.specialists_v1 import (
     NATIVE_TRIP_SPECIALIST_PROMPT,
     ROUTER_SYSTEM_PROMPT,
 )
-from app.infrastructure.services.cost.token_cost import estimate_tokens_from_text
 
 from .tools import ADKToolbox
 from .types import (

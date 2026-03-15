@@ -74,7 +74,7 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
         self.model = model
         # Get native dimension for this model
         native_dimension = EMBEDDING_DIMENSIONS.get(model, 768)
-        
+
         # Support Matryoshka truncation if specified
         if dimension is not None:
             if dimension not in SUPPORTED_TRUNCATION_DIMENSIONS:

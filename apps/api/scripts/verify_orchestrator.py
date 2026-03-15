@@ -1,7 +1,7 @@
 import asyncio
 import logging
-import sys
 import os
+import sys
 
 # Add backend to path
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
@@ -41,29 +41,29 @@ async def verify_routing():
 
     print("\nStarting Verification Tests...")
     print("-" * 50)
-    
+
     passed = 0
-    
+
     for test in test_cases:
         query = test["query"]
         expected = test["expected"]
-        
+
         print(f"\nQuery: '{query}'")
         try:
             # Empty history for simplicity
             result = await orchestrator.route_request(query, history=[])
             target = result.get("target_agent")
             params = result.get("parameters")
-            
+
             print(f"Result: {target}")
             print(f"Params: {params}")
-            
+
             if target == expected:
                 print("✅ PASS")
                 passed += 1
             else:
                 print(f"❌ FAIL (Expected {expected})")
-                
+
         except Exception as e:
             print(f"❌ ERROR: {e}")
 

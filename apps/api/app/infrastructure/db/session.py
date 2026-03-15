@@ -68,13 +68,16 @@ def get_sync_engine():
     return _sync_engine
 
 
-def SessionLocal() -> Session:
+def session_local() -> Session:
     """Create a new synchronous database session for scripts."""
     global _sync_session_factory
     if _sync_session_factory is None:
         engine = get_sync_engine()
         _sync_session_factory = sessionmaker(bind=engine, autocommit=False, autoflush=False)
     return _sync_session_factory()
+
+
+SessionLocal = session_local
 
 
 async def get_db() -> AsyncSession:

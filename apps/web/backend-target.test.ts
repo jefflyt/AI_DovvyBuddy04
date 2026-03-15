@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-const { DEFAULT_LOCAL_BACKEND_URL, resolveBackendUrl } = require('./backend-target')
+const {
+  DEFAULT_LOCAL_BACKEND_URL,
+  resolveBackendUrl,
+} = require('./backend-target')
 
 describe('resolveBackendUrl', () => {
   it('returns the configured backend URL without a trailing slash', () => {

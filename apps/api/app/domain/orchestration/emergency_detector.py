@@ -15,11 +15,11 @@ logger = logging.getLogger(__name__)
 class EmergencyDetector:
     """
     Keyword-based emergency detector for safety-critical messages.
-    
+
     Detects medical emergencies by looking for:
     1. Symptom keywords (chest pain, difficulty breathing, etc.)
     2. First-person context (I, my, me, after dive, during dive)
-    
+
     Educational queries like "What is DCS?" are NOT treated as emergencies.
     """
 
@@ -83,18 +83,18 @@ class EmergencyDetector:
     def is_emergency(self, message: str) -> bool:
         """
         Check if message indicates a medical emergency.
-        
+
         Returns True only if:
         1. Message contains at least one symptom keyword, AND
         2. Message contains first-person context OR dive context
-        
+
         This prevents educational queries like "What is DCS?" from being
         classified as emergencies while catching actual medical situations
         like "I have chest pain after diving".
-        
+
         Args:
             message: User's message to check
-            
+
         Returns:
             True if emergency detected, False otherwise
         """
@@ -141,7 +141,7 @@ class EmergencyDetector:
     def get_emergency_response(self) -> str:
         """
         Get standard emergency response message.
-        
+
         Returns:
             Emergency response with safety guidance
         """

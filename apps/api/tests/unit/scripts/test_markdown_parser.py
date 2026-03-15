@@ -6,9 +6,9 @@ from pathlib import Path
 import pytest
 
 from scripts.common.markdown_parser import (
-    check_markdown_structure,
     FrontmatterError,
     MarkdownParseError,
+    check_markdown_structure,
     parse_markdown,
     validate_frontmatter,
 )
@@ -28,22 +28,22 @@ tags:
 
 Some content here.
 """
-    
+
     with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".md") as f:
         f.write(content)
         temp_file = Path(f.name)
-    
+
     try:
         result = parse_markdown(temp_file)
-        
+
         assert "frontmatter" in result
         assert "content" in result
-        
+
         frontmatter = result["frontmatter"]
         assert frontmatter["title"] == "Test Document"
         assert frontmatter["description"] == "A test document"
         assert frontmatter["tags"] == ["test", "demo"]
-        
+
         content_text = result["content"]
         assert "# Heading" in content_text
         assert "Some content here." in content_text
@@ -54,14 +54,14 @@ Some content here.
 def test_parse_markdown_without_frontmatter():
     """Test parsing markdown without frontmatter."""
     content = "# Heading\n\nJust content, no frontmatter."
-    
+
     with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".md") as f:
         f.write(content)
         temp_file = Path(f.name)
-    
+
     try:
         result = parse_markdown(temp_file)
-        
+
         assert result["frontmatter"] == {}
         assert "# Heading" in result["content"]
     finally:
@@ -77,11 +77,11 @@ invalid: [unclosed bracket
 
 Content
 """
-    
+
     with tempfile.NamedTemporaryFile(mode="w", delete=False, suffix=".md") as f:
         f.write(content)
         temp_file = Path(f.name)
-    
+
     try:
         with pytest.raises(FrontmatterError):
             parse_markdown(temp_file)
@@ -92,7 +92,7 @@ Content
 def test_parse_markdown_nonexistent_file():
     """Test parsing nonexistent file."""
     nonexistent = Path("/nonexistent/file.md")
-    
+
     with pytest.raises(MarkdownParseError):
         parse_markdown(nonexistent)
 
@@ -104,9 +104,9 @@ def test_validate_frontmatter_valid():
         "description": "Test description",
         "tags": ["tag1", "tag2"],
     }
-    
+
     errors = validate_frontmatter(frontmatter)
-    
+
     assert errors == []
 
 
@@ -116,9 +116,9 @@ def test_validate_frontmatter_missing_required():
         "title": "Test Title",
         # Missing description
     }
-    
+
     errors = validate_frontmatter(frontmatter, required_fields=["title", "description"])
-    
+
     assert len(errors) == 1
     assert "description" in errors[0]
 
@@ -129,9 +129,9 @@ def test_validate_frontmatter_empty_field():
         "title": "",  # Empty
         "description": "Test description",
     }
-    
+
     errors = validate_frontmatter(frontmatter)
-    
+
     assert len(errors) == 1
     assert "title" in errors[0]
 
@@ -143,9 +143,9 @@ def test_validate_frontmatter_invalid_tags():
         "description": "Test",
         "tags": "not-a-list",  # Should be list
     }
-    
+
     errors = validate_frontmatter(frontmatter)
-    
+
     assert len(errors) == 1
     assert "tags" in errors[0]
 
@@ -157,9 +157,9 @@ def test_validate_frontmatter_tags_with_non_strings():
         "description": "Test",
         "tags": ["valid", 123, "another"],  # 123 is not a string
     }
-    
+
     errors = validate_frontmatter(frontmatter)
-    
+
     assert len(errors) == 1
     assert "tags" in errors[0]
 
@@ -178,9 +178,9 @@ Content for section 1.
 
 Content for section 2.
 """
-    
+
     warnings = check_markdown_structure(content)
-    
+
     assert warnings == []
 
 
@@ -191,9 +191,9 @@ def test_check_markdown_structure_consecutive_headers():
 
 No content between main and subheading above.
 """
-    
+
     warnings = check_markdown_structure(content)
-    
+
     assert len(warnings) > 0
     assert any("consecutive" in w.lower() for w in warnings)
 
@@ -201,9 +201,9 @@ No content between main and subheading above.
 def test_check_markdown_structure_empty_content():
     """Test checking empty markdown content."""
     content = ""
-    
+
     warnings = check_markdown_structure(content)
-    
+
     assert len(warnings) == 1
     assert "empty" in warnings[0].lower()
 
@@ -214,8 +214,8 @@ def test_check_markdown_structure_broken_link():
 
 Here is a [broken link](without-closing-paren
 """
-    
+
     warnings = check_markdown_structure(content)
-    
+
     assert len(warnings) > 0
     assert any("link" in w.lower() for w in warnings)

@@ -15,7 +15,7 @@ class DiveSite(Base):
     )
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
-    
+
     # New fields added in schema migration (2026-01-01)
     dive_site_id = Column(String, unique=True, nullable=False)  # Unique identifier from content
     difficulty_rating = Column(Integer, nullable=True)  # 1-5 scale
@@ -23,7 +23,7 @@ class DiveSite(Base):
     depth_max_m = Column(Float, nullable=True)  # Maximum depth in meters
     tags = Column(JSONB, nullable=True)  # JSON array of tags
     last_updated = Column(DateTime(timezone=True), nullable=True)  # Content last updated date
-    
+
     # Original fields
     min_certification_level = Column(String, nullable=True)  # e.g., "OW", "AOW", "Rescue"
     min_logged_dives = Column(Integer, nullable=True)

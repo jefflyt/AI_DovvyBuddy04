@@ -4,8 +4,9 @@ Unit tests for embedding provider.
 Tests embedding generation with mocked API calls.
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from app.core.quota_manager import (
     QuotaExceededError,
@@ -17,7 +18,6 @@ from app.infrastructure.services.embeddings import (
     create_embedding_provider_from_env,
 )
 from app.infrastructure.services.embeddings.cache import EmbeddingCache
-from app.infrastructure.services.embeddings.gemini import RateLimitError
 
 
 @pytest.fixture
@@ -53,11 +53,11 @@ class TestGeminiEmbeddingProvider:
             # Valid truncation dimension
             provider = GeminiEmbeddingProvider(api_key="test-key", dimension=512)
             assert provider.dimension == 512
-            
+
             # Invalid dimension should fall back to native
             provider = GeminiEmbeddingProvider(api_key="test-key", dimension=999)
             assert provider.dimension == 768
-            
+
             # Explicit None should use native
             provider = GeminiEmbeddingProvider(api_key="test-key", dimension=None)
             assert provider.dimension == 768

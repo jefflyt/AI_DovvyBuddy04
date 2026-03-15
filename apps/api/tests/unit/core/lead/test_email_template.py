@@ -26,9 +26,9 @@ class TestEmailSubject:
             diver_profile=None,
             created_at=datetime.now(timezone.utc),
         )
-        
+
         subject = build_lead_email_subject(lead)
-        
+
         assert "[DovvyBuddy]" in subject
         assert "training" in subject.lower()
         assert "John Doe" in subject
@@ -46,9 +46,9 @@ class TestEmailSubject:
             diver_profile=None,
             created_at=datetime.now(timezone.utc),
         )
-        
+
         subject = build_lead_email_subject(lead)
-        
+
         assert "[DovvyBuddy]" in subject
         assert "trip" in subject.lower()
         assert "Jane Smith" in subject
@@ -69,16 +69,16 @@ class TestEmailHtml:
             diver_profile=None,
             created_at=datetime.now(timezone.utc),
         )
-        
+
         html = build_lead_email_html(lead)
-        
+
         # Check for required sections
         assert "John Doe" in html
         assert "john@example.com" in html
         assert "Training Inquiry" in html
         assert str(lead.id) in html
         assert "Contact Information" in html
-        
+
         # Check HTML structure
         assert "<!DOCTYPE html>" in html
         assert "<html>" in html
@@ -101,9 +101,9 @@ class TestEmailHtml:
             diver_profile=None,
             created_at=datetime.now(timezone.utc),
         )
-        
+
         html = build_lead_email_html(lead)
-        
+
         assert "+1234567890" in html
         assert "Open Water" in html
         assert "Advanced Open Water" in html
@@ -128,9 +128,9 @@ class TestEmailHtml:
             diver_profile=None,
             created_at=datetime.now(timezone.utc),
         )
-        
+
         html = build_lead_email_html(lead)
-        
+
         assert "Trip Planning Request" in html
         assert "Jane Smith" in html
         assert "Maldives" in html
@@ -156,9 +156,9 @@ class TestEmailHtml:
             },
             created_at=datetime.now(timezone.utc),
         )
-        
+
         html = build_lead_email_html(lead)
-        
+
         assert "Diver Profile" in html
         assert "25 dives" in html
         assert "wreck diving" in html
@@ -182,9 +182,9 @@ class TestEmailText:
             diver_profile=None,
             created_at=datetime.now(timezone.utc),
         )
-        
+
         text = build_lead_email_text(lead)
-        
+
         assert "DOVVYBUDDY" in text
         assert "John Doe" in text
         assert "john@example.com" in text
@@ -208,9 +208,9 @@ class TestEmailText:
             diver_profile=None,
             created_at=datetime.now(timezone.utc),
         )
-        
+
         text = build_lead_email_text(lead)
-        
+
         assert "Trip Planning Request" in text
         assert "Jane Smith" in text
         assert "Maldives" in text
@@ -233,9 +233,9 @@ class TestEmailText:
             },
             created_at=datetime.now(timezone.utc),
         )
-        
+
         text = build_lead_email_text(lead)
-        
+
         assert "DIVER PROFILE" in text
         assert "Open Water" in text
         assert "25 dives" in text

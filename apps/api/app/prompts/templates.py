@@ -64,14 +64,14 @@ def build_conversation_context(
         Formatted conversation string
     """
     recent_history = conversation_history[-max_messages:] if conversation_history else []
-    
+
     if not recent_history:
         return ""
-    
+
     lines = ["CONVERSATION HISTORY:"]
     for msg in recent_history:
         role = msg.get("role", "unknown").upper()
         content = msg.get("content", "")
         lines.append(f"{role}: {content}")
-    
+
     return "\n".join(lines)

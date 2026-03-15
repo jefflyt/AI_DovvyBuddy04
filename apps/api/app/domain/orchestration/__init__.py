@@ -4,7 +4,10 @@ Orchestration system for DovvyBuddy chat.
 Provides chat orchestration, session management, and mode detection.
 """
 
-from .mode_detector import ConversationMode, ModeDetector  # ModeDetector deprecated - kept for ConversationMode enum
+from .mode_detector import (  # ModeDetector deprecated - kept for ConversationMode enum
+    ConversationMode,
+    ModeDetector,
+)
 
 __all__ = [
     "ChatOrchestrator",

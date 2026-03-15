@@ -81,7 +81,7 @@ class InMemoryRAGRepository:
 
     @staticmethod
     def _cosine_similarity(a: List[float], b: List[float]) -> float:
-        dot = sum(x * y for x, y in zip(a, b))
+        dot = sum(x * y for x, y in zip(a, b, strict=False))
         norm_a = math.sqrt(sum(x * x for x in a)) or 1.0
         norm_b = math.sqrt(sum(y * y for y in b)) or 1.0
         return dot / (norm_a * norm_b)

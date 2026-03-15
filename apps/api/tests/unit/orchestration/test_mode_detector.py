@@ -2,7 +2,6 @@
 Unit tests for mode detector.
 """
 
-import pytest
 
 from app.domain.orchestration.mode_detector import ConversationMode, ModeDetector
 

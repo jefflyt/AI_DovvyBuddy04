@@ -3,7 +3,6 @@ Mode detection for conversation routing.
 """
 
 import logging
-import re
 from enum import Enum
 from typing import Dict, List, Optional
 
@@ -74,7 +73,7 @@ class ModeDetector:
 
         # Find highest scoring mode
         max_score = max(scores.values())
-        
+
         if max_score == 0:
             # No keywords matched, check context
             if conversation_history:
@@ -130,7 +129,7 @@ class ModeDetector:
         for msg in reversed(recent_messages):
             if msg.get("role") == "user":
                 content = msg.get("content", "").lower()
-                
+
                 # Check each mode
                 if self._score_keywords(content, self.CERTIFICATION_KEYWORDS) > 0:
                     return ConversationMode.CERTIFICATION
@@ -160,7 +159,7 @@ class ModeDetector:
             return False
 
         query_lower = query.lower()
-        
+
         # Follow-up indicators
         follow_up_indicators = [
             "what about", "how about", "and", "also", "more", "else",

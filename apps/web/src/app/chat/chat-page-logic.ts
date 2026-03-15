@@ -19,11 +19,11 @@ export function shouldAutoSubmitPrompt({
 }: AutoSubmitPromptOptions): boolean {
   return Boolean(
     prompt &&
-      prompt.trim() &&
-      prompt !== handledPrompt &&
-      hasSessionHydrated &&
-      !isLoading &&
-      messagesLength === 0
+    prompt.trim() &&
+    prompt !== handledPrompt &&
+    hasSessionHydrated &&
+    !isLoading &&
+    messagesLength === 0
   )
 }
 

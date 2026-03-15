@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 class SafetyAgent(Agent):
     """Agent for handling safety-related and medical queries."""
-    
+
     # Shared LLM-based detectors (replaces keyword matching)
     _medical_detector: Optional[MedicalQueryDetector] = None
     _emergency_detector: Optional[EmergencyDetector] = None
@@ -83,7 +83,7 @@ class SafetyAgent(Agent):
             # Lazy initialization of emergency detector
             if SafetyAgent._emergency_detector is None:
                 SafetyAgent._emergency_detector = EmergencyDetector()
-            
+
             # Check if this is an emergency using shared hybrid detector
             is_emergency, emergency_response = await SafetyAgent._emergency_detector.detect_emergency(
                 context.query,

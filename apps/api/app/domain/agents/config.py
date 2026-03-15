@@ -3,7 +3,6 @@ Configuration for agent system.
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -14,11 +13,11 @@ class AgentConfig:
     default_agent: str = "retrieval"
     max_retries: int = 3
     timeout_seconds: int = 30
-    
+
     # LLM settings for agents
     temperature: float = 0.7
     max_tokens: int = 2048
-    
+
     # RAG settings
     enable_rag: bool = True
     rag_top_k: int = 5

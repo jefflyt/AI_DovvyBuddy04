@@ -4,7 +4,7 @@ Session manager for conversation persistence.
 
 import logging
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
@@ -89,7 +89,7 @@ class SessionManager:
             return None
 
         # Check if expired
-        if hasattr(db_session, 'expires_at') and db_session.expires_at:
+        if hasattr(db_session, "expires_at") and db_session.expires_at:
             if datetime.utcnow() > db_session.expires_at:
                 logger.info(f"Session expired: {session_id}")
                 return None

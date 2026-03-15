@@ -3,9 +3,9 @@
 import logging
 from typing import Optional
 
+from app.core.config import settings
 from app.domain.agents.registry import get_agent_registry
 from app.domain.agents.types import AgentType
-from app.core.config import settings
 
 from .mode_detector import ConversationMode
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class AgentRouter:
     """
     Routes conversation modes to appropriate agents.
-    
+
     Responsibilities:
     - Map conversation modes to agent types
     - Handle agent selection with fallbacks

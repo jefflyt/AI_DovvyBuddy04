@@ -1,8 +1,8 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
@@ -50,7 +50,7 @@ async def collect_readiness_checks() -> tuple[bool, dict[str, object]]:
 
 def create_app() -> FastAPI:
     app = FastAPI(title="DovvyBuddy Backend", version="0.1.0", lifespan=lifespan)
-    
+
     # Add rate limiter to app state
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)

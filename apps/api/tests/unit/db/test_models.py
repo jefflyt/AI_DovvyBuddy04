@@ -1,5 +1,11 @@
 def test_placeholder_models_importable():
-    from app.infrastructure.db.models import ContentEmbedding, Destination, DiveSite, Lead, SessionModel
+    from app.infrastructure.db.models import (
+        ContentEmbedding,
+        Destination,
+        DiveSite,
+        Lead,
+        SessionModel,
+    )
 
     assert SessionModel is not None
     assert ContentEmbedding is not None

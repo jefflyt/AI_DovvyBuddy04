@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List, Literal, Optional
 
-from pydantic import AnyUrl, field_validator
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Resolve .env.local path relative to THIS file (apps/api/app/core/config.py)
@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     # Configuration for Pydantic v2
     # Read from root .env.local using absolute path
     model_config = SettingsConfigDict(env_file=str(_ENV_FILE), extra="ignore")
-    
+
     # API Settings
     environment: str = "development"
     debug: bool = True
@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     api_port: int = 8000
     cors_origins: List[str] = ["http://localhost:3000", "http://localhost:3001"]
     cors_origin_regex: Optional[str] = r"https://.*\.vercel\.app"
-    
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def parse_cors_origins(cls, v):
@@ -37,14 +37,14 @@ class Settings(BaseSettings):
         if isinstance(v, str) and not v.strip():
             return None
         return v
-    
+
     # Database Settings
     database_url: Optional[str] = "postgresql+asyncpg://localhost/dovvybuddy"
-    
+
     # API Keys
     gemini_api_key: str = ""
     groq_api_key: str = ""  # Deprecated - not used, Gemini only
-    
+
     # LLM Provider Configuration
     default_llm_provider: Literal["groq", "gemini"] = "gemini"
     default_llm_model: str = "gemini-2.5-flash-lite"
@@ -56,7 +56,7 @@ class Settings(BaseSettings):
     llm_rpm_limit: int = 15
     llm_tpm_limit: int = 250_000
     llm_rpd_limit: int = 1_000
-    
+
     # Embedding Configuration
     default_embedding_provider: Literal["gemini"] = "gemini"
     embedding_model: str = "text-embedding-004"  # Gemini embedding model (768 dimensions, standardized)
@@ -75,18 +75,18 @@ class Settings(BaseSettings):
     rate_window_seconds: int = 60
     quota_profile_name: str = "gemini_free_tier"
     quota_enforcement_enabled: bool = True
-    
+
     # RAG Configuration
     enable_rag: bool = True
     rag_top_k: int = 8  # Increased to get more context for comprehensive answers
     rag_min_similarity: float = 0.5
     rag_chunk_size: int = 512
     rag_chunk_overlap: int = 50
-    
+
     # Hybrid Search Configuration
     rag_use_hybrid: bool = True
     rag_keyword_weight: float = 0.3  # 30% keyword, 70% semantic
-    
+
     # Orchestration Configuration
     max_message_length: int = 2000
     session_expiry_hours: int = 24
@@ -99,14 +99,14 @@ class Settings(BaseSettings):
     rag_timeout_ms: int = 4000
     enable_agent_routing: bool = True
     default_agent: str = "retrieval"
-    
+
     # Conversation Continuity (PR6.1)
     feature_conversation_followup_enabled: bool = True  # Enabled to show contextual follow-up questions
-    
+
     # Prompt Configuration
     system_prompt_version: str = "v1"
     include_safety_disclaimer: bool = True
-    
+
     # Lead Capture & Delivery Configuration
     resend_api_key: str = ""
     lead_email_to: str = ""

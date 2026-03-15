@@ -45,7 +45,7 @@ class TestTrainingLeadData:
         """Missing name field fails validation."""
         with pytest.raises(ValidationError) as exc_info:
             TrainingLeadData(email="john@example.com")
-        
+
         errors = exc_info.value.errors()
         assert any(err["loc"] == ("name",) for err in errors)
 
@@ -53,7 +53,7 @@ class TestTrainingLeadData:
         """Missing email field fails validation."""
         with pytest.raises(ValidationError) as exc_info:
             TrainingLeadData(name="John Doe")
-        
+
         errors = exc_info.value.errors()
         assert any(err["loc"] == ("email",) for err in errors)
 
@@ -64,7 +64,7 @@ class TestTrainingLeadData:
                 name="John Doe",
                 email="not-an-email",
             )
-        
+
         errors = exc_info.value.errors()
         assert any(err["loc"] == ("email",) for err in errors)
 
@@ -75,7 +75,7 @@ class TestTrainingLeadData:
                 name="",
                 email="john@example.com",
             )
-        
+
         errors = exc_info.value.errors()
         assert any(err["loc"] == ("name",) for err in errors)
 
@@ -86,7 +86,7 @@ class TestTrainingLeadData:
                 name="A" * 101,
                 email="john@example.com",
             )
-        
+
         errors = exc_info.value.errors()
         assert any(err["loc"] == ("name",) for err in errors)
 
@@ -98,7 +98,7 @@ class TestTrainingLeadData:
                 email="john@example.com",
                 message="A" * 2001,
             )
-        
+
         errors = exc_info.value.errors()
         assert any(err["loc"] == ("message",) for err in errors)
 
@@ -209,7 +209,7 @@ class TestLeadPayload:
     def test_payload_with_session_id(self):
         """Payload with session_id is valid."""
         from uuid import uuid4
-        
+
         session_id = uuid4()
         payload = LeadPayload(
             type=LeadType.TRAINING,

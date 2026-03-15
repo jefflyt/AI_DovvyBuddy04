@@ -4,12 +4,12 @@ Integration tests for embedding provider.
 Tests real API calls (marked as slow for CI).
 """
 
-import pytest
 import os
 
-from app.infrastructure.services.embeddings import GeminiEmbeddingProvider
-from app.core.config import settings
+import pytest
 
+from app.core.config import settings
+from app.infrastructure.services.embeddings import GeminiEmbeddingProvider
 
 pytestmark = pytest.mark.slow
 

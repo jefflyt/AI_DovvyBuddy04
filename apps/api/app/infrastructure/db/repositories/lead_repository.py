@@ -13,10 +13,10 @@ class LeadRepository:
 
     async def create(self, lead_data: dict) -> Lead:
         """Create a new lead record.
-        
+
         Args:
             lead_data: Dictionary containing lead fields (type, diver_profile, request_details)
-            
+
         Returns:
             Created Lead model instance
         """
@@ -28,10 +28,10 @@ class LeadRepository:
 
     async def get(self, lead_id: UUID) -> Optional[Lead]:
         """Retrieve a lead by ID.
-        
+
         Args:
             lead_id: UUID of the lead to retrieve
-            
+
         Returns:
             Lead model instance if found, None otherwise
         """

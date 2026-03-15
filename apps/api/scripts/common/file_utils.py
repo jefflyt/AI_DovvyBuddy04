@@ -7,10 +7,10 @@ from typing import List
 
 def calculate_file_hash(file_path: Path) -> str:
     """Calculate SHA256 hash of a file.
-    
+
     Args:
         file_path: Path to the file
-        
+
     Returns:
         Hexadecimal hash string
     """
@@ -24,31 +24,31 @@ def calculate_file_hash(file_path: Path) -> str:
 
 def find_markdown_files(content_dir: Path, pattern: str = "**/*.md") -> List[Path]:
     """Find all markdown files in a directory.
-    
+
     Args:
         content_dir: Root content directory
         pattern: Glob pattern for matching files (default: **/*.md)
-        
+
     Returns:
         List of Path objects for markdown files
     """
     if not content_dir.exists():
         raise FileNotFoundError(f"Content directory not found: {content_dir}")
-    
+
     if not content_dir.is_dir():
         raise NotADirectoryError(f"Not a directory: {content_dir}")
-    
+
     markdown_files = sorted(content_dir.glob(pattern))
     return [f for f in markdown_files if f.is_file()]
 
 
 def get_relative_path(file_path: Path, base_dir: Path) -> str:
     """Get relative path from base directory.
-    
+
     Args:
         file_path: Absolute file path
         base_dir: Base directory
-        
+
     Returns:
         Relative path as string with forward slashes
     """

@@ -4,9 +4,10 @@ Unit tests for vector retriever.
 Tests retrieval with mocked database.
 """
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
+
+import pytest
 
 from app.infrastructure.services.rag.retriever import VectorRetriever
 from app.infrastructure.services.rag.types import RetrievalOptions, RetrievalResult
