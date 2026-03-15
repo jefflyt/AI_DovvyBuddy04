@@ -20,8 +20,6 @@ dependencies = [
     "pydantic-settings>=2.0.0",
     "alembic>=1.11.0",
     "google-genai>=1.0.0",
-    "google-adk>=1.14.1",
-    "groq>=0.4.2",
     "tiktoken>=0.5.2",
     "tenacity>=8.2.3",
     "pgvector>=0.2.0",
@@ -33,6 +31,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+adk = [
+    "google-adk>=1.14.1",
+]
 dev = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.21.0",
@@ -40,6 +41,9 @@ dev = [
     "ruff>=0.0.280",
     "mypy>=1.4.0",
 ]
+
+[project.scripts]
+app = "app.main:app"
 
 [tool.setuptools.packages.find]
 where = ["."]

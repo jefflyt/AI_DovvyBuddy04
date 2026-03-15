@@ -23,6 +23,7 @@ pip install -e apps/api/
 ## APIs
 
 - `GET /health` — health check
+- `GET /ready` — readiness check (database + deployment-critical config)
 - `POST /api/chat` — chat completion endpoint (stable contract)
 - `POST /api/chat/stream` — SSE streaming chat endpoint (`route`, `safety`, `token`, `citation`, `final`, `error`)
 - `GET /api/sessions/{id}` — session retrieval
@@ -44,6 +45,32 @@ The backend supports a staged ADK rollout model:
 - `ENABLE_ADK_NATIVE_GRAPH=false`: ADK router + legacy local specialist path
 
 Emergency pre-check remains deterministic and runs before normal routing in both modes.
+
+## Vercel Deployment
+
+For the Vercel-only MVP path, deploy this folder as its own Vercel project with:
+
+- Root Directory: `apps/api`
+- Runtime: Python / FastAPI
+- Entry point: `app.main:app` (exported via `pyproject.toml` script `app`)
+
+Required production env vars for the API project:
+
+- `ENVIRONMENT=production`
+- `DEBUG=false`
+- `DATABASE_URL`
+- `GEMINI_API_KEY`
+- `SESSION_SECRET`
+- `RESEND_API_KEY`
+- `LEAD_EMAIL_TO`
+- `CORS_ORIGINS`
+
+Useful post-deploy checks:
+
+```bash
+curl https://<api-project>.vercel.app/health
+curl https://<api-project>.vercel.app/ready
+```
 
 ## Free-Tier Quota Controls
 

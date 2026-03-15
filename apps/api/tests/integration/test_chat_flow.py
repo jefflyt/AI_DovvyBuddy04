@@ -8,6 +8,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 from app.domain.orchestration import ChatOrchestrator
+from app.domain.orchestration.mode_detector import ConversationMode
 from app.domain.orchestration.types import ChatRequest
 from app.domain.agents.base import AgentResult
 from app.domain.agents.types import AgentContext, AgentType
@@ -46,6 +47,7 @@ async def test_chat_flow_new_session(mock_db_session, mock_session_data):
         return_value=mock_session_data
     )
     orchestrator.session_manager.append_message = AsyncMock()
+    orchestrator.orchestrator = MagicMock()
     orchestrator.orchestrator.route_request = AsyncMock(
         return_value={"target_agent": "knowledge_base", "parameters": {}}
     )
@@ -97,6 +99,7 @@ async def test_chat_flow_existing_session(mock_db_session, mock_session_data):
         return_value=mock_session_data
     )
     orchestrator.session_manager.append_message = AsyncMock()
+    orchestrator.orchestrator = MagicMock()
     orchestrator.orchestrator.route_request = AsyncMock(
         return_value={"target_agent": "knowledge_base", "parameters": {}}
     )
@@ -139,6 +142,7 @@ async def test_chat_flow_certification_query(mock_db_session, mock_session_data)
         return_value=mock_session_data
     )
     orchestrator.session_manager.append_message = AsyncMock()
+    orchestrator.orchestrator = MagicMock()
     orchestrator.orchestrator.route_request = AsyncMock(
         return_value={"target_agent": "knowledge_base", "parameters": {}}
     )
@@ -266,3 +270,47 @@ async def test_get_session_not_found(mock_db_session):
     session = await orchestrator.get_session("non-existent-id")
 
     assert session is None
+
+
+@pytest.mark.asyncio
+async def test_chat_flow_mode_detector_fallback_without_adk(
+    mock_db_session,
+    mock_session_data,
+):
+    """Chat continues when ADK runtime is unavailable."""
+    orchestrator = ChatOrchestrator(mock_db_session)
+    orchestrator.native_graph_orchestrator = None
+    orchestrator.orchestrator = None
+    orchestrator.session_manager.create_session = AsyncMock(
+        return_value=mock_session_data
+    )
+    orchestrator.session_manager.append_message = AsyncMock()
+    orchestrator.response_formatter.format_response = AsyncMock(
+        side_effect=lambda message, **kwargs: message
+    )
+
+    mock_result = AgentResult(
+        response="PADI Open Water is the entry-level scuba certification.",
+        agent_type=AgentType.CERTIFICATION,
+        confidence=0.8,
+    )
+    mock_agent = MagicMock()
+    mock_agent.name = "certification"
+    mock_agent.execute = AsyncMock(return_value=mock_result)
+    orchestrator.agent_router.select_agent = MagicMock(return_value=mock_agent)
+    orchestrator.context_builder.build_context = AsyncMock(
+        return_value=AgentContext(
+            query="Tell me about PADI Open Water",
+            metadata={"has_rag": False},
+        )
+    )
+
+    request = ChatRequest(message="Tell me about PADI Open Water")
+    response = await orchestrator.handle_chat(request)
+
+    assert response.metadata["runtime_path"] == "mode_detector_router"
+    assert response.metadata["route_decision"]["route"] == "certification_specialist"
+    assert response.agent_type == AgentType.CERTIFICATION.value
+    orchestrator.agent_router.select_agent.assert_called_once_with(
+        ConversationMode.CERTIFICATION
+    )
