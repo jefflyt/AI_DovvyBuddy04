@@ -133,3 +133,31 @@ class TestRAGPipeline:
         assert isinstance(results, list)
         assert len(results) == 2
         assert all(isinstance(r, RetrievalResult) for r in results)
+
+    @pytest.mark.asyncio
+    async def test_citations_are_deduped_with_stable_order(self, pipeline, mock_retriever):
+        mock_retriever.retrieve_hybrid = AsyncMock(
+            return_value=[
+                RetrievalResult(
+                    chunk_id="1",
+                    text="chunk-1",
+                    similarity=0.9,
+                    source_citation="content/path/a.md",
+                ),
+                RetrievalResult(
+                    chunk_id="2",
+                    text="chunk-2",
+                    similarity=0.8,
+                    source_citation="content/path/a.md",
+                ),
+                RetrievalResult(
+                    chunk_id="3",
+                    text="chunk-3",
+                    similarity=0.7,
+                    source_citation="content/path/b.md",
+                ),
+            ]
+        )
+
+        context = await pipeline.retrieve_context("query")
+        assert context.citations == ["content/path/a.md", "content/path/b.md"]

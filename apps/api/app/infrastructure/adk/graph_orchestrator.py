@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import time
@@ -14,6 +15,13 @@ from google.genai import types
 
 from app.core.config import settings
 from app.core.quota_manager import QuotaExceededError, get_quota_manager
+from app.prompts.specialists_v1 import (
+    NATIVE_CERTIFICATION_SPECIALIST_PROMPT,
+    NATIVE_GENERAL_SPECIALIST_PROMPT,
+    NATIVE_SAFETY_SPECIALIST_PROMPT,
+    NATIVE_TRIP_SPECIALIST_PROMPT,
+    ROUTER_SYSTEM_PROMPT,
+)
 from app.infrastructure.services.cost.token_cost import estimate_tokens_from_text
 
 from .tools import ADKToolbox
@@ -64,15 +72,7 @@ class ADKNativeGraphOrchestrator:
         return LlmAgent(
             name="dovvy_orchestrator",
             model=Gemini(model=self.model_name),
-            instruction=(
-                "You are DovvyBuddy's coordinator. "
-                "Call exactly one route tool based on user intent:\n"
-                "- route_trip_specialist: destinations, sites, planning\n"
-                "- route_certification_specialist: PADI/SSI training and cert pathways\n"
-                "- route_safety_specialist: medical or safety concerns\n"
-                "- route_general_retrieval_specialist: general diving knowledge\n"
-                "Always include a short reason."
-            ),
+            instruction=ROUTER_SYSTEM_PROMPT,
             tools=[
                 self.route_trip_specialist,
                 self.route_certification_specialist,
@@ -95,41 +95,28 @@ class ADKNativeGraphOrchestrator:
             "trip_specialist": LlmAgent(
                 name="trip_specialist",
                 model=specialist_model,
-                instruction=(
-                    "You are DovvyBuddy trip specialist. "
-                    "For factual destination/site claims, call rag_search_tool first. "
-                    "Keep answers practical and end with one forward-moving follow-up question."
-                ),
+                instruction=NATIVE_TRIP_SPECIALIST_PROMPT,
                 tools=common_tools,
                 generate_content_config=types.GenerateContentConfig(temperature=0.4),
             ),
             "certification_specialist": LlmAgent(
                 name="certification_specialist",
                 model=specialist_model,
-                instruction=(
-                    "You are DovvyBuddy certification specialist for PADI/SSI pathways. "
-                    "Ground factual requirements via rag_search_tool before answering."
-                ),
+                instruction=NATIVE_CERTIFICATION_SPECIALIST_PROMPT,
                 tools=common_tools,
                 generate_content_config=types.GenerateContentConfig(temperature=0.3),
             ),
             "general_retrieval_specialist": LlmAgent(
                 name="general_retrieval_specialist",
                 model=specialist_model,
-                instruction=(
-                    "You handle general diving Q&A. "
-                    "Use rag_search_tool for factual claims and avoid speculation."
-                ),
+                instruction=NATIVE_GENERAL_SPECIALIST_PROMPT,
                 tools=common_tools,
                 generate_content_config=types.GenerateContentConfig(temperature=0.3),
             ),
             "safety_specialist": LlmAgent(
                 name="safety_specialist",
                 model=specialist_model,
-                instruction=(
-                    "You provide conservative diving safety guidance. "
-                    "Do not diagnose. Encourage professional medical advice for health concerns."
-                ),
+                instruction=NATIVE_SAFETY_SPECIALIST_PROMPT,
                 tools=common_tools,
                 generate_content_config=types.GenerateContentConfig(temperature=0.2),
             ),
@@ -213,24 +200,25 @@ class ADKNativeGraphOrchestrator:
 
         called_tools: List[str] = []
         route = RouteDecision(route="general_retrieval_specialist", reason="default")
-        async for event in self.router_runner.run_async(
-            user_id=self.user_id,
-            session_id=session_id,
-            new_message=user_message,
-        ):
-            function_calls = event.get_function_calls()
-            for call in function_calls:
-                called_tools.append(call.name)
-                args = dict(call.args) if call.args else {}
-                mapped_route = self._map_route_tool_to_specialist(call.name)
-                if mapped_route:
-                    route = RouteDecision(
-                        route=mapped_route,
-                        reason=args.get("reason", ""),
-                        confidence=0.85,
-                        parameters=args,
-                    )
-                    return route, called_tools
+        async with asyncio.timeout(max(0.1, settings.adk_router_timeout_ms / 1000)):
+            async for event in self.router_runner.run_async(
+                user_id=self.user_id,
+                session_id=session_id,
+                new_message=user_message,
+            ):
+                function_calls = event.get_function_calls()
+                for call in function_calls:
+                    called_tools.append(call.name)
+                    args = dict(call.args) if call.args else {}
+                    mapped_route = self._map_route_tool_to_specialist(call.name)
+                    if mapped_route:
+                        route = RouteDecision(
+                            route=mapped_route,
+                            reason=args.get("reason", ""),
+                            confidence=0.85,
+                            parameters=args,
+                        )
+                        return route, called_tools
 
         return route, called_tools
 
@@ -252,21 +240,22 @@ class ADKNativeGraphOrchestrator:
         user_message = types.Content(role="user", parts=[types.Part(text=message)])
         response_text = ""
         called_tools: List[str] = []
-        async for event in runner.run_async(
-            user_id=self.user_id,
-            session_id=session_id,
-            new_message=user_message,
-        ):
-            function_calls = event.get_function_calls()
-            for call in function_calls:
-                called_tools.append(call.name)
+        async with asyncio.timeout(max(0.1, settings.adk_specialist_timeout_ms / 1000)):
+            async for event in runner.run_async(
+                user_id=self.user_id,
+                session_id=session_id,
+                new_message=user_message,
+            ):
+                function_calls = event.get_function_calls()
+                for call in function_calls:
+                    called_tools.append(call.name)
 
-            text = self._extract_text(event)
-            if text:
-                response_text = text
+                text = self._extract_text(event)
+                if text:
+                    response_text = text
 
-            if event.is_final_response() and text:
-                response_text = text
+                if event.is_final_response() and text:
+                    response_text = text
 
         return response_text, called_tools
 
@@ -295,6 +284,8 @@ class ADKNativeGraphOrchestrator:
         specialist_latency_ms: float,
     ) -> NativeTurnResult:
         citations = self.tools.last_rag_result.citations
+        rag_invoked = "rag_search_tool" in specialist_tools_called
+        has_verified_data = bool(citations) and self.tools.last_rag_result.has_data
         response_text = specialist_response.strip()
         if not response_text:
             response_text = (
@@ -313,6 +304,16 @@ class ADKNativeGraphOrchestrator:
             reason=policy_data["reason"],
             should_append_uncertainty=policy_data["should_append_uncertainty"],
         )
+
+        grounded_routes = {
+            "trip_specialist",
+            "certification_specialist",
+            "general_retrieval_specialist",
+        }
+        if route_decision.route in grounded_routes and not rag_invoked:
+            policy_validation.policy_enforced = True
+            policy_validation.reason = "rag_not_invoked_for_factual_route"
+            policy_validation.should_append_uncertainty = True
 
         response_message = response_text
         if policy_validation.should_append_uncertainty:
@@ -340,6 +341,8 @@ class ADKNativeGraphOrchestrator:
             "last_route": route_decision.route,
             "medical_flag": safety_classification.is_medical,
             "citations_used": bool(citations),
+            "rag_invoked": rag_invoked,
+            "has_verified_data": has_verified_data,
         }
         location = route_decision.parameters.get("location")
         if location:
@@ -490,25 +493,26 @@ class ADKNativeGraphOrchestrator:
             emitted_text = ""
             specialist_tools_called: List[str] = []
 
-            async for event in runner.run_async(
-                user_id=self.user_id,
-                session_id=session_id,
-                new_message=user_message,
-            ):
-                function_calls = event.get_function_calls()
-                for call in function_calls:
-                    specialist_tools_called.append(call.name)
+            async with asyncio.timeout(max(0.1, settings.adk_specialist_timeout_ms / 1000)):
+                async for event in runner.run_async(
+                    user_id=self.user_id,
+                    session_id=session_id,
+                    new_message=user_message,
+                ):
+                    function_calls = event.get_function_calls()
+                    for call in function_calls:
+                        specialist_tools_called.append(call.name)
 
-                text = self._extract_text(event)
-                if text:
-                    specialist_response = text
-                    delta = self._extract_increment(emitted_text, text)
-                    if delta:
-                        emitted_text = text
-                        yield {"type": "token", "content": delta}
+                    text = self._extract_text(event)
+                    if text:
+                        specialist_response = text
+                        delta = self._extract_increment(emitted_text, text)
+                        if delta:
+                            emitted_text = text
+                            yield {"type": "token", "content": delta}
 
-                if event.is_final_response() and text:
-                    specialist_response = text
+                    if event.is_final_response() and text:
+                        specialist_response = text
 
             specialist_latency_ms = (time.perf_counter() - specialist_started) * 1000
 
@@ -601,4 +605,3 @@ class ADKNativeGraphOrchestrator:
             "query": query,
             "reason": reason,
         }
-

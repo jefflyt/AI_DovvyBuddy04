@@ -25,7 +25,9 @@
     "content:ingest:incremental": "cd apps/api && python3 -m scripts.ingest_content",
     "content:clear": "cd apps/api && python3 -m scripts.clear_embeddings",
     "content:review": "tsx tooling/scripts/review-content.ts",
-    "benchmark:rag": "cd apps/api && python3 -m scripts.benchmark_rag"
+    "benchmark:rag": "cd apps/api && python3 -m scripts.benchmark_rag",
+    "benchmark:rag:gate": "cd apps/api && python3 -m scripts.benchmark_rag --min-mean-accuracy 0.6 --max-error-rate 0.2 --max-p95-latency-ms 2500",
+    "quality:grounding": "cd apps/api && python3 -m scripts.evaluate_grounding --cases tests/fixtures/grounding_eval_cases.json --min-citation-rate 0.5 --max-unsupported-claim-rate 0.5"
   },
   "dependencies": {
     "@sentry/nextjs": "^8.40.0",

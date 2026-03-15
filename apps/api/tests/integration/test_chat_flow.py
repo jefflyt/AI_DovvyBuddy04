@@ -78,6 +78,8 @@ async def test_chat_flow_new_session(mock_db_session, mock_session_data):
     assert response.message == mock_result.response
     assert response.session_id == str(mock_session_data.id)
     assert response.agent_type == AgentType.RETRIEVAL.value
+    assert response.metadata["runtime_path"] == "legacy_adk_router"
+    assert "grounding" in response.metadata
 
 
 @pytest.mark.asyncio
@@ -191,6 +193,27 @@ async def test_chat_flow_safety_query(mock_db_session, mock_session_data):
     assert response.agent_type == "emergency"
     # Response should include safety disclaimer (from config)
     # Actual disclaimer adding depends on settings.include_safety_disclaimer
+
+
+@pytest.mark.asyncio
+async def test_emergency_precheck_not_gated_by_followup_flag(
+    mock_db_session,
+    mock_session_data,
+):
+    orchestrator = ChatOrchestrator(mock_db_session)
+    orchestrator.session_manager.create_session = AsyncMock(
+        return_value=mock_session_data
+    )
+    orchestrator.session_manager.append_message = AsyncMock()
+    orchestrator.emergency_detector.detect_emergency = AsyncMock(
+        return_value=(True, "Seek emergency medical help immediately")
+    )
+
+    request = ChatRequest(message="I have chest pain after diving")
+
+    response = await orchestrator.handle_chat(request)
+
+    assert response.agent_type == "emergency"
 
 
 @pytest.mark.asyncio

@@ -10,6 +10,7 @@ import pytest
 from scripts.benchmark_rag import (
     BenchmarkResult,
     calculate_percentile,
+    evaluate_quality_gates,
     load_queries,
     run_benchmark_query,
 )
@@ -179,3 +180,33 @@ def test_calculate_percentile_single_value():
     """Test percentile calculation with single value."""
     result = calculate_percentile([42], 50)
     assert result == 42
+
+
+def test_evaluate_quality_gates_passes():
+    statistics = {
+        "accuracy": {"mean": 0.82},
+        "latency": {"p95_ms": 450.0},
+        "error_rate": 0.05,
+    }
+    failures = evaluate_quality_gates(
+        statistics=statistics,
+        min_mean_accuracy=0.8,
+        max_error_rate=0.1,
+        max_p95_latency_ms=500.0,
+    )
+    assert failures == []
+
+
+def test_evaluate_quality_gates_reports_failures():
+    statistics = {
+        "accuracy": {"mean": 0.55},
+        "latency": {"p95_ms": 900.0},
+        "error_rate": 0.4,
+    }
+    failures = evaluate_quality_gates(
+        statistics=statistics,
+        min_mean_accuracy=0.8,
+        max_error_rate=0.1,
+        max_p95_latency_ms=500.0,
+    )
+    assert len(failures) == 3

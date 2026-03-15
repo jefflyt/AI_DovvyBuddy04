@@ -10,6 +10,7 @@ from app.domain.orchestration.medical_detector import MedicalQueryDetector
 from app.infrastructure.services.llm.base import LLMProvider
 from app.infrastructure.services.llm.factory import create_llm_provider
 from app.infrastructure.services.llm.types import LLMMessage
+from app.prompts.specialists_v1 import LEGACY_SAFETY_SYSTEM_PROMPT
 
 from .base import Agent, AgentResult
 from .types import AgentCapability, AgentContext, AgentType
@@ -41,8 +42,10 @@ class SafetyAgent(Agent):
 
     def can_handle(self, context: AgentContext) -> bool:
         """
-        Check if query is medical/health-related using LLM classification.
-        More accurate than keyword matching (avoids false positives).
+        Check if query is likely medical/health-related.
+
+        This method is synchronous by contract, so we use a lightweight
+        keyword gate. Definitive classification still happens in execute().
 
         Args:
             context: Agent context to evaluate
@@ -50,11 +53,21 @@ class SafetyAgent(Agent):
         Returns:
             True if query is genuinely medical/health-related
         """
-        # Lazy initialization of medical detector
-        if SafetyAgent._medical_detector is None:
-            SafetyAgent._medical_detector = MedicalQueryDetector()
-        
-        return SafetyAgent._medical_detector.is_medical_query(context.query)
+        query = (context.query or "").lower()
+        medical_terms = (
+            "pain",
+            "injury",
+            "bleeding",
+            "dcs",
+            "decompression",
+            "medical",
+            "asthma",
+            "chest",
+            "ear",
+            "sinus",
+            "emergency",
+        )
+        return any(term in query for term in medical_terms)
 
     async def execute(self, context: AgentContext) -> AgentResult:
         """
@@ -110,38 +123,7 @@ class SafetyAgent(Agent):
         """Build message list for LLM."""
         messages = []
 
-        # System prompt with safety guidelines
-        system_prompt = """You are DovvyBuddy's Safety Advisor. Provide SHORT, clear safety guidance (2-3 paragraphs max).
-
-IMPORTANT FORMATTING:
-- Write in plain text, NO markdown, NO bullet points, NO asterisks, NO emojis
-- Use natural paragraphs with proper spacing
-- Keep responses concise but safety-focused
-
-Your role: Safety information, redirect medical questions to professionals, explain when to consult dive medicine specialists.
-
-CRITICAL:
-- NEVER give specific medical advice or diagnoses
-- ALWAYS recommend consulting qualified medical professionals
-- For medical conditions: advise seeing a dive medicine physician
-
-RESPONSE DISCIPLINE (CRITICAL):
-- Default length: 3-5 sentences OR ≤120 tokens (whichever comes first)
-- Address ONE primary idea per response
-- NEVER mention: "provided context", "source", "filename", "document", "retrieval", "according to the context", bracketed references [Source: ...]
-- If information is insufficient, ask a clarifying question instead
-- Style: Professional, direct, calm. No fluff, no cheerleading, no repetition
-- Avoid generic closers like "Let me know if you need anything else"
-- Safety notes: ONE sentence max (unless emergency override)
-
-Response approach:
-1. Acknowledge the concern
-2. Provide brief general safety info (if appropriate)
-3. Clear disclaimer to consult medical professionals
-4. Mention resources (DAN, dive medicine physicians)
-
-Tone: Professional, protective, concise. Safety first.
-"""
+        system_prompt = LEGACY_SAFETY_SYSTEM_PROMPT
         messages.append(LLMMessage(role="system", content=system_prompt))
 
         # Conversation history

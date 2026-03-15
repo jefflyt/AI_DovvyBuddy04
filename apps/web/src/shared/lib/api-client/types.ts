@@ -64,6 +64,17 @@ export interface ChatResponse {
   followUpQuestion?: string // PR6.1: Follow-up question for conversation continuity
 }
 
+export interface GroundingMetadata {
+  citationsCount?: number
+  citations_count?: number
+  policyReason?: string
+  policy_reason?: string
+  ragInvoked?: boolean
+  rag_invoked?: boolean
+  hasVerifiedData?: boolean
+  has_verified_data?: boolean
+}
+
 export interface ChatMetadata {
   tokensUsed?: number
   contextChunks?: number
@@ -75,6 +86,12 @@ export interface ChatMetadata {
   detected_intent?: string
   stateUpdates?: Record<string, unknown> // PR6.1: Session state updates from LLM
   state_updates?: Record<string, unknown>
+  runtimePath?: string
+  runtime_path?: string
+  timeoutOrFallback?: boolean
+  timeout_or_fallback?: boolean
+  grounding?: GroundingMetadata
+  fallbacks?: Record<string, unknown>
   [key: string]: unknown
 }
 

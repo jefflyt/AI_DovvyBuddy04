@@ -52,6 +52,7 @@ class Settings(BaseSettings):
     llm_max_tokens: int = 2048
     llm_max_retries: int = 3
     llm_retry_delay: float = 1.0
+    llm_timeout_ms: int = 10000
     llm_rpm_limit: int = 15
     llm_tpm_limit: int = 250_000
     llm_rpd_limit: int = 1_000
@@ -65,6 +66,7 @@ class Settings(BaseSettings):
     embedding_cache_ttl: int = 3600  # 1 hour in seconds
     embedding_max_retries: int = 3
     embedding_retry_delay: float = 1.0
+    embedding_timeout_ms: int = 10000
     embedding_rpm_limit: int = 100
     embedding_tpm_limit: int = 30_000
     embedding_rpd_limit: int = 1_000
@@ -91,7 +93,10 @@ class Settings(BaseSettings):
     max_conversation_history: int = 20
     enable_adk: bool = True
     adk_model: str = "gemini-2.5-flash-lite"
-    enable_adk_native_graph: bool = False
+    enable_adk_native_graph: bool = True
+    adk_router_timeout_ms: int = 5000
+    adk_specialist_timeout_ms: int = 10000
+    rag_timeout_ms: int = 4000
     enable_agent_routing: bool = True
     default_agent: str = "retrieval"
     

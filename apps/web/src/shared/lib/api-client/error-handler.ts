@@ -84,7 +84,10 @@ function normalizeValidationDetails(
       }
 
       // Existing normalized shape: { field: "...", message: "..." }
-      if (typeof value.field === 'string' && typeof value.message === 'string') {
+      if (
+        typeof value.field === 'string' &&
+        typeof value.message === 'string'
+      ) {
         return { field: value.field, message: value.message }
       }
 
@@ -200,16 +203,12 @@ export async function parseApiError(
   const codeRaw =
     (typeof errorData.code === 'string' ? errorData.code : undefined) ??
     detailParsed.code
-  const code = codeRaw && isApiErrorCode(codeRaw)
-    ? codeRaw
-    : inferCodeFromStatus(response.status, message, normalizedDetails)
+  const code =
+    codeRaw && isApiErrorCode(codeRaw)
+      ? codeRaw
+      : inferCodeFromStatus(response.status, message, normalizedDetails)
 
-  return new ApiClientError(
-    code,
-    response.status,
-    message,
-    normalizedDetails
-  )
+  return new ApiClientError(code, response.status, message, normalizedDetails)
 }
 
 /**

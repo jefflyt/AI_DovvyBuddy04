@@ -19,10 +19,9 @@ export interface ApiClientConfig {
 function getBaseURL(): string {
   if (typeof window === 'undefined') {
     // Server-side: call backend directly with /api prefix
-    const backend = (process.env.BACKEND_URL || 'http://localhost:8000').replace(
-      /\/+$/,
-      ''
-    )
+    const backend = (
+      process.env.BACKEND_URL || 'http://localhost:8000'
+    ).replace(/\/+$/, '')
     return `${backend}/api`
   }
 

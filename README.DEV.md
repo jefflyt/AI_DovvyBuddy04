@@ -172,6 +172,7 @@ cd apps/api && ../../.venv/bin/python -m scripts.ingest_content --full --content
 pnpm content:validate          # Validate markdown content
 pnpm content:clear             # Clear all embeddings
 pnpm benchmark:rag             # Benchmark RAG performance
+cd apps/api && ../../.venv/bin/python -m scripts.evaluate_grounding --cases tests/fixtures/grounding_eval_cases.json
 ```
 
 ### Pre-commit Checks
@@ -204,8 +205,11 @@ DEFAULT_LLM_MODEL=gemini-2.5-flash-lite
 # ADK orchestration
 ENABLE_ADK=true
 ENABLE_AGENT_ROUTING=true
-ENABLE_ADK_NATIVE_GRAPH=false
+ENABLE_ADK_NATIVE_GRAPH=true
 ADK_MODEL=gemini-2.5-flash-lite
+ADK_ROUTER_TIMEOUT_MS=5000
+ADK_SPECIALIST_TIMEOUT_MS=10000
+RAG_TIMEOUT_MS=4000
 
 # Free-tier quota controls
 QUOTA_ENFORCEMENT_ENABLED=true
@@ -229,6 +233,7 @@ LEAD_EMAIL_TO=leads@yourdiveshop.com
 MAX_SESSION_DURATION_HOURS=24
 MAX_MESSAGE_LENGTH=2000
 LLM_TIMEOUT_MS=10000
+EMBEDDING_TIMEOUT_MS=10000
 ```
 
 ---
@@ -259,7 +264,7 @@ Runtime settings:
 - `ENABLE_ADK=true`
 - `ADK_MODEL=gemini-2.5-flash-lite`
 - `ENABLE_AGENT_ROUTING=true`
-- `ENABLE_ADK_NATIVE_GRAPH=false` (default staged rollout)
+- `ENABLE_ADK_NATIVE_GRAPH=true` (native-first with legacy compatibility fallback)
 
 Emergency handling remains deterministic and always runs before normal routing.
 
@@ -269,6 +274,9 @@ Emergency handling remains deterministic and always runs before normal routing.
   - `route_decision`
   - `safety_classification`
   - `policy_enforced`
+  - `runtime_path`
+  - `grounding`
+  - `fallbacks` / `timeout_or_fallback`
   - `citations`
   - `quota_snapshot`
 - `POST /api/chat/stream` emits SSE events:
@@ -349,14 +357,14 @@ pnpm test:e2e:ui  # Interactive UI mode
 
 ## 📚 Key Documentation
 
-| Document                                                     | Purpose                  |
-| ------------------------------------------------------------ | ------------------------ |
-| [Master Plan](./docs/archive/plans/MASTER_PLAN.md)                   | Project roadmap & status |
-| [Product Spec](./docs/product/psd/DovvyBuddy-PSD-V6.2.md)            | What to build            |
+| Document                                                        | Purpose                  |
+| --------------------------------------------------------------- | ------------------------ |
+| [Master Plan](./docs/archive/plans/MASTER_PLAN.md)              | Project roadmap & status |
+| [Product Spec](./docs/product/psd/DovvyBuddy-PSD-V6.2.md)       | What to build            |
 | [Technical Spec](./docs/architecture/specification.md)          | System architecture      |
-| [Developer Workflow](./docs/operations/developer-workflow.md) | Development guide        |
-| [Technical Debt](./docs/architecture/TECHNICAL_DEBT.md)      | Known issues             |
-| [ADRs](./docs/architecture/decisions/)                       | Architecture decisions   |
+| [Developer Workflow](./docs/operations/developer-workflow.md)   | Development guide        |
+| [Technical Debt](./docs/architecture/TECHNICAL_DEBT.md)         | Known issues             |
+| [ADRs](./docs/architecture/decisions/)                          | Architecture decisions   |
 | [AI Workflow](./docs/archive/project-management/AI_WORKFLOW.md) | AI-assisted development  |
 
 ---

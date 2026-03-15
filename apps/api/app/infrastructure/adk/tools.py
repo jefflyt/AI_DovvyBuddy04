@@ -1,5 +1,6 @@
 """Shared tool contracts for ADK-native orchestration."""
 
+import asyncio
 import logging
 import re
 from dataclasses import dataclass
@@ -104,11 +105,12 @@ class ADKToolbox:
         """Retrieve grounded context from the RAG pipeline."""
         try:
             adaptive_top_k = self._adaptive_rag_top_k()
-            context = await self.rag_pipeline.retrieve_context(
-                query=query,
-                top_k=adaptive_top_k,
-                filters=filters or {},
-            )
+            async with asyncio.timeout(max(0.1, settings.rag_timeout_ms / 1000)):
+                context = await self.rag_pipeline.retrieve_context(
+                    query=query,
+                    top_k=adaptive_top_k,
+                    filters=filters or {},
+                )
             chunks = [result.text for result in context.results]
             citations = context.citations
 
@@ -186,27 +188,7 @@ class ADKToolbox:
         safety_flags = safety_flags or self.last_safety_classification.to_dict()
 
         answer_text = (answer or "").strip()
-        lower = answer_text.lower()
-        factual_cue_terms = (
-            "depth",
-            "meter",
-            "meters",
-            "certification",
-            "required",
-            "recommended",
-            "minimum",
-            "hours",
-            "days",
-            "temperature",
-        )
-        has_numeric_claim = bool(re.search(r"\b\d+(\.\d+)?\b", lower))
-        is_question = "?" in answer_text
-        appears_factual = (
-            len(answer_text) > 40
-            and any(term in lower for term in factual_cue_terms)
-            and has_numeric_claim
-            and not is_question
-        )
+        appears_factual = self._appears_factual_claim(answer_text)
         has_citations = len(citations) > 0
 
         should_enforce_citation = appears_factual and not has_citations
@@ -231,3 +213,57 @@ class ADKToolbox:
 
         self.last_policy_validation = result
         return result.to_dict()
+
+    @staticmethod
+    def _appears_factual_claim(answer_text: str) -> bool:
+        """Heuristic factual-claim detector used for citation enforcement."""
+        if not answer_text or len(answer_text) < 35:
+            return False
+
+        lower = answer_text.lower()
+        is_question = answer_text.rstrip().endswith("?")
+        if is_question:
+            return False
+
+        has_numeric_claim = bool(re.search(r"\b\d+(\.\d+)?\b", lower))
+        factual_cue_terms = (
+            "depth",
+            "meter",
+            "meters",
+            "certification",
+            "required",
+            "recommended",
+            "minimum",
+            "hours",
+            "days",
+            "temperature",
+            "visibility",
+            "current",
+            "site",
+            "destination",
+            "season",
+            "located",
+            "prerequisite",
+            "agency",
+            "course",
+        )
+        factual_verbs = (
+            " is ",
+            " are ",
+            " requires ",
+            " include",
+            " has ",
+            " offers ",
+            " located ",
+            " typically ",
+            " must ",
+            " should ",
+        )
+
+        has_factual_terms = any(term in lower for term in factual_cue_terms)
+        has_factual_verbs = any(verb in lower for verb in factual_verbs)
+
+        # Enforce citations for concrete statements; loosen dependency on numbers.
+        if has_factual_terms and (has_numeric_claim or has_factual_verbs):
+            return True
+        return False

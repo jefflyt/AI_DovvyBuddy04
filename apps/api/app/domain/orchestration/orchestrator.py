@@ -9,7 +9,6 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.feature_flags import FeatureFlag, is_feature_enabled
 from app.core.quota_manager import QuotaExceededError, get_quota_manager
 
 from .agent_router import AgentRouter
@@ -54,11 +53,17 @@ class ChatOrchestrator:
             settings.enable_adk_native_graph
             and ADKNativeGraphOrchestrator is not None
         ):
-            self.native_graph_orchestrator = ADKNativeGraphOrchestrator()
-            logger.info(
-                "Google ADK native graph enabled with model=%s",
-                settings.adk_model,
-            )
+            try:
+                self.native_graph_orchestrator = ADKNativeGraphOrchestrator()
+                logger.info(
+                    "Google ADK native graph enabled with model=%s",
+                    settings.adk_model,
+                )
+            except Exception:
+                logger.warning(
+                    "Failed to initialize ADK native graph; using legacy ADK router fallback",
+                    exc_info=True,
+                )
 
         # Legacy ADK router fallback remains available for staged rollout.
         self.orchestrator = GeminiOrchestrator()
@@ -110,6 +115,28 @@ class ChatOrchestrator:
     def _quota_snapshot(self) -> Dict[str, Dict[str, Any]]:
         return self.quota_manager.snapshot_all()
 
+    @staticmethod
+    def _classify_runtime_failure(exc: Exception) -> Dict[str, Any]:
+        message = str(exc).lower()
+        is_timeout = isinstance(exc, TimeoutError) or "timeout" in message
+        is_transient = is_timeout or any(
+            token in message
+            for token in (
+                "temporarily",
+                "temporary",
+                "connection",
+                "unavailable",
+                "503",
+                "502",
+                "rate limit",
+            )
+        )
+        return {
+            "error_type": type(exc).__name__,
+            "reason": "timeout" if is_timeout else "transient_error" if is_transient else "runtime_error",
+            "transient": is_transient,
+        }
+
     def _quota_exhausted_response(
         self,
         *,
@@ -126,6 +153,7 @@ class ChatOrchestrator:
             agent_type="system",
             metadata={
                 "mode": "quota_exhausted",
+                "runtime_path": "system",
                 "route_decision": {
                     "route": "general_retrieval_specialist",
                     "reason": "daily_quota_exhausted",
@@ -164,6 +192,7 @@ class ChatOrchestrator:
             user_message=request.message,
             safety_classification=graph_result.safety_classification.classification,
         )
+        response_message = self.response_formatter.sanitize_response(response_message)
 
         await self._update_session_history(
             session.id,
@@ -173,8 +202,17 @@ class ChatOrchestrator:
 
         metadata: Dict[str, Any] = {
             "mode": mode.value,
+            "runtime_path": "adk_native_graph",
             "confidence": graph_result.route_decision.confidence,
             "has_rag": bool(graph_result.citations),
+            "grounding": {
+                "citations_count": len(graph_result.citations),
+                "policy_reason": graph_result.policy_validation.reason,
+                "rag_invoked": bool(graph_result.state_updates.get("rag_invoked", False)),
+                "has_verified_data": bool(
+                    graph_result.state_updates.get("has_verified_data", False)
+                ),
+            },
             "route_decision": graph_result.route_decision.to_dict(),
             "safety_classification": graph_result.safety_classification.to_dict(),
             "policy_enforced": graph_result.policy_validation.policy_enforced,
@@ -199,9 +237,15 @@ class ChatOrchestrator:
         session: SessionData,
         request: ChatRequest,
         session_state: Optional[SessionState],
-    ) -> Optional[ChatResponse]:
+    ) -> tuple[Optional[ChatResponse], Optional[Dict[str, Any]]]:
         if not self.native_graph_orchestrator:
-            return None
+            if settings.enable_adk_native_graph:
+                return None, {
+                    "reason": "native_graph_unavailable",
+                    "transient": False,
+                    "error_type": "NativeGraphUnavailable",
+                }
+            return None, None
 
         try:
             graph_result = await self.native_graph_orchestrator.run_turn(
@@ -212,20 +256,29 @@ class ChatOrchestrator:
                 diver_profile=request.diver_profile or session.diver_profile,
             )
         except QuotaExceededError as exc:
-            return self._quota_exhausted_response(
-                session_id=str(session.id),
-                bucket=exc.bucket,
-                snapshot=exc.snapshot.to_dict(),
+            return (
+                self._quota_exhausted_response(
+                    session_id=str(session.id),
+                    bucket=exc.bucket,
+                    snapshot=exc.snapshot.to_dict(),
+                ),
+                None,
             )
-        except Exception:
-            logger.error("ADK native graph failed, falling back to legacy flow", exc_info=True)
-            return None
+        except Exception as exc:
+            failure = self._classify_runtime_failure(exc)
+            logger.error(
+                "ADK native graph failed (%s), falling back to legacy flow",
+                failure["reason"],
+                exc_info=True,
+            )
+            return None, failure
 
-        return await self._build_native_response(
+        response = await self._build_native_response(
             session=session,
             request=request,
             graph_result=graph_result,
         )
+        return response, None
 
     async def _handle_emergency_precheck(
         self,
@@ -233,10 +286,7 @@ class ChatOrchestrator:
         session: SessionData,
         request: ChatRequest,
     ) -> Optional[ChatResponse]:
-        if not (
-            self.emergency_detector
-            and is_feature_enabled(FeatureFlag.CONVERSATION_FOLLOWUP)
-        ):
+        if not self.emergency_detector:
             return None
 
         is_emergency, emergency_response = await self.emergency_detector.detect_emergency(
@@ -258,6 +308,7 @@ class ChatOrchestrator:
             agent_type="emergency",
             metadata={
                 "mode": "emergency",
+                "runtime_path": "emergency_precheck",
                 "emergency_detected": True,
                 "route_decision": {
                     "route": "safety_specialist",
@@ -292,7 +343,11 @@ class ChatOrchestrator:
                 message=welcome_message,
                 session_id=str(session.id),
                 agent_type="general",
-                metadata={"mode": "greeting", "quota_snapshot": self._quota_snapshot()},
+                metadata={
+                    "mode": "greeting",
+                    "runtime_path": "greeting",
+                    "quota_snapshot": self._quota_snapshot(),
+                },
             )
 
         session = await self._get_or_create_session(request)
@@ -315,7 +370,7 @@ class ChatOrchestrator:
             else None
         )
 
-        native_response = await self._handle_native_graph_turn(
+        native_response, native_graph_fallback = await self._handle_native_graph_turn(
             session=session,
             request=request,
             session_state=session_state,
@@ -332,6 +387,7 @@ class ChatOrchestrator:
             raise RuntimeError("Google ADK orchestrator is unavailable")
 
         try:
+            router_fallback: Optional[Dict[str, Any]] = None
             try:
                 route_result = await self.orchestrator.route_request(
                     message=request.message,
@@ -341,7 +397,8 @@ class ChatOrchestrator:
                 )
             except QuotaExceededError:
                 raise
-            except Exception:
+            except Exception as exc:
+                router_fallback = self._classify_runtime_failure(exc)
                 logger.warning(
                     "ADK route request failed; falling back to general_retrieval_specialist",
                     exc_info=True,
@@ -394,6 +451,7 @@ class ChatOrchestrator:
                     "medical" if mode == ConversationMode.SAFETY else "non_medical"
                 ),
             )
+            response_message = self.response_formatter.sanitize_response(response_message)
 
             await self._update_session_history(
                 session.id,
@@ -403,8 +461,15 @@ class ChatOrchestrator:
 
             response_metadata: Dict[str, Any] = {
                 "mode": mode.value,
+                "runtime_path": "legacy_adk_router",
                 "confidence": result.confidence,
                 "has_rag": context.metadata.get("has_rag", False),
+                "grounding": {
+                    "citations_count": len(citations),
+                    "policy_reason": "legacy_path_no_policy_validation",
+                    "rag_invoked": bool(context.metadata.get("rag_invoked", False)),
+                    "has_verified_data": bool(citations),
+                },
                 "route_decision": {
                     "route": target_route,
                     "reason": parameters.get("reason", ""),
@@ -424,6 +489,14 @@ class ChatOrchestrator:
                 "quota_snapshot": self._quota_snapshot(),
                 **result.metadata,
             }
+            fallback_flags: Dict[str, Any] = {}
+            if native_graph_fallback:
+                fallback_flags["native_graph"] = native_graph_fallback
+            if router_fallback:
+                fallback_flags["router"] = router_fallback
+            if fallback_flags:
+                response_metadata["fallbacks"] = fallback_flags
+                response_metadata["timeout_or_fallback"] = True
             if citations:
                 response_metadata["citations"] = citations
 
@@ -469,6 +542,7 @@ class ChatOrchestrator:
                     "agentType": "general",
                     "metadata": {
                         "mode": "greeting",
+                        "runtime_path": "greeting",
                         "quota_snapshot": self._quota_snapshot(),
                     },
                 },
@@ -532,6 +606,9 @@ class ChatOrchestrator:
                         user_message=request.message,
                         safety_classification=turn_result.safety_classification.classification,
                     )
+                    formatted_message = self.response_formatter.sanitize_response(
+                        formatted_message
+                    )
                     if formatted_message.startswith(turn_result.message):
                         tail = formatted_message[len(turn_result.message) :]
                         if tail:
@@ -544,8 +621,19 @@ class ChatOrchestrator:
                     )
                     metadata: Dict[str, Any] = {
                         "mode": mode.value,
+                        "runtime_path": "adk_native_graph",
                         "confidence": turn_result.route_decision.confidence,
                         "has_rag": bool(turn_result.citations),
+                        "grounding": {
+                            "citations_count": len(turn_result.citations),
+                            "policy_reason": turn_result.policy_validation.reason,
+                            "rag_invoked": bool(
+                                turn_result.state_updates.get("rag_invoked", False)
+                            ),
+                            "has_verified_data": bool(
+                                turn_result.state_updates.get("has_verified_data", False)
+                            ),
+                        },
                         "route_decision": turn_result.route_decision.to_dict(),
                         "safety_classification": turn_result.safety_classification.to_dict(),
                         "policy_enforced": turn_result.policy_validation.policy_enforced,

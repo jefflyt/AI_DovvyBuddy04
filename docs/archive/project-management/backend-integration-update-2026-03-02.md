@@ -7,6 +7,7 @@ This update captures the latest backend changes merged into `main` and validated
 ## Implemented Changes
 
 1. ADK orchestration runtime hardening
+
 - Added ADK-native graph module at `src/backend/app/adk/`.
 - `ChatOrchestrator` now supports:
   - native ADK graph path (`ENABLE_ADK_NATIVE_GRAPH=true`)
@@ -14,6 +15,7 @@ This update captures the latest backend changes merged into `main` and validated
 - Route failure fallback now defaults to `general_retrieval_specialist` instead of hard failure.
 
 2. Shared free-tier quota enforcement
+
 - Added process-level quota manager: `src/backend/app/core/quota_manager.py`.
 - Enforced buckets:
   - `text_generation` (LLM + ADK controller/router calls)
@@ -21,6 +23,7 @@ This update captures the latest backend changes merged into `main` and validated
 - Added queue-and-wait backpressure for RPM/TPM and fail-fast behavior for RPD exhaustion.
 
 3. Cost and token accounting
+
 - Added `src/backend/app/services/cost/token_cost.py`.
 - Gemini LLM responses now include:
   - `prompt_tokens`
@@ -29,6 +32,7 @@ This update captures the latest backend changes merged into `main` and validated
   - `cost_usd`
 
 4. Streaming endpoint upgrade
+
 - `POST /api/chat/stream` now returns structured SSE event payloads aligned with orchestration flow:
   - `route`
   - `safety`
@@ -38,6 +42,7 @@ This update captures the latest backend changes merged into `main` and validated
   - `error`
 
 5. Integration/test reliability improvements
+
 - Added `--import-mode=importlib` in `src/backend/pytest.ini` to avoid duplicate module import collisions.
 - Updated ingestion integration tests to use in-memory test doubles (no external DB/network requirement).
 - Added unit coverage for quota manager behavior and integration coverage for chat stream events.

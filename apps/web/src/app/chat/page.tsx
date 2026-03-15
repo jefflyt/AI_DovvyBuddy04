@@ -2,7 +2,11 @@
 
 import { Suspense, useState, useRef, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { apiClient, type ChatResponse, ApiClientError } from '@/shared/lib/api-client'
+import {
+  apiClient,
+  type ChatResponse,
+  ApiClientError,
+} from '@/shared/lib/api-client'
 import {
   LeadCaptureModal,
   type LeadFormData,

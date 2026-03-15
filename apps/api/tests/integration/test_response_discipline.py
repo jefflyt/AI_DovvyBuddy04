@@ -220,31 +220,29 @@ async def test_emergency_response_no_follow_up(mock_db_session, mock_session_dat
         session_id=None,
     )
 
-    # Mock feature flag to enabled and patch context builder to avoid DB
-    with patch("app.domain.orchestration.orchestrator.is_feature_enabled", return_value=True):
-        with patch.object(orchestrator, "context_builder") as mock_context:
-            from app.domain.agents.types import AgentContext
+    with patch.object(orchestrator, "context_builder") as mock_context:
+        from app.domain.agents.types import AgentContext
 
-            mock_context.build_context = AsyncMock(
-                return_value=AgentContext(
-                    query=request.message,
-                    conversation_history=[],
-                    metadata={"has_rag": False},
-                )
+        mock_context.build_context = AsyncMock(
+            return_value=AgentContext(
+                query=request.message,
+                conversation_history=[],
+                metadata={"has_rag": False},
             )
+        )
 
-            response = await orchestrator.handle_chat(request)
+        response = await orchestrator.handle_chat(request)
 
-            # Emergency response should have no follow-up
-            assert response.follow_up_question is None or response.follow_up_question == ""
+        # Emergency response should have no follow-up
+        assert response.follow_up_question is None or response.follow_up_question == ""
 
-            # Metadata should indicate emergency (if emergency detector is enabled)
-            if response.metadata.get("mode") == "emergency":
-                assert response.metadata.get("emergency_detected") == True
+        # Metadata should indicate emergency (if emergency detector is enabled)
+        if response.metadata.get("mode") == "emergency":
+            assert response.metadata.get("emergency_detected") == True
 
-            # Response should be urgent and clear (if emergency was detected)
-            if response.agent_type == "emergency":
-                assert "seek" in response.message.lower() or "emergency" in response.message.lower() or "medical" in response.message.lower()
+        # Response should be urgent and clear (if emergency was detected)
+        if response.agent_type == "emergency":
+            assert "seek" in response.message.lower() or "emergency" in response.message.lower() or "medical" in response.message.lower()
 
 
 @pytest.mark.asyncio

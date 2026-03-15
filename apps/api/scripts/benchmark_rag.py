@@ -156,6 +156,54 @@ def calculate_percentile(values: List[float], percentile: int) -> float:
         return lower + (upper - lower) * (index - int(index))
 
 
+def evaluate_quality_gates(
+    *,
+    statistics: Dict[str, Any],
+    min_mean_accuracy: Optional[float] = None,
+    max_error_rate: Optional[float] = None,
+    max_p95_latency_ms: Optional[float] = None,
+) -> List[str]:
+    """Evaluate optional quality gates and return failure reasons."""
+    failures: List[str] = []
+    accuracy_stats = statistics.get("accuracy") or {}
+    latency_stats = statistics.get("latency") or {}
+    error_rate = statistics.get("error_rate")
+
+    if min_mean_accuracy is not None:
+        mean_accuracy = accuracy_stats.get("mean")
+        if mean_accuracy is None:
+            failures.append(
+                "min_mean_accuracy gate configured but no accuracy data available"
+            )
+        elif mean_accuracy < min_mean_accuracy:
+            failures.append(
+                f"mean accuracy {mean_accuracy:.4f} below threshold {min_mean_accuracy:.4f}"
+            )
+
+    if max_error_rate is not None:
+        if error_rate is None:
+            failures.append(
+                "max_error_rate gate configured but error rate is unavailable"
+            )
+        elif error_rate > max_error_rate:
+            failures.append(
+                f"error rate {error_rate:.4f} above threshold {max_error_rate:.4f}"
+            )
+
+    if max_p95_latency_ms is not None:
+        p95 = latency_stats.get("p95_ms")
+        if p95 is None:
+            failures.append(
+                "max_p95_latency_ms gate configured but latency data is unavailable"
+            )
+        elif p95 > max_p95_latency_ms:
+            failures.append(
+                f"p95 latency {p95:.2f}ms above threshold {max_p95_latency_ms:.2f}ms"
+            )
+
+    return failures
+
+
 async def main():
     """Main entry point for benchmark script."""
     parser = argparse.ArgumentParser(
@@ -199,6 +247,24 @@ Examples:
         type=int,
         default=5,
         help="Number of results to retrieve per query (default: 5)",
+    )
+    parser.add_argument(
+        "--min-mean-accuracy",
+        type=float,
+        default=None,
+        help="Fail if mean accuracy is below this threshold (0-1)",
+    )
+    parser.add_argument(
+        "--max-error-rate",
+        type=float,
+        default=None,
+        help="Fail if query error rate exceeds this threshold (0-1)",
+    )
+    parser.add_argument(
+        "--max-p95-latency-ms",
+        type=float,
+        default=None,
+        help="Fail if p95 latency exceeds this threshold in ms",
     )
     
     args = parser.parse_args()
@@ -297,6 +363,7 @@ Examples:
     if error_count > 0:
         print()
         warning(f"Errors: {error_count}/{len(all_results)} queries failed")
+    error_rate = (error_count / len(all_results)) if all_results else None
     
     # Prepare output
     output_data = {
@@ -315,6 +382,7 @@ Examples:
                 "min_ms": min(all_latencies) if all_latencies else None,
                 "max_ms": max(all_latencies) if all_latencies else None,
             },
+            "error_rate": error_rate,
         },
         "results": [r.to_dict() for r in all_results],
     }
@@ -338,6 +406,18 @@ Examples:
         json.dump(output_data, f, indent=2)
     
     success(f"Results written to: {output_file}")
+
+    gate_failures = evaluate_quality_gates(
+        statistics=output_data["statistics"],
+        min_mean_accuracy=args.min_mean_accuracy,
+        max_error_rate=args.max_error_rate,
+        max_p95_latency_ms=args.max_p95_latency_ms,
+    )
+    if gate_failures:
+        print()
+        for failure in gate_failures:
+            error(f"Quality gate failed: {failure}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":

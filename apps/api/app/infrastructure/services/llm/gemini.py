@@ -133,16 +133,20 @@ class GeminiLLMProvider(LLMProvider):
                 max_output_tokens=max_tok,
                 system_instruction=system_instruction,
             )
-            
-            # Run in executor
+
+            # Run in executor with an explicit timeout so orchestration can
+            # classify and recover from transient provider slowness.
             loop = asyncio.get_running_loop()
-            response = await loop.run_in_executor(
-                None,
-                lambda: self.client.models.generate_content(
-                    model=self.model,
-                    contents=user_prompt,
-                    config=config
+            response = await asyncio.wait_for(
+                loop.run_in_executor(
+                    None,
+                    lambda: self.client.models.generate_content(
+                        model=self.model,
+                        contents=user_prompt,
+                        config=config,
+                    ),
                 ),
+                timeout=max(0.1, settings.llm_timeout_ms / 1000),
             )
 
             # Extract content
@@ -172,6 +176,14 @@ class GeminiLLMProvider(LLMProvider):
             )
 
         except QuotaExceededError:
+            raise
+
+        except TimeoutError as e:
+            logger.error(
+                "Gemini API timeout after %sms: %s",
+                settings.llm_timeout_ms,
+                e,
+            )
             raise
 
         except Exception as e:

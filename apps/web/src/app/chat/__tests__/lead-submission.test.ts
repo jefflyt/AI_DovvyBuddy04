@@ -69,9 +69,9 @@ describe('lead submission helpers', () => {
   })
 
   it('returns plain Error message for generic errors', () => {
-    expect(getLeadSubmissionErrorMessage(new Error('Service unavailable'))).toBe(
-      'Service unavailable'
-    )
+    expect(
+      getLeadSubmissionErrorMessage(new Error('Service unavailable'))
+    ).toBe('Service unavailable')
   })
 
   it('falls back to default message for unknown errors', () => {

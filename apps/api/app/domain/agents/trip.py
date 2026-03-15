@@ -8,6 +8,10 @@ from typing import Optional
 from app.infrastructure.services.llm.base import LLMProvider
 from app.infrastructure.services.llm.factory import create_llm_provider
 from app.infrastructure.services.llm.types import LLMMessage
+from app.prompts.specialists_v1 import (
+    LEGACY_TRIP_SYSTEM_PROMPT,
+    NO_VERIFIED_DATA_RESPONSE,
+)
 
 from .base import Agent, AgentResult
 from .types import AgentCapability, AgentContext, AgentType
@@ -65,16 +69,30 @@ class TripAgent(Agent):
             AgentResult with destination recommendations
         """
         try:
+            if not context.rag_context or context.rag_context == "NO_DATA":
+                return AgentResult(
+                    response=NO_VERIFIED_DATA_RESPONSE,
+                    agent_type=self.agent_type,
+                    confidence=0.0,
+                    metadata={
+                        "no_data": True,
+                        "raf_enforced": True,
+                        "citations": [],
+                    },
+                )
+
             messages = self._build_messages(context)
             response = await self.llm_provider.generate(messages)
+            citations = context.metadata.get("rag_citations", [])
 
             result = AgentResult(
                 response=response.content,
                 agent_type=self.agent_type,
-                confidence=0.9,
+                confidence=0.9 if citations else 0.6,
                 metadata={
                     "model": response.model,
                     "tokens_used": response.tokens_used,
+                    "citations": citations,
                 },
             )
 
@@ -88,22 +106,7 @@ class TripAgent(Agent):
         """Build message list for LLM."""
         messages = []
 
-        # Simple, helpful prompt
-        system_prompt = """You are DovvyBuddy, a friendly and knowledgeable scuba diving trip planner.
-
-YOUR TASK:
-Answer the user's question about diving destinations using the information provided below.
-
-FORMATTING:
-- Use bullet points (•) when listing dive sites
-- Include any details mentioned: site names, depths, difficulty levels, marine life
-- Be enthusiastic and helpful!
-
-IMPORTANT:
-- If you find specific dive site names in the information below, LIST THEM by name
-- If you only find general descriptions, share what you know and offer to help plan their trip
-- Always end with a helpful follow-up question like "When are you thinking of going?" or "What's your certification level?"
-"""
+        system_prompt = LEGACY_TRIP_SYSTEM_PROMPT
 
         # Add diver profile context if available
         if context.diver_profile:
@@ -129,8 +132,7 @@ IMPORTANT:
 
 Question: {context.query}"""
         else:
-            logger.error(f"❌ TripAgent: NO RAG context provided! This will cause hallucination.")
-            # Force NO_DATA response if no context
+            logger.error("TripAgent received no RAG context")
             query_text = f"NO_DATA\n\nQuestion: {context.query}"
 
         messages.append(LLMMessage(role="user", content=query_text))

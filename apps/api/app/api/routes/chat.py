@@ -13,6 +13,7 @@ from starlette.responses import StreamingResponse
 
 from app.core.rate_limit import limiter
 from app.core.security import validate_message_safety
+from app.core.config import settings
 
 from app.infrastructure.db.session import get_db
 from app.domain.orchestration import ChatOrchestrator
@@ -178,11 +179,13 @@ async def chat_stream_endpoint(
 @router.get("/debug/rag")
 async def debug_rag_endpoint(q: str = "Where can I dive in Tioman?"):
     """Debug endpoint to test RAG pipeline in running server."""
-    from app.core.config import settings
     from app.infrastructure.services.rag.pipeline import RAGPipeline
-    
+
+    if not settings.debug:
+        raise HTTPException(status_code=404, detail="Not found")
+
     pipeline = RAGPipeline()
-    
+
     result = {
         "settings.enable_rag": settings.enable_rag,
         "settings.gemini_api_key_set": bool(settings.gemini_api_key),

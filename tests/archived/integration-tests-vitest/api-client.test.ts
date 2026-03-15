@@ -119,7 +119,9 @@ describe.skip('API Client Integration Tests', () => {
       expect(sessionResponse.id).toBe(sessionId)
       expect(sessionResponse.created_at).toBeDefined()
       expect(sessionResponse.updated_at).toBeDefined()
-      expect(sessionResponse.conversation_history.length).toBeGreaterThanOrEqual(1)
+      expect(
+        sessionResponse.conversation_history.length
+      ).toBeGreaterThanOrEqual(1)
     }, 30000)
 
     it('should handle session not found (404)', async () => {

@@ -2,9 +2,11 @@
 Context builder for orchestration.
 """
 
+import asyncio
 import logging
 from typing import List, Optional
 
+from app.core.config import settings
 from app.domain.agents.types import AgentContext
 from app.infrastructure.services.rag.pipeline import RAGPipeline
 
@@ -45,10 +47,13 @@ class ContextBuilder:
         # Retrieve RAG context if enabled
         rag_context = None
         rag_citations = []
+        rag_invoked = False
         if use_rag and self.rag_pipeline.enabled:
             try:
                 logger.info(f"🔍 RAG ENABLED - Retrieving context for: {query[:100]}")
-                rag_result = await self.rag_pipeline.retrieve_context(query)
+                rag_invoked = True
+                async with asyncio.timeout(max(0.1, settings.rag_timeout_ms / 1000)):
+                    rag_result = await self.rag_pipeline.retrieve_context(query)
                 rag_context = rag_result.formatted_context
                 rag_citations = rag_result.citations  # PR6.2: Extract citations
                 logger.info(f"✓ Retrieved {len(rag_result.results)} RAG chunks, context length: {len(rag_context) if rag_context else 0}")
@@ -72,6 +77,7 @@ class ContextBuilder:
             metadata={
                 "has_rag": bool(rag_context),
                 "rag_citations": rag_citations,  # PR6.2: Pass citations through metadata
+                "rag_invoked": rag_invoked,
                 "history_length": len(conversation_history),
             },
         )

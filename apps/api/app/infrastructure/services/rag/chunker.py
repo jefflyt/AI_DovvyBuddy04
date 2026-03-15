@@ -137,6 +137,33 @@ def combine_paragraphs_into_chunks(
     # Add header token count if present
     header_tokens = count_tokens(header + "\n\n") if header else 0
 
+    def _build_overlap_tail(chunk_paragraphs: List[str]) -> List[str]:
+        """Return trailing paragraphs that fit overlap token budget."""
+        if options.overlap_tokens <= 0 or not chunk_paragraphs:
+            return []
+
+        overlap: List[str] = []
+        overlap_token_count = 0
+        for para in reversed(chunk_paragraphs):
+            para_tokens = count_tokens(para)
+            if overlap and overlap_token_count + para_tokens > options.overlap_tokens:
+                break
+            overlap.insert(0, para)
+            overlap_token_count += para_tokens
+            if overlap_token_count >= options.overlap_tokens:
+                break
+        return overlap
+
+    def _chunk_token_total(chunk_paragraphs: List[str]) -> int:
+        if not chunk_paragraphs:
+            return 0
+        total = header_tokens
+        for idx, para in enumerate(chunk_paragraphs):
+            total += count_tokens(para)
+            if idx > 0:
+                total += 2
+        return total
+
     for paragraph in paragraphs:
         paragraph_tokens = count_tokens(paragraph)
 
@@ -144,14 +171,15 @@ def combine_paragraphs_into_chunks(
         if paragraph_tokens > options.max_tokens:
             # Save current chunk if it has content
             if current_chunk:
+                joined = "\n\n".join(current_chunk)
                 chunk_text = (
-                    f"{header}\n\n{chr(10).join(current_chunk)}"
+                    f"{header}\n\n{joined}"
                     if header
-                    else "\n\n".join(current_chunk)
+                    else joined
                 )
                 chunks.append(chunk_text)
                 current_chunk = []
-                current_tokens = 0
+                current_tokens = header_tokens
 
             # Add oversized paragraph as its own chunk
             chunk_text = f"{header}\n\n{paragraph}" if header else paragraph
@@ -163,27 +191,32 @@ def combine_paragraphs_into_chunks(
 
         if potential_tokens > options.target_tokens and current_chunk:
             # Save current chunk
+            joined = "\n\n".join(current_chunk)
             chunk_text = (
-                f"{header}\n\n{chr(10).join(current_chunk)}"
+                f"{header}\n\n{joined}"
                 if header
-                else "\n\n".join(current_chunk)
+                else joined
             )
             chunks.append(chunk_text)
 
-            # Start new chunk with this paragraph
-            current_chunk = [paragraph]
-            current_tokens = header_tokens + paragraph_tokens
+            # Start next chunk with configured overlap + new paragraph.
+            overlap_tail = _build_overlap_tail(current_chunk)
+            current_chunk = overlap_tail + [paragraph]
+            current_tokens = _chunk_token_total(current_chunk)
         else:
             # Add paragraph to current chunk
+            if not current_chunk:
+                current_tokens = header_tokens
             current_chunk.append(paragraph)
             current_tokens += paragraph_tokens + (2 if len(current_chunk) > 1 else 0)
 
     # Save last chunk
     if current_chunk:
+        joined = "\n\n".join(current_chunk)
         chunk_text = (
-            f"{header}\n\n{chr(10).join(current_chunk)}"
+            f"{header}\n\n{joined}"
             if header
-            else "\n\n".join(current_chunk)
+            else joined
         )
         chunks.append(chunk_text)
 

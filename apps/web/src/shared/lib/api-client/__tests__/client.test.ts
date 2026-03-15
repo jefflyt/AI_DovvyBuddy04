@@ -111,6 +111,35 @@ describe('ApiClient', () => {
       expect(result.metadata?.detectedIntent).toBe('trip_planning')
     })
 
+    it('should normalize runtime and grounding metadata keys', async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          sessionId: '123e4567-e89b-12d3-a456-426614174000',
+          message: 'Here is your answer',
+          metadata: {
+            runtime_path: 'legacy_adk_router',
+            timeout_or_fallback: true,
+            grounding: {
+              citations_count: 2,
+              policy_reason: 'policy_pass',
+              rag_invoked: true,
+              has_verified_data: true,
+            },
+          },
+        }),
+      })
+
+      const result = await client.chat({ message: 'Plan my dive trip' })
+
+      expect(result.metadata?.runtimePath).toBe('legacy_adk_router')
+      expect(result.metadata?.timeoutOrFallback).toBe(true)
+      expect(result.metadata?.grounding?.citationsCount).toBe(2)
+      expect(result.metadata?.grounding?.policyReason).toBe('policy_pass')
+      expect(result.metadata?.grounding?.ragInvoked).toBe(true)
+      expect(result.metadata?.grounding?.hasVerifiedData).toBe(true)
+    })
+
     it('should handle validation error (400)', async () => {
       // Mock for both the expect rejection and the try/catch
       mockFetch.mockResolvedValue({

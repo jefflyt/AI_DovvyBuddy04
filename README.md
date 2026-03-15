@@ -211,12 +211,12 @@ Conversations are stored to improve the experience, but personal data is protect
 
 ## 📚 Documentation
 
-| For...                        | Read...                                                 |
-| ----------------------------- | ------------------------------------------------------- |
-| **Understanding the project** | This README (you're here!)                              |
-| **Setting up development**    | [README.DEV.md](./README.DEV.md)                        |
+| For...                        | Read...                                                         |
+| ----------------------------- | --------------------------------------------------------------- |
+| **Understanding the project** | This README (you're here!)                                      |
+| **Setting up development**    | [README.DEV.md](./README.DEV.md)                                |
 | **Product vision**            | [Product Spec (PSD)](./docs/product/psd/DovvyBuddy-PSD-V6.2.md) |
-| **Technical architecture**    | [Technical Spec](./docs/architecture/specification.md)     |
+| **Technical architecture**    | [Technical Spec](./docs/architecture/specification.md)          |
 | **Development roadmap**       | [Master Plan](./docs/archive/plans/MASTER_PLAN.md)              |
 | **Design decisions**          | [Architecture Decision Records](./docs/architecture/decisions/) |
 

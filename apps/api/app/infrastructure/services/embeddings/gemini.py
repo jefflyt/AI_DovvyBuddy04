@@ -135,17 +135,20 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
                     quota_decision.wait_seconds,
                 )
 
-            # Run synchronous Gemini API call in thread pool
+            # Run synchronous Gemini API call in thread pool with timeout.
             loop = asyncio.get_running_loop()
-            result = await loop.run_in_executor(
-                None,
-                lambda: self.client.models.embed_content(
-                    model=self.model,
-                    contents=text,
-                    config=types.EmbedContentConfig(
-                        output_dimensionality=self.dimension
-                    )
+            result = await asyncio.wait_for(
+                loop.run_in_executor(
+                    None,
+                    lambda: self.client.models.embed_content(
+                        model=self.model,
+                        contents=text,
+                        config=types.EmbedContentConfig(
+                            output_dimensionality=self.dimension
+                        ),
+                    ),
                 ),
+                timeout=max(0.1, settings.embedding_timeout_ms / 1000),
             )
 
             # Extract embedding from response
@@ -169,6 +172,14 @@ class GeminiEmbeddingProvider(EmbeddingProvider):
             return embedding
 
         except QuotaExceededError:
+            raise
+
+        except TimeoutError as e:
+            logger.error(
+                "Embedding API timeout after %sms: %s",
+                settings.embedding_timeout_ms,
+                e,
+            )
             raise
 
         except Exception as e:

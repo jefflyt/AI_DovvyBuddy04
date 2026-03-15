@@ -12,12 +12,15 @@ import argparse
 import asyncio
 import sys
 import time
+from datetime import date, datetime
 from pathlib import Path
 from typing import Dict, Optional
 
+from app.core.config import settings
 from app.infrastructure.db.session import SessionLocal
 from app.infrastructure.services.embeddings import create_embedding_provider_from_env
 from app.infrastructure.services.rag import chunk_text
+from app.infrastructure.services.rag.types import ChunkingOptions
 from app.infrastructure.services.rag.repository import RAGRepository
 from scripts.common import (
     calculate_file_hash,
@@ -66,6 +69,19 @@ class IngestionStats:
         info(f"  Embeddings generated: {self.embeddings_generated}")
         if self.errors > 0:
             warning(f"  Errors: {self.errors}")
+
+
+def _normalize_frontmatter_value(value):
+    """Convert frontmatter values to JSON-serializable primitives."""
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    if isinstance(value, (date, datetime)):
+        return str(value)
+    if isinstance(value, list):
+        return [_normalize_frontmatter_value(v) for v in value]
+    if isinstance(value, dict):
+        return {str(k): _normalize_frontmatter_value(v) for k, v in value.items()}
+    return str(value)
 
 
 def get_stored_file_hash(
@@ -155,23 +171,39 @@ async def ingest_file(
     frontmatter = parsed["frontmatter"]
     content = parsed["content"]
     
+    # Preserve filterable frontmatter metadata used by retrieval filters.
+    frontmatter_metadata = {
+        key: _normalize_frontmatter_value(value)
+        for key, value in frontmatter.items()
+    }
+
     # Prepare metadata
     metadata = {
         "content_path": rel_path,
         "file_hash": file_hash,
-        "title": frontmatter.get("title", ""),
-        "description": frontmatter.get("description", ""),
-        "tags": frontmatter.get("tags", []),
+        **frontmatter_metadata,
+        "title": frontmatter_metadata.get("title", ""),
+        "description": frontmatter_metadata.get("description", ""),
+        "tags": frontmatter_metadata.get("tags", []),
     }
     
-    # Add optional fields
-    if "category" in frontmatter:
-        metadata["category"] = frontmatter["category"]
-    if "date" in frontmatter:
-        metadata["date"] = str(frontmatter["date"])
-    
-    # Chunk text using RAG chunker
-    chunk_objects = chunk_text(content, rel_path, frontmatter=metadata)
+    chunk_options = ChunkingOptions(
+        target_tokens=max(50, int(settings.rag_chunk_size)),
+        max_tokens=max(
+            int(settings.rag_chunk_size),
+            int(settings.rag_chunk_size) + max(0, int(settings.rag_chunk_overlap)),
+        ),
+        min_tokens=max(20, min(100, int(settings.rag_chunk_overlap))),
+        overlap_tokens=max(0, int(settings.rag_chunk_overlap)),
+    )
+
+    # Chunk text using configured RAG chunk settings.
+    chunk_objects = chunk_text(
+        content,
+        rel_path,
+        frontmatter=metadata,
+        options=chunk_options,
+    )
     
     if not chunk_objects:
         return {

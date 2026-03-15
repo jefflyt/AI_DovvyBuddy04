@@ -8,6 +8,10 @@ from typing import Optional
 from app.infrastructure.services.llm.base import LLMProvider
 from app.infrastructure.services.llm.factory import create_llm_provider
 from app.infrastructure.services.llm.types import LLMMessage
+from app.prompts.specialists_v1 import (
+    LEGACY_CERTIFICATION_SYSTEM_PROMPT,
+    NO_VERIFIED_DATA_RESPONSE,
+)
 
 from .base import Agent, AgentResult
 from .types import AgentCapability, AgentContext, AgentType
@@ -44,16 +48,30 @@ class CertificationAgent(Agent):
             AgentResult with certification guidance
         """
         try:
+            if not context.rag_context or context.rag_context == "NO_DATA":
+                return AgentResult(
+                    response=NO_VERIFIED_DATA_RESPONSE,
+                    agent_type=self.agent_type,
+                    confidence=0.0,
+                    metadata={
+                        "no_data": True,
+                        "raf_enforced": True,
+                        "citations": [],
+                    },
+                )
+
             messages = self._build_messages(context)
             response = await self.llm_provider.generate(messages)
+            citations = context.metadata.get("rag_citations", [])
 
             result = AgentResult(
                 response=response.content,
                 agent_type=self.agent_type,
-                confidence=0.9,
+                confidence=0.9 if citations else 0.6,
                 metadata={
                     "model": response.model,
                     "tokens_used": response.tokens_used,
+                    "citations": citations,
                 },
             )
 
@@ -67,35 +85,7 @@ class CertificationAgent(Agent):
         """Build message list for LLM."""
         messages = []
 
-        # System prompt
-        system_prompt = """You are DovvyBuddy's Certification Expert. Provide SHORT, conversational answers (2-4 paragraphs max).
-
-Your expertise: PADI/SSI certifications, prerequisites, training pathways.
-
-IMPORTANT FORMATTING:
-- Write in plain text, NO markdown, NO bullet points, NO asterisks
-- Use natural paragraphs with proper spacing
-- Keep responses concise and conversational
-- Emphasize key certification names naturally in the text
-
-Guidelines:
-- Give clear, practical certification guidance
-- Compare PADI/SSI when relevant
-- Mention prerequisites briefly
-- Always note: verify details with certified instructors
-- For medical questions: consult diving medical professional
-
-RESPONSE DISCIPLINE (CRITICAL):
-- Default length: 3-5 sentences OR ≤120 tokens (whichever comes first)
-- Address ONE primary idea per response
-- NEVER mention: "provided context", "source", "filename", "document", "retrieval", "according to the context", bracketed references [Source: ...]
-- If information is insufficient, ask a clarifying question instead
-- Style: Professional, direct, calm. No fluff, no cheerleading, no repetition
-- Avoid generic closers like "Let me know if you need anything else"
-- Safety notes: ONE sentence max (unless emergency override)
-
-Tone: Friendly, encouraging, concise.
-"""
+        system_prompt = LEGACY_CERTIFICATION_SYSTEM_PROMPT
         messages.append(LLMMessage(role="system", content=system_prompt))
 
         # Conversation history

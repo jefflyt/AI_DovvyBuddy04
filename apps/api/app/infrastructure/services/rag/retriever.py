@@ -248,6 +248,19 @@ class VectorRetriever:
                         stmt = stmt.where(
                             ContentEmbedding.metadata_["doc_type"].astext == doc_type
                         )
+
+                if "destination" in options.filters:
+                    stmt = stmt.where(
+                        ContentEmbedding.metadata_["destination"].astext
+                        == options.filters["destination"]
+                    )
+
+                if "tags" in options.filters and options.filters["tags"]:
+                    for tag in options.filters["tags"]:
+                        stmt = stmt.where(
+                            ContentEmbedding.metadata_["tags"]
+                            .astext.contains(f'"{tag}"')
+                        )
             
             stmt = stmt.order_by(text("rank DESC")).limit(options.top_k * 2)
             

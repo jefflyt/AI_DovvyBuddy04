@@ -85,8 +85,8 @@ class RAGPipeline:
         # Format context
         formatted_context = self._format_context(results)
         
-        # Extract citations for RAF enforcement
-        citations = [r.source_citation for r in results if r.source_citation]
+        # Extract citations for RAF enforcement (deduped, stable order)
+        citations = self._normalize_citations(results)
         has_data = len(results) > 0
 
         # Log retrieval details for debugging
@@ -137,6 +137,19 @@ class RAGPipeline:
             formatted_chunks.append(result.text)
 
         return "\n\n".join(formatted_chunks)
+
+    @staticmethod
+    def _normalize_citations(results: List[RetrievalResult]) -> List[str]:
+        """Normalize citations while preserving first-seen order."""
+        citations: List[str] = []
+        seen: set[str] = set()
+        for result in results:
+            citation = (result.source_citation or "").strip()
+            if not citation or citation in seen:
+                continue
+            seen.add(citation)
+            citations.append(citation)
+        return citations
 
     async def retrieve_context_raw(
         self,

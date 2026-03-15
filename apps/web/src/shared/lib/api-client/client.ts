@@ -134,7 +134,9 @@ export class ApiClient {
   /**
    * Normalize backend metadata keys to frontend-friendly keys.
    */
-  private normalizeChatMetadata(metadata?: ChatMetadata): ChatMetadata | undefined {
+  private normalizeChatMetadata(
+    metadata?: ChatMetadata
+  ): ChatMetadata | undefined {
     if (!metadata) return metadata
 
     const normalized: ChatMetadata = { ...metadata }
@@ -145,6 +147,34 @@ export class ApiClient {
 
     if (!normalized.detectedIntent && normalized.detected_intent) {
       normalized.detectedIntent = normalized.detected_intent
+    }
+
+    if (!normalized.runtimePath && normalized.runtime_path) {
+      normalized.runtimePath = normalized.runtime_path
+    }
+
+    if (normalized.timeoutOrFallback === undefined && normalized.timeout_or_fallback !== undefined) {
+      normalized.timeoutOrFallback = normalized.timeout_or_fallback
+    }
+
+    if (normalized.grounding) {
+      const grounding = { ...normalized.grounding }
+      if (grounding.citationsCount === undefined && grounding.citations_count !== undefined) {
+        grounding.citationsCount = grounding.citations_count
+      }
+      if (!grounding.policyReason && grounding.policy_reason) {
+        grounding.policyReason = grounding.policy_reason
+      }
+      if (grounding.ragInvoked === undefined && grounding.rag_invoked !== undefined) {
+        grounding.ragInvoked = grounding.rag_invoked
+      }
+      if (
+        grounding.hasVerifiedData === undefined &&
+        grounding.has_verified_data !== undefined
+      ) {
+        grounding.hasVerifiedData = grounding.has_verified_data
+      }
+      normalized.grounding = grounding
     }
 
     return normalized

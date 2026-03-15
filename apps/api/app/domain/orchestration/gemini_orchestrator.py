@@ -7,6 +7,7 @@ the appropriate specialist tool.
 
 import logging
 import os
+import asyncio
 from typing import Dict, List, Optional, Any
 from uuid import uuid4
 
@@ -19,6 +20,7 @@ from app.core.config import settings
 from app.core.quota_manager import QuotaExceededError, get_quota_manager
 from app.domain.orchestration.types import SessionState
 from app.infrastructure.services.cost.token_cost import estimate_tokens_from_text
+from app.prompts.specialists_v1 import ROUTER_SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)
 
@@ -45,14 +47,7 @@ class GeminiOrchestrator:
         self.agent = LlmAgent(
             name="dovvy_router",
             model=Gemini(model=self.model_name),
-            instruction="""You are the DovvyBuddy routing coordinator.
-Route each turn by calling exactly ONE tool:
-- route_trip_specialist: destination, site, conditions, trip planning
-- route_certification_specialist: certification pathways and prerequisites
-- route_safety_specialist: medical or safety risk concerns
-- route_general_retrieval_specialist: all other general diving knowledge
-Return concise structured arguments and include reason.
-""",
+            instruction=ROUTER_SYSTEM_PROMPT,
             tools=[
                 self.route_trip_specialist,
                 self.route_certification_specialist,
@@ -150,29 +145,30 @@ Return concise structured arguments and include reason.
 
             user_message = types.Content(role="user", parts=[types.Part(text=full_prompt)])
 
-            async for event in self.runner.run_async(
-                user_id=self.user_id,
-                session_id=resolved_session_id,
-                new_message=user_message,
-            ):
-                function_calls = event.get_function_calls()
-                if function_calls:
-                    function_call = function_calls[0]
-                    logger.info(
-                        "📍 ADK router decision: %s (args: %s)",
-                        function_call.name,
-                        function_call.args,
-                    )
-                    target_map = {
-                        "route_trip_specialist": "trip_specialist",
-                        "route_certification_specialist": "certification_specialist",
-                        "route_safety_specialist": "safety_specialist",
-                        "route_general_retrieval_specialist": "general_retrieval_specialist",
-                    }
-                    return {
-                        "target_agent": target_map.get(function_call.name, function_call.name),
-                        "parameters": dict(function_call.args) if function_call.args else {},
-                    }
+            async with asyncio.timeout(max(0.1, settings.adk_router_timeout_ms / 1000)):
+                async for event in self.runner.run_async(
+                    user_id=self.user_id,
+                    session_id=resolved_session_id,
+                    new_message=user_message,
+                ):
+                    function_calls = event.get_function_calls()
+                    if function_calls:
+                        function_call = function_calls[0]
+                        logger.info(
+                            "📍 ADK router decision: %s (args: %s)",
+                            function_call.name,
+                            function_call.args,
+                        )
+                        target_map = {
+                            "route_trip_specialist": "trip_specialist",
+                            "route_certification_specialist": "certification_specialist",
+                            "route_safety_specialist": "safety_specialist",
+                            "route_general_retrieval_specialist": "general_retrieval_specialist",
+                        }
+                        return {
+                            "target_agent": target_map.get(function_call.name, function_call.name),
+                            "parameters": dict(function_call.args) if function_call.args else {},
+                        }
 
             logger.error("Google ADK router did not produce a function call")
             raise RuntimeError("Google ADK router did not produce a function call")

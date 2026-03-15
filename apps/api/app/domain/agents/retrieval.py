@@ -11,6 +11,7 @@ from app.infrastructure.services.llm.types import LLMMessage
 from app.infrastructure.services.rag.pipeline import RAGPipeline
 from app.core.config import settings
 from app.prompts.rag import RAG_SYSTEM_PROMPT, NO_RAG_PROMPT
+from app.prompts.specialists_v1 import NO_VERIFIED_DATA_RESPONSE
 
 from .base import Agent, AgentResult
 from .types import AgentCapability, AgentContext, AgentType
@@ -183,19 +184,8 @@ class RetrievalAgent(Agent):
         Returns:
             AgentResult with appropriate no-data response
         """
-        response = """I don't have specific information about that in my knowledge base. 
-
-To ensure I provide you with accurate information, I can only answer based on verified content. 
-
-Could you try:
-- Rephrasing your question
-- Asking about a different topic
-- Or let me know if you'd like general guidance instead of specific facts
-
-What would be most helpful for you?"""
-        
         return AgentResult(
-            response=response,
+            response=NO_VERIFIED_DATA_RESPONSE,
             agent_type=self.agent_type,
             confidence=0.0,
             metadata={

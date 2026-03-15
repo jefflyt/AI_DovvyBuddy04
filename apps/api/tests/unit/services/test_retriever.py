@@ -150,3 +150,33 @@ class TestVectorRetriever:
 
         with pytest.raises(ValueError, match="Expected embedding dimension"):
             await retriever.retrieve("test query")
+
+    @pytest.mark.asyncio
+    async def test_keyword_search_applies_filter_parity(self, retriever):
+        """Keyword path should apply same metadata filters as semantic path."""
+        options = RetrievalOptions(
+            filters={
+                "doc_type": "dive_site",
+                "destination": "Tioman Island, Malaysia",
+                "tags": ["reef"],
+            }
+        )
+
+        with patch("app.infrastructure.services.rag.retriever.get_session") as mock_get_session:
+            mock_session = MagicMock()
+            mock_result = MagicMock()
+            mock_result.all.return_value = []
+            mock_session.execute = AsyncMock(return_value=mock_result)
+            mock_session.__aenter__.return_value = mock_session
+            mock_session.__aexit__.return_value = None
+            mock_session_maker = MagicMock(return_value=mock_session)
+            mock_get_session.return_value = mock_session_maker
+
+            await retriever._keyword_search("tioman reef", options)
+
+            executed_stmt = mock_session.execute.call_args[0][0]
+            compiled_sql = str(executed_stmt)
+            compiled_params = executed_stmt.compile().params
+            assert "metadata" in compiled_sql
+            assert "destination" in compiled_params.values()
+            assert '"reef"' in compiled_params.values()
