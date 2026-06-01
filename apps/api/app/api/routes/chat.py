@@ -179,12 +179,18 @@ async def chat_stream_endpoint(
 
 # Debug endpoint to test RAG directly in-server
 @router.get("/debug/rag")
-async def debug_rag_endpoint(q: str = "Where can I dive in Tioman?"):
+async def debug_rag_endpoint(request: Request, q: str = "Where can I dive in Tioman?"):
     """Debug endpoint to test RAG pipeline in running server."""
     from app.infrastructure.services.rag.pipeline import RAGPipeline
 
     if not settings.debug:
         raise HTTPException(status_code=404, detail="Not found")
+
+    # Require debug auth header to prevent accidental exposure in production
+    debug_token = request.headers.get("X-Debug-Token", "")
+    expected_token = getattr(settings, "debug_token", "")
+    if not expected_token or debug_token != expected_token:
+        raise HTTPException(status_code=401, detail="Debug access denied")
 
     pipeline = RAGPipeline()
 

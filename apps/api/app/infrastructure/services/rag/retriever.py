@@ -33,7 +33,6 @@ class VectorRetriever:
         self.embedding_provider = (
             embedding_provider or create_embedding_provider_from_env()
         )
-        self._result_cache = {}  # Cache for RRF merging
 
     async def retrieve(
         self,
@@ -175,9 +174,6 @@ class VectorRetriever:
         if options is None:
             options = RetrievalOptions()
 
-        # Clear cache for new query
-        self._result_cache = {}
-
         # 1. Semantic search (existing method)
         logger.info(f"Hybrid search: Running semantic search for '{query[:50]}...'")
         semantic_results = await self.retrieve(query, options)
@@ -303,21 +299,22 @@ class VectorRetriever:
             Merged and re-ranked results
         """
         scores = {}
+        result_cache = {}
         semantic_weight = 1 - keyword_weight
 
         # Score semantic results
         for rank, result in enumerate(semantic_results, 1):
             chunk_id = result.chunk_id
             scores[chunk_id] = scores.get(chunk_id, 0) + semantic_weight / (k + rank)
-            if chunk_id not in self._result_cache:
-                self._result_cache[chunk_id] = result
+            if chunk_id not in result_cache:
+                result_cache[chunk_id] = result
 
         # Score keyword results
         for rank, result in enumerate(keyword_results, 1):
             chunk_id = result.chunk_id
             scores[chunk_id] = scores.get(chunk_id, 0) + keyword_weight / (k + rank)
-            if chunk_id not in self._result_cache:
-                self._result_cache[chunk_id] = result
+            if chunk_id not in result_cache:
+                result_cache[chunk_id] = result
 
         # Sort by combined score
         sorted_ids = sorted(scores.keys(), key=lambda x: scores[x], reverse=True)
@@ -325,7 +322,7 @@ class VectorRetriever:
         # Return merged results with updated similarity scores
         merged = []
         for chunk_id in sorted_ids:
-            result = self._result_cache[chunk_id]
+            result = result_cache[chunk_id]
             # Create new result with RRF score
             merged_result = RetrievalResult(
                 chunk_id=result.chunk_id,

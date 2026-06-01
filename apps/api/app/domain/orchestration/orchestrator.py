@@ -282,6 +282,11 @@ class ChatOrchestrator:
     ) -> tuple[Optional[ChatResponse], Optional[Dict[str, Any]]]:
         if not self.native_graph_orchestrator:
             if settings.enable_adk and settings.enable_adk_native_graph:
+                logger.warning(
+                    "Native graph orchestrator unavailable for session=%s, "
+                    "falling back to legacy ADK router",
+                    session.id,
+                )
                 return None, {
                     "reason": "native_graph_unavailable",
                     "transient": False,
@@ -308,9 +313,11 @@ class ChatOrchestrator:
             )
         except Exception as exc:
             failure = self._classify_runtime_failure(exc)
-            logger.error(
-                "ADK native graph failed (%s), falling back to legacy flow",
+            logger.warning(
+                "ADK native graph failed (%s: %s), falling back to legacy ADK router; session=%s",
+                failure["error_type"],
                 failure["reason"],
+                session.id,
                 exc_info=True,
             )
             return None, failure
@@ -442,7 +449,10 @@ class ChatOrchestrator:
                 except Exception as exc:
                     router_fallback = self._classify_runtime_failure(exc)
                     logger.warning(
-                        "ADK route request failed; using mode detector fallback",
+                        "Legacy ADK router failed (%s: %s) for session=%s, falling back to mode detector",
+                        router_fallback["error_type"],
+                        router_fallback["reason"],
+                        session.id,
                         exc_info=True,
                     )
                     route_result = self._fallback_route_request(
@@ -461,6 +471,10 @@ class ChatOrchestrator:
                         "transient": False,
                         "error_type": "ADKUnavailable",
                     }
+                    logger.warning(
+                        "ADK orchestrator unavailable for session=%s, using mode detector fallback",
+                        session.id,
+                    )
 
             raw_target = route_result.get("target_agent", "general_retrieval_specialist")
             target_route = self._normalize_legacy_target(raw_target)

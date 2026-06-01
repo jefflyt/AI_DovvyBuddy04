@@ -1,12 +1,9 @@
 'use client'
 
 import { Suspense, useState, useRef, useEffect } from 'react'
+import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
-import {
-  apiClient,
-  type ChatResponse,
-  ApiClientError,
-} from '@/shared/lib/api-client'
+import { apiClient } from '@/shared/lib/api-client'
 import {
   LeadCaptureModal,
   type LeadFormData,
@@ -16,24 +13,16 @@ import {
   getLeadSubmissionErrorMessage,
 } from './lead-submission'
 import {
-  formatAssistantMessageContent,
-  getLeadCaptureType,
   shouldAutoSubmitPrompt,
 } from './chat-page-logic'
+import { useChatSender, type Message } from './useChatSender'
 import { useSessionState } from '@/shared/hooks/useSessionState' // PR6.1
 import { FeatureFlag, isFeatureEnabled } from '@/shared/lib/feature-flags' // Centralized feature flags
 import { WatercolorBackground } from '@/shared/components/ui/WatercolorBackground'
 import { ChatMessage } from '@/features/chat/components/ChatMessage'
-import { Send, Plus, MapPin, GraduationCap } from 'lucide-react'
+import { Send, Plus, MapPin, GraduationCap, History } from 'lucide-react'
 import { cn } from '@/shared/lib/utils'
 import Image from 'next/image'
-
-interface Message {
-  id: string
-  role: 'user' | 'assistant' | 'system'
-  content: string
-  timestamp: Date
-}
 
 const STORAGE_KEY = 'dovvybuddy-session-id'
 const UUID_REGEX =
@@ -61,9 +50,43 @@ function ChatContent() {
   const [leadSubmitting, setLeadSubmitting] = useState(false)
   const [leadError, setLeadError] = useState<string | null>(null)
 
+  const clearSession = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+    } catch (error) {
+      console.warn('Failed to clear localStorage:', error)
+    }
+    setSessionId(null)
+    setMessages([])
+    setError(null)
+    if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)) {
+      clearSessionState()
+    }
+  }
+
+  const { sendMessage } = useChatSender({
+    sessionId,
+    setSessionId,
+    sessionState: sessionState as Record<string, unknown> | null,
+    updateSessionState,
+    setMessages,
+    setError,
+    setLeadType,
+    setShowLeadForm,
+    clearSession,
+  })
+
   // Restore sessionId from localStorage on mount
   useEffect(() => {
     try {
+      // First check URL params for explicit session
+      const urlSessionId = searchParams.get('sessionId')
+      if (urlSessionId && UUID_REGEX.test(urlSessionId)) {
+        setSessionId(urlSessionId)
+        return
+      }
+
+      // Fall back to localStorage
       const storedSessionId = localStorage.getItem(STORAGE_KEY)
       if (storedSessionId && UUID_REGEX.test(storedSessionId)) {
         setSessionId(storedSessionId)
@@ -133,76 +156,7 @@ function ChatContent() {
 
       void (async () => {
         try {
-          const requestPayload: {
-            sessionId?: string
-            message: string
-            sessionState?: Record<string, unknown>
-          } = {
-            sessionId: sessionId || undefined,
-            message: prompt,
-          }
-
-          if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)) {
-            requestPayload.sessionState = sessionState as Record<
-              string,
-              unknown
-            >
-          }
-
-          const response: ChatResponse = await apiClient.chat(requestPayload)
-
-          if (!sessionId && response.sessionId) {
-            setSessionId(response.sessionId)
-          }
-
-          if (
-            isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) &&
-            response.metadata?.stateUpdates
-          ) {
-            updateSessionState(response.metadata.stateUpdates)
-          }
-
-          const autoLeadType = getLeadCaptureType(response.message)
-          if (autoLeadType) {
-            setLeadType(autoLeadType)
-            setShowLeadForm(true)
-          }
-
-          const assistantMessage: Message = {
-            id: crypto.randomUUID(),
-            role: 'assistant',
-            content: formatAssistantMessageContent(
-              response,
-              isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)
-            ),
-            timestamp: new Date(),
-          }
-
-          setMessages((prev) => [...prev, assistantMessage])
-        } catch (err) {
-          let errorMessage = 'An unexpected error occurred. Please try again.'
-          if (err instanceof ApiClientError) {
-            errorMessage = err.userMessage
-            if (
-              err.code === 'SESSION_EXPIRED' ||
-              err.code === 'SESSION_NOT_FOUND'
-            ) {
-              try {
-                localStorage.removeItem(STORAGE_KEY)
-              } catch (storageError) {
-                console.warn('Failed to clear localStorage:', storageError)
-              }
-              setSessionId(null)
-              setMessages([])
-              setError(null)
-              if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)) {
-                clearSessionState()
-              }
-              errorMessage = 'Your session has expired. Starting a new chat...'
-            }
-          }
-          setError(errorMessage)
-          setMessages((prev) => prev.filter((msg) => msg.id !== userMessage.id))
+          await sendMessage(prompt, userMessage.id)
         } finally {
           setIsLoading(false)
         }
@@ -220,20 +174,6 @@ function ChatContent() {
     updateSessionState,
     clearSessionState,
   ])
-
-  const clearSession = () => {
-    try {
-      localStorage.removeItem(STORAGE_KEY)
-    } catch (error) {
-      console.warn('Failed to clear localStorage:', error)
-    }
-    setSessionId(null)
-    setMessages([])
-    setError(null)
-    if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)) {
-      clearSessionState()
-    }
-  }
 
   const handleNewChat = () => {
     if (messages.length >= 2) {
@@ -263,65 +203,7 @@ function ChatContent() {
     setError(null)
 
     try {
-      const requestPayload: {
-        sessionId?: string
-        message: string
-        sessionState?: Record<string, unknown>
-      } = {
-        sessionId: sessionId || undefined,
-        message: userMessage.content,
-      }
-
-      if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)) {
-        requestPayload.sessionState = sessionState as Record<string, unknown>
-      }
-
-      const response: ChatResponse = await apiClient.chat(requestPayload)
-
-      if (!sessionId && response.sessionId) {
-        setSessionId(response.sessionId)
-      }
-
-      if (
-        isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) &&
-        response.metadata?.stateUpdates
-      ) {
-        updateSessionState(response.metadata.stateUpdates)
-      }
-
-      const autoLeadType = getLeadCaptureType(response.message)
-      if (autoLeadType) {
-        setLeadType(autoLeadType)
-        setShowLeadForm(true)
-      }
-
-      const assistantMessage: Message = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: formatAssistantMessageContent(
-          response,
-          isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)
-        ),
-        timestamp: new Date(),
-      }
-
-      setMessages((prev) => [...prev, assistantMessage])
-    } catch (err) {
-      let errorMessage = 'An unexpected error occurred. Please try again.'
-
-      if (err instanceof ApiClientError) {
-        errorMessage = err.userMessage
-        if (
-          err.code === 'SESSION_EXPIRED' ||
-          err.code === 'SESSION_NOT_FOUND'
-        ) {
-          clearSession()
-          errorMessage = 'Your session has expired. Starting a new chat...'
-        }
-      }
-
-      setError(errorMessage)
-      setMessages((prev) => prev.filter((msg) => msg.id !== userMessage.id))
+      await sendMessage(userMessage.content, userMessage.id)
     } finally {
       setIsLoading(false)
     }
@@ -402,6 +284,13 @@ function ChatContent() {
         </div>
 
         <div className="flex gap-2">
+          <Link
+            href="/sessions"
+            className="p-2 text-muted-foreground hover:text-primary transition-colors rounded-full hover:bg-primary/5"
+            title="Chat History"
+          >
+            <History size={20} />
+          </Link>
           <button
             onClick={handleNewChat}
             className="p-2 text-muted-foreground hover:text-primary transition-colors rounded-full hover:bg-primary/5"

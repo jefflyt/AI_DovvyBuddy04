@@ -24,6 +24,13 @@ from app.prompts.specialists_v1 import (
     ROUTER_SYSTEM_PROMPT,
 )
 
+from .routing_tools import (
+    ROUTE_TOOL_TO_SPECIALIST,
+    make_route_certification_specialist,
+    make_route_general_retrieval_specialist,
+    make_route_safety_specialist,
+    make_route_trip_specialist,
+)
 from .tools import ADKToolbox
 from .types import (
     AgentTurnTrace,
@@ -69,15 +76,20 @@ class ADKNativeGraphOrchestrator:
         }
 
     def _build_router_agent(self) -> LlmAgent:
+        self._route_trip = make_route_trip_specialist()
+        self._route_certification = make_route_certification_specialist()
+        self._route_general = make_route_general_retrieval_specialist()
+        self._route_safety = make_route_safety_specialist()
+
         return LlmAgent(
             name="dovvy_orchestrator",
             model=Gemini(model=self.model_name),
             instruction=ROUTER_SYSTEM_PROMPT,
             tools=[
-                self.route_trip_specialist,
-                self.route_certification_specialist,
-                self.route_general_retrieval_specialist,
-                self.route_safety_specialist,
+                self._route_trip,
+                self._route_certification,
+                self._route_general,
+                self._route_safety,
             ],
             generate_content_config=types.GenerateContentConfig(temperature=0.0),
         )
@@ -261,13 +273,7 @@ class ADKNativeGraphOrchestrator:
 
     @staticmethod
     def _map_route_tool_to_specialist(tool_name: str) -> Optional[RouteName]:
-        route_map = {
-            "route_trip_specialist": "trip_specialist",
-            "route_certification_specialist": "certification_specialist",
-            "route_general_retrieval_specialist": "general_retrieval_specialist",
-            "route_safety_specialist": "safety_specialist",
-        }
-        return route_map.get(tool_name)
+        return ROUTE_TOOL_TO_SPECIALIST.get(tool_name)
 
     def _build_turn_result(
         self,
@@ -559,49 +565,3 @@ class ADKNativeGraphOrchestrator:
                 "content": "adk_stream_failed",
                 "metadata": {"detail": str(exc)},
             }
-
-    def route_trip_specialist(
-        self,
-        query: str,
-        reason: str = "",
-        location: Optional[str] = None,
-    ) -> Dict[str, Any]:
-        return {
-            "route": "trip_specialist",
-            "query": query,
-            "reason": reason,
-            "location": location,
-        }
-
-    def route_certification_specialist(
-        self,
-        query: str,
-        reason: str = "",
-    ) -> Dict[str, Any]:
-        return {
-            "route": "certification_specialist",
-            "query": query,
-            "reason": reason,
-        }
-
-    def route_general_retrieval_specialist(
-        self,
-        query: str,
-        reason: str = "",
-    ) -> Dict[str, Any]:
-        return {
-            "route": "general_retrieval_specialist",
-            "query": query,
-            "reason": reason,
-        }
-
-    def route_safety_specialist(
-        self,
-        query: str,
-        reason: str = "",
-    ) -> Dict[str, Any]:
-        return {
-            "route": "safety_specialist",
-            "query": query,
-            "reason": reason,
-        }

@@ -25,6 +25,48 @@ from app.prompts.specialists_v1 import ROUTER_SYSTEM_PROMPT
 logger = logging.getLogger(__name__)
 
 
+def _wrap_route_trip(
+    query: str,
+    reason: str = "",
+    location: Optional[str] = None,
+) -> Dict[str, Any]:
+    return {
+        "target_agent": "trip_specialist",
+        "parameters": {"query": query, "reason": reason, "location": location},
+    }
+
+
+def _wrap_route_certification(
+    query: str,
+    reason: str = "",
+) -> Dict[str, Any]:
+    return {
+        "target_agent": "certification_specialist",
+        "parameters": {"query": query, "reason": reason},
+    }
+
+
+def _wrap_route_safety(
+    query: str,
+    reason: str = "",
+) -> Dict[str, Any]:
+    return {
+        "target_agent": "safety_specialist",
+        "parameters": {"query": query, "reason": reason},
+    }
+
+
+def _wrap_route_general(
+    query: str,
+    reason: str = "",
+    topic: Optional[str] = None,
+) -> Dict[str, Any]:
+    return {
+        "target_agent": "general_retrieval_specialist",
+        "parameters": {"query": query, "reason": reason, "topic": topic},
+    }
+
+
 class GeminiOrchestrator:
     """
     Orchestrates conversation flow using Gemini Function Calling.
@@ -49,56 +91,14 @@ class GeminiOrchestrator:
             model=Gemini(model=self.model_name),
             instruction=ROUTER_SYSTEM_PROMPT,
             tools=[
-                self.route_trip_specialist,
-                self.route_certification_specialist,
-                self.route_general_retrieval_specialist,
-                self.route_safety_specialist,
+                _wrap_route_trip,
+                _wrap_route_certification,
+                _wrap_route_general,
+                _wrap_route_safety,
             ],
             generate_content_config=types.GenerateContentConfig(temperature=0.0),
         )
         self.runner = InMemoryRunner(agent=self.agent, app_name=self.app_name)
-
-    def route_trip_specialist(
-        self,
-        query: str,
-        reason: str = "",
-        location: Optional[str] = None,
-    ) -> Dict[str, Any]:
-        return {
-            "target_agent": "trip_specialist",
-            "parameters": {"query": query, "reason": reason, "location": location},
-        }
-
-    def route_certification_specialist(
-        self,
-        query: str,
-        reason: str = "",
-    ) -> Dict[str, Any]:
-        return {
-            "target_agent": "certification_specialist",
-            "parameters": {"query": query, "reason": reason},
-        }
-
-    def route_safety_specialist(
-        self,
-        query: str,
-        reason: str = "",
-    ) -> Dict[str, Any]:
-        return {
-            "target_agent": "safety_specialist",
-            "parameters": {"query": query, "reason": reason},
-        }
-
-    def route_general_retrieval_specialist(
-        self,
-        query: str,
-        reason: str = "",
-        topic: Optional[str] = None,
-    ) -> Dict[str, Any]:
-        return {
-            "target_agent": "general_retrieval_specialist",
-            "parameters": {"query": query, "reason": reason, "topic": topic},
-        }
 
     async def _ensure_session(self, *, session_id: str, state: Optional[SessionState]) -> None:
         existing = await self.runner.session_service.get_session(

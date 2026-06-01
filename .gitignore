@@ -58,6 +58,14 @@ tmp/
 temp/
 .agent-context/
 
+# Claude Flow / Remember plugin artifacts
+.remember/
+.claude-flow/
+.swarm/
+agentdb.rvf
+agentdb.rvf.lock
+ruvector.db
+
 # Sentry
 .sentryclirc
 sentry.properties

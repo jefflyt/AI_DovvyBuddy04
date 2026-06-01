@@ -1,0 +1,56 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install*)",
+      "Bash(pnpm run build)",
+      "Bash(pnpm run test*)",
+      "Bash(pnpm run lint*)",
+      "Bash(pnpm run format*)",
+      "Bash(pnpm run typecheck)",
+      "Bash(npm run*)",
+      "Bash(npx playwright*)",
+      "Bash(npx vitest*)",
+      "Bash(python3 -m scripts*)",
+      "Bash(bash tooling/scripts/*.sh)",
+      "Bash(git*)",
+      "Bash(npx @anthropic-ai/claude-code*)",
+      "Bash(npx @claude-flow/cli*)",
+      "Bash(ls*)",
+      "Bash(find .claude*)",
+      "Bash(cat*)",
+      "Bash(grep*)",
+      "Bash(head*)",
+      "Bash(tail*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [{"type": "command", "command": "bash -c 'npx @claude-flow/cli@latest hooks pre-edit --file-path \"$1\" --operation create || true' --"}]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{"type": "command", "command": "bash -c 'npx @claude-flow/cli@latest hooks post-command --command \"$1\" --exit-code 0 || true' --"}]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [{"type": "command", "command": "bash -c 'npx @claude-flow/cli@latest hooks post-edit --file-path \"$1\" --agent claude --success true || true' --"}]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": ".*",
+        "hooks": [{"type": "command", "command": "bash -c 'npx @claude-flow/cli@latest hooks session-start --session-id \"$1\" --restore-latest --start-daemon false || true' --"}]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": ".*",
+        "hooks": [{"type": "command", "command": "bash -c 'npx @claude-flow/cli@latest hooks session-end --save-state --stop-daemon || true' --"}]
+      }
+    ]
+  }
+}

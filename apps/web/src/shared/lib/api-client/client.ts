@@ -9,6 +9,7 @@ import {
   ChatMetadata,
   ChatResponse,
   SessionResponse,
+  SessionListResponse,
   LeadRequest,
   LeadResponse,
   RequestOptions,
@@ -233,6 +234,25 @@ export class ApiClient {
       method: 'GET',
       ...options,
     })
+  }
+
+  /**
+   * List sessions with pagination
+   *
+   * @param offset Number of sessions to skip
+   * @param limit Maximum sessions to return
+   * @param options Request options
+   * @returns Paginated session list
+   */
+  async listSessions(
+    offset = 0,
+    limit = 20,
+    options?: RequestOptions
+  ): Promise<SessionListResponse> {
+    return this.request<SessionListResponse>(
+      API_ENDPOINTS.sessions(offset, limit),
+      { method: 'GET', ...options }
+    )
   }
 
   /**

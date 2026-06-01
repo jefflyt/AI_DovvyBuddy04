@@ -43,10 +43,9 @@ class Settings(BaseSettings):
 
     # API Keys
     gemini_api_key: str = ""
-    groq_api_key: str = ""  # Deprecated - not used, Gemini only
 
     # LLM Provider Configuration
-    default_llm_provider: Literal["groq", "gemini"] = "gemini"
+    default_llm_provider: Literal["gemini"] = "gemini"
     default_llm_model: str = "gemini-2.5-flash-lite"
     llm_temperature: float = 0.7
     llm_max_tokens: int = 2048
@@ -96,7 +95,7 @@ class Settings(BaseSettings):
     enable_adk_native_graph: bool = True
     adk_router_timeout_ms: int = 5000
     adk_specialist_timeout_ms: int = 10000
-    rag_timeout_ms: int = 4000
+    rag_timeout_ms: int = 8000
     enable_agent_routing: bool = True
     default_agent: str = "retrieval"
 
@@ -106,6 +105,9 @@ class Settings(BaseSettings):
     # Prompt Configuration
     system_prompt_version: str = "v1"
     include_safety_disclaimer: bool = True
+
+    # Debug Configuration
+    debug_token: str = ""
 
     # Lead Capture & Delivery Configuration
     resend_api_key: str = ""

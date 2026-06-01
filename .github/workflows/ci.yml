@@ -26,7 +26,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Type check
         run: pnpm typecheck
@@ -95,7 +95,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install chromium --with-deps
@@ -117,7 +117,6 @@ jobs:
           BASE_URL: http://localhost:3000
           BACKEND_URL: http://localhost:8000
           # Backend will be started by Playwright's webServer config
-        continue-on-error: true # Non-blocking for V1, can be made blocking post-launch
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4

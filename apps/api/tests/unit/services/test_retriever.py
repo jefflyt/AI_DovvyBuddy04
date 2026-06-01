@@ -181,3 +181,42 @@ class TestVectorRetriever:
             assert "metadata" in compiled_sql
             assert "destination" in compiled_params.values()
             assert '"reef"' in compiled_params.values()
+
+    def test_merge_rrf_combines_results(self, retriever):
+        """RRF should merge semantic and keyword results with correct weighting."""
+        semantic = [
+            RetrievalResult(chunk_id="a", text="A", similarity=0.9, metadata={}),
+            RetrievalResult(chunk_id="b", text="B", similarity=0.8, metadata={}),
+        ]
+        keyword = [
+            RetrievalResult(chunk_id="b", text="B", similarity=0.7, metadata={}),
+            RetrievalResult(chunk_id="c", text="C", similarity=0.6, metadata={}),
+        ]
+
+        merged = retriever._merge_rrf(semantic, keyword, keyword_weight=0.3)
+
+        assert len(merged) == 3
+        chunk_ids = [r.chunk_id for r in merged]
+        # "b" appears in both lists, so RRF gives it combined score
+        assert "b" in chunk_ids
+
+    def test_merge_rrf_no_cross_query_contamination(self, retriever):
+        """RRF should not leak state between separate merge calls."""
+        # First merge
+        merged1 = retriever._merge_rrf(
+            [RetrievalResult(chunk_id="x", text="X", similarity=0.9, metadata={})],
+            [],
+        )
+        assert len(merged1) == 1
+        assert merged1[0].chunk_id == "x"
+
+        # Second merge — should not contain "x"
+        merged2 = retriever._merge_rrf(
+            [RetrievalResult(chunk_id="y", text="Y", similarity=0.8, metadata={})],
+            [RetrievalResult(chunk_id="z", text="Z", similarity=0.7, metadata={})],
+        )
+        assert len(merged2) == 2
+        chunk_ids = [r.chunk_id for r in merged2]
+        assert "x" not in chunk_ids
+        assert "y" in chunk_ids
+        assert "z" in chunk_ids

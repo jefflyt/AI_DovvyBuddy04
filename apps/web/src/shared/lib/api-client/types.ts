@@ -103,6 +103,21 @@ export interface SessionResponse {
   updated_at?: string | null
 }
 
+export interface SessionSummary {
+  id: string
+  first_message_preview?: string | null
+  message_count: number
+  created_at?: string | null
+  updated_at?: string | null
+}
+
+export interface SessionListResponse {
+  sessions: SessionSummary[]
+  total: number
+  offset: number
+  limit: number
+}
+
 export interface LeadResponse {
   success: boolean
   lead_id: string
