@@ -1,0 +1,79 @@
+# Gemini Agent Ignore Rules (Reduces Context Overloading)
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+.venv/
+venv/
+env/
+.pnpm-store/
+
+# Testing & Coverage
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+.pytest_cache/
+.ruff_cache/
+
+# Next.js & Builds
+.next/
+apps/web/.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# Production Logs & Files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment & Private Settings
+.env
+.env*.local
+apps/api/.env
+apps/api/.env.local
+
+# Vercel
+.vercel/
+
+# OS & Temp Files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+tmp/
+temp/
+
+# Swarm / Orchestration Memory (DANGER: Exclude very large files)
+.remember/
+.claude-flow/
+.swarm/
+agentdb.rvf
+agentdb.rvf.lock
+ruvector.db
+apps/api/.letta/
+
+# Claude/Letta configurations (Obsolete)
+.claude/
+.letta/
+CLAUDE.md
+
+# Python Artifacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+.mypy_cache/
+
+# IDE settings
+.vscode/
+.idea/
+
+# Custom Agent Context Context
+.agent-context/

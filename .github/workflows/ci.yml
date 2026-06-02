@@ -67,7 +67,7 @@ jobs:
           cache: 'pip'
 
       - name: Install backend dependencies
-        run: pip install -e .[dev]
+        run: pip install -e .[dev,adk]
 
       - name: Ruff
         run: ruff check .
@@ -108,7 +108,7 @@ jobs:
       - name: Setup Python backend
         run: |
           cd apps/api
-          pip install -e .
+          pip install -e .[adk]
 
       - name: Run E2E tests
         run: pnpm test:e2e

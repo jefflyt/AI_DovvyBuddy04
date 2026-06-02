@@ -83,7 +83,9 @@ export default function SessionsPage() {
           {loading && sessions.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mb-4"></div>
-              <p className="text-sm text-muted-foreground">Loading sessions...</p>
+              <p className="text-sm text-muted-foreground">
+                Loading sessions...
+              </p>
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
@@ -130,7 +132,9 @@ export default function SessionsPage() {
                       <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Clock size={12} />
-                          {formatRelativeTime(session.updated_at || session.created_at)}
+                          {formatRelativeTime(
+                            session.updated_at || session.created_at
+                          )}
                         </span>
                         <span>{session.message_count} messages</span>
                       </div>

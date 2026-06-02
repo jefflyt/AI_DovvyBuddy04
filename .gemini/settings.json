@@ -13,10 +13,9 @@
       "Bash(python3 -m scripts*)",
       "Bash(bash tooling/scripts/*.sh)",
       "Bash(git*)",
-      "Bash(npx @anthropic-ai/claude-code*)",
-      "Bash(npx @claude-flow/cli*)",
+      "Bash(npx ruflo*)",
       "Bash(ls*)",
-      "Bash(find .claude*)",
+      "Bash(find .gemini*)",
       "Bash(cat*)",
       "Bash(grep*)",
       "Bash(head*)",
@@ -30,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'npx @claude-flow/cli@latest hooks pre-edit --file-path \"$1\" --operation create || true' --"
+            "command": "bash -c 'npx ruflo@latest hooks pre-edit --file-path \"$1\" --operation create || true' --"
           }
         ]
       }
@@ -41,7 +40,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'npx @claude-flow/cli@latest hooks post-command --command \"$1\" --exit-code 0 || true' --"
+            "command": "bash -c 'npx ruflo@latest hooks post-command --command \"$1\" --exit-code 0 || true' --"
           }
         ]
       },
@@ -50,7 +49,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'npx @claude-flow/cli@latest hooks post-edit --file-path \"$1\" --agent claude --success true || true' --"
+            "command": "bash -c 'npx ruflo@latest hooks post-edit --file-path \"$1\" --agent gemini --success true || true' --"
           }
         ]
       }
@@ -61,7 +60,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'npx @claude-flow/cli@latest hooks session-start --session-id \"$1\" --restore-latest --start-daemon false || true' --"
+            "command": "bash -c 'npx ruflo@latest hooks session-start --session-id \"$1\" --restore-latest --start-daemon false || true' --"
           }
         ]
       }
@@ -72,7 +71,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash -c 'npx @claude-flow/cli@latest hooks session-end --save-state --stop-daemon || true' --"
+            "command": "bash -c 'npx ruflo@latest hooks session-end --save-state --stop-daemon || true' --"
           }
         ]
       }

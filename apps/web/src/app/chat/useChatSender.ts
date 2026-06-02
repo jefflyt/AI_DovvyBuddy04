@@ -3,9 +3,16 @@
  * Encapsulates API call, session management, lead detection, and error handling.
  */
 
-import { apiClient, type ChatResponse, ApiClientError } from '@/shared/lib/api-client'
+import {
+  apiClient,
+  type ChatResponse,
+  ApiClientError,
+} from '@/shared/lib/api-client'
 import { FeatureFlag, isFeatureEnabled } from '@/shared/lib/feature-flags'
-import { getLeadCaptureType, formatAssistantMessageContent } from './chat-page-logic'
+import {
+  getLeadCaptureType,
+  formatAssistantMessageContent,
+} from './chat-page-logic'
 
 export interface Message {
   id: string

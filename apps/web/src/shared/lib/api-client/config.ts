@@ -50,6 +50,7 @@ export const API_CONFIG: ApiClientConfig = {
 export const API_ENDPOINTS = {
   chat: '/chat',
   session: (sessionId: string) => `/sessions/${sessionId}`,
-  sessions: (offset = 0, limit = 20) => `/sessions?offset=${offset}&limit=${limit}`,
+  sessions: (offset = 0, limit = 20) =>
+    `/sessions?offset=${offset}&limit=${limit}`,
   lead: '/leads',
 } as const

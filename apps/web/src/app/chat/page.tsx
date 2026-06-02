@@ -12,9 +12,7 @@ import {
   buildLeadRequest,
   getLeadSubmissionErrorMessage,
 } from './lead-submission'
-import {
-  shouldAutoSubmitPrompt,
-} from './chat-page-logic'
+import { shouldAutoSubmitPrompt } from './chat-page-logic'
 import { useChatSender, type Message } from './useChatSender'
 import { useSessionState } from '@/shared/hooks/useSessionState' // PR6.1
 import { FeatureFlag, isFeatureEnabled } from '@/shared/lib/feature-flags' // Centralized feature flags
