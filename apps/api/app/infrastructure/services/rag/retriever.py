@@ -4,8 +4,8 @@ Vector retrieval service for RAG.
 Performs vector similarity search using pgvector.
 """
 
-import logging
 import asyncio
+import logging
 from typing import List, Optional
 
 from pgvector.sqlalchemy import Vector

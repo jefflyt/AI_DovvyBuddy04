@@ -270,8 +270,8 @@ describe('ChatPage - localStorage persistence logic', () => {
         localStorage.setItem(STORAGE_KEY, MOCK_SESSION_ID)
 
         // Mock localStorage.removeItem to throw error (simulating SecurityError)
-        const originalRemoveItem = localStorage.removeItem
-        localStorage.removeItem = vi.fn(() => {
+        const originalRemoveItem = Storage.prototype.removeItem
+        Storage.prototype.removeItem = vi.fn(() => {
           throw new DOMException('SecurityError')
         })
 
@@ -285,7 +285,7 @@ describe('ChatPage - localStorage persistence logic', () => {
         }).not.toThrow()
 
         // Cleanup
-        localStorage.removeItem = originalRemoveItem
+        Storage.prototype.removeItem = originalRemoveItem
       })
 
       it('should clear sessionId even if localStorage fails', () => {
@@ -293,9 +293,9 @@ describe('ChatPage - localStorage persistence logic', () => {
         localStorage.setItem(STORAGE_KEY, MOCK_SESSION_ID)
 
         // Simulate localStorage failure
-        const originalRemoveItem = localStorage.removeItem
+        const originalRemoveItem = Storage.prototype.removeItem
         let localStorageFailed = false
-        localStorage.removeItem = vi.fn(() => {
+        Storage.prototype.removeItem = vi.fn(() => {
           localStorageFailed = true
           throw new Error('localStorage unavailable')
         })
@@ -314,7 +314,7 @@ describe('ChatPage - localStorage persistence logic', () => {
         // (this simulates that the state update happens regardless of localStorage error)
 
         // Cleanup
-        localStorage.removeItem = originalRemoveItem
+        Storage.prototype.removeItem = originalRemoveItem
       })
     })
 
@@ -413,8 +413,8 @@ describe('ChatPage - localStorage persistence logic', () => {
 
       it('should handle New Chat in private browsing mode', () => {
         // Simulate SecurityError when accessing localStorage
-        const originalRemoveItem = localStorage.removeItem
-        localStorage.removeItem = vi.fn(() => {
+        const originalRemoveItem = Storage.prototype.removeItem
+        Storage.prototype.removeItem = vi.fn(() => {
           throw new DOMException('SecurityError: Access denied')
         })
 
@@ -433,7 +433,7 @@ describe('ChatPage - localStorage persistence logic', () => {
         // even though localStorage.removeItem failed
 
         // Cleanup
-        localStorage.removeItem = originalRemoveItem
+        Storage.prototype.removeItem = originalRemoveItem
       })
     })
 
