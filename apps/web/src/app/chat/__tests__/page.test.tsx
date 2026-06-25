@@ -271,7 +271,7 @@ describe('ChatPage - localStorage persistence logic', () => {
 
         // Mock localStorage.removeItem to throw error (simulating SecurityError)
         const originalRemoveItem = localStorage.removeItem
-        localStorage.removeItem = vi.fn(() => {
+        window.localStorage.removeItem = vi.fn(() => {
           throw new DOMException('SecurityError')
         })
 
@@ -285,7 +285,7 @@ describe('ChatPage - localStorage persistence logic', () => {
         }).not.toThrow()
 
         // Cleanup
-        localStorage.removeItem = originalRemoveItem
+        window.localStorage.removeItem = originalRemoveItem
       })
 
       it('should clear sessionId even if localStorage fails', () => {
@@ -293,12 +293,13 @@ describe('ChatPage - localStorage persistence logic', () => {
         localStorage.setItem(STORAGE_KEY, MOCK_SESSION_ID)
 
         // Simulate localStorage failure
-        const originalRemoveItem = localStorage.removeItem
         let localStorageFailed = false
-        localStorage.removeItem = vi.fn(() => {
-          localStorageFailed = true
-          throw new Error('localStorage unavailable')
-        })
+        const spy = vi
+          .spyOn(Storage.prototype, 'removeItem')
+          .mockImplementation(() => {
+            localStorageFailed = true
+            throw new Error('localStorage unavailable')
+          })
 
         // Attempt clear (would normally be done by clearSession)
         try {
@@ -314,7 +315,7 @@ describe('ChatPage - localStorage persistence logic', () => {
         // (this simulates that the state update happens regardless of localStorage error)
 
         // Cleanup
-        localStorage.removeItem = originalRemoveItem
+        spy.mockRestore()
       })
     })
 
@@ -413,10 +414,11 @@ describe('ChatPage - localStorage persistence logic', () => {
 
       it('should handle New Chat in private browsing mode', () => {
         // Simulate SecurityError when accessing localStorage
-        const originalRemoveItem = localStorage.removeItem
-        localStorage.removeItem = vi.fn(() => {
-          throw new DOMException('SecurityError: Access denied')
-        })
+        const spy = vi
+          .spyOn(Storage.prototype, 'removeItem')
+          .mockImplementation(() => {
+            throw new DOMException('SecurityError: Access denied')
+          })
 
         // Attempt to clear session
         let errorCaught = false
@@ -433,7 +435,7 @@ describe('ChatPage - localStorage persistence logic', () => {
         // even though localStorage.removeItem failed
 
         // Cleanup
-        localStorage.removeItem = originalRemoveItem
+        spy.mockRestore()
       })
     })
 
