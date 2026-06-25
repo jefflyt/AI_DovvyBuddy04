@@ -4,102 +4,106 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-dependencies:
-  '@sentry/nextjs':
-    specifier: ^8.40.0
-    version: 8.55.0(@opentelemetry/context-async-hooks@1.30.1)(@opentelemetry/core@1.30.1)(@opentelemetry/instrumentation@0.57.2)(@opentelemetry/sdk-trace-base@1.30.1)(next@14.2.35)(react@18.3.1)(webpack@5.104.1)
-  '@vercel/analytics':
-    specifier: ^1.4.1
-    version: 1.6.1(next@14.2.35)(react@18.3.1)
-  clsx:
-    specifier: ^2.1.1
-    version: 2.1.1
-  dotenv:
-    specifier: ^17.2.3
-    version: 17.2.3
-  lucide-react:
-    specifier: ^0.563.0
-    version: 0.563.0(react@18.3.1)
-  next:
-    specifier: ^14.2.0
-    version: 14.2.35(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.0)(react-dom@18.3.1)(react@18.3.1)
-  react:
-    specifier: ^18.3.0
-    version: 18.3.1
-  react-dom:
-    specifier: ^18.3.0
-    version: 18.3.1(react@18.3.1)
-  react-markdown:
-    specifier: ^10.1.0
-    version: 10.1.0(@types/react@18.3.27)(react@18.3.1)
-  tailwind-merge:
-    specifier: ^3.4.0
-    version: 3.4.0
-  uuid:
-    specifier: ^13.0.0
-    version: 13.0.0
-  zod:
-    specifier: ^3.24.1
-    version: 3.25.76
+importers:
 
-devDependencies:
-  '@playwright/test':
-    specifier: ^1.49.0
-    version: 1.58.0
-  '@types/node':
-    specifier: ^20.14.0
-    version: 20.19.27
-  '@types/react':
-    specifier: ^18.3.0
-    version: 18.3.27
-  '@types/react-dom':
-    specifier: ^18.3.0
-    version: 18.3.7(@types/react@18.3.27)
-  '@types/uuid':
-    specifier: ^11.0.0
-    version: 11.0.0
-  '@typescript-eslint/eslint-plugin':
-    specifier: ^7.13.0
-    version: 7.18.0(@typescript-eslint/parser@7.18.0)(eslint@8.57.1)(typescript@5.9.3)
-  '@typescript-eslint/parser':
-    specifier: ^7.13.0
-    version: 7.18.0(eslint@8.57.1)(typescript@5.9.3)
-  '@vitejs/plugin-react':
-    specifier: ^4.3.0
-    version: 4.7.0(vite@7.3.0)
-  autoprefixer:
-    specifier: ^10.4.20
-    version: 10.4.23(postcss@8.5.6)
-  eslint:
-    specifier: ^8.57.0
-    version: 8.57.1
-  eslint-config-next:
-    specifier: ^14.2.0
-    version: 14.2.35(eslint@8.57.1)(typescript@5.9.3)
-  eslint-config-prettier:
-    specifier: ^9.1.0
-    version: 9.1.2(eslint@8.57.1)
-  jsdom:
-    specifier: ^27.3.0
-    version: 27.3.0
-  postcss:
-    specifier: ^8.4.49
-    version: 8.5.6
-  prettier:
-    specifier: ^3.3.0
-    version: 3.7.4
-  tailwindcss:
-    specifier: ^3.4.17
-    version: 3.4.19(tsx@4.21.0)
-  tsx:
-    specifier: ^4.21.0
-    version: 4.21.0
-  typescript:
-    specifier: ^5.4.5
-    version: 5.9.3
-  vitest:
-    specifier: ^1.6.0
-    version: 1.6.1(@types/node@20.19.27)(jsdom@27.3.0)
+  .:
+    dependencies:
+      '@sentry/nextjs':
+        specifier: ^8.40.0
+        version: 8.55.0(@opentelemetry/context-async-hooks@1.30.1)(@opentelemetry/core@1.30.1)(@opentelemetry/instrumentation@0.57.2)(@opentelemetry/sdk-trace-base@1.30.1)(next@14.2.35)(react@18.3.1)(webpack@5.104.1)
+      '@vercel/analytics':
+        specifier: ^1.4.1
+        version: 1.6.1(next@14.2.35)(react@18.3.1)
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.2.3
+      lucide-react:
+        specifier: ^0.563.0
+        version: 0.563.0(react@18.3.1)
+      next:
+        specifier: ^14.2.0
+        version: 14.2.35(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.0)(react-dom@18.3.1)(react@18.3.1)
+      react:
+        specifier: ^18.3.0
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.0
+        version: 18.3.1(react@18.3.1)
+      react-markdown:
+        specifier: ^10.1.0
+        version: 10.1.0(@types/react@18.3.27)(react@18.3.1)
+      tailwind-merge:
+        specifier: ^3.4.0
+        version: 3.4.0
+      uuid:
+        specifier: ^13.0.0
+        version: 13.0.0
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
+    devDependencies:
+      '@playwright/test':
+        specifier: ^1.49.0
+        version: 1.58.0
+      '@types/node':
+        specifier: ^20.14.0
+        version: 20.19.27
+      '@types/react':
+        specifier: ^18.3.0
+        version: 18.3.27
+      '@types/react-dom':
+        specifier: ^18.3.0
+        version: 18.3.7(@types/react@18.3.27)
+      '@types/uuid':
+        specifier: ^11.0.0
+        version: 11.0.0
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^7.13.0
+        version: 7.18.0(@typescript-eslint/parser@7.18.0)(eslint@8.57.1)(typescript@5.9.3)
+      '@typescript-eslint/parser':
+        specifier: ^7.13.0
+        version: 7.18.0(eslint@8.57.1)(typescript@5.9.3)
+      '@vitejs/plugin-react':
+        specifier: ^4.3.0
+        version: 4.7.0(vite@7.3.0)
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.4.23(postcss@8.5.6)
+      eslint:
+        specifier: ^8.57.0
+        version: 8.57.1
+      eslint-config-next:
+        specifier: ^14.2.0
+        version: 14.2.35(eslint@8.57.1)(typescript@5.9.3)
+      eslint-config-prettier:
+        specifier: ^9.1.0
+        version: 9.1.2(eslint@8.57.1)
+      jsdom:
+        specifier: ^27.3.0
+        version: 27.3.0
+      postcss:
+        specifier: ^8.4.49
+        version: 8.5.6
+      prettier:
+        specifier: ^3.3.0
+        version: 3.7.4
+      tailwindcss:
+        specifier: ^3.4.17
+        version: 3.4.19(tsx@4.21.0)
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.3
+      vitest:
+        specifier: ^1.6.0
+        version: 1.6.1(@types/node@20.19.27)(jsdom@27.3.0)
+
+  apps/web: {}
 
 packages:
 
