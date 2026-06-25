@@ -44,7 +44,8 @@ def create_embedding_provider(
         key = api_key or settings.gemini_api_key
         if not key:
             key = "dummy-key-for-tests"
-            if not key: raise ValueError("Gemini API key is required (GEMINI_API_KEY env var)")
+            if not key:
+                raise ValueError("Gemini API key is required (GEMINI_API_KEY env var)")
 
         model_name = model or settings.embedding_model
         target_dimension = dimension if dimension is not None else settings.embedding_dimension
