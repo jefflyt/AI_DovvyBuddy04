@@ -180,7 +180,7 @@ class Analytics {
       document.head.appendChild(script)
 
       if ((window as any).posthog) {
-        (window as any).posthog.init(posthogKey, {api_host: posthogHost})
+        ;(window as any).posthog.init(posthogKey, { api_host: posthogHost })
       }
     }
   }
@@ -199,7 +199,6 @@ class Analytics {
       script1.async = true
       script1.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaId)}`
       document.head.appendChild(script1)
-
       ;(window as any).dataLayer = (window as any).dataLayer || []
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       ;(window as any).gtag = function gtag(..._args: any[]) {

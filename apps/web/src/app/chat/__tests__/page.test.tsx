@@ -294,12 +294,14 @@ describe('ChatPage - localStorage persistence logic', () => {
 
         // Simulate localStorage failure
         let localStorageFailed = false
-        const mockRemoveItem = vi.spyOn(Storage.prototype, 'removeItem').mockImplementation((key: string) => {
-          if (key === STORAGE_KEY) {
-            localStorageFailed = true
-            throw new Error('localStorage unavailable')
-          }
-        })
+        const mockRemoveItem = vi
+          .spyOn(Storage.prototype, 'removeItem')
+          .mockImplementation((key: string) => {
+            if (key === STORAGE_KEY) {
+              localStorageFailed = true
+              throw new Error('localStorage unavailable')
+            }
+          })
 
         // Attempt clear (would normally be done by clearSession)
         try {
@@ -414,11 +416,13 @@ describe('ChatPage - localStorage persistence logic', () => {
 
       it('should handle New Chat in private browsing mode', () => {
         // Simulate SecurityError when accessing localStorage
-        const mockRemoveItem = vi.spyOn(Storage.prototype, 'removeItem').mockImplementation((key: string) => {
-          if (key === STORAGE_KEY) {
-            throw new DOMException('SecurityError: Access denied')
-          }
-        })
+        const mockRemoveItem = vi
+          .spyOn(Storage.prototype, 'removeItem')
+          .mockImplementation((key: string) => {
+            if (key === STORAGE_KEY) {
+              throw new DOMException('SecurityError: Access denied')
+            }
+          })
 
         // Attempt to clear session
         let errorCaught = false
