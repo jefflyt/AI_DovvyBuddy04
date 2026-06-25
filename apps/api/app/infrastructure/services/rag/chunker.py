@@ -25,9 +25,10 @@ logger = logging.getLogger(__name__)
 
 class _FallbackTokenizer:
     """Simple deterministic tokenizer used when tiktoken models are unavailable."""
+    _pattern = re.compile(r"\w+|[^\w\s]")
 
     def encode(self, text: str) -> list[str]:
-        return re.findall(r"\w+|[^\w\s]", text or "")
+        return self._pattern.findall(text or "")
 
 
 @lru_cache(maxsize=1)
