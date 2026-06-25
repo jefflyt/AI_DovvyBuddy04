@@ -201,7 +201,9 @@ class Analytics {
       document.head.appendChild(script1)
 
       ;(window as any).dataLayer = (window as any).dataLayer || []
-      ;(window as any).gtag = function gtag() {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      ;(window as any).gtag = function gtag(..._args: any[]) {
+        // eslint-disable-next-line prefer-rest-params
         ;(window as any).dataLayer.push(arguments)
       }
       ;(window as any).gtag('js', new Date())
