@@ -5,6 +5,7 @@ Performs vector similarity search using pgvector.
 """
 
 import logging
+import asyncio
 from typing import List, Optional
 
 from pgvector.sqlalchemy import Vector
@@ -174,13 +175,13 @@ class VectorRetriever:
         if options is None:
             options = RetrievalOptions()
 
-        # 1. Semantic search (existing method)
-        logger.info(f"Hybrid search: Running semantic search for '{query[:50]}...'")
-        semantic_results = await self.retrieve(query, options)
+        # 1. & 2. Run Semantic search and Keyword search in parallel
+        logger.info(f"Hybrid search: Running semantic and keyword search for '{query[:50]}...'")
 
-        # 2. Keyword search (new)
-        logger.info(f"Hybrid search: Running keyword search for '{query[:50]}...'")
-        keyword_results = await self._keyword_search(query, options)
+        semantic_results, keyword_results = await asyncio.gather(
+            self.retrieve(query, options),
+            self._keyword_search(query, options)
+        )
 
         # 3. Merge using Reciprocal Rank Fusion
         logger.info(f"Hybrid search: Merging {len(semantic_results)} semantic + {len(keyword_results)} keyword results")
