@@ -4,7 +4,13 @@ title: 'Malaysia Diving Emergency Medical Contacts and Support Services'
 description: 'Reference information about Malaysia Diving Emergency Medical Contacts and Support Services.'
 tags: ['safety', 'emergency', 'contacts', 'malaysia', 'medical', 'hospital']
 keywords:
-  ['emergency contacts', 'DAN malaysia', 'hyperbaric chamber', 'MMEA', 'hospital']
+  [
+    'emergency contacts',
+    'DAN malaysia',
+    'hyperbaric chamber',
+    'MMEA',
+    'hospital',
+  ]
 last_updated: '2026-06-01'
 data_quality: 'verified'
 ---
