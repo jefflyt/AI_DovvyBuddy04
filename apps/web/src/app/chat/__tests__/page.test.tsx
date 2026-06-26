@@ -13,7 +13,9 @@ const mockLocalStorageRemoveItemError = (error: Error) => {
   const originalLocalStorage = window.localStorage
   const mockLocalStorage = {
     getItem: vi.fn((key: string) => originalLocalStorage.getItem(key)),
-    setItem: vi.fn((key: string, value: string) => originalLocalStorage.setItem(key, value)),
+    setItem: vi.fn((key: string, value: string) =>
+      originalLocalStorage.setItem(key, value)
+    ),
     removeItem: vi.fn(() => {
       throw error
     }),
@@ -36,7 +38,6 @@ const mockLocalStorageRemoveItemError = (error: Error) => {
     })
   }
 }
-
 
 describe('ChatPage - localStorage persistence logic', () => {
   const STORAGE_KEY = 'dovvybuddy-session-id'
@@ -299,7 +300,9 @@ describe('ChatPage - localStorage persistence logic', () => {
         localStorage.setItem(STORAGE_KEY, MOCK_SESSION_ID)
 
         // Mock localStorage.removeItem to throw error (simulating SecurityError)
-        const restore = mockLocalStorageRemoveItemError(new DOMException('SecurityError'))
+        const restore = mockLocalStorageRemoveItemError(
+          new DOMException('SecurityError')
+        )
 
         // Action: attempt to clear (should not crash)
         expect(() => {
@@ -323,7 +326,9 @@ describe('ChatPage - localStorage persistence logic', () => {
         const originalLocalStorage = window.localStorage
         const mockLocalStorage = {
           getItem: vi.fn((key: string) => originalLocalStorage.getItem(key)),
-          setItem: vi.fn((key: string, value: string) => originalLocalStorage.setItem(key, value)),
+          setItem: vi.fn((key: string, value: string) =>
+            originalLocalStorage.setItem(key, value)
+          ),
           removeItem: vi.fn(() => {
             localStorageFailed = true
             throw new Error('localStorage unavailable')
@@ -457,7 +462,9 @@ describe('ChatPage - localStorage persistence logic', () => {
 
       it('should handle New Chat in private browsing mode', () => {
         // Simulate SecurityError when accessing localStorage
-        const restore = mockLocalStorageRemoveItemError(new DOMException('SecurityError: Access denied'))
+        const restore = mockLocalStorageRemoveItemError(
+          new DOMException('SecurityError: Access denied')
+        )
 
         // Attempt to clear session
         let errorCaught = false
