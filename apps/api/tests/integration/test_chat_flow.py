@@ -15,6 +15,12 @@ from app.domain.orchestration.mode_detector import ConversationMode
 from app.domain.orchestration.types import ChatRequest
 
 
+@pytest.fixture(autouse=True)
+def disable_native_graph(monkeypatch):
+    """Disable native graph for legacy orchestrator tests."""
+    monkeypatch.setattr("app.core.config.settings.enable_adk_native_graph", False)
+
+
 @pytest.fixture
 def mock_db_session():
     """Mock database session."""
@@ -44,9 +50,7 @@ async def test_chat_flow_new_session(mock_db_session, mock_session_data):
     orchestrator = ChatOrchestrator(mock_db_session)
 
     # Mock session creation and orchestrator flow
-    orchestrator.session_manager.create_session = AsyncMock(
-        return_value=mock_session_data
-    )
+    orchestrator.session_manager.create_session = AsyncMock(return_value=mock_session_data)
     orchestrator.session_manager.append_message = AsyncMock()
     orchestrator.orchestrator = MagicMock()
     orchestrator.orchestrator.route_request = AsyncMock(
@@ -96,9 +100,7 @@ async def test_chat_flow_existing_session(mock_db_session, mock_session_data):
         {"role": "assistant", "content": "Previous answer"},
     ]
 
-    orchestrator.session_manager.get_session = AsyncMock(
-        return_value=mock_session_data
-    )
+    orchestrator.session_manager.get_session = AsyncMock(return_value=mock_session_data)
     orchestrator.session_manager.append_message = AsyncMock()
     orchestrator.orchestrator = MagicMock()
     orchestrator.orchestrator.route_request = AsyncMock(
@@ -139,9 +141,7 @@ async def test_chat_flow_certification_query(mock_db_session, mock_session_data)
     """Test chat flow with certification query."""
     orchestrator = ChatOrchestrator(mock_db_session)
 
-    orchestrator.session_manager.create_session = AsyncMock(
-        return_value=mock_session_data
-    )
+    orchestrator.session_manager.create_session = AsyncMock(return_value=mock_session_data)
     orchestrator.session_manager.append_message = AsyncMock()
     orchestrator.orchestrator = MagicMock()
     orchestrator.orchestrator.route_request = AsyncMock(
@@ -181,9 +181,7 @@ async def test_chat_flow_safety_query(mock_db_session, mock_session_data):
     """Test chat flow with safety query includes disclaimer."""
     orchestrator = ChatOrchestrator(mock_db_session)
 
-    orchestrator.session_manager.create_session = AsyncMock(
-        return_value=mock_session_data
-    )
+    orchestrator.session_manager.create_session = AsyncMock(return_value=mock_session_data)
     orchestrator.session_manager.append_message = AsyncMock()
     orchestrator.emergency_detector.detect_emergency = AsyncMock(
         return_value=(True, "Seek emergency medical help immediately")
@@ -206,9 +204,7 @@ async def test_emergency_precheck_not_gated_by_followup_flag(
     mock_session_data,
 ):
     orchestrator = ChatOrchestrator(mock_db_session)
-    orchestrator.session_manager.create_session = AsyncMock(
-        return_value=mock_session_data
-    )
+    orchestrator.session_manager.create_session = AsyncMock(return_value=mock_session_data)
     orchestrator.session_manager.append_message = AsyncMock()
     orchestrator.emergency_detector.detect_emergency = AsyncMock(
         return_value=(True, "Seek emergency medical help immediately")
@@ -251,9 +247,7 @@ async def test_get_session(mock_db_session, mock_session_data):
     """Test getting session by ID."""
     orchestrator = ChatOrchestrator(mock_db_session)
 
-    orchestrator.session_manager.get_session = AsyncMock(
-        return_value=mock_session_data
-    )
+    orchestrator.session_manager.get_session = AsyncMock(return_value=mock_session_data)
 
     session = await orchestrator.get_session(str(mock_session_data.id))
 
@@ -282,9 +276,7 @@ async def test_chat_flow_mode_detector_fallback_without_adk(
     orchestrator = ChatOrchestrator(mock_db_session)
     orchestrator.native_graph_orchestrator = None
     orchestrator.orchestrator = None
-    orchestrator.session_manager.create_session = AsyncMock(
-        return_value=mock_session_data
-    )
+    orchestrator.session_manager.create_session = AsyncMock(return_value=mock_session_data)
     orchestrator.session_manager.append_message = AsyncMock()
     orchestrator.response_formatter.format_response = AsyncMock(
         side_effect=lambda message, **kwargs: message
@@ -312,6 +304,4 @@ async def test_chat_flow_mode_detector_fallback_without_adk(
     assert response.metadata["runtime_path"] == "mode_detector_router"
     assert response.metadata["route_decision"]["route"] == "certification_specialist"
     assert response.agent_type == AgentType.CERTIFICATION.value
-    orchestrator.agent_router.select_agent.assert_called_once_with(
-        ConversationMode.CERTIFICATION
-    )
+    orchestrator.agent_router.select_agent.assert_called_once_with(ConversationMode.CERTIFICATION)

@@ -4,6 +4,7 @@ Vector retrieval service for RAG.
 Performs vector similarity search using pgvector.
 """
 
+import asyncio
 import logging
 from typing import List, Optional
 
@@ -30,9 +31,7 @@ class VectorRetriever:
         Args:
             embedding_provider: Embedding provider instance (if None, creates from env)
         """
-        self.embedding_provider = (
-            embedding_provider or create_embedding_provider_from_env()
-        )
+        self.embedding_provider = embedding_provider or create_embedding_provider_from_env()
 
     async def retrieve(
         self,
@@ -79,9 +78,7 @@ class VectorRetriever:
                 value=query_embedding,
                 type_=Vector(expected_dimension),
             )
-            similarity_expr = (
-                1 - ContentEmbedding.embedding.cosine_distance(query_vector)
-            )
+            similarity_expr = 1 - ContentEmbedding.embedding.cosine_distance(query_vector)
 
             stmt = select(
                 ContentEmbedding.id,
@@ -100,9 +97,7 @@ class VectorRetriever:
                             ContentEmbedding.metadata_["doc_type"].astext.in_(doc_type)
                         )
                     else:
-                        stmt = stmt.where(
-                            ContentEmbedding.metadata_["doc_type"].astext == doc_type
-                        )
+                        stmt = stmt.where(ContentEmbedding.metadata_["doc_type"].astext == doc_type)
 
                 if "destination" in options.filters:
                     stmt = stmt.where(
@@ -114,8 +109,7 @@ class VectorRetriever:
                     # Check if any of the specified tags exist in metadata->tags array
                     for tag in options.filters["tags"]:
                         stmt = stmt.where(
-                            ContentEmbedding.metadata_["tags"]
-                            .astext.contains(f'"{tag}"')
+                            ContentEmbedding.metadata_["tags"].astext.contains(f'"{tag}"')
                         )
 
             # Order by similarity and limit
@@ -174,24 +168,21 @@ class VectorRetriever:
         if options is None:
             options = RetrievalOptions()
 
-        # 1. Semantic search (existing method)
-        logger.info(f"Hybrid search: Running semantic search for '{query[:50]}...'")
-        semantic_results = await self.retrieve(query, options)
+        # 1. & 2. Run Semantic search and Keyword search in parallel
+        logger.info(f"Hybrid search: Running semantic and keyword search for '{query[:50]}...'")
 
-        # 2. Keyword search (new)
-        logger.info(f"Hybrid search: Running keyword search for '{query[:50]}...'")
-        keyword_results = await self._keyword_search(query, options)
-
-        # 3. Merge using Reciprocal Rank Fusion
-        logger.info(f"Hybrid search: Merging {len(semantic_results)} semantic + {len(keyword_results)} keyword results")
-        merged_results = self._merge_rrf(
-            semantic_results,
-            keyword_results,
-            keyword_weight
+        semantic_results, keyword_results = await asyncio.gather(
+            self.retrieve(query, options), self._keyword_search(query, options)
         )
 
+        # 3. Merge using Reciprocal Rank Fusion
+        logger.info(
+            f"Hybrid search: Merging {len(semantic_results)} semantic + {len(keyword_results)} keyword results"
+        )
+        merged_results = self._merge_rrf(semantic_results, keyword_results, keyword_weight)
+
         # Return top-k results
-        final_results = merged_results[:options.top_k]
+        final_results = merged_results[: options.top_k]
         logger.info(f"Hybrid search: Returning {len(final_results)} merged results")
 
         return final_results
@@ -223,13 +214,10 @@ class VectorRetriever:
                 ContentEmbedding.chunk_text,
                 ContentEmbedding.metadata_,
                 func.ts_rank(
-                    ContentEmbedding.chunk_text_tsv,
-                    func.plainto_tsquery("english", query)
-                ).label("rank")
+                    ContentEmbedding.chunk_text_tsv, func.plainto_tsquery("english", query)
+                ).label("rank"),
             ).where(
-                ContentEmbedding.chunk_text_tsv.op("@@")(
-                    func.plainto_tsquery("english", query)
-                )
+                ContentEmbedding.chunk_text_tsv.op("@@")(func.plainto_tsquery("english", query))
             )
 
             # Apply metadata filters if present
@@ -241,9 +229,7 @@ class VectorRetriever:
                             ContentEmbedding.metadata_["doc_type"].astext.in_(doc_type)
                         )
                     else:
-                        stmt = stmt.where(
-                            ContentEmbedding.metadata_["doc_type"].astext == doc_type
-                        )
+                        stmt = stmt.where(ContentEmbedding.metadata_["doc_type"].astext == doc_type)
 
                 if "destination" in options.filters:
                     stmt = stmt.where(
@@ -254,8 +240,7 @@ class VectorRetriever:
                 if "tags" in options.filters and options.filters["tags"]:
                     for tag in options.filters["tags"]:
                         stmt = stmt.where(
-                            ContentEmbedding.metadata_["tags"]
-                            .astext.contains(f'"{tag}"')
+                            ContentEmbedding.metadata_["tags"].astext.contains(f'"{tag}"')
                         )
 
             stmt = stmt.order_by(text("rank DESC")).limit(options.top_k * 2)
@@ -269,7 +254,7 @@ class VectorRetriever:
                     text=row.chunk_text,
                     similarity=float(row.rank),  # Use FTS rank as similarity
                     metadata=row.metadata_ or {},
-                    source_citation=(row.metadata_ or {}).get("content_path")
+                    source_citation=(row.metadata_ or {}).get("content_path"),
                 )
                 for row in rows
             ]
@@ -329,7 +314,7 @@ class VectorRetriever:
                 text=result.text,
                 similarity=scores[chunk_id],  # Use RRF score
                 metadata=result.metadata,
-                source_citation=result.source_citation
+                source_citation=result.source_citation,
             )
             merged.append(merged_result)
 

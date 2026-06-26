@@ -18,8 +18,8 @@ pytestmark = pytest.mark.slow
 def gemini_api_key():
     """Get Gemini API key from environment."""
     key = os.getenv("GEMINI_API_KEY")
-    if not key:
-        pytest.skip("GEMINI_API_KEY not set")
+    if not key or "dummy" in key:
+        pytest.skip("GEMINI_API_KEY not set or is a dummy key")
     return key
 
 

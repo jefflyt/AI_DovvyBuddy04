@@ -74,6 +74,8 @@ jobs:
 
       - name: Backend unit tests
         run: pytest -q tests/unit
+        env:
+          GEMINI_API_KEY: "dummy_key"
 
   e2e:
     runs-on: ubuntu-latest

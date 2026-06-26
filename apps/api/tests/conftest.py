@@ -1,6 +1,9 @@
 import asyncio
-
+import os
 import pytest
+
+# Ensure it is set BEFORE importing anything that might read settings
+os.environ["GEMINI_API_KEY"] = "dummy_key_from_conftest"
 
 from app.infrastructure.db.session import init_db
 
