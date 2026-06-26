@@ -14,6 +14,12 @@ from app.domain.orchestration import ChatOrchestrator
 from app.domain.orchestration.types import ChatRequest, SessionData
 
 
+@pytest.fixture(autouse=True)
+def disable_native_graph(monkeypatch):
+    """Disable native graph for legacy orchestrator tests."""
+    monkeypatch.setattr("app.core.config.settings.enable_adk_native_graph", False)
+
+
 @pytest.fixture
 def mock_db_session():
     """Mock database session."""
@@ -41,9 +47,7 @@ async def test_response_excludes_rag_mentions(mock_db_session, mock_session_data
     orchestrator = ChatOrchestrator(mock_db_session)
 
     # Mock session
-    orchestrator.session_manager.create_session = AsyncMock(
-        return_value=mock_session_data
-    )
+    orchestrator.session_manager.create_session = AsyncMock(return_value=mock_session_data)
     orchestrator.session_manager.append_message = AsyncMock()
 
     # Mock agent to return response WITH RAG mentions (simulate non-compliant LLM)
@@ -95,9 +99,7 @@ async def test_citations_in_metadata_not_response(mock_db_session, mock_session_
     """Test that citations are in metadata, not visible in response text."""
     orchestrator = ChatOrchestrator(mock_db_session)
 
-    orchestrator.session_manager.create_session = AsyncMock(
-        return_value=mock_session_data
-    )
+    orchestrator.session_manager.create_session = AsyncMock(return_value=mock_session_data)
     orchestrator.session_manager.append_message = AsyncMock()
 
     mock_result = AgentResult(
@@ -120,6 +122,7 @@ async def test_citations_in_metadata_not_response(mock_db_session, mock_session_
                 return_value=AgentContext(
                     query="Where can I dive in Tioman?",
                     conversation_history=[],
+                    rag_context="Tioman overview content",
                     metadata={
                         "has_rag": True,
                         "rag_citations": ["content/destinations/Malaysia-Tioman/overview.md"],
@@ -150,9 +153,7 @@ async def test_response_is_concise(mock_db_session, mock_session_data):
     """Test that responses are concise (rough validation)."""
     orchestrator = ChatOrchestrator(mock_db_session)
 
-    orchestrator.session_manager.create_session = AsyncMock(
-        return_value=mock_session_data
-    )
+    orchestrator.session_manager.create_session = AsyncMock(return_value=mock_session_data)
     orchestrator.session_manager.append_message = AsyncMock()
 
     # Mock a verbose response
@@ -210,9 +211,7 @@ async def test_emergency_response_no_follow_up(mock_db_session, mock_session_dat
     """Test that emergency responses don't have follow-up questions."""
     orchestrator = ChatOrchestrator(mock_db_session)
 
-    orchestrator.session_manager.create_session = AsyncMock(
-        return_value=mock_session_data
-    )
+    orchestrator.session_manager.create_session = AsyncMock(return_value=mock_session_data)
     orchestrator.session_manager.append_message = AsyncMock()
 
     # Emergency should bypass normal flow
@@ -243,7 +242,11 @@ async def test_emergency_response_no_follow_up(mock_db_session, mock_session_dat
 
         # Response should be urgent and clear (if emergency was detected)
         if response.agent_type == "emergency":
-            assert "seek" in response.message.lower() or "emergency" in response.message.lower() or "medical" in response.message.lower()
+            assert (
+                "seek" in response.message.lower()
+                or "emergency" in response.message.lower()
+                or "medical" in response.message.lower()
+            )
 
 
 @pytest.mark.asyncio
@@ -251,9 +254,7 @@ async def test_response_no_generic_closers(mock_db_session, mock_session_data):
     """Test that generic closers are removed."""
     orchestrator = ChatOrchestrator(mock_db_session)
 
-    orchestrator.session_manager.create_session = AsyncMock(
-        return_value=mock_session_data
-    )
+    orchestrator.session_manager.create_session = AsyncMock(return_value=mock_session_data)
     orchestrator.session_manager.append_message = AsyncMock()
 
     response_with_closer = (
