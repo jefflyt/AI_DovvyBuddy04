@@ -3,6 +3,7 @@
  * Encapsulates API call, session management, lead detection, and error handling.
  */
 
+import { useCallback } from 'react'
 import {
   apiClient,
   type ChatResponse,
@@ -25,8 +26,8 @@ interface UseChatSenderDeps {
   sessionId: string | null
   setSessionId: (id: string | null) => void
   sessionState: Record<string, unknown> | null
-  updateSessionState: (updates: Record<string, unknown>) => void
-  setMessages: (fn: (prev: Message[]) => Message[]) => void
+  updateSessionState: (state: Record<string, unknown>) => void
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>
   setError: (error: string | null) => void
   setLeadType: (type: 'training' | 'trip' | null) => void
   setShowLeadForm: (show: boolean) => void
@@ -50,71 +51,84 @@ export function useChatSender(deps: UseChatSenderDeps): UseChatSenderResult {
     clearSession,
   } = deps
 
-  const sendMessage = async (content: string, userMessageId?: string) => {
-    const requestPayload: {
-      sessionId?: string
-      message: string
-      sessionState?: Record<string, unknown>
-    } = {
-      sessionId: sessionId || undefined,
-      message: content,
-    }
-
-    if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)) {
-      requestPayload.sessionState = sessionState as Record<string, unknown>
-    }
-
-    try {
-      const response: ChatResponse = await apiClient.chat(requestPayload)
-
-      if (!sessionId && response.sessionId) {
-        setSessionId(response.sessionId)
+  const sendMessage = useCallback(
+    async (content: string, userMessageId?: string) => {
+      const requestPayload: {
+        sessionId?: string
+        message: string
+        sessionState?: Record<string, unknown>
+      } = {
+        sessionId: sessionId || undefined,
+        message: content,
       }
 
-      if (
-        isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) &&
-        response.metadata?.stateUpdates
-      ) {
-        updateSessionState(response.metadata.stateUpdates)
+      if (isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)) {
+        requestPayload.sessionState = sessionState as Record<string, unknown>
       }
 
-      const autoLeadType = getLeadCaptureType(response.message)
-      if (autoLeadType) {
-        setLeadType(autoLeadType)
-        setShowLeadForm(true)
-      }
+      try {
+        const response: ChatResponse = await apiClient.chat(requestPayload)
 
-      const assistantMessage: Message = {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: formatAssistantMessageContent(
-          response,
-          isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)
-        ),
-        timestamp: new Date(),
-      }
+        if (!sessionId && response.sessionId) {
+          setSessionId(response.sessionId)
+        }
 
-      setMessages((prev) => [...prev, assistantMessage])
-    } catch (err) {
-      let errorMessage = 'An unexpected error occurred. Please try again.'
-
-      if (err instanceof ApiClientError) {
-        errorMessage = err.userMessage
         if (
-          err.code === 'SESSION_EXPIRED' ||
-          err.code === 'SESSION_NOT_FOUND'
+          isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP) &&
+          response.metadata?.stateUpdates
         ) {
-          clearSession()
-          errorMessage = 'Your session has expired. Starting a new chat...'
+          updateSessionState(response.metadata.stateUpdates)
+        }
+
+        const autoLeadType = getLeadCaptureType(response.message)
+        if (autoLeadType) {
+          setLeadType(autoLeadType)
+          setShowLeadForm(true)
+        }
+
+        const assistantMessage: Message = {
+          id: crypto.randomUUID(),
+          role: 'assistant',
+          content: formatAssistantMessageContent(
+            response,
+            isFeatureEnabled(FeatureFlag.CONVERSATION_FOLLOWUP)
+          ),
+          timestamp: new Date(),
+        }
+
+        setMessages((prev) => [...prev, assistantMessage])
+      } catch (err) {
+        let errorMessage = 'An unexpected error occurred. Please try again.'
+
+        if (err instanceof ApiClientError) {
+          errorMessage = err.userMessage
+          if (
+            err.code === 'SESSION_EXPIRED' ||
+            err.code === 'SESSION_NOT_FOUND'
+          ) {
+            clearSession()
+            errorMessage = 'Your session has expired. Starting a new chat...'
+          }
+        }
+
+        setError(errorMessage)
+        if (userMessageId) {
+          setMessages((prev) => prev.filter((msg) => msg.id !== userMessageId))
         }
       }
-
-      setError(errorMessage)
-      if (userMessageId) {
-        setMessages((prev) => prev.filter((msg) => msg.id !== userMessageId))
-      }
-    }
-  }
+    },
+    [
+      sessionId,
+      sessionState,
+      updateSessionState,
+      setSessionId,
+      setLeadType,
+      setShowLeadForm,
+      setMessages,
+      clearSession,
+      setError,
+    ]
+  )
 
   return { sendMessage }
 }
