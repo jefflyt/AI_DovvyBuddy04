@@ -176,11 +176,12 @@ class Analytics {
     // Load Posthog script
     if (typeof window !== 'undefined' && !(window as any).posthog) {
       const script = document.createElement('script')
-      script.innerHTML = `
-        !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-        posthog.init('${posthogKey}', {api_host: '${posthogHost}'})
-      `
+      script.textContent = `!function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);`
       document.head.appendChild(script)
+
+      if ((window as any).posthog) {
+        ;(window as any).posthog.init(posthogKey, { api_host: posthogHost })
+      }
     }
   }
 
@@ -196,17 +197,16 @@ class Analytics {
     if (typeof window !== 'undefined' && !(window as any).gtag) {
       const script1 = document.createElement('script')
       script1.async = true
-      script1.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`
+      script1.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaId)}`
       document.head.appendChild(script1)
-
-      const script2 = document.createElement('script')
-      script2.innerHTML = `
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', '${gaId}');
-      `
-      document.head.appendChild(script2)
+      ;(window as any).dataLayer = (window as any).dataLayer || []
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      ;(window as any).gtag = function gtag(..._args: any[]) {
+        // eslint-disable-next-line prefer-rest-params
+        ;(window as any).dataLayer.push(arguments)
+      }
+      ;(window as any).gtag('js', new Date())
+      ;(window as any).gtag('config', gaId)
     }
   }
 }

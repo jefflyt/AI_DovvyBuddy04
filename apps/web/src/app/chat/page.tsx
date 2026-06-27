@@ -99,6 +99,7 @@ function ChatContent() {
     } finally {
       setSessionHydrated(true)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Save sessionId to localStorage when it changes
@@ -171,6 +172,7 @@ function ChatContent() {
     sessionState,
     updateSessionState,
     clearSessionState,
+    sendMessage,
   ])
 
   const handleNewChat = () => {
